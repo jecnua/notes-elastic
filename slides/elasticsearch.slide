@@ -1,0 +1,11 @@
+ElasticSearch
+Lessons learned
+
+* Takeouts
+
+- Have maximum one shard per (v)CPU
+
+Ideally you don't want to have a number of shard higher than your available
+CPUs. In a dedicated environment aim to nShards=nCPU
+
+- Make 2 queries: one with 0 results one without

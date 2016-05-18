@@ -1,0 +1,80 @@
+ElasticSearch
+
+* About
+
+We can see two primary function in ES: writing index and quering it.
+
+* Nodes
+
+A node is a running instance of elasticsearch.
+Nodes can store data locally or not. If you have set to store data, shards can
+and will be allocated locally.
+
+    ## In puppet:
+    node.data = false
+
+By default, all nodes are data nodes. What you want is divide the responsabilities:
+
+** Data nodes
+
+    node.data = true
+    node.masters = false
+
+** Client nodes
+
+Smart load balancers. The reason behind the creation of dedicated clients is (no
+data on them) is to dedicate all their computational power to the *scatter/gather*
+phase of the search.
+
+    node.data = false
+    node.masters = false
+
+You can actually _shut_down_ the HTTP transport on the
+other nodes to make sure they don't reply HTTP at all (I didn't thought, I call
+them sometimes to check stuff).
+
+    ## You can still communicate through the transport module (TCP)
+    http.enabled = false
+
+** Master nodes
+
+Lightweight operational (cluster management) responsability.
+A master olds the _cluster_state_, and handles the shard distribution.
+The master node *isn't* involved in any search or document change of any type.
+
+    node.data = false
+    node.masters = true
+
+Is good practice to have a set of _dedicated_ master nodes.
+Since they work through an election system you need an odd number of them (min 3).
+
+** Nuts and bolts
+
+Client only nodes:
+
+- https req parsing
+- network overload (avoid)
+- perform gather process
+
+Data nodes only:
+
+- search
+- index
+
+* Cluster
+
+A cluster consists in one or more nodes with the same cluster names.
+
+* Scaling horizontally
+
+- Routing
+- Sharding
+- Time/Pattern based index creation and query
+
+* AWS
+
+- Same sg to all nodes (port 9300)
+- Spot(?)
+
+Use a small number of data nodes not on spot, to have safety of the data.
+Use spot instances to boost performances.

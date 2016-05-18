@@ -1,6 +1,6 @@
-ElasticSearch
+ElasticSearch [v1.7+]
 
-* About
+* Intro
 
 We can see two primary function in ES: writing index and quering it.
 
@@ -13,16 +13,24 @@ and will be allocated locally.
     ## In puppet:
     node.data = false
 
-By default, all nodes are data nodes. What you want is divide the responsabilities:
+Master
+Data:
 
 ** Data nodes
+
+Holds the data in shards (which are lucene indexes). Performs indexing and
+search queries.
 
     node.data = true
     node.masters = false
 
 ** Client nodes
 
-Smart load balancers. The reason behind the creation of dedicated clients is (no
+Smart load balancers that expose a rest interface. It is responsible for routing
+queries to nodes with relevant shards and aggregating results.
+It is never rerouted to another client node.
+
+The reason behind the creation of dedicated clients is (no
 data on them) is to dedicate all their computational power to the *scatter/gather*
 phase of the search.
 
@@ -35,6 +43,8 @@ them sometimes to check stuff).
 
     ## You can still communicate through the transport module (TCP)
     http.enabled = false
+
+*NOTE*: It is reccomended to set a long lived http req to the client nodes.
 
 ** Master nodes
 
@@ -49,6 +59,10 @@ Is good practice to have a set of _dedicated_ master nodes.
 Since they work through an election system you need an odd number of them (min 3).
 
 ** Nuts and bolts
+
+By default, all nodes are data nodes. What you want is divide the
+responsabilities. Separating concerns is good and let us optimise each type of
+node for it's particular workload.
 
 Client only nodes:
 
@@ -65,11 +79,43 @@ Data nodes only:
 
 A cluster consists in one or more nodes with the same cluster names.
 
+* Index
+
+An index is just a *logical*namespace* that point to phisical shards.
+Read requestes can be handled by a _primary_ or _replica_ shard. More copies
+of the data you have, the more search throughput you can handle.
+
+NOTE: Once all replica shards report success, success is reported to the user.
+
+** Indexing
+
+New documents to ES pass to primary shards, add to storage and add to inverted
+index.
+
+* Search
+
+We don't know which document will match the query... it could be in any shard.
+A search request cosults *a*copy*of*every*shard*. There are two phases:
+
+- query (scatter and gather): in this phase replicas increase throughput
+- fetch: the _coordinating_node_ multi-get all that does it need
+
+The coordinating node perform a _merge_sort_ on the combined result from other
+shards. Is CPU intensive and memory intensive.
+
 * Scaling horizontally
 
 - Routing
 - Sharding
 - Time/Pattern based index creation and query
+
+* Performance
+
+You can increase performances at the cost of data security:
+
+- Replication sync (default) or async: Wait or not for hack from the replicas.
+- Consistency: Is the quorum. How many shards need to report to the primary
+before any write request is accepted (protects again split brain problems).
 
 * AWS
 

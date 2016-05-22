@@ -9,3 +9,122 @@ Ideally you don't want to have a number of shard higher than your available
 CPUs. In a dedicated environment aim to nShards=nCPU
 
 - Make 2 queries: one with 0 results one without
+
+* Nested queries
+
+- Nested queries use a lot of memory
+- Cache filter only works on more than 16 terms
+- There is no way to force this cache
+
+* GC
+
+Elasticsearch does a GC at 75% heap used
+
+* Shard
+
+In 2.3 they optimised the shards. (???)
+
+Too many shards it's gonna slow down the system.
+When you search, the request works on each shard in parallel, at shard level.
+The search on each segment can be optimised by reducing the number of shard.
+
+1 shard per vCPU per node is the best compromise.
+
+* Segments
+
+How many segments are advices for a single shard.
+Difficult to say but *NOT*one*.
+Usually 2 or 3.
+The reason behind this is that small(ish) segments will be
+merged as appropriate, but if you have *large* segments they may
+be too big to be merged anymore.
+
+* Stats
+
+Stats in elasticsearch are reset only at restart. This means that some of the data
+like bulk reject needs to be calculated on our side making a diff between after and
+before and index.
+
+RESET ON REQUEST: We opened a case with support to add this functionality.
+
+* Bulk size pool
+
+???
+
+* Cache(s)
+
+Caches works *per*shard*.
+
+- Default is 10%. We are now at 30% and the performances are much better.
+- Filter cache is part of query cache and having too many eviction is sign
+that some thing is wrong.
+- -*BOOLEAN filter* are no cached by default. Before was filtered query. (??)
+- Compound filter are not cached in 2.x
+
+* Filter cache
+
+Filter cache is at node level.
+
+* Term filter cache
+
+Term filter cache setting is 10% (default)
+Look out for cache eviction.
+
+* Chache filter queries
+
+Elasticsearch doesn't cache the filter query the first time, but only if you
+use the save filter 5 times (at shard level).
+All this it's *automatic*. They won't to cache only if this doesn't harm you,
+but also they don't allow you to choose.
+
+You *can't*force* the cache.
+
+The also don't cache the data in segments that are small (<1GB).
+If the segments are small, there is a high chance they will get merged,
+so they cache only segments larger than 1GB and called multiple times.
+
+AGAIN: You *can't*force* this.
+
+* Term filter
+
+In *2.3* elastic added aggressive cache for the term filter (in 2.3
+even for boolean term filter).
+
+NOTE: They don't cache the boolean but the term filter inside the boolean.
+They don't wait for anymore for the _5_calls_.
+
+* What about a warmer?
+
+- Doing a script to run a few queries.
+
+NO. If it's not running continuosly caches will be removed.
+If you don't use it during the night, etc.
+
+- Then RUN all possible combination during the night?
+
+If there is merging in segment the cache will be deleted too...
+
+Elastic thinks that with warmers there is no guarantee that the next user will have the same data.
+That's why they removed the possibility. There is nothing to warm because there is no more doc value
+just filesystem cache.
+
+* Doc Values
+
+Since 2.x (?) all doc values are saved to disk instead that put in ram.
+They did this to free the load on the memory.
+_Theoretically_ these files are optimized and the performance should not
+get worse.
+
+We have no data about this but:
+- Now the index is bigger (since 1.7)
+- Is still I/O
+
+* Minimum master nodes
+
+The number of masters alive to have a stable system.
+
+* Shield
+
+Shield allows you to define access rights for each field.
+Can shield access to subdocuments or single fields.
+Everything you cannot see _doesn't_count_ in the scoring and aggregations.

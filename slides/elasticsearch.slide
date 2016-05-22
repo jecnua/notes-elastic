@@ -3,11 +3,6 @@ Lessons learned
 
 * Takeouts
 
-- Have maximum one shard per (v)CPU
-
-Ideally you don't want to have a number of shard higher than your available
-CPUs. In a dedicated environment aim to nShards=nCPU
-
 - Make 2 queries: one with 0 results one without
 
 * Nested queries
@@ -29,6 +24,10 @@ When you search, the request works on each shard in parallel, at shard level.
 The search on each segment can be optimised by reducing the number of shard.
 
 1 shard per vCPU per node is the best compromise.
+Have maximum one shard per (v)CPU
+
+Ideally you don't want to have a number of shard higher than your available
+CPUs. In a dedicated environment aim to nShards=nCPU
 
 * Segments
 
@@ -49,7 +48,33 @@ RESET ON REQUEST: We opened a case with support to add this functionality.
 
 * Bulk size pool
 
-???
+.link https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-threadpool.html Thread pool
+
+The queue_size allows to control the size of the queue of pending requests that
+have no threads to execute them. By default, it is set to -1 which means its
+unbounded. When a request comes in and the queue is full, it will abort the
+request.
+
+Sources:
+.link http://stackoverflow.com/questions/20683440/elasticsearch-gives-error-about-queue-size Elasticsearch gives error about queue size
+.link https://www.elastic.co/guide/en/elasticsearch/guide/current/_monitoring_individual_nodes.html#_threadpool_section Bulk rejection
+
+* Bulk size pool sizing
+
+_extract_
+The entire bulk request needs to be loaded into memory by the node that receives
+our request, so the bigger the request, the less memory available for other
+requests. There is an optimal size of bulk request. Above that size, performance
+no longer improves and may even drop off. The optimal size, however, is not a
+fixed number. It depends entirely on your hardware, your document size and
+complexity, and your indexing and search load.
+
+[...]
+
+A good bulk size to start playing with is around 5-15MB in size.
+
+Source:
+.link https://www.elastic.co/guide/en/elasticsearch/guide/current/bulk.html#_how_big_is_too_big Elasticsearch bulk
 
 * Cache(s)
 
@@ -58,8 +83,10 @@ Caches works *per*shard*.
 - Default is 10%. We are now at 30% and the performances are much better.
 - Filter cache is part of query cache and having too many eviction is sign
 that some thing is wrong.
-- -*BOOLEAN filter* are no cached by default. Before was filtered query. (??)
+- BOOLEAN filter are no cached by default. Before was filtered query. (??)
 - Compound filter are not cached in 2.x
+
+.link https://www.elastic.co/guide/en/elasticsearch/reference/2.3/shard-request-cache.html Shard request cache
 
 * Filter cache
 
@@ -70,7 +97,7 @@ Filter cache is at node level.
 Term filter cache setting is 10% (default)
 Look out for cache eviction.
 
-* Chache filter queries
+* Cache filter queries
 
 Elasticsearch doesn't cache the filter query the first time, but only if you
 use the save filter 5 times (at shard level).
@@ -95,18 +122,20 @@ They don't wait for anymore for the _5_calls_.
 
 * What about a warmer?
 
-- Doing a script to run a few queries.
+Doing a script to run a few queries?
+NO. If it's not running continuously caches will be removed. If you don't use it during the night, etc.
 
-NO. If it's not running continuosly caches will be removed.
-If you don't use it during the night, etc.
+Then RUN all possible combination during the night?
+If there is merging in segment the cache will be deleted too... Elastic thinks
+that with warmers there is no guarantee that the next user will have the same
+data. That's why they removed the possibility. There is nothing to warm because
+there is no more doc value just filesystem cache.
 
-- Then RUN all possible combination during the night?
+    Indices warmers [Warning] Deprecated in 2.3.0.
+    Thanks to disk-based norms and doc values, warmers don’t have use-cases anymore.
 
-If there is merging in segment the cache will be deleted too...
-
-Elastic thinks that with warmers there is no guarantee that the next user will have the same data.
-That's why they removed the possibility. There is nothing to warm because there is no more doc value
-just filesystem cache.
+Source:
+.link https://www.elastic.co/guide/en/elasticsearch/reference/2.3/indices-warmers.html Indices warmers
 
 * Doc Values
 
@@ -128,3 +157,5 @@ The number of masters alive to have a stable system.
 Shield allows you to define access rights for each field.
 Can shield access to subdocuments or single fields.
 Everything you cannot see _doesn't_count_ in the scoring and aggregations.
+
+* Thread pool

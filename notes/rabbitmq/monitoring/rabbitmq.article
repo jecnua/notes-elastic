@@ -41,7 +41,7 @@ In the puppetmaster node definition:
 
 ** Before v5.0.0
 
-As sudo
+As sudo:
 
     cd /opt
     git clone https://github.com/NYTimes/collectd-rabbitmq.git

@@ -1,0 +1,77 @@
+RabbitMQ + CollectD + Grafana
+
+* About
+
+Installing RabbitMQ collectd plugin via puppet on Ubuntu 12.04 LTS.
+
+* Hiera
+
+
+
+* With puppet
+
+** After v5.0.0
+
+In hiera:
+
+    collectd::config::typesdb:
+    - /usr/share/collectd/types.db
+    - /usr/local/share/collectd-rabbitmq/types.db.custom
+
+In the puppetmaster node definition:
+
+    class{ '::collectd':
+      [...]
+    }
+    if ! defined(Package['python-pip']) {
+      package { 'python-pip':
+        ensure => installed,
+      }
+    }
+    class { '::collectd::plugin::rabbitmq':
+      config => {
+        'Username' => 'xxx',
+        'Password' => 'xxx',
+        'Port'     => '15672',
+        'Host'     => 'localhost',
+        'Realm'    => '"RabbitMQ Management"',
+      },
+      require => Package['python-pip'],
+    }
+
+** Before v5.0.0
+
+As sudo
+
+    cd /opt
+    git clone https://github.com/NYTimes/collectd-rabbitmq.git
+    cd collectd-rabbitmq/
+    cat config/types.db.custom >> /usr/share/collectd/types.db
+    cat << EOF > /etc/collectd/conf.d/10-rabbitmq.conf
+    TypesDB "/usr/share/collectd/types.db"
+    TypesDB "/opt/collectd-rabbitmq/config/types.db.custom"
+
+    LoadPlugin python
+    <Plugin python>
+      ModulePath "/opt/collectd-rabbitmq/"
+      LogTraces true
+      Interactive false
+      Import rabbitmq
+      <Module rabbitmq>
+        Username "xxx"
+        Password "xxx"
+        Realm "RabbitMQ Management"
+        Host "localhost"
+        Port "15672"
+        <Ignore "queue">
+          Regex "amq-gen-.*"
+          Regex "tmp-.*"
+        </Ignore>
+      </Module>
+    </Plugin>
+    EOF
+    chmod 777 /etc/collectd/conf.d/10-rabbitmq.conf
+    chmod -R 777 /opt/collectd-rabbitmq/*
+    chmod -R 777 /opt/collectd-rabbitmq
+    service collectd restart
+    service rabbitmq-server restart

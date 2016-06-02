@@ -124,3 +124,51 @@ before any write request is accepted (protects again split brain problems).
 
 Use a small number of data nodes not on spot, to have safety of the data.
 Use spot instances to boost performances.
+
+* TO KNOW
+
+Currently ingest node only executes ingest preprocessing on the index thread pool. For both index requests and bulk requests. This should be changed, if pipelines are specified on bulk requests the bulk TP should be used for ingest preprocessing.
+
+* Road to ES 5.0
+
+.link https://www.elastic.co/guide/en/elasticsearch/reference/master/breaking-changes-5.0.html breaking-changes-5.0
+
+No node.client!
+https://github.com/elastic/elasticsearch/pull/16963
+
+Query cache settings deprecated! ?
+https://github.com/elastic/elasticsearch/pull/15592
+
+.link https://www.elastic.co/guide/en/elasticsearch/reference/master/release-notes-5.0.0-alpha1.html alpha1
+
+- API for listing index file sizes
+- Enable the indices request cache by default (when you do a req with size 0)
+https://github.com/elastic/elasticsearch/pull/16870
+
+
+
+- Added ingest statistics to node stats API
+
+The ingest stats include the following statistics:
+
+    ingest.ingest_total- The total number of document ingested during the lifetime of this node
+    ingest.ingest_time_in_millis - The total time spent on ingest preprocessing documents during the lifetime of this node
+    ingest.ingest_current - The total number of documents currently being ingested.
+    ingest.ingest_failed - The total number ingest preprocessing operations failed during the lifetime of this node
+    Also the ingest stats contain a break down of the above stats on a per pipeline basis. These stats are automatically updated if pipelines are added or removed. This information is useful to give insight how much nodes spent on ingest related activities.
+
+- Add ingest_took to bulk response
+- Add ingest info to node info API, which contains a list of available processors
+- Ingest: use bulk thread pool for bulk request processing (was index before)
+- Enable acked indexing
+- Add points to SegmentStats
+- new jvm option files (jvm.options)
+- Add GC overhead logging
+- STATS: Add I/O statistics on Linux (WAO)
+
+New: /_cluster/allocation/explain
+https://github.com/elastic/elasticsearch/pull/17305
+
+
+
+* Node ingest

@@ -4,9 +4,8 @@ RabbitMQ + CollectD + Grafana
 
 Installing RabbitMQ collectd plugin via puppet on Ubuntu 12.04 LTS.
 
-* Hiera
-
-
+    https://github.com/NYTimes/collectd-rabbitmq
+    https://github.com/voxpupuli/puppet-collectd#class-collectdpluginrabbitmq
 
 * With puppet
 

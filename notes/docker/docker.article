@@ -1,0 +1,87 @@
+Docker
+Notes
+
+* Docker Networking
+
+Docker SDN - Software Defined Network. DNS round-robin load balancing (v 1.11+)
+
+* Rocket
+
+Rocket is an implementation of the App Container Specification
+
+.link https://github.com/coreos/rkt# rkt (github)
+
+Rocket decided on CoreOS to use:
+
+- systemd and system-spawn.
+- btrfs
+
+and a pluggable infrastructure (you can have your own stage 1/2).
+
+.link https://twitter.com/solomonstre/status/552294573842898944 solomonstre/status/552294573842898944
+
+
+
+.link https://github.com/docker/libcontainer libcontainer
+.link https://github.com/opencontainers/runc runc
+
+** COREOs
+
+From 1.0
+
+- Signing and validating images (docker does this only partially??? check)
+- Support hardware-level protection via intel Clear Container technology
+
+    Any action is a separate action and doesn't have to run as root
+
+Docker run in a root environment. There is a request to be run in a non-root.
+(status???)
+
+They started also the Open Container Initiative, that they tweaked to be compatible with the docker v1 format. They asked to do the same my opening a pull request to docker to support their standard.
+
+** Rkt
+
+Support from:
+
+- google
+- red hat
+- EMC VMware
+
+** App Container Specification
+
+Some links:
+
+.link https://github.com/appc/spec/blob/master/SPEC.md#dependency-matching App Container Specification
+.link https://github.com/appc/spec/blob/master/spec/pods.md Pods
+
+- Process sharing linux namespaces
+- App should log to STDOUT and STDERR
+
+When you create a new docker (LXC) container, the container is allocated a fresh set of all new unix *namespaces* provided by *libcontainer*.
+
+.link https://github.com/docker/libcontainer libcontainer (github)
+
+To save overhead in the linux kernel by creating new namespaces avery time (like docker does) they want to share it. There is a problem with this approach:
+
+    If a container dies, it brings down all the other containers sharing the same ones
+
+K8s pods uses IPs.
+
+** About systemd
+
+Docker _wants_ to do process supervision via docker deamon but is still just an
+app and is not overly specialised.
+
+* Sources
+
+** Books
+
+-
+
+** Articles
+
+.link http://containerops.org/2014/12/19/docker-vs-rocket-gimme-a-break/ docker-vs-rocket-gimme-a-break
+.link http://www.infoworld.com/article/3029682/application-virtualization/coreos-launches-rocket-10-directly-at-docker.html CoreOS launches Rocket 1.0 directly at Docker
+- link http://www.infoworld.com/article/2865369/open-source-software/docker-or-rocket-for-containers-why-not-both.html Docker or Rocket for containers? Why not both?
+
+** Videos

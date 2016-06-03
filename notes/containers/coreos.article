@@ -1,0 +1,55 @@
+CoreOS
+Notes
+
+* Intro
+
+They added signing and validating images first (docker only partway)
+
+    "Any action is a separate operation. Doesn't have to run as root" -- Polvi
+
+Docker run in non-root account? When?
+
+CoreOS 1.0. Docker???
+
+Open Container Iniziative (CoreOS)
+They tweaked to work with Docker v1 format. But when they asked a pull request to allow docker to support their app container images Docker refused.
+
+Support hardware level protection via intel clear containers
+
+* Rkt
+
+Client application for it's container system
+
+Rocket is actually a libcontainer competitor.
+-> libcontainer: what docker used to replace the LXC kernel technology to address the usability issue
+
+At the very core of containers are the same linux primitives that are used to create application sandboxes.
+
+- Namespaces
+- Seccomp
+- Apparmor (deprecated)
+- SELinux (deprecated)
+
+But they run as root!
+
+- Docker
+- runc
+- rkt
+
+Why? To use correctly and easily *cgroups* (namespaces are not enough).
+Running cgroups from from userspace is complex.
+
+- cgroups (what you can use): memory, cpu, protection against fork-bomb (pids), *blkio*
+- namespaces (what you can see): network, mount, processes
+
+In kernel 4.6+ there is a new cgroup namespace
+-> mask cgroups path inside the container
+
+======
+Layer 3-4
+TCP-IP
+hardware lb
+BGP
+DNS
+IPTABLES
+======

@@ -5,6 +5,11 @@ Notes
 
 Docker SDN - Software Defined Network. DNS round-robin load balancing (v 1.11+)
 
+.image images/workflow.png _ 600
+.caption Workflow by docker docs
+
+
+
 * runC
 
 .image images/hamster.png _ 300
@@ -16,6 +21,8 @@ Docker SDN - Software Defined Network. DNS round-robin load balancing (v 1.11+)
 .image images/sub.png _ 300
 .link https://www.containerd.tools/ containerd.tools
 .link https://github.com/docker/containerd containerd on github
+
+.image images/containerd_workflow.png _ 600
 
 * On mac
 

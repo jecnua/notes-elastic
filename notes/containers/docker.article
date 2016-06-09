@@ -5,75 +5,19 @@ Notes
 
 Docker SDN - Software Defined Network. DNS round-robin load balancing (v 1.11+)
 
-* Rocket
+* runC
 
-Rocket is an implementation of the App Container Specification
+.image images/hamster.png _ 300
+.link https://runc.io/ runc.io
+.link https://github.com/opencontainers/runc runc on github
 
-.link https://github.com/coreos/rkt# rkt (github)
+* containerd
 
-Rocket decided on CoreOS to use:
+.image images/sub.png _ 300
+.link https://www.containerd.tools/ containerd.tools
+.link https://github.com/docker/containerd containerd on github
 
-- systemd and system-spawn.
-- btrfs
+* On mac
 
-and a pluggable infrastructure (you can have your own stage 1/2).
-
-.link https://twitter.com/solomonstre/status/552294573842898944 solomonstre/status/552294573842898944
-
-
-
-.link https://github.com/docker/libcontainer libcontainer
-.link https://github.com/opencontainers/runc runc
-
-** COREOs
-
-From 1.0
-
-- Signing and validating images (docker does this only partially??? check)
-- Support hardware-level protection via intel Clear Container technology
-
-    Any action is a separate action and doesn't have to run as root
-
-Docker run in a root environment. There is a request to be run in a non-root.
-(status???)
-
-They started also the Open Container Initiative, that they tweaked to be compatible with the docker v1 format. They asked to do the same my opening a pull request to docker to support their standard.
-
-** Rkt
-
-Support from:
-
-- google
-- red hat
-- EMC VMware
-
-** App Container Specification
-
-Some links:
-
-.link https://github.com/appc/spec/blob/master/SPEC.md#dependency-matching App Container Specification
-.link https://github.com/appc/spec/blob/master/spec/pods.md Pods
-
-- Process sharing linux namespaces
-- App should log to STDOUT and STDERR
-
-When you create a new docker (LXC) container, the container is allocated a fresh set of all new unix *namespaces* provided by *libcontainer*.
-
-.link https://github.com/docker/libcontainer libcontainer (github)
-
-To save overhead in the linux kernel by creating new namespaces avery time (like docker does) they want to share it. There is a problem with this approach:
-
-    If a container dies, it brings down all the other containers sharing the same ones
-
-K8s pods uses IPs.
-
-** About systemd
-
-Docker _wants_ to do process supervision via docker deamon but is still just an
-app and is not overly specialised.
-
-* Sources
-
-** Books
-
-** Videos
+.image images/xhyve_logo.png _ 300
+.link https://github.com/mist64/xhyve xhyve hypervisor on github

@@ -1,0 +1,74 @@
+Docker
+Notes
+
+* Docker
+
+Docker *is*not* a virtualization technology, it's an application delivery technology.
+
+* Data
+
+You data do not lie in the container, it lives in a named volume that is shared between containers.
+Theoretically containers should be stateless and immutable.
+You backup the data volume.
+
+* Some info
+
+Docker SDN - Software Defined Network. DNS round-robin load balancing (v 1.11+)
+
+.image images/workflow.png _ 600
+.caption Workflow by docker docs
+
+* runC
+
+.image images/hamster.png _ 300
+.link https://runc.io/ runc.io
+.link https://github.com/opencontainers/runc runc on github
+
+Defined as a *lightweight*portable*container*runtime* is a sandboxing environment capable of abstracting the specifics of the underlying hosts.
+Has been released the _22_June_2015_ as a standalone component.
+Build on *libcontainer*, it's using technology created in the last 5 years (really??? check???) like:
+
+- control groups
+- linux namespaces and user namespaces
+- seccomp
+- capabilities
+- apparmor
+- selinux
+- capability_drop
+- pivot_root
+- uig/gid drop
+
+runC doesn't create a deamon, so it integrates well with systemd.
+It has no dependency on Docker!
+Donated to OCP.
+
+* containerd (alpha)
+
+.image images/sub.png _ 300
+.link https://www.containerd.tools/ containerd.tools
+.link https://github.com/docker/containerd containerd on github
+
+Docker runtime to control runC.
+Is a project to move the container supervision out of the docker engine.
+Docker 1.11 is the first release using this deamon.
+
+.image images/containerd_workflow.png _ 600
+
+Engine restart/update without restarting the containers.
+Id a deamon providing a grpc api.
+Manage all the life of an OCI bundle.
+
+* Docker timeline
+
+** Docker 1.11
+
+First one to run on containerd and runC, and based on OCI spec.
+- Swarm 1.2 rescheduling containers when a node dies
+- Fixed zombie reaping
+
+* On mac
+
+.image images/xhyve_logo.png _ 300
+.link https://github.com/mist64/xhyve xhyve hypervisor on github
+
+xhyve wraps native osx hypervisor framework.

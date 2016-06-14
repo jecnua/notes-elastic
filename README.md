@@ -9,5 +9,3 @@ or use this tools
     http://go-talks.appspot.com
 
 by passing the path (e.s. notes/docker/docker.article)
-
-    http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/docker/docker.article

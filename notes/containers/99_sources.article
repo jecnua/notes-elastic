@@ -4,6 +4,9 @@ Articles
 .link http://www.infoworld.com/article/3029682/application-virtualization/coreos-launches-rocket-10-directly-at-docker.html CoreOS launches Rocket 1.0 directly at Docker
 .link http://www.infoworld.com/article/2865369/open-source-software/docker-or-rocket-for-containers-why-not-both.html Docker or Rocket for containers? Why not both?
 
+** containers
+.link .link https://queue.acm.org/detail.cfm?id=2898444
+
 ** runC
 
 .link https://blog.docker.com/2015/06/runc/ runc release (June 2015)
@@ -17,9 +20,13 @@ Articles
 
 .link https://blog.docker.com/2016/04/docker-engine-1-11-runc/ docker 1.11 (April 2016)
 
-
 https://blog.docker.com/2015/06/runc/?mkt_tok=eyJpIjoiT1RrNE9UbGhaRFUxTVRBMiIsInQiOiJ4Q0FISnlEUjI2N2VRNUNLeFhUdDJvTDJ5Q2Fnd0VkdEhlRzh1ZTB4cnIzN3A3YmR2d0tvOHhCSVF4MWdaSCszclZOSlJ2Mk1wNHRkYlZaeEV5NnRGVkZZT09uU0ZzU3ZMb0Rxd2drd1F2cz0ifQ%3D%3D
 
 Very good article to understand some basics behind containers:
 .link https://blog.jessfraz.com/post/getting-towards-real-sandbox-containers/ getting-towards-real-sandbox-containers
 .link https://docs.docker.com/engine/reference/run/ Block IO bandwidth (Blkio) constraint
+
+** videos
+
+.link https://www.youtube.com/watch?v=tA8XNVPZM2w Container Orchestration using CoreOS and Kubernetes, Part 1/3 workshop
+.link https://www.youtube.com/watch?v=UZbwDH-_a_M Container Orchestration using CoreOS and Kubernetes, Part 3/3 workshop 

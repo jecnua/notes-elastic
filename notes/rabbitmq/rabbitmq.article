@@ -1,3 +1,44 @@
 RabbitMQ
 
-* Intro
+* Ramblings
+
+You need a cluster of 2 nodes in two azs.
+
+The *hostname* is the *nodename*. By default rabbitmq will use rabbit@hostname for the name of the node.
+
+Firewall ports:
+- 5672 (rabbit)
+- 4369 (epmd - erlang port mapper deamon) Erlang uses this to identify the node in the cluster
+- 65535 (to specify in the config)
+- 15672 (rabbitmq management)
+
+Once the nodes are identified by default. they communicate through a *random*port*. To specify a single/range port, you have to change *rabbitmq*config*.
+
+    inet_dist_listen_min
+    inet_dist_listen_max
+
+* Clustering
+
+** The erlang way
+
+Erlang in clustered mode *is*not* tolerant to network partitions (including micro-partitions) and WILL cause some problems.
+The normal clustering (rabbitmq cluster) doesn't work!
+
+** Federation
+
+So what about *federation*?
+Every new node would need to change the config to add the reference to the new ones and remove the old ones.
+
+You need to choose a topology:
+
+- Exchanges
+- Queues
+
+NOTE: federation is MUCH slower than simple clustering!!!
+
+
+
+** Shovel
+
+What about *shovel*?
+Is basically a distribuited broker.

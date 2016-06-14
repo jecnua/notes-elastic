@@ -1,0 +1,58 @@
+Kubernetes
+
+
+* Background
+
+    .link https://queue.acm.org/detail.cfm?id=2898444 History behind k8s (from google people)
+
+* Architecture
+
+.link https://github.com/kubernetes/kubernetes/blob/master/docs/design/architecture.md Architecture
+
+** DNS
+
+  http://kubernetes.io/docs/admin/dns/
+
+* Node ip
+
+    $ kubectl describe service my-nginx
+    Name:           my-nginx
+    Namespace:      default
+    Labels:         run=my-nginx
+    Selector:       run=my-nginx
+    Type:           LoadBalancer
+    IP:         10.123.253.27
+    LoadBalancer Ingress:   104.197.129.240
+    Port:           <unnamed>   80/TCP
+    NodePort:       <unnamed>   30723/TCP
+    Endpoints:      10.120.0.6:80
+    Session Affinity:   None
+    No events.
+
+Port is the port the POD is listening to.
+NodePort is the actual port ON the server on which kubelet is listening. It will use it to redirect the traffic to the pods. This is the port you will see in the listeners of the ELB.
+
+.link https://stackoverflow.com/questions/33407638/what-is-the-cluster-ip-in-kubernetes How to get ips in k8s
+
+* Services
+
+By default, services and pods are only accessible inside the internal Kubernetes network.
+
+* Scaling
+
+    $ kubectl scale deployments/my-hello-world --replicas=6
+    deployment "my-hello-world" scaled
+    $ kubectl scale deployments/my-hello-world --replicas=2
+    deployment "my-hello-world" scaled
+
+    kubectl autoscale rc foo --min=2 --max=5 --cpu-percent=80
+
+Or that one :)
+
+.link http://kubernetes.io/docs/user-guide/horizontal-pod-autoscaling/ pod autoscaling
+
+* Releases
+
+** 1.2
+
+** 1.3

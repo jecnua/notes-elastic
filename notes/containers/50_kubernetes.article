@@ -9,6 +9,11 @@ It is NOT a PaaS. If you want a PaaS just choose:
 - Deis
 - Cloud Foundry
 
+So many good companies are working to make it better:
+
+- Redhat (open-shift build on it)
+- CoreOS (they build on it and you know... etcd, flannel, coreos and so on)
+
 * Architecture
 
 .link https://github.com/kubernetes/kubernetes/blob/master/docs/design/architecture.md Architecture
@@ -131,7 +136,7 @@ This infrastructure pod consume no resource. Any other container is the pod says
 
 *** DNS
 
-  http://kubernetes.io/docs/admin/dns/
+.link http://kubernetes.io/docs/admin/dns/ Dns
 
 *** Node ip
 
@@ -177,7 +182,22 @@ Or that one :)
 
 ** 1.3
 
-Among the functionality addes in this version:
+Among the functionality added in this version:
 
 - PetSets: When you want applications to survive restarts maintaining filesystem and identity intact
-- Ubernetes: Yuhuu!
+- Ubernetes: Yuhuu! Multiple k8s cluster with cross cluster management. better to separate work.
+- Jobs: Run only once. Sort of natch processing work. Once it's done the job it doesn't need the kublet to restart it.
+- etcd 3 with scalability improvements
+- k8s performance
+
+replication controllers have been replaced by replica sets.
+
+* Future
+
+** Protobuf
+
+.link https://github.com/google/protobuf protobuf
+
+Work on protobuf (created by google) serialization alternative to json over the network.
+Serializing data to binary and send it over the newtwork.
+Platofrm/languge neutral.

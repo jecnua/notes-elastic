@@ -1,5 +1,6 @@
 Sources
 
+.link https://queue.acm.org/detail.cfm?id=2898444 History behind k8s (from google people)
 .link http://containerops.org/2014/12/19/docker-vs-rocket-gimme-a-break/ docker-vs-rocket-gimme-a-break
 .link http://www.infoworld.com/article/3029682/application-virtualization/coreos-launches-rocket-10-directly-at-docker.html CoreOS launches Rocket 1.0 directly at Docker
 .link http://www.infoworld.com/article/2865369/open-source-software/docker-or-rocket-for-containers-why-not-both.html Docker or Rocket for containers? Why not both?

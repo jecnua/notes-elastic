@@ -74,6 +74,15 @@ They are boundary for:
 
 * Networking
 
+There are many solutions:
+
+- Flannel
+- Weawe
+- OpenVSwitch
+- Cloud Provider
+
+The k8s aws script use flannl.
+
 .link https://github.com/coreos/flannel flannel
 
 Flannel manages the docker bridge and talk at the start with etcd for subnet info.
@@ -180,7 +189,11 @@ Or that one :)
 
 ** 1.2
 
+- Deployments released as Beta feature
+
 ** 1.3
+
+- Depoyments released
 
 Among the functionality added in this version:
 

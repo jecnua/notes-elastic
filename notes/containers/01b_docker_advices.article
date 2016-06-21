@@ -1,5 +1,7 @@
 Docker advices
 
+* TBD
+
 Python/rust applications have a lot of dependencies and is now becoming a patter to see people creating single static binary to add to containers. No dynamic linking!
 So basically just put a binary in your image and do your thing.
 EXPLORE THIS BETTER

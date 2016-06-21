@@ -1,0 +1,28 @@
+Docker orchestration
+
+* Intro
+
+Since
+
+
+$ docker swarm init
+Swarm initialized: current node (0hyujjkri4umzyy8l9uvuopli) is now a manager.
+
+$ docker network create -d overlay nginx_net
+33yepev58lmeo0fbezx29tcgy
+
+$ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+78890dd00e67        bridge              bridge              local
+af94ae817901        docker_gwbridge     bridge              local
+3012527fa754        host                host                local
+8n9f5wsbcuvz        ingress             overlay             swarm
+33yepev58lme        nginx_net           overlay             swarm
+d51a207e72a2        none                null                local
+
+$ docker service create --name nginx --replicas 2 --network nginx_net -p 80:80/tcp nginx
+0dqg5al1ju8nwqu2dtpyj778z
+
+$ docker service ls
+ID            NAME   REPLICAS  IMAGE  COMMAND
+0dqg5al1ju8n  nginx  2/2       nginx

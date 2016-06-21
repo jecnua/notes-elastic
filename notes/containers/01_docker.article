@@ -3,6 +3,7 @@ Docker: Notes
 * Docker
 
 Docker *is*not* a virtualization technology, it's an application delivery technology.
+It was known as dotCloud.
 
 * Data
 

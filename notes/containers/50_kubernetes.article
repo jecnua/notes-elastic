@@ -14,6 +14,10 @@ So many good companies are working to make it better:
 - Redhat (open-shift build on it)
 - CoreOS (they build on it and you know... etcd, flannel, coreos and so on)
 
+Kubernetes is 2 years old.
+
+Multizone cluster in k8s is called "ubernetes lite".
+
 * Architecture
 
 .link https://github.com/kubernetes/kubernetes/blob/master/docs/design/architecture.md Architecture
@@ -41,6 +45,8 @@ To make good decisions, the scheduler needs to know the limits of your container
 ** Deployments
 
 Checks labels not pods.
+
+Deployments are used instead of rolling updates. You can roll back now and is all server side.
 
 ** Service
 

@@ -4,20 +4,41 @@ CoreOS: Notes
 
 They added signing and validating images first (docker only partway)
 
-    "Any action is a separate operation. Doesn't have to run as root" -- Polvi
+    "Any action is a separate operation. Doesn't have to run as root" -- Alex Polvi
 
 Docker run in non-root account? When?
 
 CoreOS 1.0. Docker???
 
+* OCI
+
 Open Container Iniziative (CoreOS)
 They tweaked to work with Docker v1 format. But when they asked a pull request to allow docker to support their app container images Docker refused.
+Support hardware level protection via intel clear containers.
 
-Support hardware level protection via intel clear containers
+1y ago the question was how to standardise. Now is at version 0.1.0 (june 2016) and still working on it.
+It's the best of docker format and appc images. Is also a format for container storage.
 
-* Rkt
+* Products
 
-Client application for it's container system
+- coreOS
+- etcd
+- clair
+- flannel
+- rkt
+
+- quay
+- tectonic
+
+* Rkt (Rocket)
+
+Client application for it's container system.
+
+Support from:
+
+- google
+- red hat
+- EMC VMware
 
 Rocket is actually a libcontainer competitor.
 -> libcontainer: what docker used to replace the LXC kernel technology to address the usability issue
@@ -53,8 +74,6 @@ DNS
 IPTABLES
 ======
 
-* Rocket
-
 Rocket is an implementation of the App Container Specification
 
 .link https://github.com/coreos/rkt# rkt (github)
@@ -67,13 +86,10 @@ Rocket decided on CoreOS to use:
 and a pluggable infrastructure (you can have your own stage 1/2).
 
 .link https://twitter.com/solomonstre/status/552294573842898944 solomonstre/status/552294573842898944
-
-
-
 .link https://github.com/docker/libcontainer libcontainer
 .link https://github.com/opencontainers/runc runc
 
-** COREOs
+* CoreOS history
 
 From 1.0
 
@@ -87,15 +103,7 @@ Docker run in a root environment. There is a request to be run in a non-root.
 
 They started also the Open Container Initiative, that they tweaked to be compatible with the docker v1 format. They asked to do the same my opening a pull request to docker to support their standard.
 
-** Rkt
-
-Support from:
-
-- google
-- red hat
-- EMC VMware
-
-** App Container Specification
+* App Container Specification
 
 Some links:
 
@@ -115,7 +123,17 @@ To save overhead in the linux kernel by creating new namespaces avery time (like
 
 K8s pods uses IPs.
 
-** About systemd
+* Etcd
+
+Etcd 3.0 is in beta in June 2016.
+It has:
+
+- redesigned internals (efficient and scalable)
+- new api: gRPC based on stubby. is based on protobuf and http/2. decreased use of cpu and memory. http/2 allow lot of concurrent requests on the same tsl connection.
+- new storage engine: continuos performance and continuos snapshot
+- able to manage 5k machines
+
+* About systemd
 
 Docker _wants_ to do process supervision via docker deamon but is still just an
 app and is not overly specialised.

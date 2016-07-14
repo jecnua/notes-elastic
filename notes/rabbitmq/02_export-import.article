@@ -1,0 +1,35 @@
+RabbitMQ: Export and import
+
+* Intro
+
+There is no defined tool to do such operation so I had to search online.
+
+* How?
+
+* What didn't work: Unsuccessful tries
+
+** amqp-tool
+
+First I found this tool here:
+
+.link amqp-tool https://www.npmjs.com/package/amqp-tool
+
+Source at: https://github.com/FGRibreau/node-amqp-tool
+
+I don't have node installed on my mac, so I create a docker container to test it.
+Here is the dockerfile if you need:
+
+    FROM ubuntu:latest
+    RUN apt-get update && \
+      apt-get install -y nodejs npm && \
+      ln -s /usr/bin/nodejs /usr/bin/node && \
+      npm install amqp-tool -g
+    RUN /bin/bash
+
+Build it:
+
+    docker build -t <you>/amqp-tool .
+    # [...] And run it
+    docker run -it <you>/amqp-tool
+
+But it just doesn’t work. It hangs or fail.

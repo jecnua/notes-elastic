@@ -144,9 +144,6 @@ https://github.com/elastic/elasticsearch/pull/15592
 - API for listing index file sizes
 - Enable the indices request cache by default (when you do a req with size 0)
 https://github.com/elastic/elasticsearch/pull/16870
-
-
-
 - Added ingest statistics to node stats API
 
 The ingest stats include the following statistics:
@@ -169,6 +166,15 @@ The ingest stats include the following statistics:
 New: /_cluster/allocation/explain
 https://github.com/elastic/elasticsearch/pull/17305
 
-
-
 * Node ingest
+
+* Protections against destructive commands
+
+In puppet:
+
+    'action.disable_close_all_indices'                => true,
+    'action.disable_delete_all_indices'               => true,
+    'action.disable_shutdown'                         => true,
+    'action.destructive_requires_name'                => true,
+
+.link https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_parameters.html action.destructive_requires_name

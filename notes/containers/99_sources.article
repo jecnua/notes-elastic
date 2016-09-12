@@ -11,6 +11,13 @@ Sources
 
 .link https://blog.docker.com/2016/06/azure-aws-beta/ new swarm with 1.12 (21 June 2016)
 
+** docker security
+
+.link http://www.slideshare.net/PhilEstes/docker-london-container-security Docker container security (Jul 20, 2016)
+.link https://www.nccgroup.trust/us/our-research/understanding-and-hardening-linux-containers/ understanding-and-hardening-linux-containers (29 June 2016)
+.link https://benchmarks.cisecurity.org/tools2/docker/CIS_Docker_1.11.0_Benchmark_v1.0.0.pdf CIS_Docker_1.11.0_Benchmark_v1.0.0.pdf (04-12-2016)
+.link https://docs.docker.com/engine/security/ Docker security
+
 ** coreos
 
 .link https://www.youtube.com/playlist?list=PLlh6TqkU8kg_3FpXLlHMnoVqKZysIzXlK All CoreOS Fest 2016 WORTH IT - ALL

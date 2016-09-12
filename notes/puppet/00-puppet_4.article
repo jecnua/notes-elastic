@@ -1,0 +1,17 @@
+Puppet 4
+
+* Intro
+
+- hiera
+- Mcollective
+- facts.d
+
+** Puppet 4 changes
+
+New feature:
+
+- Language types
+- Native data meges
+- Resource defaults
+- Iterations (replace create_resource())
+- Facts hashes

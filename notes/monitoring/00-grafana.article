@@ -1,0 +1,24 @@
+Grafana
+
+* Intro
+
+TBD
+
+** Docker
+
+.link http://docs.grafana.org/installation/configuration/ Grafana configuration
+
+    docker run -d \
+    --name=grafana \
+    --restart=always \
+    -e "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel" \
+    -e "GF_AWS_PROFILES=default" \
+    -e "GF_AWS_default_ACCESS_KEY_ID=<>" \
+    -e "GF_AWS_default_SECRET_ACCESS_KEY=<>" \
+    -e "GF_AWS_default_REGION=us-east-1" \
+    -e "GF_AUTH_ANONYMOUS_ENABLES=true" \
+    -e "GF_SECURITY_ADMIN_PASSWORD=<>" \
+    -e "GF_ANALYTICS_REPORTING_ENABLED=false" \
+    -v /opt/data/grafana:/var/lib/grafana \
+    -p 3000:3000 \
+    grafana/grafana

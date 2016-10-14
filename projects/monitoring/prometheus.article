@@ -1,0 +1,257 @@
+TTT
+
+* notes
+
+
+weaveworks
+cloud.waeve.works
+->
+
+waeveworks/prism
+
+https://github.com/weaveworks/prism
+
+** sources
+
+- cadvisor
+- node exporter
+etc...
+
+**
+
+
+expose
+/metrics
+in the right way
+
+mentality:
+dev own the metrics
+
+** Many of them
+
+Dev can spin their own phrometeus
+any env
+
+** How
+
+start with grafana
+show how HA works
+Share the success stories
+Help devs with expoerts a lot more
+
+** Many prometheus
+
+Phrometeus grb staff from another prometeus
+
+** Prism
+
+WaeveWorks Prism
+
+** Download the Grafana dashboards
+
+linux conf
+prometeus next generation
+
+**
+
+- only one node
+- long term storage of metrics (kafka + elasticsearch)
+- persistange storage in k8s (statelass)
+VM vsan plugin
+
+some phrometeus from inside the cluster and one from outside
+in a VM
+
+in AWS 9090 in /metrics
+
+** Decision behind the design
+
+- before docker and k8s
+soundcould had a sort of heroku
+
+they had nagios and statsd
+
+second project in CNCF
+
+time based monitoring ecosystem
+metrics out of your system *to*
+
+- instrumentation
+mentrics and storga
+-querying
+-a lerting
+-dashboard
+
+FOCUS: Operation system monitoring
+legal
+
+lossy
+
+**
+
+Phrometeus use http
+
+Architecture
+
+run 1 or more
+
+withebox instrumentation: they expose it
+blackbox instrumentation: use exporter (or batch jobs)
+
+
+ONLY the latest metric of a type NO HYSTORY
+idempotent
+many phrometeus scraping the smae node have the same data
+
+** four many selling point
+
+key=value pair on any metrics (came form, pertaing to)
+peomql: powerful query language
+efficxient on a single node
+operation semplicity (single statix library) [small config file]
+
+only numberic time series
+
+
+** What does not do
+
+- no collection of individual events (ip addrss, exact path and so on)
+- no request tracing
+- no machic anomaly detection
+- no durable long-term storage
+- automatic horizontal scaling
+- user/auth management
+
+** Decision
+
+*** thei opinion
+
+label data model NOT hierarchical data model
+- more flexible (cross cutting)
+- more efficient
+- explicit dimension
+
+*** more
+
+make an example
+api-server.*.*.post.*
+
+** Query language
+
+not a sql style query language
+very good to do arithmetrics between rating
+-> will join them up in the same metrics (?)
+
+only does read
+
+*** Pull vs push
+
+- automatic upness monitoring
+- horizontal monitoring (tell to push to different things) WRONG
+- more flexyble (production monitoring on your laptop ? ) NO, NOT SG
+- simple HA - two phrometeus server pulling in the same one (many of the same configured service)
+- less configuration (tell my mornitoring service - do that in any case) NO. zk
+- scales
+
+difference in perf between text and protobuf
+both format are both http
+not much different
+encoding/payload
+
+phrometeus push metrics to _something_else_
+replay your historical metadata (???)
+flag for turning local storage
+just turn local storage and only push remotely
+
+digital ocean
+VULCAN
+cassandra/elasticsearch
+
+
+bosun didn't take it
+
+** local storage
+
+local storage is epehemerial
+they don't reccoment of keeping it for years
+
+problem: not enough disk space
+
+you can't dump but you can't redeploy
+
+one workaroud:
+many prometheus server that federates on a single ...
+one phrometeus that pulls every x minues
+
+** fifth selling point
+
+getting the metadata from autodiscovery
+
+** alert
+
+a query that return timeseries
+- no timeseries: all ok
+- some timeseries: an alert for each one of them
+
+nobody wants to set up an openbsd XD
+
+alert manage is a different part?
+is a a different service but part
+of the binary
+
+pull doesn scale or it does it?
+
+**
+
+run on every network segment
+fewer step as possible
+- open port in firewll/router
+- open VPN tunnel
+
+** Uber exportors or per process exporters
+
+main uber exporter
+
+not only one (for them)
+- operation bottleneck
+- spof, no isolation
+- can't scrape selectively (not because is only us)
+- harder to associate metadaat
+
+phtometeus by discovering your node
+with auto-discovery
+so can put metadata from this process
+
+
+they advice: *one*exporter*per*process*
+
+** why not json
+
+text or protobus
+json is bad for both
+
+json is not really streamable
+with text you can start processing line by line
+json you need it all togheter
+
+** relabeling
+
+most useful part of phrometeus
+but maybe not very useful
+very flexyble
+
+** client libraries
+
+client libs keep state but not much (no history, only current state)
+
+counters (sum? aggregation?)
+gauge last count
+
+rates not computes!!! data as raw as possible and you do in on phrometeus side
+
+metrics for you
+manage metrics for you
+pre-aggregation is more efficient
+
+questions:
+-

@@ -1,0 +1,14 @@
+Zookeeper
+
+* Intro
+
+https://zookeeper.apache.org/doc/trunk/zookeeperObservers.html
+
+
+
+znode: data register in zookeeper
+
+watch: something you can set on a znode so when it change you can be
+notified
+
+each replica of a shard is an instance of lucene

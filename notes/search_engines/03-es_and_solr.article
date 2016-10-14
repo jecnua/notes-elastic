@@ -1,5 +1,352 @@
-Solr and Elasticsearch: Op comparison
+Solr and Elasticsearch
+An operation overview
+13 Oct 2016
 
-* Intro
+* Quick Intro
 
-TBD
+** Disclaimers
+
+I worked with the following version in a production environment:
+
+- Solr 3.x/4.x
+- ElasticSearch 1.x/2.x
+
+I also briefly looked at Solr 6 for the scope of this test.
+
+** Format
+
+PRO and CON will be listed by importance: High, Medium and Low.
+For some of them there may be a simple explanation.
+
+* Solr
+
+** Overview
+
+The installation process of Solr 6 is much better than version 4 or 3.
+The new installation script they provide is able to install Solr on a system with
+relative ease, even if further configuration is needed for real/prod use-cases.
+
+** PRO
+
+- *HIGH*: Highly configurable
+- _MEDIUM_: Basic authentication available for free
+- LOW: Shard splitting
+
+*** Highly configurable
+
+For example the stat cache algorithm (p. 592 of the docs). This is the only
+place in which Solr 6 topple elasticsearch in my experience.
+
+*** Shard splitting
+
+The shard splitting functionality is not really usable unless there is a big
+investment behind it. Also for most use cases, it isn't really needed. Apple used
+it in their [[https://www.youtube.com/watch?v=_Erkln5WWLw][SolrLord]] but
+because they implemented a multi-tenants Solr infrastructure that needed such
+functionality.
+
+** CON
+
+- *HIGH*: Unable to scale automatically
+- *HIGH*: Dependency on ZooKeeper (unable to auto-discover and auto-cluster)
+- *HIGH*: [[https://cwiki.apache.org/confluence/display/solr/Collections+API][API]] immature
+- *HIGH*: Backup only on local drives
+- *HIGH*: Lack of AWS zone awareness for shard allocation
+- *HIGH*: Ordering is needed when provisioning machines
+- *HIGH*: Max shard per node to be set at index time
+- *HIGH*: Deadlocks
+- _MEDIUM_: Requests directly on random node
+
+*** Unable to scale automatically
+
+Automatic shard reallocation is absent as a functionality. Adding more nodes
+won't allow the shards to spread more evenly unless you reindex.
+
+*** Dependency from ZooKeeper
+
+You have more than one point of failure, update, upgrade, maintain.
+
+*** API immature
+
+API in Solr is an afterthought. When I worked with Solr 4 the API call were less
+than Solr 6 but you can see how it doesn't fit well in place.
+
+- You can't do everything via api (access to machine is still needed)
+- API call to understand the status and debug problem almost non-existent
+
+A lot more is missing when comparing it with ElasticSearch.
+
+*** Backups
+
+This is a big shortcoming on Solr side. It's true that in Solr 6 they _at_least_
+added the ability to order a _snapshot_ cluster-wide (in v4 you had to order it
+at node level), but is still only able to save it to disk.
+
+This is what we used to do:
+
+    To Backup:
+
+    - Run a cron job nightly to copy /var/lib/Solr/cores to a diff location
+    (gzip it for size).
+
+    To recover:
+
+    - Copy the collection from each backup that is having problems.
+    - Restart each node to get the cores in sync
+    - Run the latest update to catch any files that are not in the current
+    collection.
+
+Can you see the problems?
+
+- how does it scale? if from 4 nodes you go to 5?
+- how do you test it?
+- will it work on different cluster (e.s. cluster upgrade)
+- Is it incremental or require a full snapshot every time?
+
+You also have to guarantee the backup/recovery mechanism support.
+
+*** Lack of AWS zone awareness for shard allocation
+
+Only way to guarantee HA in case of AZ problem is to manually touch the routing.
+Dangerous and not worth it.
+
+*** Ordering is needed when provisioning machines
+
+In 2016 this is almost an insult. When working with Solr cloud you have to push
+first on zookeeper (using the default configs in this example):
+
+  export SOLR_JAVA_HOME=/usr; \
+    /<path_to_Solr>/solr/bin/solr zk \
+    -upconfig \
+    -z <zk_uri>:2181 \
+    -n mynewconfig \
+    -d /<path_to_Solr>/solr/server/solr/configsets/basic_configs/
+
+*Then* create a collection:
+
+    http://<Solr_uri>:8983/solr/admin/collections?action=CREATE&name=testkitchen&replicationFactor=2&numShards=2
+    &collection.configName=mynewconfig&maxShardsPerNode=4&wt=json&indent=2&wt=json
+
+It comes without saying that even _testing_ Solr cloud is difficult since in
+highly dynamic context ordering is painful to ensure and [[https://en.wikipedia.org/wiki/Code_smell][smell]].
+
+Recap: You need to upload data in ZK _before_ you start Solr.
+
+*** Max shard per node to be set at index time
+
+From the documentation:
+
+    When creating collections, the shards and/or replicas are spread across all available (i.e., live) nodes,
+    and two replicas of the same shard will never be on the same node. If a node is not live when the CREATE
+    operation is called, it will not get any parts of the new collection, which could lead to too many replicas
+    being created on a single live node. Defining maxShardsPerNode s ets a limit on the number of replicas CREATE
+    will spread to each node. If the entire collection can not be fit into the live nodes, no collection will be
+    created at all.
+
+(p. 606)
+
+*** Deadlocks
+
+From the documentation:
+
+    Each shard serves top-level query requests and then makes sub-requests to all of the other shards. Care should
+    be taken to ensure that the max number of threads serving HTTP requests is greater than the possible number of
+    requests from both top-level clients and other shards. If this is not the case, the configuration may result
+    in a distributed deadlock. For example, a deadlock might occur in the case of two shards, each with just a
+    single thread to service HTTP requests. Both threads could receive a top-level request concurrently, and make
+    sub-requests to each other. Because there are no more remaining threads to service requests, the incoming requests
+    will be blocked until the other pending requests are finished, but they will not finish since they are waiting for
+    the sub-requests. By ensuring that Solr is configured to handle a sufficient number of threads, you can avoid
+    deadlock situations like this.
+
+(p. 592)
+
+***  Requests directly on random node
+
+Lack of separation of concerns.
+Any node works as aggregator.
+
+From the documentation:
+
+    When a Solr node receives a search request, that request is routed behinds the scenes to a replica of some shard
+    that is part of the collection being searched. The chosen replica will act as an aggregator: creating internal requests
+    to randomly chosen replicas of every shard in the collection, coordinating the responses, issuing any subsequent
+    internal requests as needed (For example, to refine facets values, or request additional stored fields) and constructing
+    the final response for the client.
+
+(p.590)
+
+* Elasticsearch
+
+** PRO
+
+- *HIGH*: AZ aware
+- *HIGH*: Snapshots are incremental and can be saved on s3
+- *HIGH*: It scales when you add nodes (automatic shard rebalancing)
+- *HIGH*: API first [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html][Document]]/[[https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html][Search]]/[[https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html][Indices]]! OP friendly [[https://www.elastic.co/guide/en/elasticsearch/reference/current/cat.html][Cat]]/[[https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster.html][Cluster]]!
+- *HIGH*: No dependency on any external application
+- *HIGH*: Split responsibilities
+- *HIGH*: Data gathering and visualisation
+- _MEDIUM_: Good ecosystem of plugins
+- _MEDIUM_: More polished product
+
+*** AZ aware
+
+Out of the box ElasticSearch is able to move primary and replica in two
+different az to implement HA az-aware.
+
+*** Snapshots are incremental and can be saved on s3
+
+.image images/infra_diff.png
+.caption Source: [[http://solr-vs-elasticsearch.com/][Apache Solr vs Elasticsearch]]
+
+In ElasticSearch, saving all your data on s3 (to made it available to others
+resources) is as simple as the following:
+
+.code snippets/es_snapshots.bash
+
+You can also check the status with the cat [[https://www.elastic.co/guide/en/elasticsearch/reference/current/cat-recovery.html][API]] via curl.
+
+*** More polished product
+
+Like bulk queue for example. We don't have it in Solr.
+ES implements many patterns and best practices and it's a much more advanced
+product.
+
+*** API first example
+
+.code snippets/es_cat_api.bash
+
+For example:
+
+    $ curl --silent -XGET <es_uri>/_cat/indices?bytes=b
+    green open my_index 69 1 4070276095 30269 1663407798687 831860767712
+    $ curl --silent -XGET <es_uri>/_cat/indices?bytes=gb
+    green open my_index 69 1 4070276095 30269 1.5tb 774.7gb
+
+Can easily stop shard allocation via API
+
+    curl -XPUT http://<uri>/_cluster/settings -d '{
+      "persistent" : {
+          "cluster.routing.allocation.awareness.attributes" : "none"
+      }
+    }'
+
+And much more.
+
+*** Plugin ecosystem
+
+Kibana + Marvel gives you a lot of introspections on what's happening without any investment (in dev)
+
+[[https://github.com/lmenezes/elasticsearch-kopf][Kopf]] or [[https://github.com/lmenezes/cerebro][cerebro]] (for v5) and other
+plugins give you even more.
+
+** CON
+
+- *HIGH*: Lack of customizability
+- *HIGH*: New releases often change internal behaviour
+- _MEDIUM_: Bad documentation
+
+*** Lack of customizability
+
+By far the weakest point of es is it's customizability.
+You can't change a lot of setting (even important ones like cache) and many
+others are hidden in a black-magic-box.
+
+*** New releases often change internal behaviour
+
+Lesson learned: DON’T TRUST MINOR VERSION UPGRADES ON ES
+
+* A test
+
+- Indexing 50M documents
+- 3 nodes with solr 6.2 + 1 zk
+- 3 data nodes for es 2.4.0 + 1 client node + 1 small master node
+- Indexed from the same machine in the same way with default settings
+- 20 primaries & 20 replicas each index
+- 1 replica
+
+** Disk usage
+
+*** Solr
+
+On each node of solr the index size is 68GB:
+
+    # du -sh /opt/<solr_dir>/data/
+    68G    /opt/<solr_dir>/data/
+
+Each shard is ~5.1GB:
+
+    # du -sh /opt/<solr_dir>/data/*
+    5.1G    /opt/<solr_dir>/data/<index>_50m_shard11_replica1
+    5.1G    /opt/<solr_dir>/data/<index>_50m_shard12_replica2
+    5.1G    /opt/<solr_dir>/data/<index>_50m_shard14_replica1
+    5.1G    /opt/<solr_dir>/data/<index>_50m_shard15_replica2
+    [...]
+    4.0K    /opt/<solr_dir>/data/solr.xml
+
+*** Elasticsearch
+
+On each node of es the index size is 78GB:
+
+    $ du -sh /opt/elasticsearch/data/<node>/<cluster>/nodes/<id>/indices/<index>
+    78G
+
+Each shard is ~6GB:
+
+    $ du -sh /opt/elasticsearch/data/<node>/<cluster>/nodes/<id>/indices/<index>_50m/*
+    6.0G    /opt/elasticsearch/data/<node>/<cluster>/nodes/<id>/indices/<index>_50m/1
+    6.0G    /opt/elasticsearch/data/<node>/<cluster>/nodes/<id>/indices/<index>_50m/10
+    6.0G    /opt/elasticsearch/data/<node>/<cluster>/nodes/<id>/indices/<index>_50m/11
+    6.0G    /opt/elasticsearch/data/<node>/<cluster>/nodes/<id>/indices/<index>_50m/13
+    [...]
+    2.6M    /opt/elasticsearch/data/<node>/<cluster>/nodes/<id>/indices/<index>_50m/_state
+
+*** Takeaway: Size
+
+ElasticSearch saves on disk more data to [[https://www.elastic.co/guide/en/elasticsearch/reference/current/doc-values.html][offload workload]] from  [[https://www.elastic.co/guide/en/elasticsearch/guide/current/_deep_dive_on_doc_values.html][memory]].
+This may result is slightly slower response time. The mentality behind that is
+that disk is cheap, memory costs much more.
+
+** Memory usage [indexing]
+
+.image images/memory_used_perc.png 300 _
+
+- Solr 6 ~55% memory used
+- ES 2.4 ~45% memory used
+
+ES used ~10% less memory during the indexing process.
+
+** Disk I/O [indexing]
+
+.image images/disk_writes_s.png 317 _
+
+- Solr 6 ~600 writes/sec
+- ES 2.4 ~200 writes/sec
+
+Solr performed 3 times the disk writes/sec of ES to index the same amout of data.
+
+* Conclusions
+
+From an Operational point of view there is not even a fight between Solr and ElasticSearch.
+ElasticSearch is years ahead of Solr in helping OP support, monitor, analyse and debug the application. Solr is a much older product, striving to maintain compatibility with the past while trying to grow and become more cloud/op aware (e.s. they are _slowly_ adding API endpoints).
+On the other side ElasticSearch is driven by [[https://www.elastic.co/][Elastic]] to make a modern, easy to sell product for which selling support for a high price.
+ES is clearly more polished, cloud/aware and maintainable.
+
+* Read more
+
+** Overviews
+
+- [[http://solr-vs-elasticsearch.com/][Apache Solr vs Elasticsearch]]
+- [[https://sematext.com/blog/2015/01/30/solr-elasticsearch-comparison/][Solr vs. Elasticsearch — How to Decide?]]
+- [[https://www.quora.com/What-are-the-main-differences-between-ElasticSearch-Apache-solr-and-SolrCloud][What are the main differences between ElasticSearch, Apache Solr and SolrCloud?]]
+
+** Technical
+
+- [[https://lucene.apache.org/solr/][Solr]]
+- [[https://www.elastic.co/products/elasticsearch][ElasticSearch]]
+- [[https://cwiki.apache.org/confluence/display/solr/Running+solr][Solr latest docs]]
+- [[https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html][ElasticSearch latest docs]]
+- [[http://apache.claz.org/lucene/Solr/ref-guide/apache-Solr-ref-guide-6.1.pdf][Solr full guide (pdf)]]
+- [[https://cwiki.apache.org/confluence/display/Solr/DocValues][Solr Wiki: Doc Values]]
+- [[http://blog.thetaphi.de/2012/07/use-lucenes-mmapdirectory-on-64bit.html][Lucene memory mapping]]

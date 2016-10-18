@@ -1,61 +1,65 @@
-TTT
+Prometheus
+14 Oct 2016
 
-* notes
+* Intro
 
+PH
 
-weaveworks
-cloud.waeve.works
-->
+** Sources
 
-waeveworks/prism
+Prometheus uses a series of services and _exporter_ to gather data about a
+service or node. Some of them are:
 
-https://github.com/weaveworks/prism
+- cAdvisor: Container metrics
+- Node exporter: Node metrics
 
-** sources
+and many others
 
-- cadvisor
-- node exporter
-etc...
+** Reading metrics from an application
 
-**
+The convention is to expose a */metrics* endpoint with the metrics you want
+Prometheus to fetch.
 
+    The mentality:
+    Dev own the metrics
 
-expose
-/metrics
-in the right way
+** Reading from another Prometheus
 
-mentality:
-dev own the metrics
+Prometheus can grab metric from another instance using what it's called
+*federation*.
 
-** Many of them
+*** A Prometheus on every laptop?
 
-Dev can spin their own phrometeus
-any env
+Dev can spin their own Prometheus to read their own metrics. Let's say you have a team working on a project. They can spin a Prometheus instance locally
+pulling the data ONLY from these services.
 
-** How
+This can help if you want to isolate environments (e.s. Devs cannot see some
+metrics) or just to have a less cluttered view of what's out there.
 
-start with grafana
-show how HA works
-Share the success stories
-Help devs with expoerts a lot more
+** How to help spread the news
 
-** Many prometheus
+- Start with grafana
+- Show how HA works
+- Share the success stories
+- Help devs see and understand how to use the tool
 
-Phrometeus grb staff from another prometeus
+** Setup
 
-** Prism
+PH
 
-WaeveWorks Prism
+*** Download the Grafana dashboards
 
-** Download the Grafana dashboards
+They are just json so you can just pull from the grafana.net website or any
+github repo.
 
-linux conf
-prometeus next generation
+** Persistance
 
-**
+Well... that's one of the sad points:
 
-- only one node
-- long term storage of metrics (kafka + elasticsearch)
+*** Possible solutions?
+
+- Only one node
+- Long term storage of metrics (kafka + elasticsearch)
 - persistange storage in k8s (statelass)
 VM vsan plugin
 
@@ -253,5 +257,12 @@ metrics for you
 manage metrics for you
 pre-aggregation is more efficient
 
-questions:
--
+* Further reading
+
+[[https://github.com/weaveworks/prism][weaveworks prism]]
+
+Is a paid product that put it simply is an hosted Prometheus.
+
+* Links
+
+PH

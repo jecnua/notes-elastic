@@ -1,60 +1,68 @@
 Prometheus
-14 Oct 2016
+|| Last update: 16 Oct 2016
 
 * Intro
 
-PH
+.image images/prometheus.png 100 _
 
-** Sources
+Prometheus is a cloud aware monitoring and alerting tool.
 
-Prometheus uses a series of services and _exporter_ to gather data about a
-service or node. Some of them are:
+* Sources
+
+Prometheus can gather data by any source that exposes metrics in the correct
+format. When this is not available, _exporters_ can be written to do the heavy
+lifting of _translating_ the data from another format (or gather the data
+directly).
+
+Examples of application exposing metrics natively for Prometheus:
 
 - cAdvisor: Container metrics
+- Kubernetes
+
+Examples of exporters are:
+
 - Node exporter: Node metrics
 
-and many others
+* Gathering metrics
 
-** Reading metrics from an application
+** From an application
 
-The convention is to expose a */metrics* endpoint with the metrics you want
-Prometheus to fetch.
+If you are creating a new app and you want Prometheus to gather your metrics,
+the convention is to expose a */metrics* endpoint with the metrics you desire.
 
     The mentality:
     Dev own the metrics
 
-** Reading from another Prometheus
+** From another Prometheus
 
 Prometheus can grab metric from another instance using what it's called
-*federation*.
+*federation*. This allow to implement redundancy (HA) in the system or just
+having machines _specialised_ in a subset of the metrics.
 
-*** A Prometheus on every laptop?
+* A Prometheus on every laptop?
 
-Dev can spin their own Prometheus to read their own metrics. Let's say you have a team working on a project. They can spin a Prometheus instance locally
-pulling the data ONLY from these services.
+DEVs can spin their own Prometheus to read their own metrics. Let's say you
+have a team working on a project. They can spin a Prometheus instance locally
+pulling the data ONLY from these services/endpoints.
 
-This can help if you want to isolate environments (e.s. Devs cannot see some
+This can help if you want to isolate environments (e.s. DEVs cannot see some
 metrics) or just to have a less cluttered view of what's out there.
 
-** How to help spread the news
+* How to approach Prometheus
 
 - Start with grafana
 - Show how HA works
 - Share the success stories
-- Help devs see and understand how to use the tool
+- Help DEVs see and understand how to use the tool
 
-** Setup
-
-PH
-
-*** Download the Grafana dashboards
+** Download the Grafana dashboards
 
 They are just json so you can just pull from the grafana.net website or any
-github repo.
+github repo. You can use the api to push them on the app or do it manually.
 
 ** Persistance
 
-Well... that's one of the sad points:
+Well... that's one of the sad points. Prometheus *by*choice* does not cluster.
 
 *** Possible solutions?
 

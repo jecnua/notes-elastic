@@ -203,3 +203,13 @@ In puppet:
     'action.destructive_requires_name'                => true,
 
 .link https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_parameters.html action.destructive_requires_name
+
+** Dump
+
+*** To explore
+
+https://www.npmjs.com/package/elasticdump2
+http://blog.kiyanpro.com/2016/03/11/elasticsearch/Export-Index-Using-Elasticsearch-Dump
+http://blog.tamasboros.com/export-elasticsearch-database-to-json-dumps/
+https://github.com/taskrabbit/elasticsearch-dump
+https://hub.docker.com/r/khanhicetea/elasticsearch-dump/~/dockerfile/

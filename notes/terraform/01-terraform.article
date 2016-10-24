@@ -1,0 +1,42 @@
+Terraform
+
+* Intro
+
+TBD
+
+** Testing terraform
+
+https://github.com/chef/inspec
+http://inspec.io/
+
+https://github.com/newcontext/kitchen-terraform
+
+*** Discarded: test-kitchen + serverspec
+
+.html videos/Untangling_Terraform_Through_Refactoring.html
+
+Use test-kitchen + serverspec.
+You will still need to spin up instances on AWS and SSH into them.
+
+limited because you ssh in serverspec and run serverspec
+it would test what's on ON the machine
+that's usually managed by puppet
+unless you pull metadata and check that
+costly because is not a mock
+every test spin something on aws
+so you pay 1h-min form every spin
+if the converge require teardown
+you pay again and again
+is not a mock or tested locally
+so it has the price involved
+
+*** aws-spec
+
+.image awspec-logo.png
+
+[[https://github.com/k1LoW/awspec][github]]
+
+https://github.com/k1LoW/awspec/blob/master/doc/resource_types.md
+
+
+*** To test: [[https://github.com/serverworks/aws-spec][aws-spec]]

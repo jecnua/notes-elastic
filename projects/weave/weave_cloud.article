@@ -49,8 +49,7 @@ migrate to [[https://github.com/weaveworks/mesh][weave mash]]
 
 A good talk can be found here:
 
-.html snippets/video.html
-.caption PromCon 2016
+> [[https://www.youtube.com/watch?v=3Tb4Wc0kfCM][PromCon 2016: Multitenant, Scale-Out Prometheus]] (Tom Wilkie)
 
 > [[http://www.slideshare.net/weaveworks/project-frankenstein-a-multitenant-horizontally-scalable-prometheus-as-a-service][Slides]]
 

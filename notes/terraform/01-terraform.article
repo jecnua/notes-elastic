@@ -4,6 +4,10 @@ Terraform
 
 TBD
 
+** Local env
+
+TTT
+
 ** Testing terraform
 
 https://github.com/chef/inspec
@@ -32,7 +36,7 @@ so it has the price involved
 
 *** aws-spec
 
-.image awspec-logo.png
+.image images/awspec-logo.png
 
 [[https://github.com/k1LoW/awspec][github]]
 

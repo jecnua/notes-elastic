@@ -1,0 +1,128 @@
+Test
+
+* Intro
+
+
+** Installation
+
+They ask
+
+    sudo curl -L git.io/scope -o /usr/local/bin/scope
+    sudo chmod a+x /usr/local/bin/scope
+    scope launch --service-token=<token>
+
+I did
+
+    curl -L git.io/scope -o scope
+    chmod a+x scope
+
+https://www.weave.works/products/weave-scope/
+
+then
+
+    » ./scope launch --service-token=<token>
+    Unable to find image 'weaveworks/scope:1.0.0' locally
+
+This is like cPanel.
+
+Now to install prometeus.
+
+*NOTE*: It's not helping you configure or set prometheus.
+Just install and do it yourself.
+
+    docker run -d \
+      -p 9090:9090 \
+      -v ./code/prometheus.yml:/etc/prometheus/prometheus.yml \
+      prom/prometheus
+
+    docker run \
+      -d \
+      -p 9090:9090 \
+      prom/prometheus
+
+You can see it here: http://localhost:9090/metrics
+
+    docker exec -it *** /bin/sh
+
+  I found the default configuration:
+
+    /prometheus # cat /etc/prometheus/prometheus.yml
+    # my global config
+    global:
+      scrape_interval:     15s # By default, scrape targets every 15 seconds.
+      evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+      # scrape_timeout is set to the global default (10s).
+
+      # Attach these labels to any time series or alerts when communicating with
+      # external systems (federation, remote storage, Alertmanager).
+      external_labels:
+          monitor: 'codelab-monitor'
+
+    # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+    rule_files:
+      # - "first.rules"
+      # - "second.rules"
+
+    # A scrape configuration containing exactly one endpoint to scrape:
+    # Here it's Prometheus itself.
+    scrape_configs:
+      # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+      - job_name: 'prometheus'
+
+        # Override the global default and scrape targets from this job every 5 seconds.
+        scrape_interval: 5s
+
+        # metrics_path defaults to '/metrics'
+        # scheme defaults to 'http'.
+
+        static_configs:
+          - targets: ['localhost:9090']
+
+They say add:
+
+    remote_write:
+      url: https://cloud.weave.works/api/prom/push
+      basic_auth:
+         <token>
+
+https://prometheus.io/docs/operating/configuration/#%3Cremote_write%3E
+
+https://hub.docker.com/r/prom/prometheus/
+
+It breaks
+Installing 1.2.1
+Breaks
+
+NOTE: Breaking changes!
+
+https://github.com/prometheus/prometheus/tree/master/documentation/examples/remote_storage
+
+curl -L https://raw.githubusercontent.com/prometheus/prometheus/master/documentation/examples/remote_storage/server.go -o code/server.go
+
+go build breaks so:
+
+go get github.com/golang/snappy
+go get github.com/golang/protobuf/proto
+go get github.com/prometheus/common/model
+go get github.com/prometheus/prometheus/storage/remote
+go build
+
+time="2016-11-12T21:52:23Z" level=warning msg="error sending 30 samples to remote storage: Post http://localhost:1234/receive: dial tcp [::1]:1234: getsockopt: connection refused" source="queue_manager.go:246"
+
+doesn't work so attach tit to host
+
+--network
+
+It doesn't work on mac... so...
+
+https://forums.docker.com/t/should-docker-run-net-host-work/14215/27
+
+meh
+
+Open a bug. Creating a docker image locally.
+
+All done here: https://github.com/jecnua/prom-remoteserver
+
+For now I stop the tests here.
+
+** Prometheus

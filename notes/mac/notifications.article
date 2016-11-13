@@ -1,0 +1,30 @@
+Notifications
+
+* Intro
+
+The default way to do it in mac:
+
+    $ osascript -e \
+    "display notification \
+    \"Muting ad for $sleepDuration seconds\" \
+    with title \
+    \"Mute Spotify Ads\""
+
+You can install terminal-notifier with brew
+
+    $ brew install terminal-notifier
+
+And then call it:
+
+    terminal-notifier -message test -sound default
+
+or
+
+    echo 'Piped Message Data!' | terminal-notifier -sound default
+
+On ruby:
+
+    gem install terminal-notifier
+    gem install terminal-notifier-guard
+
+notifyutil

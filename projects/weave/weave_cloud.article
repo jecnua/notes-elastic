@@ -1,0 +1,203 @@
+Weave cloud:
+Product analysis and tests
+
+* Intro
+
+[[https://cloud.weave.works][Weave cloud]] is an hosted, reliable and scalable
+installation of Prometheus as a service.
+Implemented by weave works, knows but small company (~20 people), is still in
+beta at the moment.
+
+Another tool from weave work that is worth speaking about because we will see in
+this article is [[https://www.weave.works/products/weave-scope/][weave scope]]:
+a visualization tool for containers.
+
+they use prometheus to gather metrics for their containers
+
+All they do a weave works is opensource, and weave cloud is not different.
+Weave cloud is an hosted and managed version of
+[[https://github.com/weaveworks/prism][weaveworks prism]].
+
+** Highlight
+
+*** What they promise
+
+- Acces control: prometheus doesn't have any out of the box
+- They promise almost infinite retention
+- Durability and HA via replication
+
+*** What they still don't have
+
+- Better performance by scaling clients (they still  don't scale out the retrievers).
+
+[[https://github.com/digitalocean/vulcan][Vulcan]] could be a possible solution
+for that.
+
+*** Limitations
+
+- You always need to specify at least 1 metric name in every query
+
+** Technical notes
+
+- They promise almost infinite retention by using s3 + dynamo db as backends.
+- They have a lot of memcached before s3 so hopefully you will never hit that
+layer unless doing really "old" queries.
+- For now they use consul to store user keys but maybe they are thinking to
+migrate to [[https://github.com/weaveworks/mesh][weave mash]]
+
+** Talks
+
+A good talk can be found here:
+
+.html snippets/video.html
+.caption PromCon 2016
+
+> [[http://www.slideshare.net/weaveworks/project-frankenstein-a-multitenant-horizontally-scalable-prometheus-as-a-service][Slides]]
+
+* The test
+
+** Installation
+
+*** Weave scope
+
+First you need to install scope passing the give auth token (you receive the
+ token when registering):
+
+    $ sudo curl -L git.io/scope -o /usr/local/bin/scope
+    $ sudo chmod a+x /usr/local/bin/scope
+    $ scope launch --service-token=<token>
+
+I am paranoid so check the bash and run it locally:
+
+    $ curl -L git.io/scope -o scope
+    $ chmod a+x scope
+
+Run scope:
+
+    $ ./scope launch --service-token=<token>
+
+It will start sending data to weave cloud right away and you can see something
+like this (I am using a snapshot from the conference):
+
+.image images/scope.png _ 560
+
+Scope will gather data about interations between docker container and towards
+the internet.
+
+*** Prometheus
+
+Now to install Prometheus.
+
+*NOTE*: It's not helping you configure or set prometheus. It's probably because
+it's still in beta but is pretty much left to the user.
+
+What you need to do is run a vanilla Prometheus via a change in the config file.
+
+You can see the default configuration from the repo or by logging in the docker
+container:
+
+.code code/prometheus_def.yml
+
+So create a new file, and add the snipped they ask for:
+
+    remote_write:
+      url: https://cloud.weave.works/api/prom/push
+      basic_auth:
+         <token>
+
+*NOTE*: [[https://prometheus.io/docs/operating/configuration/#%3Cremote_write%3E][remote_write]]
+is still in BETA.
+
+DIY ([[https://hub.docker.com/r/prom/prometheus/][docker image]]):
+
+    $ docker run \
+      -d \
+      -p 9090:9090 \
+      -v <path>/prometheus.yml:/etc/prometheus/prometheus.yml \
+      prom/prometheus
+
+To check if it's alive: http://localhost:9090/metrics
+Or:
+
+    $ docker exec -it <image_id> /bin/sh
+
+** Fun part
+
+*It*breaks!*
+
+No matter how much I tried (with different versions and stuff) it still didn't
+work. Prometheus refuses to start for an error in the parsing of the yml file.
+
+To test where is the problem, I wanted to test the remote functionality.
+
+*** Short story
+
+The remote functionality works.
+Here is a repo I made to test it.
+
+[[https://github.com/jecnua/prometheus-remoteserverstub][jecnua/prometheus-remoteserverstub]]
+
+*** Long story
+
+*DISCLAIMER*: You need a go working environment to make this work. Othewise just
+use my docker repo [[https://github.com/jecnua/prometheus-remoteserverstub][jecnua/prometheus-remoteserverstub]].
+
+There I found this
+[[https://github.com/prometheus/prometheus/tree/master/documentation/examples/remote_storage][_remote_storage_]]
+server from the prom team.
+
+    $ curl -L https://raw.githubusercontent.com/prometheus/prometheus/master/documentation/examples/remote_storage/server.go -o code/server.go
+
+However the go build breaks so:
+
+    $ go get github.com/golang/snappy
+    $ go get github.com/golang/protobuf/proto
+    $ go get github.com/prometheus/common/model
+    $ go get github.com/prometheus/prometheus/storage/remote
+    $ go build
+
+However if you run a prom docker container trying to connect to your new app:
+
+    time="2016-11-12T21:52:23Z" level=warning msg="error sending 30 samples
+    to remote storage: Post http://localhost:1234/receive: dial tcp
+    [::1]:1234: getsockopt: connection refused" source="queue_manager.go:246"
+
+If you don't link the Prometheus container with the test remote server, you
+won't be able to communicate via localhost.
+
+Also _--network_host_ is not a solution since it
+[[https://forums.docker.com/t/should-docker-run-net-host-work/14215/27][doesn't work]]
+on mac... so...
+
+Create a docker image with the server and link the two.
+You can see an implementation here:
+
+[[https://github.com/jecnua/prometheus-remoteserverstub][jecnua/prometheus-remoteserverstub]]
+
+** Fixing it
+
+In the end I found out that the _snippet_ they give you is wrong.
+The syntax should be:
+
+    remote_write:
+      url: https://cloud.weave.works/api/prom/push
+      basic_auth:
+        password: <token>
+
+The _password_ is missing. Well is still in beta after all.
+
+After adding the correct configuration Prometheus doesn't error anymore, but
+still the data is not always displayed on weave cloud dashboard.
+
+I am trying to understand if this is due to the apps being run locally on my mac
+from my house (bad connection) or upstream.
+
+Investigating...
+
+** TBC
+
+** Further reading
+
+- Weave Net
+- [[https://www.weave.works/products/weave-scope/][Weave scope]]
+- [[https://github.com/weaveworks/prism][Weaveworks prism]]

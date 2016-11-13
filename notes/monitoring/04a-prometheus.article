@@ -7,28 +7,26 @@ Prometheus
 
 Prometheus is a cloud aware monitoring and alerting tool.
 
-* Sources
+* Gathering metrics
 
-Prometheus can gather data by any source that exposes metrics in the correct
-format. When this is not available, _exporters_ can be written to do the heavy
+Prometheus can gather data by any source that exposes metrics in it's format.
+When this is not available, _exporters_ can be written to do the heavy
 lifting of _translating_ the data from another format (or gather the data
 directly).
 
 Examples of application exposing metrics natively for Prometheus:
 
-- cAdvisor: Container metrics
-- Kubernetes
+- [[https://github.com/google/cadvisor][cAdvisor]]: Container metrics
+- [[http://kubernetes.io/][Kubernetes]]
 
 Examples of exporters are:
 
-- Node exporter: Node metrics
-
-* Gathering metrics
+- [[https://github.com/prometheus/node_exporter][Node exporter]]: Node metrics
 
 ** From an application
 
 If you are creating a new app and you want Prometheus to gather your metrics,
-the convention is to expose a */metrics* endpoint with the metrics you desire.
+the convention is to expose a */metrics* endpoint with the metrics you want.
 
     The mentality:
     Dev own the metrics
@@ -36,10 +34,11 @@ the convention is to expose a */metrics* endpoint with the metrics you desire.
 ** From another Prometheus
 
 Prometheus can grab metric from another instance using what it's called
-*federation*. This allow to implement redundancy (HA) in the system or just
-having machines _specialised_ in a subset of the metrics.
+[[https://prometheus.io/docs/operating/federation/][federation]]. This allow to
+have redundancy (HA) in the system or machines _specialised_ in a
+subset of the metrics.
 
-* A Prometheus on every laptop?
+*** A Prometheus on every laptop?
 
 DEVs can spin their own Prometheus to read their own metrics. Let's say you
 have a team working on a project. They can spin a Prometheus instance locally
@@ -69,14 +68,12 @@ Well... that's one of the sad points. Prometheus *by*choice* does not cluster.
 - Only one node
 - Long term storage of metrics (kafka + elasticsearch)
 - persistange storage in k8s (statelass)
-VM vsan plugin
+- VM vsan plugin
 
-some phrometeus from inside the cluster and one from outside
-in a VM
+Some phrometeus from inside the cluster and one from outside in a VM
+In AWS 9090 in /metrics
 
-in AWS 9090 in /metrics
-
-** Decision behind the design
+** Decision sbehind the design
 
 - before docker and k8s
 soundcould had a sort of heroku
@@ -89,14 +86,13 @@ time based monitoring ecosystem
 metrics out of your system *to*
 
 - instrumentation
-mentrics and storga
--querying
--a lerting
--dashboard
+- mentrics and storga
+- querying
+- alerting
+- dashboard
 
 FOCUS: Operation system monitoring
 legal
-
 lossy
 
 **
@@ -264,12 +260,6 @@ rates not computes!!! data as raw as possible and you do in on phrometeus side
 metrics for you
 manage metrics for you
 pre-aggregation is more efficient
-
-* Further reading
-
-[[https://github.com/weaveworks/prism][weaveworks prism]]
-
-Is a paid product that put it simply is an hosted Prometheus.
 
 * Links
 

@@ -1,30 +1,35 @@
-Notifications
+Notifications on MacOSX
+ || Last update: 14 Nov 2016
 
 * Intro
 
-The default way to do it in mac:
+** Shell
+
+The default way to send notifications (pop-up alert) in mac is the following:
 
     $ osascript -e \
     "display notification \
-    \"Muting ad for $sleepDuration seconds\" \
+    \"A message\" \
     with title \
-    \"Mute Spotify Ads\""
+    \"A title\""
 
-You can install terminal-notifier with brew
+But you can install terminal-notifier with brew:
 
     $ brew install terminal-notifier
 
-And then call it:
+And then call it like this:
 
-    terminal-notifier -message test -sound default
+    $ terminal-notifier -title 'A title' -message 'A message' -sound default
 
-or
+or:
 
-    echo 'Piped Message Data!' | terminal-notifier -sound default
+    $ echo 'Piped message' | terminal-notifier -sound default
+
+** Ruby
 
 On ruby:
 
-    gem install terminal-notifier
-    gem install terminal-notifier-guard
+    $ gem install terminal-notifier
+    $ gem install terminal-notifier-guard
 
-notifyutil
+Will wrap around the terminal-notifier app.

@@ -1,5 +1,5 @@
 Weave cloud:
-Product analysis and tests
+Product analysis and tests || Last update: 13 Nov 2016
 
 * Intro
 
@@ -40,10 +40,8 @@ for that.
 ** Technical notes
 
 - They promise almost infinite retention by using s3 + dynamo db as backends.
-- They have a lot of memcached before s3 so hopefully you will never hit that
-layer unless doing really "old" queries.
-- For now they use consul to store user keys but maybe they are thinking to
-migrate to [[https://github.com/weaveworks/mesh][weave mash]]
+- They have a lot of memcached before s3 so hopefully you will never hit that layer unless doing really "old" queries.
+- For now they use consul to store user keys but maybe they are thinking to migrate to [[https://github.com/weaveworks/mesh][weave mash]]
 
 ** Talks
 
@@ -201,6 +199,6 @@ Investigating...
 - [[https://www.weave.works/products/weave-scope/][Weave scope]]
 - [[https://github.com/weaveworks/prism][Weaveworks prism]]
 
-** Myself
+** Self Links
 
-[[https://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/weave/weave_cloud.article][Myself]]
+- [[https://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/weave/weave_cloud.article][Myself]]

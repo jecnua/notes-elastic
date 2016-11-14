@@ -42,5 +42,80 @@ so it has the price involved
 
 https://github.com/k1LoW/awspec/blob/master/doc/resource_types.md
 
+*** To test
 
-*** To test: [[https://github.com/serverworks/aws-spec][aws-spec]]
+[[https://github.com/serverworks/aws-spec][aws-spec]]
+
+
+** Continuos validation on file change
+
+The following implementation is in place to continuously run terraform validate on every file change in the background.
+It will help you not to break terraform while working locally.
+
+*REQUIREMENTS*: Terminal notifier on macOSX or growl (with small changes to the following file) in all the other.
+
+*** Setup
+
+Gemfile:
+
+    gem 'guard'
+    gem 'guard-shell'
+    gem 'terminal-notifier'
+    gem 'terminal-notifier-guard'
+
+plus terminal-notifier or growl installed on the machine.
+
+_Guardfile_:
+
+    project_name = 'project-name'
+    notification :terminal_notifier, app_name: 'MyApp ::', activate: 'com.googlecode.iTerm2' if `uname` =~ /Darwin/
+    guard :shell, :ignore => '**/.terraform' do
+      watch /.*.tf/ do |_m|
+        if system('./__validate_all_silent.sh')
+          `echo ""; echo "Success";`
+        else
+          TerminalNotifier::Guard.notify('Failed', title: 'Terraform validation', subtitle: project_name, type: :failed, sound: :default)
+          `echo ""; echo "Failed";`
+        end
+      end
+    end
+
+__validate_all_silent.sh (in root dir):
+
+    #!/bin/bash
+    # Runs a terraform validate in all the subdirectories and report the result
+    N_SUCCESS=0
+    N_FAILED=0
+    for a_directory in `ls -d */`
+    do
+        ( cd $a_directory && terraform validate ) &> /dev/null
+        RESULT=$?
+        if [ $RESULT -eq 0 ]; then
+          let N_SUCCESS=N_SUCCESS+1
+        else
+          let N_FAILED=N_FAILED+1
+        fi
+    done
+    if [[ $N_FAILED -ne 0 ]]
+    then
+      exit 1
+    else
+      exit 0
+    fi
+
+*** Usage
+
+The with a shell go in the terraform directory and run:
+
+    bundle exec guard
+
+You will see both shell and notifications:
+
+    [1] guard(main)>
+    Failed
+    [1] guard(main)>
+    Failed
+    [1] guard(main)>
+    Success
+
+.image ./images/notifier.png _ 300

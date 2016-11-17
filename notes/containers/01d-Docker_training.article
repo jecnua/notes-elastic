@@ -1,0 +1,192 @@
+Docker training
+
+* Operations - Beginner
+
+    docker compose up -d
+    > detached
+
+List:
+
+    docker-compose ps
+
+Scale one of the container:
+
+    docker-compose scale worker=2
+
+
+    brew install httping
+    httping -c 10 localhost:8001
+
+The Docker CLI features three new commands:
+
+- docker swarm (enable Swarm mode; join a Swarm; adjust cluster parameters)
+- docker node (view nodes; promote/demote managers; manage nmodes)
+- docker service (create and manage services)
+
+The cluster is initialized with docker swarm init
+
+This should be executed on a first, seed node
+DO NOT execute docker swarm init on multiple nodes!
+
+You would have multiple disjoint clusters.
+
+    > docker swarm init
+
+If the node has multiple IP addresses, you must specify which one to use
+(Docker refuses to pick one randomly)
+
+You can specify an IP address or an interface name
+(in the latter case, Docker will read the IP address of the interface and use it)
+You can also specify a port number (otherwise, the default port 2377 will be used)
+
+    docker swarm join \
+    --token SWMTKN-1-4tt24pq4ygv0ovzkiwhobmbfdw02fot9hi4iz0x6eljoto8wa2-do7kzvb1scz6ytdovweik
+sxd4 \
+    10.1.22.2:2377
+
+So I create 2 nodes with docker-machine
+
+λ ~/git/my-test-orchestration/swarm/ master* docker-machine ls
+NAME       ACTIVE   DRIVER      STATE     URL                        SWARM   DOCKER    ERRORS
+swarm-01   *        amazonec2   Running   tcp://35.156.17.25:2376            v1.12.3
+swarm-02   -        amazonec2   Running   tcp://35.156.35.117:2376           v1.12.3
+
+docker-machine ssh swarm-01
+sudo su -
+docker swarm init --advertise-addr 172.31.16.46
+
+docker swarm join \
+    --token SWMTKN-1-6ccb4j87efwj0q1asjtdgw3j46dvz0f28na7malk005an5hniz-ceyqnjjfo1nbusd5wnmeutjkt \
+    172.31.16.46:2377
+
+https://docs.docker.com/swarm/provision-with-machine/
+
+no I don't want to use that
+
+# docker swarm join     --token SWMTKN-1-6ccb4j87efwj0q1asjtdgw3j46dvz0f28na7malk005an5hniz-ceyqnjjfo1nbusd5wnmeutjkt     172.31.16.46:2377
+This node joined a swarm as a worker.
+
+I had to open the sg
+
+now on the first node:
+
+# docker info | grep -A 7 Swarm
+WARNING: No swap limit support
+Swarm: active
+ NodeID: 7icqi0u8hvanotpyd4ywc1r4h
+ Is Manager: true
+ ClusterID: 454k0q4u3xv3ksn2j4qzixbxi
+ Managers: 1
+ Nodes: 3
+ Orchestration:
+  Task History Retention Limit: 5
+
+
+  # docker node ls
+  ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+  0epx63yfne8vogy2sftjehxly    swarm-02  Ready   Active
+  7icqi0u8hvanotpyd4ywc1r4h *  swarm-01  Ready   Active        Leader
+
+From the training docs:
+      When we do docker swarm init, a TLS root CA is created. Then a keypair is issued for the first node, and signed by the root CA.
+      When further nodes join the Swarm, they are issued their own keypair, signed by the root CA, and they also receive the root CA public key and certificate.
+      All communication is encrypted over TLS.
+      The node keys and certificates are automatically renewed on regular intervals
+    (by default, 90 days; this is tunable with docker swarm update).
+
+*** How to do it from outside?
+
+on the shell with the first node in mind
+TOKEN=$(docker swarm join-token -q worker)
+
+eval $(docker-machine env swarm-03)
+
+% TOKEN='SWMTKN-1-6ccb4j87efwj0q1asjtdgw3j46dvz0f28na7malk005an5hniz-ceyqnjjfo1nbusd5wnmeutjkt'
+% IP='172.31.16.46'
+
+docker swarm join --token $TOKEN $IP:2377
+
+To add nodes as manager
+TOKEN=$(docker swarm join-token -q manager)
+get the manager token
+
+You can't see the status from other nodes:
+
+    % docker node ls
+    Error response from daemon: This node is not a swarm manager. Worker nodes can't be used to view or modify cluster state. Please run this command on a manager node or promote the current node to a manager
+
+Promote
+
+    * docker node promote 0epx63yfne8vogy2sftjehxly
+    Node 0epx63yfne8vogy2sftjehxly promoted to a manager in the swarm.
+
+Now is a manager:
+
+    * docker node ls
+    ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+    0epx63yfne8vogy2sftjehxly    swarm-02  Ready   Active        Reachable
+    4q4z0va7l14tcypxqbaky54zn    swarm-03  Ready   Active
+    7icqi0u8hvanotpyd4ywc1r4h *  swarm-01  Ready   Active        Leader
+
+
+Create a new service
+
+    * docker service create alpine ping 8.8.8.8
+    * docker service ls
+    ID            NAME            REPLICAS  IMAGE   COMMAND
+    7jftfzzyoeww  adoring_turing  1/1       alpine  ping 8.8.8.8
+    * docker service ps 7jftfzzyoeww
+    ID                         NAME              IMAGE   NODE      DESIRED STATE  CURRENT STATE           ERROR
+    bn9fnm22t52mgbrpsrsf8up7x  adoring_turing.1  alpine  swarm-01  Running        Running 42 seconds ago
+
+Then you can scale
+
+    * docker service update 7jftfzzyoeww --replicas 4
+
+You can't see the logs from a container in a docker you are not "attached" to!
+
+Remove all services:
+
+    docker service ls -q | xargs docker service rm
+
+why is not on every node?
+
+https://github.com/docker/docker/issues/24310
+lool
+amazing
+
+
+** store
+
+Highly-available, distributed store based on Raft
+> Nomad is similar
+Automatic TLS keying and signing
+Integration with overlay networks and load balancing
+
+** concepts
+
+A cluster will be at least one node
+A node can be a manager or a worker
+A manager actively takes part in the Raft consensus
+You can talk to a manager using the SwarmKit API
+One manager is elected as the leader; other managers merely forward requests to it
+A service is specified by its desired state
+The leader uses different subsystems to break down services into tasks:
+orchestrator, scheduler, allocator, dispatcher
+A task corresponds to a specific container, assigned to a specific node
+Nodes know which tasks should be running, and will start or stop containers accordingly
+
+
+$ docker node ls
+
+** Obsolete
+
+swarm kit
+It is a reusable library, like libcontainer, libnetwork, vpnkit
+
+SwarmKit comes with two examples:
+
+- swarmctl (a CLI tool to "speak" the SwarmKit API)
+- swarmd (an agent that can federate existing Docker Engines into a Swarm)
+
+SwarmKit/swarmd/swarmctl → libcontainer/containerd/container-ctr

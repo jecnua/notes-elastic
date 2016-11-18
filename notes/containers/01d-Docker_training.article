@@ -5,6 +5,8 @@ Docker training
     docker compose up -d
     > detached
 
+a netwrok can be in as many container as you want
+
 List:
 
     docker-compose ps
@@ -155,6 +157,59 @@ https://github.com/docker/docker/issues/24310
 lool
 amazing
 
+** Create local registry
+
+% docker run -d --name registry --publish 5000:5000 registry:2                                                                                                                                                                                       1 ↵
+Unable to find image 'registry:2' locally
+2: Pulling from library/registry
+
+3690ec4760f9: Already exists
+930045f1e8fb: Pull complete
+feeaa90cbdbc: Pull complete
+61f85310d350: Pull complete
+b6082c239858: Pull complete
+Digest: sha256:1152291c7f93a4ea2ddc95e46d142c31e743b6dd70e194af9e6ebe530f782c17
+Status: Downloaded newer image for registry:2
+5bbf1667440c6e2ee75af007781b660ff4bf5b6ee8900b6df76509a489f5ea7e
+
+% curl localhost:5000/v2/_catalog
+{"repositories":[]}
+
+    docker pull busybox
+    docker tag busybox localhost:5000/busybox
+    docker push localhost:5000/busybox
+
+    curl localhost:5000/v2/_catalog
+    {"repositories":["busybox"]}
+
+Create new networks:
+
+ docker network create --driver overlay fab
+
+ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+c4f428402ae6        bridge              bridge              local
+6a4de4408d4d        docker_gwbridge     bridge              local
+b42r04k3eyuo        fab                 overlay             swarm
+f534dcdc7b4a        host                host                local
+djeiqvdotczb        ingress             overlay             swarm
+c2e9e4a28f71        none                null                local
+
+
+Spin in a network
+docker service create --network fab --name redis redis
+
+publishing a port later
+docker service update eitvkq4djjxe --publish-add 8000:80
+
+Global scheduling
+
+  --mode global
+We want to utilize as best as we can the entropy generators on our nodes
+
+READ MORE
+
+docker swarm mode added in 1.12
 
 ** store
 
@@ -178,6 +233,135 @@ Nodes know which tasks should be running, and will start or stop containers acco
 
 
 $ docker node ls
+
+# second course
+
+Services can be published using two modes: VIP and DNSRR.
+With VIP, you get a virtual IP for the service, and a load balancer based on IPVS
+
+drill tasks.rng
+
+docker service update worker --image $IMAGE
+
+We can set upgrade parallelism (how many instances to update at the same time)
+And upgrade delay (how long to wait between two batches of instances)
+docker service update worker --update-parallelism 2 --update-delay 5s
+
+
+docker logs --follow
+
+change log driver
+
+docker service update $SERVICE \
+--log-driver gelf --log-opt gelf-address=udp://127.0.0.1:12201
+
+The exporters expose metrics over HTTP using a simple line-oriented format
+
+(An optimized format using protobuf is also possible)
+
+
+
+Its configuration defines a list of exporter endpoints (that list can be dynamic, using e.g. Consul, DNS, Etcd...)\
+
+
+We will run two global services (i.e. scheduled on all our nodes):
+
+the Prometheus node exporter to get node metrics
+
+Google's cAdvisor to get container metrics
+
+We will run a Prometheus server to scrape these exporters
+
+The Prometheus server will be configured to use DNS service discovery
+
+We will use tasks.<servicename> for service discovery
+
+All these services will be placed on a private internal network
+
+docker network create --driver overlay prom
+
+
+    docker service create --name node --mode global --network prom \
+    --mount type=bind,source=/proc,target=/host/proc \
+    --mount type=bind,source=/sys,target=/host/sys \
+    --mount type=bind,source=/,target=/rootfs \
+    prom/node-exporter \
+    -collector.procfs /host/proc \
+    -collector.sysfs /host/proc \
+    -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($|/)"
+
+
+    docker service create --name cadvisor --network prom --mode global \
+    --mount type=bind,source=/,target=/rootfs \
+    --mount type=bind,source=/var/run,target=/var/run \
+    --mount type=bind,source=/sys,target=/sys \
+    --mount type=bind,source=/var/lib/docker,target=/var/lib/docker \
+    google/cadvisor:latest
+
+    - job_name: 'node'
+    dns_sd_configs:
+    - names: ['tasks.node']
+    type: 'A'
+    port: 9100
+    - job_name: 'cadvisor'
+    dns_sd_configs:
+    - names: ['tasks.cadvisor']
+    type: 'A'
+    port: 8080
+
+** Volumes
+
+Volumes are host directories that are mounted on to the container fs.
+volumes can be local fs or remote fs.
+
+There are two types of volumes:
+- global: exists in a single namespace, can be mounted on any node and any container, require extra plugin (flocker, portworx)
+- local: local node
+
+on swarm you pin a container to a node qith
+
+    --constraint-add node.name==<node_name>
+
+Service volumes are ephemereal by default.
+
+to mount a specific volume:
+
+    --mount-add type=volume,souce=<...>,target=/data
+
+docker volume ls
+
+** DAB (experimental)
+
+to create
+
+docker-compose bundle
+
+docker stack deploy <name>
+
+docker stack ps <name>
+
+** A docker to control docker
+
+- You need to mount the socket
+
+or
+
+- DOCKER_HOST and DOCKER_TSL_VERIFY and DOCKER_CERT_PATH set (and certs)
+
+** load balancing
+
+available are
+IPVS and DNSRR
+
+** Nodes
+
+setting a node to pause will drain the node.
+
+** Across regions
+
+it doesn't withstand network partition well
+so you need a swarm cluster per region
+
 
 ** Obsolete
 

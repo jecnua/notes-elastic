@@ -178,6 +178,12 @@ NodePort is the actual port ON the server on which kubelet is listening. It will
 
 By default, services and pods are only accessible inside the internal Kubernetes network.
 
+* Ingress
+
+    kubectl get ing
+
+Ingress is how kubernetes allow inbound connection to reach the _service_.
+
 * Scaling
 
     $ kubectl scale deployments/my-hello-world --replicas=6

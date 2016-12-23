@@ -1,0 +1,109 @@
+k8s
+
+* Intro
+
+https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/01-infrastructure-aws.md
+
+* Approach
+
+We want it done in terraform.
+
+There are many approach to the problem:
+
+** Option
+
+http://kubernetes.io/docs/getting-started-guides/kubeadm/
+
+** Discarded
+
+- https://github.com/Capgemini/kubeform
+- http://kubernetes.io/docs/getting-started-guides/aws/
+
+TBD
+
+* Kops
+
+[[https://github.com/kubernetes/kops]][kubernetes/kops (github)]
+
+** CON
+
+  - [[https://github.com/kubernetes/kops/issues/1055][Not a module]]
+
+[[https://github.com/kubernetes/kops/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20terraform][Open ISSUE terraform]]
+
+** Install (on mac)
+
+    brew update
+    brew install kops
+
+
+    export KOPS_STATE_STORE=s3://<name>-k8s-resources-qa
+    export CLUSTER_NAME=k8s.qa.me.co.uk
+
+    kops create cluster ${CLUSTER_NAME} --zones us-west-1c
+    kops update cluster ${CLUSTER_NAME} --target=terraform
+
+* Dashboard
+
+Check you are on the right cluster:
+
+    kubectl get no
+    NAME                                           STATUS    AGE
+    ip-172-20-104-166.us-west-1.compute.internal   Ready     37m
+    ip-172-20-124-222.us-west-1.compute.internal   Ready     36m
+    ip-172-20-124-223.us-west-1.compute.internal   Ready     36m
+
+Add the [[https://github.com/kubernetes/dashboard][dashboard]] [[https://github.com/kubernetes/kops/blob/master/docs/addons.md][addon]]:
+
+    kubectl get pods --all-namespaces | grep dashboard
+    kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.4.0.yaml
+    kubectl get pods --all-namespaces | grep dashboard
+
+If you want to delete it:
+
+    kubectl delete service kubernetes-dashboard -n kube-system
+
+Get the nodes external IP:
+
+    $ kubectl get nodes -o yaml | grep ExternalIP -C 1                                       1 ↵
+
+    address: 54.183.183.50
+    type: ExternalIP
+    allocatable:
+
+    address: 54.183.162.168
+    type: ExternalIP
+    allocatable:
+
+    address: 54.183.36.140
+    type: ExternalIP
+    allocatable:
+
+To get the password:
+
+    kubectl config view
+
+To temporary proxy the UI:
+
+    kubectl proxy
+
+* Try something
+
+TBD
+
+* Links
+
+da modificare:
+
+- https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.0/examples/https-nginx/nginx-app.yaml
+- https://stackoverflow.com/questions/32837033/how-to-setup-an-external-kubernetes-service-in-aws-using-https
+- https://stackoverflow.com/questions/35884643/kubernetes-external-load-balancer-service-on-digitalocean
+
+
+to read:
+
+- http://www.devoperandi.com/load-balancing-in-kubernetes/
+- https://github.com/containous/traefik/blob/fa25c8ef221d89719bd0c491b66bbf54e3d40438/docs/toml.md#kubernetes-ingress-backend
+- https://github.com/kubernetes/kubernetes/issues/17620#issuecomment-212508777
+- http://kubernetes.io/docs/user-guide/services/#defining-a-service
+- https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.0/examples/https-nginx/nginx-app.yaml

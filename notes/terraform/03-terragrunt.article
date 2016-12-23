@@ -1,0 +1,38 @@
+Terragrunt
+
+* Intro
+
+TBD
+
+* Directory layout
+
+[[https://blog.gruntwork.io/how-to-manage-terraform-state-28f5697e68fa#.l98ua1jw9][Directory layout]]
+
+    stage
+      └ vpc
+      └ services
+          └ frontend-app
+          └ backend-app
+              └ vars.tf
+              └ outputs.tf
+              └ main.tf
+              └ .terragrunt
+      └ data-storage
+          └ mysql
+          └ redis
+    prod
+      └ vpc
+      └ services
+          └ frontend-app
+          └ backend-app
+      └ data-storage
+          └ mysql
+          └ redis
+    mgmt
+      └ vpc
+      └ services
+          └ bastion-host
+          └ jenkins
+    global
+      └ iam
+      └ route53

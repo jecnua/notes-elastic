@@ -1,0 +1,293 @@
+Create a K8S from scratch
+
+* Intro
+
+You can find a lot of articles about people doing this way or this way, but in
+the end, they all go and use ansible or salt to do the complex stuff and they
+don't explain much.
+
+https://github.com/kubernetes/kubernetes/blob/master/cluster/aws/util.sh
+
+** Good sources
+
+[[https://github.com/kelseyhightower/kubernetes-the-hard-way][kelseyhightower/kubernetes-the-hard-way]]
+[[https://github.com/fabric8io/kansible/blob/master/vendor/k8s.io/kubernetes/docs/design/aws_under_the_hood.md][Peeking under the hood of Kubernetes on AWS]]
+
+So a lot is not written or hidden
+
+* Provisioner or not
+
+    Node join complete:
+    * Certificate signing request sent to master and response
+      received.
+    * Kubelet informed of new secure connection details.
+
+Run 'kubectl get nodes' on the master to see this machine join.
+
+I also tried to generate cs and stuff better kubeadm
+
+* Thing that nobody tells you
+
+NEW
+
+
+** How to find a subnet? internal external elb
+
+https://github.com/kubernetes/kubernetes/issues/17620
+ONE OF THE WORST
+
+
+
+You need to read here
+https://github.com/kubernetes/kubernetes/blob/master/pkg/cloudprovider/providers/aws/aws.go
+
+public
+"kubernetes.io/role/elb" = "1"
+
+private
+"kubernetes.io/role/internal-elb" = "1"
+
+Added it and it used the right subnets :)
+
+you can find it here how it work
+https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L2549
+
+ensure load balancer
+https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L2502
+
+KOPS WAS NOT DOING THIS!!!
+no setting
+only two subntes
+
+you can find load balancer by searching TagNameKubernetesService
+https://github.com/kubernetes/kubernetes/search?utf8=%E2%9C%93&q=TagNameKubernetesService
+
+
+WHAT TO CHECK WITH SWARM
+
+creating elb
+
+creating elb external
+creating elb internal
+creating elb external/internal ssl
+
+
+** Now it cannot find the boxes
+
+the loadbl don't point!
+
+STILL OPEN
+https://github.com/kubernetes/kubernetes/issues/11883
+
+This explains
+https://github.com/kubernetes/kubernetes/issues/11543
+
+
+Is all about the kublet flags (this is kops)
+
+/usr/local/bin/kubelet \
+          --allow-privileged=true \
+  --api-servers=http://127.0.0.1:8080
+  --babysit-daemons=true \
+  --cgroup-root=docker \
+  --cloud-provider=aws \
+  --cluster-dns=100.64.0.10 \
+  --cluster-domain=cluster.local \
+  --config=/etc/kubernetes/manifests \
+  --configure-cbr0=true \
+  --enable-debugging-handlers=true \
+  --hostname-override=ip-172-20-111-3.us-west-1.compute.internal \
+  --network-plugin-mtu=9001 \
+  --network-plugin=kubenet \
+  --node-labels=kubernetes.io/role=master
+  --non-masquerade-cidr=100.64.0.0/10 \
+  --pod-cidr=10.x.x.x/29 \
+  --reconcile-cidr=true \
+  --register-schedulable=false \
+  --v=2
+
+mine (dafulat)
+
+/usr/bin/kubelet \
+  --kubeconfig=/etc/kubernetes/kubelet.conf \
+  --require-kubeconfig=true \
+  --pod-manifest-path=/etc/kubernetes/manifests \
+  --allow-privileged=true \
+  --network-plugin=cni \
+  --cni-conf-dir=/etc/cni/net.d \
+  --cni-bin-dir=/opt/cni/bin \
+  --cluster-dns=10.x.x.x \
+  --cluster-domain=cluster.local
+
+/etc/kubernetes/kubelet.conf this has just a lot of keys
+
+$ sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--kubeconfig=/etc/kubernetes/kubelet.conf --require-kubeconfig=true"
+Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
+Environment="KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin"
+Environment="KUBELET_DNS_ARGS=--cluster-dns=10.x.x.x --cluster-domain=cluster.local"
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_EXTRA_ARGS
+
+
+
+https://github.com/kubernetes/kubernetes.github.io/pull/1312/files#diff-1d469c8d6ab3ffba1e7026c41c16fff5
+
+this is still not published!
+
+
+
+Add the aws entry
+
+sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--kubeconfig=/etc/kubernetes/kubelet.conf --require-kubeconfig=true"
+Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
+Environment="KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin"
+Environment="KUBELET_DNS_ARGS=--cluster-dns=10.x.x.x --cluster-domain=cluster.local"
+Environment="KUBELET_EXTRA_ARGS=--cloud-provider=aws"
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_EXTRA_ARGS
+
+
+kubectl logs kube-controller-manager-k8s-controller-qa-10-96-11-99-ed9a300f -n kube-system
+
+YOU CAN'T CHANGE THE HOSTNAME
+
+** Fix iam role
+
+https://medium.com/@canthefason/kube-up-i-know-what-you-did-on-aws-93e728d3f56a#.ehg4ihy80
+
+
+** Tag everything
+
+If you don't, you will have no problem until you try to create an elb via k8s.
+The elb will be create but pointing to the wrong VPC and subnets.
+
+[[https://github.com/fabric8io/kansible/blob/master/vendor/k8s.io/kubernetes/docs/design/aws_under_the_hood.md#tagging][Tagging]]
+
+Why?
+
+If you have only private subnet tagged, no public facing elb will be created.
+If you have only public subnet tagged, no PRIVATE facing elb will be created.
+
+Still not enough:
+
+ELb will not connect to the boxes
+
+** Subnets
+
+[[https://github.com/kubernetes/kops/issues/428][Support for private subnet instance groups with NAT Gateway (kops)]]
+
+** Public subnets
+
+https://github.com/kubernetes/kubernetes/issues/29298
+
+Create public subnets and tag them. ELB can't be span in the public subnet.
+
+https://github.com/kubernetes/kubernetes/issues/17620
+
+
+cross zone (beta)
+https://github.com/kubernetes/kubernetes/issues/28174
+
+** Internal elb
+
+https://github.com/kubernetes/kubernetes/issues?page=2&q=is%3Aissue+is%3Aopen+aws+elb&utf8=%E2%9C%93
+
+    annotations:
+        service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+
+
+** Pass the join token
+
+Pass the join token to terraform to allow workers to join without you having to
+login on the master.
+
+    # On Python 2.x
+    python -c 'import random; print "%0x.%0x" % (random.SystemRandom().getrandbits(3*8), random.SystemRandom().getrandbits(8*8))'
+    c249.f93c13ba8bf40679
+
+Master:
+
+    kubeadm init --token=$CONTROLLER_JOIN_TOKEN --cloud-provider aws
+
+You can find the token here:
+
+    cat /etc/kubernetes/pki/tokens.csv
+
+** Find the master automatically
+
+You need at this point a way to find the master
+
+    MASTER_IP=`aws ec2 describe-instances --filters "Name=tag:k8s.io/role/master,Values=1" --region='us-east-1' | grep '\"PrivateIpAddress\"' | cut -d ':' -f2 | cut -d'"' -f 2 | uniq`
+    sudo kubeadm join --token=$CONTROLLER_JOIN_TOKEN $MASTER_IP
+
+Check if it's still alive?
+
+    $ curl http://10.x.x.x:9898/cluster-info/v1/
+    Forbidden
+
+* Check if it's running
+
+On the controller:
+
+    kubectl get nodes
+
+    kubectl get pods,svc --all-namespaces
+
+
+* Deep dive
+
+Check the flags the kublet is running with:
+
+    ps aux | grep /usr/bin/kubelet | grep -v grep
+
+
+
+
+
+
+
+THIS ONE
+https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master
+
+http://kubernetes.io/docs/user-guide/node-selection/
+https://devhub.io/zh/repos/hubt-kubernetes-faq#aws-questions
+https://medium.com/@canthefason/kube-up-i-know-what-you-did-on-aws-93e728d3f56a#.ehg4ihy80
+
+THIS ONE
+
+https://the.binbashtheory.com/running-a-scalable-application-on-kubernetes-and-aws/
+
+
+* Sources
+
+- https://github.com/kubernetes-incubator/kargo/tree/master/contrib/terraform/aws
+- http://kubernetes.io/docs/getting-started-guides/kubeadm/
+- https://github.com/kubernetes/kubernetes/issues/11000
+- https://git.io/weave-kube
+
+Others
+
+- https://groups.google.com/forum/#!topic/kubernetes-sig-cluster-lifecycle/WjqA6mV5Hgg
+
+kubeadm limitations
+
+- http://kubernetes.io/docs/getting-started-guides/kubeadm/#limitations
+
+COOL
+
+- https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master
+- http://kubernetes.io/docs/getting-started-guides/kubeadm/
+
+READ VERY GOOD
+
+- https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master
+- http://kubernetes.io/docs/getting-started-guides/kubeadm/
+- http://blog.kubernetes.io/2016/09/how-we-made-kubernetes-easy-to-install.html
+
+What I was thinking
+
+- https://www.eastbanctech.com/tech-insights/blog/reliable-kubernetes-cluster-in-the-amazon-cloud.html

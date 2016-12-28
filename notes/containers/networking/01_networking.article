@@ -127,6 +127,7 @@ Or you can do it manually: [[https://github.com/kelseyhightower/kubernetes-the-h
     Disclaimer: Network plugins are in alpha. Its contents will change rapidly.
 
 - [[http://kubernetes.io/docs/admin/network-plugins/#cni][docs]]
+- [[https://github.com/containernetworking/cni][spec]]
 
 K8S assumes each POD can be given an IP and it relies on plugins to do so.
 CNI plugins needs to adhere to the appc/CNI specification to be interchangeable.

@@ -1,4 +1,4 @@
-Kubernetes: 1.3+ on AWS
+Kubernetes
 
 * Intro
 
@@ -15,13 +15,25 @@ So many good companies are working to make it better:
 - CoreOS (they build on it and you know... etcd, flannel, coreos and so on)
 
 Kubernetes is 2 years old.
-
 Multizone cluster in k8s is called "ubernetes lite".
+
+** Kubernetes distribution
+
+- OpenShift from Red Hat
+- Tectonic from CoreOS
+- Kismatic from Apprenda
+- Rancher
+- Canonical Distribution of Kubernetes
+- GKE from Google
+- Azure Container Service from Microsoft
+- Photon Platform from VMware
+- Navops from Univa
+
+Read this article for the point: [[http://www.morethanseven.net/2016/11/23/the-coming-of-the-kubernetes-distributions/][The coming of the Kubernetes distributions]] (23 Nov 2016)
 
 * Architecture
 
-.link https://github.com/kubernetes/kubernetes/blob/master/docs/design/architecture.md Architecture
-
+[[https://github.com/kubernetes/kubernetes/blob/master/docs/design/architecture.md][Architecture]]
 kublet talk to docker and manage the linking and locking of containers in a pod.
 
 ** Node
@@ -85,9 +97,10 @@ There are many solutions:
 - Flannel
 - Weawe
 - OpenVSwitch
+- Project Calico
 - Cloud Provider
 
-The k8s aws script use flannl.
+The k8s aws script use flannel.
 
 .link https://github.com/coreos/flannel flannel
 
@@ -196,6 +209,12 @@ Ingress is how kubernetes allow inbound connection to reach the _service_.
 Or that one :)
 
 .link http://kubernetes.io/docs/user-guide/horizontal-pod-autoscaling/ pod autoscaling
+
+* Advices
+
+- Enable cross zone load balancing when using LoadBalancer (1.4+ is not manual)
+- DNS addon could get under load easily. Scale as required.
+- Study all the components under kube-system
 
 * Releases
 

@@ -82,55 +82,52 @@ https://github.com/kubernetes/kubernetes/issues/11883
 This explains
 https://github.com/kubernetes/kubernetes/issues/11543
 
-
 Is all about the kublet flags (this is kops)
 
-/usr/local/bin/kubelet \
-          --allow-privileged=true \
-  --api-servers=http://127.0.0.1:8080
-  --babysit-daemons=true \
-  --cgroup-root=docker \
-  --cloud-provider=aws \
-  --cluster-dns=100.64.0.10 \
-  --cluster-domain=cluster.local \
-  --config=/etc/kubernetes/manifests \
-  --configure-cbr0=true \
-  --enable-debugging-handlers=true \
-  --hostname-override=ip-172-20-111-3.us-west-1.compute.internal \
-  --network-plugin-mtu=9001 \
-  --network-plugin=kubenet \
-  --node-labels=kubernetes.io/role=master
-  --non-masquerade-cidr=100.64.0.0/10 \
-  --pod-cidr=10.x.x.x/29 \
-  --reconcile-cidr=true \
-  --register-schedulable=false \
-  --v=2
+    /usr/local/bin/kubelet \
+      --allow-privileged=true \
+      --api-servers=http://127.0.0.1:8080
+      --babysit-daemons=true \
+      --cgroup-root=docker \
+      --cloud-provider=aws \
+      --cluster-dns=100.64.0.10 \
+      --cluster-domain=cluster.local \
+      --config=/etc/kubernetes/manifests \
+      --configure-cbr0=true \
+      --enable-debugging-handlers=true \
+      --hostname-override=ip-172-20-111-3.us-west-1.compute.internal \
+      --network-plugin-mtu=9001 \
+      --network-plugin=kubenet \
+      --node-labels=kubernetes.io/role=master
+      --non-masquerade-cidr=100.64.0.0/10 \
+      --pod-cidr=10.x.x.x/29 \
+      --reconcile-cidr=true \
+      --register-schedulable=false \
+      --v=2
 
 mine (dafulat)
 
-/usr/bin/kubelet \
-  --kubeconfig=/etc/kubernetes/kubelet.conf \
-  --require-kubeconfig=true \
-  --pod-manifest-path=/etc/kubernetes/manifests \
-  --allow-privileged=true \
-  --network-plugin=cni \
-  --cni-conf-dir=/etc/cni/net.d \
-  --cni-bin-dir=/opt/cni/bin \
-  --cluster-dns=10.x.x.x \
-  --cluster-domain=cluster.local
+    /usr/bin/kubelet \
+      --kubeconfig=/etc/kubernetes/kubelet.conf \
+      --require-kubeconfig=true \
+      --pod-manifest-path=/etc/kubernetes/manifests \
+      --allow-privileged=true \
+      --network-plugin=cni \
+      --cni-conf-dir=/etc/cni/net.d \
+      --cni-bin-dir=/opt/cni/bin \
+      --cluster-dns=10.x.x.x \
+      --cluster-domain=cluster.local
 
 /etc/kubernetes/kubelet.conf this has just a lot of keys
 
-$ sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-[Service]
-Environment="KUBELET_KUBECONFIG_ARGS=--kubeconfig=/etc/kubernetes/kubelet.conf --require-kubeconfig=true"
-Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
-Environment="KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin"
-Environment="KUBELET_DNS_ARGS=--cluster-dns=10.x.x.x --cluster-domain=cluster.local"
-ExecStart=
-ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_EXTRA_ARGS
-
-
+    $ sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    [Service]
+    Environment="KUBELET_KUBECONFIG_ARGS=--kubeconfig=/etc/kubernetes/kubelet.conf --require-kubeconfig=true"
+    Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
+    Environment="KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin"
+    Environment="KUBELET_DNS_ARGS=--cluster-dns=10.x.x.x --cluster-domain=cluster.local"
+    ExecStart=
+    ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_EXTRA_ARGS
 
 https://github.com/kubernetes/kubernetes.github.io/pull/1312/files#diff-1d469c8d6ab3ffba1e7026c41c16fff5
 
@@ -140,18 +137,18 @@ this is still not published!
 
 Add the aws entry
 
-sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-[Service]
-Environment="KUBELET_KUBECONFIG_ARGS=--kubeconfig=/etc/kubernetes/kubelet.conf --require-kubeconfig=true"
-Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
-Environment="KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin"
-Environment="KUBELET_DNS_ARGS=--cluster-dns=10.x.x.x --cluster-domain=cluster.local"
-Environment="KUBELET_EXTRA_ARGS=--cloud-provider=aws"
-ExecStart=
-ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_EXTRA_ARGS
+    sudo cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    [Service]
+    Environment="KUBELET_KUBECONFIG_ARGS=--kubeconfig=/etc/kubernetes/kubelet.conf --require-kubeconfig=true"
+    Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
+    Environment="KUBELET_NETWORK_ARGS=--network-plugin=cni --cni-conf-dir=/etc/cni/net.d --cni-bin-dir=/opt/cni/bin"
+    Environment="KUBELET_DNS_ARGS=--cluster-dns=10.x.x.x --cluster-domain=cluster.local"
+    Environment="KUBELET_EXTRA_ARGS=--cloud-provider=aws"
+    ExecStart=
+    ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_SYSTEM_PODS_ARGS $KUBELET_NETWORK_ARGS $KUBELET_DNS_ARGS $KUBELET_EXTRA_ARGS
 
 
-kubectl logs kube-controller-manager-k8s-controller-qa-10-96-11-99-ed9a300f -n kube-system
+    kubectl logs kube-controller-manager-k8s-controller-qa-10-96-11-99-ed9a300f -n kube-system
 
 YOU CAN'T CHANGE THE HOSTNAME
 

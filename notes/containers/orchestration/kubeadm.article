@@ -1,0 +1,89 @@
+Kubeadm (added in k8s 1.4.0)
+
+* Links
+
+- [[http://kubernetes.io/docs/admin/kubeadm/][[kubeadm reference]]]
+- [[https://github.com/kubernetes/kubeadm/blob/master/CHANGELOG.md][Github CHANGELOG]]
+- [[https://github.com/kubernetes/kubeadm/issues][Github ISSUES]]
+- [[http://kubernetes.io/docs/getting-started-guides/kubeadm/][Getting started guide]]
+- [[http://kubernetes.io/docs/admin/kubeadm/][Kubeadm reference]]
+- [[http://kubernetes.io/docs/getting-started-guides/kubeadm/#limitations][Limitations]]
+
+** Why?
+
+It will decouple me from using salt/ansible to configure the system
+and actually UNDERSTANDING how it works.
+
+** How does kubeadm works?
+
+Kubeadm will deploy:
+
+- kube-apiserver
+- kube-controller-manager
+- kube-scheduler
+
+It also creates etcd.
+
+.image images/kubernetes-arch.png _ 400
+.caption Source: [[https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master][https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master]]
+
+kublet will be run under systemd and it will manage the other 3 components
+(+ etcd).
+
+    ps aux | grep /usr/bin/kubelet | grep -v grep
+
+By default:
+
+    /usr/bin/kubelet \
+      --kubeconfig=/etc/kubernetes/kubelet.conf \
+      --require-kubeconfig=true \
+      --pod-manifest-path=/etc/kubernetes/manifests \
+      --allow-privileged=true \
+      --network-plugin=cni \
+      --cni-conf-dir=/etc/cni/net.d \
+      --cni-bin-dir=/opt/cni/bin \
+      --cluster-dns=10.96.0.10 \
+      --cluster-domain=cluster.local
+
+By default the master is tagged not to be schedulable with workload.
+
+* Configuration
+
+The confs are hosted in /etc/kubernetes/manifests/
+
+    # ls -la /etc/kubernetes/manifests/
+    total 24
+    drwxr-xr-x 2 root root 4096 Dec 23 10:41 .
+    drwxr-xr-x 4 root root 4096 Dec 23 10:41 ..
+    -rw------- 1 root root 1786 Dec 23 10:41 etcd.json
+    -rw------- 1 root root 2245 Dec 23 10:41 kube-apiserver.json
+    -rw------- 1 root root 1962 Dec 23 10:41 kube-controller-manager.json
+    -rw------- 1 root root  969 Dec 23 10:41 kube-scheduler.json
+
+The directory /etc/kubernetes/manifests/ will be monitor for changes!
+The system will ensure all in that dir is always running.
+For the docs:
+
+    kubeadm generates Kubernetes resource manifests for the API server,
+    controller manager and scheduler, and placing them in
+    /etc/kubernetes/manifests. The kubelet watches this directory for static
+    resources to create on startup. These are the core components of
+    Kubernetes, and once they are up and running we can use kubectl to set
+    up/manage any additional components.
+
+To get all the containers running:
+
+    docker ps --format="table {{.ID}}\t{{.Image}}"
+
+They are also all listening on the machine ("hostNetwork": true):
+
+    curl http://127.0.0.1:8080/version
+
+The kublet systemd setting is here /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+** Notes
+
+At the time of this writing the docs are appalling:
+
+- no way to know how to use cloud config
+- no way how to use systemd drop pin

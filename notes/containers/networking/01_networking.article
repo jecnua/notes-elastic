@@ -1,0 +1,43 @@
+Networking
+|| Last update: 28 Dec 2016
+
+* Intro
+
+* K8S
+
+In kubernetes every *POD* has an unique IP (IPv4) and containers running inside
+the POD gets assigned ports on this ip.
+
+k8s reccomends to allocated blocks of IPs to each nodes in the cluster depending
+on the workload expected.
+
+* Overlay network
+
+An *overlay*network* obscures the real network architecture from PODS using
+traffic encapsulation. It basically wraps all cluster packages at node level
+with additional tcp/udp headers). They need an address range to work with.
+
+This allows multiple IPs on a single machine.
+
+** Alternatives
+
+Calico non-IPIP mode does not overlay and is fast and lightweight however:
+- Only span 1 VPC
+- Does not stretch mulitple AZs
+
+** Network plugins
+
+K8S assumes each POD can be given an IP and it relies on plugins to do so.
+Some overlay-style network plugins are:
+
+- Project [[https://www.projectcalico.org/][Calico]] (IPIP mode)
+- CoreOS [[https://coreos.com/flannel/docs/latest/][Flannel]]
+- Weaveworks [[https://www.weave.works/][Weave-net]]
+
+They use a k/v store like ETCD to store mappings between the virtual IP and the
+real node IP. A deamon on every node will manage the forwarding of the traffic
+to the right POD.
+
+* Sources
+
+- [[https://medium.com/@anne_e_currie/kubernetes-aws-networking-for-dummies-like-me-b6dedeeb95f3][Kubernetes/AWS Networking for Dummies (like me)]]

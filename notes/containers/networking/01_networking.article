@@ -136,6 +136,8 @@ They use a k/v store like ETCD to store mappings between the virtual IP and the
 real node IP. A deamon on every node will manage the forwarding of the traffic
 to the right POD.
 
+Flannel can use UDP tunnels or AWS routes (Calico too).
+
 *** Weaveworks
 
 .image images/weave-net-fdp.png 300 _

@@ -1,0 +1,34 @@
+Docker swarm
+|| Last update: 29 Dec 2016
+
+* Intro
+
+From docker 1.12 swarm has been rebooted under
+[[https://github.com/docker/swarmkit][swarmkit]]. Swarm commands were added
+under the common usual docker cli.
+
+Like with k8s, you need a first node to bootstrap as master and the others to
+join. Consensus is managed via _Raft_.
+
+** Network
+
+From a network standpoint there were many changes.
+
+- There is default overlay network called _ingress_ used to exposer service
+externally. The *scope* for this overlay called swarm.
+- Embedded DNS server to provide service discovery.
+- Embedded LoadBalancing at containers level via IPVs.
+
+** Service
+
+Docker swarm service <--> k8s deployments
+
+A service will run:
+
+- A group of containers
+- An elb over them
+- A registered DNS
+
+* Sources
+
+- http://containertutorials.com/swarmkit/architecture.html

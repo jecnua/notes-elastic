@@ -1,14 +1,35 @@
 Docker swarm
-|| Last update: 29 Dec 2016
+|| Last update: 30 Dec 2016
 
 * Intro
 
-From docker 1.12 swarm has been rebooted under
-[[https://github.com/docker/swarmkit][swarmkit]]. Swarm commands were added
-under the common usual docker cli.
+.image images/swarm.png
+.caption Source: [[https://blog.docker.com/2016/06/docker-1-12-built-in-orchestration/][docker-1-12-built-in-orchestration]]
 
-Like with k8s, you need a first node to bootstrap as master and the others to
-join. Consensus is managed via _Raft_.
+Swarm is a group of docker engine that work in orchestration.
+From docker 1.12 [[https://github.com/docker/swarmkit][Swarmkit]] is the
+technical foundation of Swarm Mode implementation.
+Swarm commands were added under the common usual docker cli.
+
+** Roles
+
+Each server joining a swarm cluster is called _Swarm_Node_.
+There are two roles a node can assume in a swarm cluster:
+
+- Manager: Accept commands and schedule tasks
+- Worker: Executes containers dispatched by the manager (runs _Tasks_)
+
+Consensus is managed via [[../../protocols/00-raft.article][_Raft_]].
+
+*** Quick notes about Raft
+
+.link ../../protocols/00-raft.article Raft informations *on*my*notes*here*
+
+Like with k8s, you need _the_ first node to bootstrap as _manager_ and the others
+to join.  A _swarm_init_ create a raft consensus group of one node.
+Only _managers_ are part of the consensus group.
+
+The raft store used by Docker is optimised for performance (in-memory reads).
 
 ** Network
 
@@ -16,10 +37,34 @@ From a network standpoint there were many changes.
 
 - There is default overlay network called _ingress_ used to exposer service
 externally. The *scope* for this overlay called swarm.
+
+    ❯ docker network ls                                                                         2.3.3
+    NETWORK ID          NAME                DRIVER              SCOPE
+    c7f2ffa35bbd        bridge              bridge              local
+    9d6a5526a989        docker_gwbridge     bridge              local
+    cd5325667e3e        host                host                local
+    7i67097jz8w2        ingress             overlay             swarm
+    38eda6530701        none                null                local
+
 - Embedded DNS server to provide service discovery.
 - Embedded LoadBalancing at containers level via IPVs.
 
+The internal elb serve the same port (service port) on every node.
+
+Intern node communication is done via gRPC (http/2) and protobuf.
+
+*** IPVS
+
+Linux IPVs is a in-kernel layer 4 multi-protocol load balancer. IPVS routes
+the packages inside the kernel and by doing so being very performant. This is
+all managed by the Swarm routing mash.
+
 ** Service
+
+There are two types of service:
+
+- Replicated: Distribuited among all the cluster
+- Global: One on every node
 
 Docker swarm service <--> k8s deployments
 
@@ -32,3 +77,4 @@ A service will run:
 * Sources
 
 - http://containertutorials.com/swarmkit/architecture.html
+- https://blog.docker.com/2016/06/docker-1-12-built-in-orchestration/

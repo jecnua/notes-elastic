@@ -1,0 +1,89 @@
+Enhanced Networking
+|| Last update: 09 Jan 2017
+
+* Intro
+
+Links (in the order I think you should study them):
+
+- [[https://aws.amazon.com/about-aws/whats-new/2016/06/introducing-elastic-network-adapter-ena-the-next-generation-network-interface-for-ec2-instances/][Announcement]]
+- [[https://aws.amazon.com/blogs/aws/elastic-network-adapter-high-performance-network-interface-for-amazon-ec2/][Blog post]]
+- [[https://www.youtube.com/watch?v=CBmSl3O-AhI][AWS re:Invent 2016: Optimizing Network Performance for Amazon EC2 Instances (CMP315)]] - [[http://www.slideshare.net/AmazonWebServices/aws-reinvent-2016-optimizing-network-performance-for-amazon-ec2-instances-cmp315][Slides]]
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html][Enhanced networking on docs]]
+
+** Options
+
+- SR-IOV (Intel 82599 VF) - [[http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/sriov-networking.html][docs]] - [[https://sourceforge.net/projects/e1000/files/ixgbevf%20stable/][drivers]]
+- Elastic Network Adapter (ENA) - [[http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking-ena.html][docs]] - [[https://github.com/amzn/amzn-drivers][drivers]]
+
+r4 have access to ENA drivers
+[[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html#supported_instances][Instances support]]
+
+** ENA
+
+From the docs:
+
+    The Elastic Network Adapter (ENA) supports network speeds of up to 20 Gbps.
+    P2, R4, X1, and m4.16xlarge instances use the Elastic Network Adapter for
+    enhanced networking.
+
+ENA is new (Jun 28, 2016) and when introducted was only working on X1.
+
+    ENA provides high network performance and improved CPU scalability through
+    a multi-queue software / device interface. ENA provides features such as
+    IPv4 header checksum and TCP / UDP checksum offloads to reduce CPU
+    utilization of network processing. ENA also features support for
+    Receive-Side Steering (RSS) with receive traffic distribution to multiple
+    vCPUs, and dynamic interrupt moderation mechanism with interrupt affinity
+    per vCPU. With support for multiple Tx / Rx queues, each with a dedicated
+    MSI-X interrupt, ENA is designed to scale well when used with modern
+    processors.
+
+** Checking
+
+On a r4:
+
+    $ modinfo ena
+    filename:       /lib/modules/4.4.0-57-generic/kernel/drivers/net/ethernet/amazon/ena/ena.ko
+    version:        1.0.2
+    license:        GPL
+    description:    Elastic Network Adapter (ENA)
+    author:         Amazon.com, Inc. or its affiliates
+    srcversion:     881520E877FD2888486C76A
+    alias:          pci:v00001D0Fd0000EC21sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd0000EC20sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00001EC2sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00000EC2sv*sd*bc*sc*i*
+    depends:
+    intree:         Y
+    vermagic:       4.4.0-57-generic SMP mod_unload modversions
+    parm:           debug:Debug level (0=none,...,16=all) (int)
+
+And:
+
+    $ modinfo ixgbevf
+    filename:       /lib/modules/4.4.0-57-generic/kernel/drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
+    version:        2.12.1-k
+    license:        GPL
+    description:    Intel(R) 10 Gigabit Virtual Function Network Driver
+    author:         Intel Corporation, <linux.nics@intel.com>
+    srcversion:     3BE9CE158D5544A1C1411D8
+    alias:          pci:v00008086d000015A9sv*sd*bc*sc*i*
+    alias:          pci:v00008086d000015A8sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001564sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001565sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001530sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001515sv*sd*bc*sc*i*
+    alias:          pci:v00008086d0000152Esv*sd*bc*sc*i*
+    alias:          pci:v00008086d000010EDsv*sd*bc*sc*i*
+    depends:
+    intree:         Y
+    vermagic:       4.4.0-57-generic SMP mod_unload modversions
+    parm:           debug:Debug level (0=none,...,16=all) (int)
+
+
+** Terraform support
+
+- [[https://github.com/hashicorp/terraform/issues/7815][Github Issue]]
+- [[https://github.com/hashicorp/terraform/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20ENA][Issue search]]
+
+Support for this capability is still absent at the moment.

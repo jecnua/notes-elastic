@@ -40,6 +40,28 @@ ENA is new (Jun 28, 2016) and when introducted was only working on X1.
 
 ** Checking
 
+Check if you have then abilitated:
+
+On a r3:
+
+    $ ethtool -i ens3
+    driver: ixgbevf
+    version: 2.12.1-k
+    firmware-version:
+    expansion-rom-version:
+    bus-info: 0000:00:03.0
+    supports-statistics: yes
+    supports-test: yes
+    supports-eeprom-access: no
+    supports-register-dump: yes
+    supports-priv-flags: no
+
+On a r4:
+
+    $ vif
+
+*** Driver version
+
 On a r4:
 
     $ modinfo ena
@@ -81,9 +103,38 @@ And:
     parm:           debug:Debug level (0=none,...,16=all) (int)
 
 
+** How
+
+You cannot [[https://docs.aws.amazon.com/cli/latest/reference/ec2/modify-instance-attribute.html][modify]]
+a running instance:
+
+    $ aws ec2 modify-instance-attribute --instance-id i-0001efdba038f7bfa --ena-support
+    An error occurred (IncorrectInstanceState) when calling the
+    ModifyInstanceAttribute operation: The instance 'i-0001efdba038f7bfa' is not
+    in the 'stopped' state.
+
+You cannot [[https://docs.aws.amazon.com/cli/latest/reference/ec2/modify-image-attribute.html][modify]] an existing image.
+
+You cannot COPY it and change it on the fly.
+
+This is the only way:
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking-ena.html][docs]]
+
 ** Terraform support
 
 - [[https://github.com/hashicorp/terraform/issues/7815][Github Issue]]
 - [[https://github.com/hashicorp/terraform/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20ENA][Issue search]]
 
 Support for this capability is still absent at the moment.
+
+** Packer support
+
+- [[https://github.com/mitchellh/packer/issues/3688][Issue]]
+- [[https://github.com/mitchellh/packer/pull/4312][WIP]]
+
+Still not available
+
+** Ubuntu support
+
+- https://bugs.launchpad.net/cloud-images/+bug/1254930

@@ -12,8 +12,8 @@ This is a sporadic problems. Sometimes it happens, sometimes it doesn't.
 
 Digging a little and analysing the systemd startup process:
 
-    systemd-analyze
-    systemd-analyze blame
+    $ systemd-analyze
+    $ systemd-analyze blame
 
 You can have more information:
 
@@ -31,16 +31,15 @@ You can have more information:
 
 You can also have a grafic view of where the time is spent:
 
-    systemd-analyze plot > plot.svg
-    mutt -s "Test mail" -a '/home/ubuntu/plot.svg' -- fabrizio.sabatini.it@gmail.com
+    $ systemd-analyze plot > plot.svg
+    $ mutt -s "Test mail" -a '/home/ubuntu/plot.svg' -- xxx@xxx.com
 
 The first line is the one I am concerned about:
 
     58.789s apt-daily.service
 
-So basically Ubuntu 16.04 introduces unattended upgrade by default via a
+Basically Ubuntu 16.04 introduces unattended upgrade by default via a
 systemd timer:
-
 
     /lib/systemd/system/apt-daily.service
     /lib/systemd/system/apt-daily.timer
@@ -84,7 +83,7 @@ To disable the above systemd service / timer:
     $ sudo systemctl disable apt-daily.service # disable run when system boot
     $ sudo systemctl disable apt-daily.timer   # disable timer run
 
-Son in your *user-data*:
+To avoid all this, in your *user-data* ([[https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image][source]]):
 
     #!/bin/bash
     systemctl stop apt-daily.service

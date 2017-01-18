@@ -1,10 +1,51 @@
 AWS certificate manager
+|| Last update: 18 Jan 2017
 
 * Intro
 
-* Usage
+* Adding SSL certs
 
-** List
+Since Oct 13, 2016 you don't need to upload SSL certs for CF and ELBs on IAM, but
+you can use ACM directly.
+
+- [[https://forums.aws.amazon.com/ann.jspa?annID=4085][Forum notification]]
+- [[https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html][Docs]]
+
+NOTE: I would not advice to do this in terraform since you need all the data
+(key, etc).
+
+** New way
+
+    $ aws acm import-certificate \
+      --certificate file://cloudfront_star_test_co_uk_jan_2017.crt \
+      --certificate-chain file://abcd.crt \
+      --private-key file://cloudfront_star_test_co_uk_jan_2017.pem
+    {
+      "CertificateArn": "arn:aws:acm:us-east-1:xxx:certificate/xxx"
+    }
+
+** Old way (OBSOLETE)
+
+You need to push it twice. Once for the ELBs:
+
+    $ aws iam upload-server-certificate \
+      --server-certificate-name cloudfront_star_test_co_uk_april_2016 \
+      --certificate-body file://abcd.crt \
+      --private-key file://cloudfront_star_test_co_uk_april_2016.key \
+      --certificate-chain file://gd_bundle-g2-g1.crt
+
+And one for Cloudfront (with PATH):
+
+    $ aws iam upload-server-certificate \
+      --server-certificate-name cloudfront_star_test_co_uk_april_2016 \
+      --certificate-body file://abcd.crt \
+      --private-key file://cloudfront_star_test_co_uk_april_2016.key \
+      --certificate-chain file://gd_bundle-g2-g1.crt \
+      --path /cloudfront/cloudfront_star_test_co_uk_april_2016/
+
+- https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html#list-server-certificates
+
+* API
 
 To get the list of SSL certs run:
 

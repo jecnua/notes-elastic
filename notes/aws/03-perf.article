@@ -19,3 +19,7 @@ Look at ENA docs.
     xen
     $ cat /sys/devices/system/cl*/cl*/available_clocksource
     xen tsc hpet acpi_pm
+
+* Sources
+
+- AWS re -Invent 2016 - Deep Dive on Amazon EC2 Instances, Featuring Performance Optimization (CMP301)

@@ -22,7 +22,13 @@ r4 have access to ENA drivers
 
 .image images/traditional2.png _ 600
 
-** What is ENA
+** Option 1) Intel 82599
+
+ixgbevf
+
+.image images/intel1.png _ 600
+
+** Option 2) ENA [best]
 
 From the docs:
 
@@ -42,6 +48,17 @@ ENA is new (Jun 28, 2016) and when introducted was only working on X1.
     MSI-X interrupt, ENA is designed to scale well when used with modern
     processors.
 
+*** Bandwith
+
+ENA supports network speeds of up to 20 Gbps
+[[https://forums.aws.amazon.com/thread.jspa?messageID=738112&#738112][however]]:
+
+    You can currently drive a maximum of 10 Gbps to a single instance in a
+    placement group. In order to achieve 20 Gbps, you will need to use three
+    or more X1 instances in a placement group. We are working on enabling 20
+    Gbps throughput between two instances across multiple flows, and will post
+    an update once we have rolled out this change.
+
 * Check availability/usage
 
 ** Image (AMI) support
@@ -59,6 +76,10 @@ It will return an empty array if not or:
     ]
 
 If it does.
+
+*NOTE*: You can't call this command on an AMI that's not yours (like UBUNTU).
+
+    An error occurred (AuthFailure) when calling the DescribeImageAttribute operation: Not authorized for image:ami-9dcfdb8a
 
 ** Check if the drivers are installed on your OS:
 
@@ -204,3 +225,7 @@ Still not available
 ** Ubuntu support
 
 - https://bugs.launchpad.net/cloud-images/+bug/1254930
+
+* Sources
+
+- AWS re -Invent 2016 - Deep Dive on Amazon EC2 Instances, Featuring Performance Optimization (CMP301)

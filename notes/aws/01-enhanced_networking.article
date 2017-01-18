@@ -10,7 +10,7 @@ Links (in the order I think you should study them):
 - [[https://www.youtube.com/watch?v=CBmSl3O-AhI][AWS re:Invent 2016: Optimizing Network Performance for Amazon EC2 Instances (CMP315)]] - [[http://www.slideshare.net/AmazonWebServices/aws-reinvent-2016-optimizing-network-performance-for-amazon-ec2-instances-cmp315][Slides]]
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html][Enhanced networking on docs]]
 
-** Options
+* Enhanced Networking flavours
 
 - SR-IOV (Intel 82599 VF) - [[http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/sriov-networking.html][docs]] - [[https://sourceforge.net/projects/e1000/files/ixgbevf%20stable/][drivers]]
 - Elastic Network Adapter (ENA) - [[http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking-ena.html][docs]] - [[https://github.com/amzn/amzn-drivers][drivers]]
@@ -18,7 +18,11 @@ Links (in the order I think you should study them):
 r4 have access to ENA drivers
 [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html#supported_instances][Instances support]]
 
-** ENA
+** Before enhanced networking
+
+.image images/traditional2.png _ 600
+
+** What is ENA
 
 From the docs:
 
@@ -38,9 +42,57 @@ ENA is new (Jun 28, 2016) and when introducted was only working on X1.
     MSI-X interrupt, ENA is designed to scale well when used with modern
     processors.
 
-** Checking
+* Check availability/usage
 
-Check if you have then abilitated:
+** Image (AMI) support
+
+To check if your image (the one you are using or want to use) support ENA you
+can run the following:
+
+    $ instance_id = 'xxx'
+    $ aws ec2 describe-instances --instance-id $instance_id --query 'Reservations[].Instances[].EnaSupport'
+
+It will return an empty array if not or:
+
+    [
+        true
+    ]
+
+If it does.
+
+** Check if the drivers are installed on your OS:
+
+    $ modinfo ena
+    filename:       /lib/modules/4.4.0-57-generic/kernel/drivers/net/ethernet/amazon/ena/ena.ko
+    version:        1.0.2
+    license:        GPL
+    description:    Elastic Network Adapter (ENA)
+    author:         Amazon.com, Inc. or its affiliates
+    srcversion:     881520E877FD2888486C76A
+    alias:          pci:v00001D0Fd0000EC21sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd0000EC20sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00001EC2sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00000EC2sv*sd*bc*sc*i*
+    depends:
+    intree:         Y
+    vermagic:       4.4.0-57-generic SMP mod_unload modversions
+    parm:           debug:Debug level (0=none,...,16=all) (int)
+
+** Check if you are using the drivers (OS)
+
+Find you interface:
+
+    $ ifconfig
+    [...]
+    ens3      Link encap:Ethernet  HWaddr 06:c2:9a:20:a4:b4
+              inet addr:10.96.30.23  Bcast:10.96.30.255  Mask:255.255.255.0
+              inet6 addr: fe80::4c2:9aff:fe20:a4b4/64 Scope:Link
+              UP BROADCAST RUNNING MULTICAST  MTU:9001  Metric:1
+              RX packets:63759808 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:10717624 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:1000
+              RX bytes:133612964393 (133.6 GB)  TX bytes:50435094047 (50.4 GB)
+    [...]
 
 On a r3:
 
@@ -59,6 +111,20 @@ On a r3:
 On a r4:
 
     $ vif
+
+If it's using the right drivers you will see:
+
+    $ ethtool -i ens3
+    driver: ena
+    version: 1.0.2
+    firmware-version:
+    expansion-rom-version:
+    bus-info: 0000:00:03.0
+    supports-statistics: yes
+    supports-test: no
+    supports-eeprom-access: no
+    supports-register-dump: no
+    supports-priv-flags: no
 
 *** Driver version
 

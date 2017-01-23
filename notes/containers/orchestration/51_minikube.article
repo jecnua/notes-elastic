@@ -1,4 +1,5 @@
 Minikube
+|| Last update: 23 Jan 2017
 
 * Intro
 
@@ -56,11 +57,10 @@ or:
 
 ** Operations
 
+Example:
 
-
-6545  minikube start
-6550  minikube status
-6553  kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
-6557  kubectl expose deployment hello-minikube --type=NodePort\nservice "hello-minikube" exposed
-6559  minikube service hello-minikube --url
-7385  minikube --help
+    minikube status
+    kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+    kubectl expose deployment hello-minikube --type=NodePort\nservice "hello-minikube" exposed
+    minikube service hello-minikube --url
+    minikube --help

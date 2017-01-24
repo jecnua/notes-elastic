@@ -1,12 +1,13 @@
 Create a K8S from scratch
+|| Last update: 24 Jan 2017
 
 * Intro
 
-You can find a lot of articles about people doing this way or this way, but in
+You can find a lot of articles about people doing this way or the other way, but in
 the end, they all go and use ansible or salt to do the complex stuff and they
 don't explain much.
 
-https://github.com/kubernetes/kubernetes/blob/master/cluster/aws/util.sh
+I will try to do otherwise.
 
 ** Good sources
 
@@ -28,59 +29,60 @@ I also tried to generate cs and stuff better kubeadm
 
 * Thing that nobody tells you
 
-NEW
+** How to find a subnet? internal external elb / Tag everything
 
+If you don't, you will have no problem until you try to create an elb via k8s.
+The elb will be create but pointing to the wrong VPC and subnets.
 
-** How to find a subnet? internal external elb
+[[https://github.com/fabric8io/kansible/blob/master/vendor/k8s.io/kubernetes/docs/design/aws_under_the_hood.md#tagging][Tagging]]
 
-https://github.com/kubernetes/kubernetes/issues/17620
-ONE OF THE WORST
+Why?
 
+- If you have only private subnet tagged, no public facing elb will be created.
+- If you have only public subnet tagged, no PRIVATE facing elb will be created.
 
+Still not enough:
 
-You need to read here
-https://github.com/kubernetes/kubernetes/blob/master/pkg/cloudprovider/providers/aws/aws.go
+ELb will not connect to the boxes
 
-public
-"kubernetes.io/role/elb" = "1"
+[[https://github.com/kubernetes/kubernetes/issues/17620][ONE OF THE WORST issue]]
 
-private
-"kubernetes.io/role/internal-elb" = "1"
+This is the go code that manages it:
+[[https://github.com/kubernetes/kubernetes/blob/master/pkg/cloudprovider/providers/aws/aws.go]]
+
+    # public
+    "kubernetes.io/role/elb" = "1"
+
+    # private
+    "kubernetes.io/role/internal-elb" = "1"
 
 Added it and it used the right subnets :)
 
 you can find it here how it work
-https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L2549
+
+- https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L2549
 
 ensure load balancer
-https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L2502
+- https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L2502
 
 KOPS WAS NOT DOING THIS!!!
 no setting
 only two subntes
 
 you can find load balancer by searching TagNameKubernetesService
-https://github.com/kubernetes/kubernetes/search?utf8=%E2%9C%93&q=TagNameKubernetesService
 
-
-WHAT TO CHECK WITH SWARM
-
-creating elb
-
-creating elb external
-creating elb internal
-creating elb external/internal ssl
-
+- https://github.com/kubernetes/kubernetes/search?utf8=%E2%9C%93&q=TagNameKubernetesService
 
 ** Now it cannot find the boxes
 
-the loadbl don't point!
+the load bl don't point!
 
 STILL OPEN
 https://github.com/kubernetes/kubernetes/issues/11883
 
 This explains
 https://github.com/kubernetes/kubernetes/issues/11543
+https://github.com/kubernetes/kubernetes/issues/11543#issuecomment-143775483
 
 Is all about the kublet flags (this is kops)
 
@@ -133,7 +135,66 @@ https://github.com/kubernetes/kubernetes.github.io/pull/1312/files#diff-1d469c8d
 
 this is still not published!
 
+** Remove the master from the ELBs
 
+*** The problem (STILL OPEN)
+
+Unschedulable node probably should NOT be included in load-balancers.
+But they do.
+
+ISSUE:
+
+- [[https://github.com/kubernetes/kubernetes/issues/33884][NodePort on the master: kubernetes/kubernetes#33884]]
+
+POSSIBLE PR:
+
+- [[https://github.com/kubernetes/kubernetes/pull/35902][35902]]
+
+CONNECTED ISSUES:
+
+- [[https://github.com/kubernetes/kops/issues/853][kubernetes/kubernetes#853]]
+- [[https://github.com/kubernetes/kops/issues/639][kubernetes/kubernetes#639]]
+
+*** Solution
+
+When you create a cluster with kubeadm the controller node by default won't be
+schedulable. This is good but unfortunately, the nodes will STILL be added to
+the ELBs (service type Load Balancer).
+This is a problem because the node will always result "Out of service" since he
+doesn't have node port open on itself.
+
+So let's say you have this:
+
+    $ kubectl get nodes
+    NAME                       STATUS         AGE
+    ip-x-x-x-x.ec2.internal    Ready          3h
+    ip-y-y-y-y.ec2.internal    Ready,master   3h
+
+To avoid the described problem you need to [[https://kubernetes.io/docs/user-guide/kubectl/kubectl_cordon/][cordon]]
+the node off.
+
+    $ kubectl cordon ip-y-y-y-y.ec2.internal
+    node "ip-y-y-y-y.ec2.internal" cordoned
+
+If you list again now:
+
+    $ kubectl get no
+    NAME                       STATUS                            AGE
+    ip-x-x-x-x.ec2.internal    Ready                             3h
+    ip-y-y-y-y.ec2.internal    Ready,SchedulingDisabled,master   3h
+
+Kudos:
+
+- [[https://github.com/kubernetes/kubernetes/issues/33884#issuecomment-257312729][Issue where I found the solution]]
+
+** Taints and tolerations
+
+taints and tolerations instead
+We mark it schedulable with a taint so that we can use deployments for our system components.
+As I understand the reasoning behind moving from Unschedulable to taints: taints expose greater control. So we can say
+"these instances can run etcd", and "these instances can run apiserver". And we allow "userspace" to have the same control.
+
+** NNN
 
 Add the aws entry
 
@@ -156,22 +217,9 @@ YOU CAN'T CHANGE THE HOSTNAME
 
 https://medium.com/@canthefason/kube-up-i-know-what-you-did-on-aws-93e728d3f56a#.ehg4ihy80
 
+** Show nodes tags
 
-** Tag everything
-
-If you don't, you will have no problem until you try to create an elb via k8s.
-The elb will be create but pointing to the wrong VPC and subnets.
-
-[[https://github.com/fabric8io/kansible/blob/master/vendor/k8s.io/kubernetes/docs/design/aws_under_the_hood.md#tagging][Tagging]]
-
-Why?
-
-If you have only private subnet tagged, no public facing elb will be created.
-If you have only public subnet tagged, no PRIVATE facing elb will be created.
-
-Still not enough:
-
-ELb will not connect to the boxes
+    kubectl get nodes --show-labels
 
 ** Subnets
 
@@ -242,11 +290,6 @@ Check the flags the kublet is running with:
     ps aux | grep /usr/bin/kubelet | grep -v grep
 
 
-
-
-
-
-
 THIS ONE
 https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master
 
@@ -288,3 +331,6 @@ READ VERY GOOD
 What I was thinking
 
 - https://www.eastbanctech.com/tech-insights/blog/reliable-kubernetes-cluster-in-the-amazon-cloud.html
+
+
+https://github.com/kubernetes/kubernetes/blob/master/cluster/aws/util.sh

@@ -10,7 +10,9 @@ https://docs.docker.com/engine/admin/logging/overview/
 
 * Delete what you run
 
---rm tells to the Docker CLI to automatically issue a docker rm command once the container exits. That way, we don’t leave anything behind ourselves.
+    --rm
+
+tells to the Docker CLI to automatically issue a docker rm command once the container exits. That way, we don’t leave anything behind ourselves.
 
     docker run --rm
 

@@ -1,0 +1,26 @@
+* Usage
+
+
+* What you can work with
+
+    kubectl get
+
+
+  cd /tmp/
+  git clone https://github.com/jecnua/k8s-swarm-test-drive.git
+  cd k8s-swarm-test-drive/
+  cd k8s/tests/
+  cd new_tests/
+
+  kubectl get deployments
+  kubectl get deployments --all-namespaces
+  kubectl get svc
+  kubectl get svc --all-namespaces
+  kubectl apply -f 01_dashboard_deployment.yaml
+  kubectl apply -f 03_dashboard_service_internal.yaml
+
+* test
+
+  kubectl describe svc kubernetes-dashboard-internal
+  kubectl describe svc kubernetes-dashboard-internal --all-namespaces
+  kubectl describe svc kubernetes-dashboard-internal -n kube-system

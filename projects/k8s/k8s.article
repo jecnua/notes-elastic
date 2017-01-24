@@ -35,11 +35,8 @@ TBD
 
     brew update
     brew install kops
-
-
     export KOPS_STATE_STORE=s3://<name>-k8s-resources-qa
     export CLUSTER_NAME=k8s.qa.me.co.uk
-
     kops create cluster ${CLUSTER_NAME} --zones us-west-1c
     kops update cluster ${CLUSTER_NAME} --target=terraform
 
@@ -93,7 +90,7 @@ TBD
 
 * Links
 
-da modificare:
+to modify:
 
 - https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.0/examples/https-nginx/nginx-app.yaml
 - https://stackoverflow.com/questions/32837033/how-to-setup-an-external-kubernetes-service-in-aws-using-https

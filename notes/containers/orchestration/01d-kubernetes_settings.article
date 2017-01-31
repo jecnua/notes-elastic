@@ -1,0 +1,186 @@
+Set up Kubernetes
+|| Last update: 30 Jan 2017
+
+* Accessing ECR
+
+https://kubernetes.io/docs/user-guide/images/#using-aws-ec2-container-registry
+
+https://github.com/kubernetes/kubernetes/issues/36213
+https://github.com/kubernetes/release/pull/198
+https://github.com/kubernetes/kubeadm/issues/28
+
+    # ISSUE: https://github.com/kubernetes/kubernetes/issues/36213
+    # https://github.com/kubernetes/release/pull/198
+    # https://github.com/kubernetes/kubeadm/issues/28
+    # Waiting for: https://github.com/kubernetes/kubernetes/pull/29459
+    # Waiting for: https://github.com/kubernetes/kubernetes/issues/27980
+    # HACK: https://github.com/kubernetes/release/pull/198
+
+- ecr:GetAuthorizationToken
+- ecr:BatchCheckLayerAvailability
+- ecr:GetDownloadUrlForLayer
+- ecr:GetRepositoryPolicy
+- ecr:DescribeRepositories
+- ecr:ListImages
+- ecr:BatchGetImage
+
+$ /usr/bin/kubelet --version=true
+Kubernetes v1.5.2
+
+journalctl -t kubelet | grep aws-ecr-key
+
+old way
+https://github.com/kubernetes/kubernetes/issues/12835
+https://github.com/kubernetes/kubernetes/issues/10831
+
+lol
+https://github.com/kubernetes/kubernetes/issues/19113
+
+    1  nano /etc/kubernetes/kubelet.conf
+    2  nano /etc/kubernetes/manifests
+    3  nano /etc/kubernetes/kubelet.conf
+    4  kubectl get pods
+    5  kubectl describe pods fabtest1-1057469327-vtgnh
+    6  ls -la /var/lib/kubelet/p
+    7  ls -la /var/lib/kubelet/
+    8  nano /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    9  ps aux | grep kubelet
+   10  systemctl kubelet status
+   11  service kubelet status
+   12  systemctl daemon-reload
+   13  ps aux | grep kubelet
+   14  ps aux | grep /usr/bin/kubelet
+   15  service kubelet status
+   16  nano /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+   17  service kubelet restart
+   18  service kubelet status
+   19  ps aux | grep /usr/bin/kubelet
+   20  ls -la
+   21  history
+
+Environment="KUBELET_EXTRA_ARGS=--cloud-provider=aws"
+
+
+sudo systemctl daemon-reload
+sudo service kubelet restart
+
+==
+
+https://github.com/kubernetes/kubernetes/issues/36213
+this one
+
+ITSEc wants to use it well
+
+What happened:
+When passing --cloud-provider to kubeadm, the flag is only passed to the controller manager. It is however not passed to the kubelet, which makes Azure Disk mounting (and probably other cloud features?) not work. Also, the --cloud-config flag is not passed into the kubelet.
+It looks like the kubelet is able to figure out the appropriate cloud provider (azure) by itself. Not sure how it does this, maybe it gets a hint from the controller manager. Nevertheless, if users provide a cloud provider to kubeadm, this one should be explicitly passed to all services which offer such an option. Also, the (correct) auto guessing does not help when there is no cloud config given to the kubelet.
+
+I currently have to provide a custom systemd dropin which overrides the KUBELET_EXTRA_ARGS env var.
+
+An idea how to fix this: Add an optional environment file (/etc/kubernetes/kubeadm-kubelet-args.env) to the 10-kubeadm.conf dropin. The kubeadm could then write appropriate cloud-config (and other?) flags to this file.
+
+
+before
+
+ubuntu@ip-10-96-11-51:~$ kubectl describe nodes
+Name:               ip-10-96-10-106.ec2.internal
+Role:
+Labels:               beta.kubernetes.io/arch=amd64
+               beta.kubernetes.io/os=linux
+               kubernetes.io/hostname=ip-10-96-10-106.ec2.internal
+Taints:               <none>
+CreationTimestamp:     Mon, 30 Jan 2017 09:25:48 +0000
+Phase:
+
+after
+
+ubuntu@ip-10-96-11-51:~$ kubectl describe nodes
+Name:               ip-10-96-10-106.ec2.internal
+Role:
+Labels:               beta.kubernetes.io/arch=amd64
+               beta.kubernetes.io/instance-type=m4.2xlarge
+               beta.kubernetes.io/os=linux
+               failure-domain.beta.kubernetes.io/region=us-east-1
+               failure-domain.beta.kubernetes.io/zone=us-east-1b
+               kubernetes.io/hostname=ip-10-96-10-106.ec2.internal
+Taints:               <none>
+
+
+    # My horrible bash :)
+    check_cloud_provider=`cat /etc/systemd/system/kubelet.service.d/10-kubeadm.conf | grep 'cloud-provider=aws' | wc -l`
+    line_to_add='Environment="KUBELET_EXTRA_ARGS=--cloud-provider=aws"'
+    if [[ $check_cloud_provider == 0 ]]
+    then
+      sed -i "/ExecStart=/ { N; s/ExecStart=\n/$line_to_add\n&/ }" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    fi
+    systemctl daemon-reload
+    service kubelet restart
+
+
+
+before and after restart:
+
+    diff before.txt later.txt
+    2c2
+    < Role:			master
+    ---
+    > Role:
+    3a4
+    > 			beta.kubernetes.io/instance-type=m4.2xlarge
+    5c6,7
+    < 			kubeadm.alpha.kubernetes.io/role=master
+    ---
+    > 			failure-domain.beta.kubernetes.io/region=us-east-1
+    > 			failure-domain.beta.kubernetes.io/zone=us-east-1d
+    7,8c9
+    < 			node-role.kubernetes.io/master=true
+    < Taints:			dedicated=master:NoSchedule
+    ---
+    > Taints:			<none>
+    32c33
+    < ExternalID:			ip-10-96-11-97.ec2.internal
+    ---
+    > ExternalID:			i-074543fb504c07626
+
+
+* Fluentd
+
+I created my deployment by starting from their latest deamonset
+[[https://github.com/fluent/fluentd-kubernetes-daemonset][here]] and using a
+configMap:
+
+** Pointers
+
+You need to mount a configMap to pass parameters. It expects it at /fluentd/etc/fluentd.conf
+
+    2017-01-30 18:01:09 +0000 [info]: reading config file path="/fluentd/etc/fluentd.conf"
+    /usr/lib/ruby/gems/2.3.0/gems/fluentd-0.12.31/lib/fluent/supervisor.rb:474:in `read': No such file
+    or directory @ rb_sysopen - /fluentd/etc/fluentd.conf (Errno::ENOENT)
+         from /usr/lib/ruby/gems/2.3.0/gems/fluentd-0.12.31/lib/fluent/supervisor.rb:474:in `read_config'
+         from /usr/lib/ruby/gems/2.3.0/gems/fluentd-0.12.31/lib/fluent/supervisor.rb:144:in `start'
+         from /usr/lib/ruby/gems/2.3.0/gems/fluentd-0.12.31/lib/fluent/command/fluentd.rb:173:in `<top (required)>'
+         from /usr/lib/ruby/2.3.0/rubygems/core_ext/kernel_require.rb:55:in `require'
+         from /usr/lib/ruby/2.3.0/rubygems/core_ext/kernel_require.rb:55:in `require'
+         from /usr/lib/ruby/gems/2.3.0/gems/fluentd-0.12.31/bin/fluentd:5:in `<top (required)>'
+         from /usr/bin/fluentd:23:in `load'
+         from /usr/bin/fluentd:23:in `<main>'
+
+You also need to set the [[http://docs.fluentd.org/v0.12/articles/in_tail#posfile-highly-recommended][pointer]]
+directory correctly or you will have:
+
+    2017-01-30 18:19:15 +0000 [error]: unexpected error error_class=Errno::ENOENT error=#<Errno::ENOENT: No such
+    file or directory @ rb_sysopen - /var/lib/fluentd/es-containers.log.pos>
+
+** Code
+
+- [[https://github.com/jecnua/k8s_setup/tree/master/03-fluentd][https://github.com/jecnua/k8s_setup/tree/master/03-fluentd]]
+
+** Known issues
+
+- [[https://stackoverflow.com/questions/41686681/fluentd-es-v1-22-daemonset-doesnt-create-any-pod][fluentd-es-v1-22-daemonset-doesnt-create-any-pod]]
+
+** Sources
+
+- [[https://github.com/fluent/fluentd-kubernetes-daemonset][FluentD deamonset]]
+- [[https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/fluentd-elasticsearch][fluentd-es kubernetes addons]]\
+- [[https://github.com/inovex/kubernetes-logging][https://github.com/inovex/kubernetes-logging]]

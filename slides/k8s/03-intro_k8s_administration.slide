@@ -1,0 +1,276 @@
+K8s Usage
+A simple introduction
+
+Fabrizio Sabatini
+
+* Types of nodes
+
+- controller (master)
+- nodes (worker)
+
+* Command line
+
+    kubectl
+
+Example:
+
+    kubectl get nodes
+
+Or more than one:
+
+    kubectl get pods,rc,svc
+
+Ingest a file configuration:
+
+    kubectl apply -f <file>
+
+* Let's get a couple of view first: Dashboard [1/2]
+
+    wget https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+    nano kubernetes-dashboard.yaml #Change it
+    kubectl apply -f kubernetes-dashboard.yaml
+
+* Let's get a couple of view first: Weavescope [2/2]
+
+    wget https://cloud.weave.works/launch/k8s/weavescope.yaml
+    nano weavescope.yaml #Change it
+    kubectl apply -f weavescope.yaml
+
+* Namespaces
+
+What are namespaces:
+
+    "Kubernetes supports multiple virtual clusters backed by the same physical
+    cluster. These virtual clusters are called namespaces."
+
+.caption [[https://kubernetes.io/docs/user-guide/namespaces/][Documentation]]
+
+    kubectl get namespaces
+
+For example:
+
+    kubectl get pods,rc,services
+    kubectl get pods,rc,services --all-namespaces
+
+And:
+
+    kubectl get pods -n default
+    kubectl get pods -n kube-system
+
+* Basic building blocks
+
+* Pods [1/3]
+
+    "A pod (as in a pod of whales or pea pod) is a group of one or more
+    containers (such as Docker containers), the shared storage for those
+    containers, and options about how to run the containers. Pods are always
+    co-located and co-scheduled, and run in a shared context. A pod models an
+    application-specific “logical host” - it contains one or more application
+    containers which are relatively tightly coupled — in a pre-container world,
+    they would have executed on the same physical or virtual machine."
+
+.caption [[https://kubernetes.io/docs/user-guide/pods/][Documentation]]
+
+- They are co-located
+- Share drives
+- Live/die together
+- Can see each other in localhost
+- They share the ip
+
+    kubectl get pods
+
+* Deployments [2/3]
+
+    "A Deployment provides declarative updates for Pods and Replica Sets
+    (the next-generation Replication Controller). You only need to describe
+    the desired state in a Deployment object, and the Deployment controller
+    will change the actual state to the desired state at a controlled rate for
+    you. You can define Deployments to create new resources, or replace
+    existing ones by new ones."
+
+.caption [[https://kubernetes.io/docs/user-guide/deployments/][Documentation]]
+
+- Create a Deployment to bring up a Replica Set and Pods.
+- Check the status of a Deployment to see if it succeeds or not.
+- Later, update that Deployment to recreate the Pods (for example, to use a new image).
+- Rollback to an earlier Deployment revision if the current Deployment isn’t stable.
+- Pause and resume a Deployment.
+
+    kubectl get deployments
+
+* Before deployments
+
+- ReplicaSet
+- Replication controller
+
+    "A ReplicaSet ensures that a specified number of pod “replicas”
+    are running at any given time. However, a Deployment
+    is a higher-level concept that manages ReplicaSets and provides
+    declarative updates to pods along with a lot of other useful features.
+    Therefore, we recommend using Deployments instead of directly using
+    ReplicaSets, unless you require custom update orchestration or don’t
+    require updates at all."
+
+* Services [3/3]
+
+    "A Kubernetes Service is an abstraction which defines a logical set of Pods
+    and a policy by which to access them - sometimes called a micro-service.
+    The set of Pods targeted by a Service is (usually) determined by a Label
+    Selector (see below for why you might want a Service without a selector)."
+
+.caption [[https://kubernetes.io/docs/user-guide/services/][Documentation]]
+
+    kubectl get services
+
+* An amazon comparation?
+
+- pods (servers)
+- services (ELB internal/external)
+
+But is obviusly not that!
+
+* Now some real examples
+
+* Deployments
+
+    git clone https://github.com/jecnua/k8s-swarm-test-drive.git
+    cd k8s-swarm-test-drive/k8s/slides/
+
+Deployments
+
+    kubectl apply -f 01-deployments.yaml
+    kubectl get deploy
+    kubectl describe deploy wdhw-deployment
+
+So what else do we expect to be created?
+
+* Deployments [cont.d]
+
+    kubectl get rs
+    kubectl get pods
+
+And:
+
+    kubectl describe rs wdhw-deployment-xxx
+    kubectl describe pods wdhw-deployment-xxx
+
+* Manipulation
+
+    kubectl get deploy
+    kubectl scale deploy wdhw-deployment --replicas=5
+
+But:
+
+    cat kubectl apply -f 01-deployments.yaml
+
+Best practices:
+
+    kubectl apply -f 01-deployments.yaml
+    nano 01-deployments.yaml
+    kubectl apply -f 01-deployments.yaml
+
+
+* What can you do?
+
+- Change number of pods
+- Change version of images
+- Change labels
+
+And more...
+
+    kubectl autoscale deployment wdhw-deployment --min=10 --max=15 --cpu-percent=80
+    kubectl get deploy
+
+(but you need heapster for this functionality)
+
+* A little more...
+
+* Quick glance events
+
+    kubectl get events
+
+* Taints
+
+    kubectl get nodes -o template --template='{{printf "%-50s %-12s\n" "Node" "Taint"}}{{range.items}}{{printf  "%-50s %-12s" .metadata.name ( "None" | or (index .metadata.annotations "scheduler.alpha.kubernetes.io/taints")) }}{{ "\n" }}{{ end }}'\n
+
+* Labels
+
+    kubectl get pods --show-labels
+
+    spec:
+      hostNetwork: true
+https://raw.githubusercontent.com/nginxinc/kubernetes-ingress/master/examples/daemon-set/nginx-ingress.yaml
+
+https://medium.com/@alejandro.ramirez.ch/reserving-a-kubernetes-node-for-specific-nodes-e75dc8297076#.owdvi9bam
+
+==
+
+
+kubectl delete deployments kubernetes-dashboard -n kube-system
+kubectl delete svc kubernetes-dashboard -n kube-system
+
+node ports
+
+kubectl get svc --all-namespaces -o go-template='{{range .items}}{{range.spec.ports}}{{if .nodePort}}{{.nodePort}}{{"\n"}}{{end}}{{end}}{{end}}'
+
+==
+
+ubuntu@ip-10-96-11-114:~$ kubectl get nodes
+NAME                           STATUS         AGE
+ip-10-96-10-135.ec2.internal   Ready          6h
+ip-10-96-11-114.ec2.internal   Ready,master   6h
+ubuntu@ip-10-96-11-114:~$ kubectl cordon ip-10-96-11-114.ec2.internal
+node "ip-10-96-11-114.ec2.internal" cordoned
+
+==
+
+manually destroy
+wil update not recreation
+
+destroy and recreate
+the service will create a new one node
+
+==
+
+The Deployment "kubernetes-dashboard-test" is invalid: spec.template.metadata.labels: Invalid value: {"k8s-addon":"kubernetes-dashboard.addons.k8s.io","k8s-app":"kubernetes-dashboard","kubernetes.io/cluster-service":"true","version":"v1.4.0"}: `selector` does not match template `labels`
+
+https://medium.com/@rothgar/exposing-services-using-ingress-with-on-prem-kubernetes-clusters-f413d87b6d34#.85ps7224r
+
+http://danielmartins.ninja/posts/five-months-of-kubernetes.html
+
+==
+
+https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+
+
+
+
+
+
+
+
+
+
+* What you can work with
+
+    kubectl get
+
+
+  cd /tmp/
+  git clone https://github.com/jecnua/k8s-swarm-test-drive.git
+  cd k8s-swarm-test-drive/
+  cd k8s/tests/
+  cd new_tests/
+
+  kubectl get deployments
+  kubectl get deployments --all-namespaces
+  kubectl get svc
+  kubectl get svc --all-namespaces
+  kubectl apply -f 01_dashboard_deployment.yaml
+  kubectl apply -f 03_dashboard_service_internal.yaml
+
+* test
+
+  kubectl describe svc kubernetes-dashboard-internal
+  kubectl describe svc kubernetes-dashboard-internal --all-namespaces
+  kubectl describe svc kubernetes-dashboard-internal -n kube-system

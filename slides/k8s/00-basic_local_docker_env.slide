@@ -13,6 +13,7 @@ Fabrizio Sabatini || Last update: 01 Feb 2017
       minikube
 
     brew install \
+      kubernetes-cli \
       docker-machine-driver-xhyve --HEAD xhyve
 
 OS X the options are:

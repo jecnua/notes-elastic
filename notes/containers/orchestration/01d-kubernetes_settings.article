@@ -184,3 +184,4 @@ directory correctly or you will have:
 - [[https://github.com/fluent/fluentd-kubernetes-daemonset][FluentD deamonset]]
 - [[https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/fluentd-elasticsearch][fluentd-es kubernetes addons]]\
 - [[https://github.com/inovex/kubernetes-logging][https://github.com/inovex/kubernetes-logging]]
+- https://www.inovex.de/blog/kubernetes-logging-with-fluentd-and-the-elastic-stack/

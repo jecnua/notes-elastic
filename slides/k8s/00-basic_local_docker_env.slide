@@ -1,0 +1,89 @@
+Local docker env and minikube
+Fabrizio Sabatini || Last update: 01 Feb 2017
+
+* Install Docker machine (via docker toolbox)
+
+[[https://www.docker.com/products/docker-toolbox][Docker toolbox]]
+
+.image images/toolbox.png _ 900
+
+* Install engine dependencies on MAC (via brew)
+
+    brew cask install \
+      minikube
+
+    brew install \
+      docker-machine-driver-xhyve --HEAD xhyve
+
+OS X the options are:
+ - xhyve driver
+ - VirtualBox
+ - VMware Fusion
+
+* Test docker machine
+
+List machines:
+
+    docker-machine ls
+
+Create a new machine on xhyve:
+
+    docker-machine create --driver xhyve xhyve-local
+    docker-machine ls # Check if created
+    docker-machine env xhyve-local
+    eval $(docker-machine env xhyve-local)
+    docker info | grep name
+
+Stop and remove:
+
+    docker-machine stop xhyve-local
+    yes | docker-machine rm xhyve-local
+
+* Minikube
+
+[[https://github.com/kubernetes/minikube][kubernetes/minikube]]
+
+Set the machine:
+
+    # To opt-out from sending anonymised crash report
+    minikube config set WantReportErrorPrompt false
+    minikube config get vm-driver
+    minikube config set vm-driver xhyve
+    minikube config get vm-driver
+
+Clean any old version:
+
+    minikube delete
+
+Start a new machine:
+
+    minikube start # Start a cluster
+    kubectl config use-context minikube # switch context to minikube
+    minikube status
+
+* Optional: Use rocket engine
+
+    minikube start \
+        --network-plugin=cni \
+        --container-runtime=rkt \
+        --iso-url=http://storage.googleapis.com/minikube/iso/buildroot/minikube-v0.0.6.iso
+
+* Stop and delete minikube (don't do it now)
+
+    minikube stop
+    minikube delete
+
+* Usage (example on github repo)
+
+    minikube status
+    minikube --help
+
+Run a box:
+
+    kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+
+Access it:
+
+    kubectl expose deployment hello-minikube --type=NodePort
+    kubectl get pod
+    curl $(minikube service hello-minikube --url)

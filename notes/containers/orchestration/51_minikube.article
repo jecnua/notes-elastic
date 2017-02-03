@@ -55,6 +55,10 @@ or:
     minikube stop
     minikube delete
 
+** Configurations [Advanced]
+
+    minikube config view
+
 ** Operations
 
 Example:

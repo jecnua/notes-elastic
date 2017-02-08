@@ -46,6 +46,7 @@ Stop and remove:
 
 Set the machine:
 
+    docker-machine start xhyve-local
     # To opt-out from sending anonymised crash report
     minikube config set WantReportErrorPrompt false
     minikube config get vm-driver

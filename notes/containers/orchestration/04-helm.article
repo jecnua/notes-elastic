@@ -1,2 +1,130 @@
-Helm
+Helm (chaotic notes)
 || Last update: 3 Feb 2017
+
+* Intro
+
+he uses charts
+templates to deploy what you need to deploy
+
+** Why
+
+You can always do a:
+
+  kubectl apply -f dir/*
+
+So why use helm? helm has the concept of _releases_.
+releases are stored as _configMaps_ inside kubernetes and are made by
+the totality of all the resources applied to kubernetes.
+
+- PRO: reuse code, templating, delete unused resources
+- CON: lose the versions
+
+kubectl we apply don't delete anything that's not present anymore.
+If you in the latest version of your YAML do no have a resource
+anymore, it will leave it there. HELM instead removes it.
+
+* Concept
+
+- Chart
+- Repository
+- Release
+
+** Charts
+
+Is the template of a kubernetes resource.
+Charts have versions.
+
+** Repositories
+
+Repositories are just a bucket for charts.
+
+** Release
+
+A _release_ is an instance of a chart.
+
+* Installation
+
+HELM is an executable:
+
+  wget https://kubernetes-helm.storage.googleapis.com/helm-v2.1.3-linux-amd64.tar.gz
+  tar xvf helm-v2.1.3-linux-amd64.tar.gz
+  linux-amd64/
+  ./helm --help
+  ./helm search
+  ./helm init
+
+  ./helm repo update
+  ./helm update
+
+   sudo cp helm /usr/bin/helm
+
+* Usage
+
+create your own repo with charts
+
+    helm search <-- all thing
+
+If you want to just see what he is going to do:
+
+    helm install xxx --debug --dry-run
+
+* Rest
+
+Deploy a set of services and deployments.
+Information about releases are stored as config maps.
+
+1) initialise (tiller) - get all help resources
+2) help clent
+
+    helm init
+
+(deployments)
+
+    help repo updates
+
+
+git push
+drone.io build the project
+builds the docker image
+help plugin
+call the help chart and change the value
+
+all this info is passed to helm
+and send it to the cluster
+
+==
+
+fluentd cloudwatch
+
+image
+tag
+pullPolicy: always
+
+aws:
+ log_group: 'k8s-staging'
+
+==
+
+  .drone.io
+
+helm_deploy_staging
+
+drone branch-dron_commit
+
+interesting
+
+PIPELINE
+
+==
+
+helm rollback xxx ?
+
+==
+
+https://kubernetes.io/docs/user-guide/volumes/#awselasticblockstore
+
+==
+
+kubectl port forward
+
+==

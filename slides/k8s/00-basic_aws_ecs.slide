@@ -1,5 +1,5 @@
 AWS ECS
-Fabrizio Sabatini || Last update: 01 Feb 2017
+Fabrizio Sabatini || Last update: 08 Feb 2017
 
 * Manage credential for ECS
 
@@ -49,7 +49,7 @@ and make it executable:
 
     $ chmod 700 docker-credential-ecr-login
 
-*** Credential helper config
+* Credential helper config
 
 Add credential helper config
 ([[https://aws.amazon.com/blogs/compute/authenticating-amazon-ecr-repositories-for-docker-cli-with-credential-helper/][docs]]):
@@ -72,7 +72,7 @@ Add credential helper config
         "auth": "xxx"
     }
 
-*** Test it
+* Test it
 
 You can run the following
 

@@ -1,0 +1,75 @@
+Recap
+Fabrizio Sabatini || Last update: 15 Feb 2017
+
+* Cluster
+
+- Controller (master)
+- Nodes (workers)
+
+.image images/cluster.png _ 900
+
+* Pods
+
+.image images/container.png _ 800
+
+* Pods [cont.d]
+
+.image images/pod_address.png _ 800
+
+Is a grouping mechanism. Logically part of the same application. Live and die together.
+
+- share network namespace (ip)
+- access to the same volumes
+
+* Deployments
+
+.image images/deployments.png _ 800
+
+* Deployments [cont.d]
+
+Specify how many replicas of a pod run in a cluster and how. Ensure this number
+stay valid via reconciliation.
+
+- ReplicaSet replaces ReplicationController
+- Deployments manage state via ReplicaSet
+
+* Labels and spec
+
+.image images/deployments_yaml.png _ 600
+
+* Labels and spec [cont.d]
+
+- Labels: Attach key-value pairs to object!
+- Spec: Define the entity
+
+* Services
+
+Services how you route traffic to pods!
+Is basically how do you name things for other people to find it and how to
+route traffic to them.
+
+* Example: ClusterIP
+
+Used for internal visibility. Uses a different CIDR from the pods.
+
+.image images/service_vip.png _ 900
+
+* Example: NodePort
+
+For requests coming from outside, they will be routed to the right pod.
+
+.image images/service_nodeport.png _ 900
+
+* IMP: Routing is based on labels
+
+* Example: NodePort with selector
+
+.image images/example_nodeport.png _ 600
+
+* Example: NodePort with selector [cont.d]
+
+.image images/example_selectors.png _ 900
+
+* Service discovery
+
+Out of the box when using Services.

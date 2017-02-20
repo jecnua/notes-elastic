@@ -96,6 +96,31 @@ To avoid all this, in your *user-data* ([[https://unix.stackexchange.com/questio
     sudo systemctl disable apt-daily.service  # disable run when system boot
     sudo systemctl disable apt-daily.timer    # disable timer run
 
+For a complete version:
+
+    IS_16_04=`lsb_release -a | grep 16.04 | wc -l`
+    # Disable auto-update in ubuntu 16.04
+    if [[ $IS_16_04 == '2'  ]]
+    then
+      IS_INACTIVE=`sudo systemctl status apt-daily.service | grep 'Active: inactive' | wc -l`
+      if [[ $IS_INACTIVE == '0'  ]]
+      then
+        echo "apt-daily.service is active. I will deactivate it now" >> /opt/bootstrap_times
+        systemctl stop apt-daily.service
+        systemctl kill --kill-who=all apt-daily.service
+        # wait until `apt-get updated` has been killed
+        while ! (systemctl list-units --all apt-daily.service | grep -q '0 loaded units listed')
+        do
+          echo "Waiting for it to die" >> /opt/bootstrap_times
+          sleep 1
+        done
+        systemctl disable apt-daily.service  # disable run when system boot
+        systemctl disable apt-daily.timer    # disable timer run
+      else
+        echo "apt-daily.service already inactive" >> /opt/bootstrap_times
+      fi
+    fi
+
 You can find logs of these process here:
 
     /var/log/unattended_upgrades/unattended-upgrades.log

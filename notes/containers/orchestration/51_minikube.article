@@ -1,9 +1,11 @@
 Minikube
-|| Last update: 23 Jan 2017
+|| Last update: 6 Mar 2017
 
 * Intro
 
-TBD
+Minikube is a tool you can sue to install a local cluster (one node) of k8s.
+
+- [[https://github.com/kubernetes/minikube][Minikube on github]]
 
 ** Install dependencies on MAC
 
@@ -16,7 +18,7 @@ TBD
     brew install docker-machine-driver-xhyve \
       --HEAD xhyve
 
-** Test installation
+** Test installation of docker-machine
 
     docker-machine ls
 

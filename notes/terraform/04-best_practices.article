@@ -1,0 +1,41 @@
+Best practices
+|| Last update: 6 Mar 2017
+
+* AMI
+
+Every module should allow an AMI id to be passed as parameter.
+However, if nothing is passed, the module should fetch the latest AMI on AWS filtered by a specic regex.
+Passing an AMI should override this dynamic search.
+
+    variable "ami_id" {
+      description = "The id of the AMI to use. If empty, the LATEST will be used."
+      default     = ""
+    }
+
+Example of dynamic fetching:
+
+    data "aws_ami" "ami_dynamic" {
+      most_recent = true
+      owners      = ["${var.ami_owner}"] # For example Canonical ID
+      filter {
+        name   = "name"
+        values = ["${var.ami_name_filter_regex}"]
+      }
+      filter {
+        name   = "virtualization-type"
+        values = ["hvm"]
+      }
+      name_regex = "${var.ami_name_regex}"
+    }
+
+When using a resource that need an AMI:
+
+    image_id = "${var.ami_id != "" ? var.ami_id : data.aws_ami.ubuntu.id}"
+
+On a module level:
+
+    module "k8s" {
+      source            = "xxx"
+      [...]
+      ami_id_worker     = "ami-f0768de6"
+    }

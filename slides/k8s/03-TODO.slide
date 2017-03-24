@@ -3,7 +3,7 @@ Fabrizio Sabatini || Last update: 01 Feb 2017
 
     spec:
       hostNetwork: true
-https://raw.githubusercontent.com/nginxinc/kubernetes-ingress/master/examples/daemon-set/nginx-ingress.yaml
+
 
 https://medium.com/@alejandro.ramirez.ch/reserving-a-kubernetes-node-for-specific-nodes-e75dc8297076#.owdvi9bam
 
@@ -38,7 +38,7 @@ the service will create a new one node
 
 The Deployment "kubernetes-dashboard-test" is invalid: spec.template.metadata.labels: Invalid value: {"k8s-addon":"kubernetes-dashboard.addons.k8s.io","k8s-app":"kubernetes-dashboard","kubernetes.io/cluster-service":"true","version":"v1.4.0"}: `selector` does not match template `labels`
 
-https://medium.com/@rothgar/exposing-services-using-ingress-with-on-prem-kubernetes-clusters-f413d87b6d34#.85ps7224r
+
 
 http://danielmartins.ninja/posts/five-months-of-kubernetes.html
 

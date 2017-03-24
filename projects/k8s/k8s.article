@@ -100,7 +100,6 @@ to modify:
 to read:
 
 - http://www.devoperandi.com/load-balancing-in-kubernetes/
-- https://github.com/containous/traefik/blob/fa25c8ef221d89719bd0c491b66bbf54e3d40438/docs/toml.md#kubernetes-ingress-backend
 - https://github.com/kubernetes/kubernetes/issues/17620#issuecomment-212508777
 - http://kubernetes.io/docs/user-guide/services/#defining-a-service
 - https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.0/examples/https-nginx/nginx-app.yaml

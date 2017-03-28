@@ -1,5 +1,5 @@
 Fluentd
-|| Last update: 3 Feb 2017
+|| Last update: 28 March 2017
 
 * Intro
 
@@ -42,6 +42,85 @@ directory correctly. If you don't you will see the following:
     2017-01-30 18:19:15 +0000 [error]: unexpected error error_class=Errno::ENOENT
     error=#<Errno::ENOENT: No such file or directory @ rb_sysopen -
     /var/lib/fluentd/es-containers.log.pos>
+
+
+** Installation
+
+As sudo:
+
+    cd ~
+    curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add -
+    echo "deb http://packages.treasuredata.com/2/ubuntu/xenial/ xenial contrib" > /etc/apt/sources.list.d/treasure-data.list
+    apt-get update
+    apt-get install -y td-agent
+    /opt/td-agent/embedded/bin/fluent-gem install fluent-plugin-elasticsearch
+    /opt/td-agent/embedded/bin/fluent-gem install fluent-plugin-record-modifier
+    /opt/td-agent/embedded/bin/fluent-gem install fluent-plugin-secure-forward
+    usermod -G adm td-agent
+
+*** Configuration
+
+    <match docker.**>
+      @type elasticsearch
+      host your_url
+      port 80
+      include_tag_key true
+      logstash_format true
+      logstash_prefix docker
+      # Set the chunk limit the same as for fluentd-gcp.
+      buffer_chunk_limit 2M
+      # Cap buffer memory usage to 2MiB/chunk * 32 chunks = 64 MiB
+      buffer_queue_limit 32
+      flush_interval 5s
+      # Never wait longer than 5 minutes between retries.
+      max_retry_wait 30
+      retry_wait 10s
+      # Disable the limit on the number of retries (retry forever).
+      disable_retry_limit
+      # Use multiple threads for processing.
+      num_threads 1
+    </match>
+
+And:
+
+    <filter docker.**>
+      @type record_transformer
+      <record>
+        source_hostname "#{Socket.gethostname}"
+      </record>
+      <record>
+        source_environment "development"
+      </record>
+    </filter>
+
+** Use it
+
+*** Docker (no k8s)
+
+    docker run \
+      --log-driver=fluentd \
+      --log-opt tag="docker.{{.Name}}" \
+      ubuntu echo "Test me"
+
+Some guides are wrong. Beware:
+
+    docker: Error response from daemon: unknown log opt 'fluentd-tag'
+    for fluentd log driver.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 * Sources
 

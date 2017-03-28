@@ -3,10 +3,13 @@ Fluentd
 
 * Intro
 
-To see one way to setup fluent correcly you can see or their
-[[https://github.com/fluent/fluentd-kubernetes-daemonset][deamonset]] ot the code
-shared by kubernetes itself for their
-[[https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/fluentd-elasticsearch][addon]].
+To see one way to setup fluent you can see here:
+
+- [[https://github.com/fluent/fluentd-kubernetes-daemonset][deamonset]]
+
+or
+
+- [[https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/fluentd-elasticsearch][addon]].
 
 Other good sources:
 
@@ -18,8 +21,6 @@ Other good sources:
 I created my deployment by starting from their latest
 [[https://github.com/fluent/fluentd-kubernetes-daemonset][deamonset]] and using
 a configMap.
-
-* Tips
 
 ** Configuration file
 
@@ -37,7 +38,7 @@ see an error like the following:
 
 You also need to set the
 [[http://docs.fluentd.org/v0.12/articles/in_tail#posfile-highly-recommended][pointer]]
-directory correctly. If you don't you will see the following:
+directory. If you don't you will see the following:
 
     2017-01-30 18:19:15 +0000 [error]: unexpected error error_class=Errno::ENOENT
     error=#<Errno::ENOENT: No such file or directory @ rb_sysopen -

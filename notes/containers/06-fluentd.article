@@ -46,6 +46,8 @@ directory correctly. If you don't you will see the following:
 
 ** Installation
 
+- [[https://thecustomizewindows.com/2017/01/install-fluentd-agent-log-data-collection-for-hadoop/][Source]]
+
 As sudo:
 
     cd ~
@@ -59,6 +61,8 @@ As sudo:
     usermod -G adm td-agent
 
 *** Configuration
+
+With [[https://github.com/uken/fluent-plugin-elasticsearch][fluent-plugin-elasticsearch]]:
 
     <match docker.**>
       @type elasticsearch
@@ -81,7 +85,9 @@ As sudo:
       num_threads 1
     </match>
 
-And:
+*** Add tags
+
+[[http://docs.fluentd.org/v0.12/articles/config-file#3-ldquofilterrdquo-event-processing-pipeline][http://docs.fluentd.org/v0.12/articles/config-file]]
 
     <filter docker.**>
       @type record_transformer
@@ -97,6 +103,10 @@ And:
 
 *** Docker (no k8s)
 
+- [[https://docs.docker.com/engine/admin/logging/overview/#fluentd][Docker logging driver]]
+- [[https://docs.docker.com/engine/admin/logging/fluentd/][Docker logging driver: Usage]]
+- [[http://www.fluentd.org/guides/recipes/docker-logging][http://www.fluentd.org/guides/recipes/docker-logging]]
+
     docker run \
       --log-driver=fluentd \
       --log-opt tag="docker.{{.Name}}" \
@@ -107,7 +117,9 @@ Some guides are wrong. Beware:
     docker: Error response from daemon: unknown log opt 'fluentd-tag'
     for fluentd log driver.
 
+** Options?
 
+On s3? http://www.fluentd.org/guides/recipes/elasticsearch-and-s3
 
 
 

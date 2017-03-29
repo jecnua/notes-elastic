@@ -111,12 +111,37 @@ With [[https://github.com/uken/fluent-plugin-elasticsearch][fluent-plugin-elasti
     docker run \
       --log-driver=fluentd \
       --log-opt tag="docker.{{.Name}}" \
-      ubuntu echo "Test me"
+      ubuntu echo "Test fluentd"
+
+It will fail if not running:
+
+    docker: Error response from daemon: Failed to initialize logging driver:
+    dial tcp 127.0.0.1:24224: getsockopt: connection refused.
+    ERRO[0000] error getting events from daemon: net/http: request canceled
+
+To avoid that put asynch flag:
+
+    docker run \
+      --log-driver=fluentd \
+      --log-opt tag="docker.{{.Name}}" \
+      --log-opt fluentd-async-connect=true \
+      ubuntu echo "Test fluentd"
+
+Docker should not be blocked just because there is no log.
 
 Some guides are wrong. Beware:
 
     docker: Error response from daemon: unknown log opt 'fluentd-tag'
     for fluentd log driver.
+
+** In puppet
+
+    extra_parameters => [
+      '--sig-proxy=false',
+      '--log-driver=fluentd',
+      '--log-opt tag="docker.{{.Name}}',
+      '--log-opt fluentd-async-connect=true"',
+    ],
 
 ** Options?
 

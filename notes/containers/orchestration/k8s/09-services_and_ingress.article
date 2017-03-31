@@ -1,0 +1,130 @@
+Services and Ingress
+|| Last update: 31 Mar 2017
+
+* Intro
+
+In *etcd* all the data is saved under the label:
+
+    /registry
+
+with sub-namespaces with the names of the key component of k8s.
+For example, services are under:
+
+    /registry/services
+
+to with follows:
+
+    /registry/services
+    /registry/services/spec/<namespaces>/<name>
+    /registry/services/endpoints/<namespaces>/<name>
+
+These entries are usually modified by the controller-manager.
+In general all API resources in k8s are implemented as API
+watchers to a set of keys.
+
+* Endpoints
+
+Is a list of IP:PORT mappings created automatically
+(unless using an
+[[https://kubernetes.io/docs/user-guide/services/#headless-services][headless service]])
+when you create a new k8s _service_.
+K8s select a _set_ of pods (via selectors) and maps their IP:PORT
+under this entry.
+They can be considered _service_traffic_routers_.
+
+If a POD is terminated and rescheduled, it will receive a new set of
+IP:PORT. As a consequence the endpoint needs to change.
+
+One service creates one endpoint.
+
+* Services
+
+When a new _service_ is created, it is assigned a _virtual_ip_ (VIP).
+There are different types of services:
+
+- ClusterIP (default): IP internal to the k8s cluster
+- NodePort
+- LoadBalancer: Implementation changes depending on the platform you are running on.
+
+k8s service is an API watcher which watches /registry/endpoints.
+
+** kube-proxy
+
+Is a deamon (or process) running on every node of the cluster. It
+can run in two modes:
+
+- userspace: basically acting as a simple TCP proxy
+- iptables: by configuring iptables (higher throughput, less latency)
+
+** kube-dns
+
+When k8s creates a POD, it _injects_ a namespace lookup configuration
+in every new one. This allows the POD to query for internal DNS entries.
+The file changed is:
+
+    /etc/resolv.conf
+
+If you open it you can see the VIP of kube-dns.
+Also k8s will create an internal cluster DNS zone which is used for
+DNS/service discovery.
+
+Addons runs as a services in kube-system
+
+** NodePort service
+
+When you create a service of type _NodePort_, *kube-proxy* will be
+the one listening to the _higher_port_ that will be opened as a
+consequence.
+
+*PROBLEMS*: A set of pods exposed this way is load balanced twice.
+First from the ELB you put over it to cover all the worker nodes,
+the second from the cluster (via kube-proxy) among the endpoints.
+You also can't have advanced routing or TSL termination.
+
+* Ingress
+
+- https://kubernetes.io/docs/user-guide/ingress/
+
+An Ingress is an API resource that represent a set of
+_traffic_routing_rules_ that maps external traffic to k8s
+resources.
+The rules per se do nothing, they are there to be read from
+an *ingress*controller*.
+
+When using Ingress you need:
+
+- Default backend: A fallback POD for when a request is not matched.
+- ingress controller: The logic
+
+* Ingress controllers
+
+They are frontend proxies over dynamic backends.
+Is an application running in a POD that act as an API watcher to
+watch /registry/ingress endpoints.
+
+Some examples:
+
+- nginx: https://github.com/nginxinc/kubernetes-ingress
+- traefik (slower than nginx)
+
+*IMPORTANT*: Ingress controllers *DO*NOT* route traffic top services
+but rather to the _Endpoints_.
+
+The ingress controller watch for the endpoint itself instead
+of relying on kube-proxy to pick faster the changes from the
+controller manager to the state.
+
+Ingress controllers bypass services and route the traffic directly
+to the endpoints.
+
+*PRO*:
+
+- TSL termination is now possible
+- Advanced routing
+- Logging of external IPs
+- and so on...
+
+* Sources
+
+- [[http://containerops.org/2017/01/30/kubernetes-services-and-ingress-under-x-ray/][kubernetes-services-and-ingress-under-x-ray]]
+- https://github.com/xenolf/lego

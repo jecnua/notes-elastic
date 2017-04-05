@@ -1,0 +1,51 @@
+Prometheus on k8s
+|| Last update: 5 April 2017
+
+* Installation
+
+You can use:
+
+- [[https://github.com/coreos/prometheus-operator][Operator]] (too much for now)
+- Chart
+- Manual
+
+** Chart
+
+You need helm.
+
+- https://github.com/kubernetes/helm/blob/master/docs/install.md
+- https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md
+- https://github.com/kubernetes/helm/blob/master/docs/chart_template_guide/subcharts_and_globals.md#subcharts-and-global-values
+- https://github.com/kubernetes/charts/tree/master/stable/prometheus#configuration
+
+After that:
+
+    helm install stable/prometheus
+
+*NOTE*: If you do this you won't be able to point an ingress to it!
+
+    NAME                                    CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+    fun-owl-prometheus-alertmanager         10.99.192.59     <none>        80/TCP                       20m
+    fun-owl-prometheus-kube-state-metrics   None             <none>        80/TCP                       20m
+    fun-owl-prometheus-node-exporter        None             <none>        9100/TCP                     20m
+    fun-owl-prometheus-server               10.104.246.185   <none>        80/TCP                       20m
+
+So or you add a new service that doesn't change name, or you point the ingress
+to a name that WILL change.
+
+Also you miss new targets.
+
+    server.ingress.enabled
+    server.ingress.hosts
+    alertmanager.ingress.enabled
+    alertmanager.ingress.hosts
+
+Pass that!
+
+    helm upgrade <name-generated> stable/prometheus \
+    --set server.ingress.enabled=true \
+    --set server.ingress.hosts='{your-domain}' \
+    --set alertmanager.ingress.enabled=true\
+    --set alertmanager.ingress.hosts='{your-domain}'
+
+*NOTE*: Array are passed via [[https://github.com/kubernetes/helm/blob/master/docs/using_helm.md#the-format-and-limitations-of---set][curly braces]].

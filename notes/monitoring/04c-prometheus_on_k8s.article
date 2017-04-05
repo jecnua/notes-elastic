@@ -22,6 +22,8 @@ After that:
 
     helm install stable/prometheus
 
+- https://github.com/kubernetes/charts/tree/master/stable/prometheus
+
 *NOTE*: If you do this you won't be able to point an ingress to it!
 
     NAME                                    CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
@@ -44,8 +46,9 @@ Pass that!
 
     helm upgrade <name-generated> stable/prometheus \
     --set server.ingress.enabled=true \
-    --set server.ingress.hosts='{your-domain}' \
-    --set alertmanager.ingress.enabled=true\
-    --set alertmanager.ingress.hosts='{your-domain}'
+    --set server.ingress.hosts='{prom-URI}' \
+    --set alertmanager.ingress.enabled=true \
+    --set alertmanager.ingress.hosts='{am-URI}' \
+    -f values.yaml
 
 *NOTE*: Array are passed via [[https://github.com/kubernetes/helm/blob/master/docs/using_helm.md#the-format-and-limitations-of---set][curly braces]].

@@ -21,6 +21,16 @@ The export:
 
     export GOSS_PATH=~/bin/goss
 
+* Wait
+
+For example in goss_wait.yaml for my es docker:
+
+    file:
+      /goss/docker_output.log:
+        exists: true
+        contains:
+        - '[TestNode] started'
+
 * Travis
 
 - https://docs.travis-ci.com/user/docker/

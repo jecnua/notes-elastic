@@ -237,7 +237,7 @@ the convention is to expose a */metrics* endpoint with the metrics you want.
     The mentality:
     Dev own the metrics
 
-** From another Prometheus
+** Prometheus federation: data from another Prometheus
 
 Prometheus can grab metric from another instance using what it's called
 [[https://prometheus.io/docs/operating/federation/][federation]]. This allow to

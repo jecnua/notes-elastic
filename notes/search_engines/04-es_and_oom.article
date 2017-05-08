@@ -1,0 +1,315 @@
+ES and OOM
+
+* Intro
+
+Just in case you missed it
+
+- https://www.elastic.co/guide/en/elasticsearch/reference/5.4/system-config.html
+
+They advice to disable it:
+
+https://discuss.elastic.co/t/elasticsearch-5-2-2-out-of-memory-while-indexing/78457/4
+
+What is OOM?
+
+    It happens when the machines run into very low memory somehow. The OS doesn’t want to run into kernel panic. So as a self-protection, the OS will choose one victim. Usually the process using the most RAM. Kill it and release the memory resource.
+
+What is the OOM killer?
+
+    It is the job of the linux 'oom killer' to sacrifice one or more processes in order to free up memory for the system when all else fails. It will also kill any process sharing the same mm_struct as the selected process, for obvious reasons. Any particular process leader may be immunized against the oom killer if the value of its /proc/<pid>/oomadj is set to the constant OOM_DISABLE (currently defined as -17).
+
+Who is going to be killed?
+
+      So the ideal candidate for liquidation is a recently started, non privileged process which together with its children uses lots of memory, has been nice'd, and does no raw I/O. Something like a nohup'd parallel kernel build (which is not a bad choice since all results are saved to disk and very little work is lost when a 'make' is terminated).
+
+Which process has been killed or sacrificed? When the OS kills the process, it will:
+
+- List all processes, before killing the victim.
+- Log the process id.
+
+OOM Exclusion: show mercy to my critical processes. OS chooses victim by scoring all processes. We can explicitly lower the score of certain processes. So they might survive, while some other less critical processes are sacrificed. This could buy us more time before things get worse. But remember there is no guarantee that your processes will be safe. The machines may run into very low RAM, and the OS might need to sacrifice more processes, yours included.
+
+Under desperately low memory conditions, the out-of-memory (OOM) killer kicks in and picks a process to kill using a set of heuristics which has evolved over time. This may be pretty annoying for users who may have wanted a different process to be killed. The process killed may also be important from the system's perspective. To avoid the untimely demise of the wrong processes, many developers feel that a greater degree of control over the OOM killer's activities is required.
+
+Major distribution kernels set the default value of /proc/sys/vm/overcommit_memory to zero, which means that processes can request more memory than is currently free in the system. This is done based on the heuristics that allocated memory is not used immediately, and that processes, over their lifetime, also do not use all of the memory they allocate. Without overcommit, a system will not fully utilize its memory, thus wasting some of it. Overcommiting memory allows the system to use the memory in a more efficient way, but at the risk of OOM situations.
+
+** Prereq
+
+- dstat
+- atop
+
+* How to confirm an OOM issue
+
+The system log will have entries of “Killed process”.
+You can check the messages in journalctl like this:
+
+    journalctl --no-pager -u docker
+
+Otherwise:
+
+    # dmesg -T | egrep -i -B 1 'killed process'
+
+Output:
+
+    [Thu Apr 27 10:07:23 2017] Out of memory: Kill process 6151 (java) score 914 or sacrifice child
+    [Thu Apr 27 10:07:23 2017] Killed process 6151 (java) total-vm:5850408kB, anon-rss:3691772kB, file-rss:0kB
+    --
+    [Thu Apr 27 10:07:23 2017] Out of memory: Kill process 6263 (java) score 914 or sacrifice child
+    [Thu Apr 27 10:07:23 2017] Killed process 6215 (java) total-vm:5850408kB, anon-rss:3692668kB, file-rss:0kB
+    --
+    [Thu Apr 27 10:07:23 2017] Out of memory: Kill process 6263 (java) score 914 or sacrifice child
+    [Thu Apr 27 10:07:23 2017] Killed process 6219 (java) total-vm:5850408kB, anon-rss:3692668kB, file-rss:0kB
+    --
+    [Mon May  1 20:27:18 2017] Out of memory: Kill process 12231 (java) score 913 or sacrifice child
+    [Mon May  1 20:27:18 2017] Killed process 12231 (java) total-vm:6044588kB, anon-rss:3685516kB, file-rss:0kB
+
+Or, we can use grep it like this:
+
+    dmesg -T | grep -C 5 -i 'killed process'
+
+So for example you will have this output:
+
+    [Thu Apr 27 10:07:23 2017] [ 6101]     0  6101    31402     1077      25       5        0             0 docker
+    [Thu Apr 27 10:07:23 2017] [ 6133]     0  6133    54401      160      22       6        0          -500 docker-containe
+    [Thu Apr 27 10:07:23 2017] [ 6151]   105  6151  1462602   922943    1901       9        0             0 java
+    [Thu Apr 27 10:07:23 2017] [12099]     0 12099    38089     1004      27       5        0          -500 docker-containe
+    [Thu Apr 27 10:07:23 2017] Out of memory: Kill process 6151 (java) score 914 or sacrifice child
+    [Thu Apr 27 10:07:23 2017] Killed process 6151 (java) total-vm:5850408kB, anon-rss:3691772kB, file-rss:0kB
+    [Thu Apr 27 10:07:23 2017] ntpd invoked oom-killer: gfp_mask=0x24201ca, order=0, oom_score_adj=0
+    [Thu Apr 27 10:07:23 2017] ntpd cpuset=/ mems_allowed=0
+    [Thu Apr 27 10:07:23 2017] CPU: 0 PID: 1457 Comm: ntpd Not tainted 4.4.0-57-generic #78-Ubuntu
+    [Thu Apr 27 10:07:23 2017] Hardware name: Xen HVM domU, BIOS 4.2.amazon 02/16/2017
+    [Thu Apr 27 10:07:23 2017]  0000000000000286 00000000bebcd8d5 ffff8800e9363a30 ffffffff813f6f33
+
+* Check your settings
+
+    > cat /proc/sys/vm/panic_on_oom
+    > cat /proc/sys/vm/oom_kill_allocating_task
+    > cat /proc/sys/vm/overcommit_memory
+
+For the [[https://www.kernel.org/doc/Documentation/vm/overcommit-accounting][docs]]:
+
+    0	-	Heuristic overcommit handling. Obvious overcommits of
+    		address space are refused. Used for a typical system. It
+    		ensures a seriously wild allocation fails while allowing
+    		overcommit to reduce swap usage.  root is allowed to
+    		allocate slightly more memory in this mode. This is the
+    		default.
+
+    1	-	Always overcommit. Appropriate for some scientific
+    		applications. Classic example is code using sparse arrays
+    		and just relying on the virtual memory consisting almost
+    		entirely of zero pages.
+
+    2	-	Don't overcommit. The total address space commit
+    		for the system is not permitted to exceed swap + a
+    		configurable amount (default is 50%) of physical RAM.
+    		Depending on the amount you use, in most situations
+    		this means a process will not be killed while accessing
+    		pages but will receive errors on memory allocation as
+    		appropriate.
+
+    		Useful for applications that want to guarantee their
+    		memory allocations will be available in the future
+    		without having to initialize every page.
+
+
+    $ cat /proc/sys/vm/overcommit_ratio
+    50
+
+
+    vmlim = SWAP_size + 0.5 * RAM_size.
+
+
+    # free -h
+                  total        used        free      shared  buff/cache   available
+    Mem:           3.9G        3.6G         43M         15M        220M        172M
+    Swap:            0B          0B          0B
+
+* Who is going to get killed?
+
+What is more likely to be killed eith dstat:
+
+    # dstat --top-oom
+    --out-of-memory---
+        kill score
+    java          864
+    java          864
+    java          864
+
+* Check status
+
+What is used by process right now:
+
+      # ps -e -o pid,user,cpu,size,rss,cmd --sort -size,-rss | head
+      PID USER     CPU  SIZE   RSS CMD
+    15798 _apt       - 5750828 3489104 /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -Xms2g -Xmx2g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -server -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -Djdk.io.permissionsUseCanonicalPath=true -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -Dlog4j.skipJansi=true -XX:+HeapDumpOnOutOfMemoryError -Xms3g -Xmx3g -Djava.security.policy=file:///usr/share/elasticsearch/config/es_java.policy -Des.path.home=/usr/share/elasticsearch -cp /usr/share/elasticsearch/lib/elasticsearch-5.2.0.jar:/usr/share/elasticsearch/lib/* org.elasticsearch.bootstrap.Elasticsearch
+     5078 root       - 547952 22656 dockerd -H unix:///var/run/docker.sock --ip-forward=true --iptables=true --ip-masq=true
+     1224 root       - 296312 2012 /usr/bin/lxcfs /var/lib/lxcfs/
+    12099 root       - 286776 2860 docker-containerd -l unix:///var/run/docker/libcontainerd/docker-containerd.sock --metrics-interval=0 --start-timeout 2m --state-dir /var/run/docker/libcontainerd/containerd --shim docker-containerd-shim --runtime docker-runc
+     5358 root       - 272796  456 docker-containerd-shim 5fc3f90c78ce8d77b0d1f5a561a7822a44460022c8c88359d127f0f29acac06b /var/run/docker/libcontainerd/5fc3f90c78ce8d77b0d1f5a561a7822a44460022c8c88359d127f0f29acac06b docker-runc
+     5498 root       - 243952 33588 /usr/bin/cadvisor -logtostderr
+     1152 syslog     - 222496 1056 /usr/sbin/rsyslogd -n
+     1234 root       - 221860  676 /usr/lib/policykit-1/polkitd --no-debug
+     1155 root       - 221784  860 /usr/lib/accountsservice/accounts-daemon
+
+Or run atop:
+
+.image images/atop.png
+
+From the [[https://linux.die.net/man/1/atop][docs]]:
+
+    Memory
+    If the committed virtual memory exceeds the limit ('vmcom' and 'vmlim' in the SWP-line), the SWP-line is colored due to overcommitting the system.
+
+* Check the logs
+
+    root@xxx-159c207d:/home/ubuntu#  grep -A 1 oom /var/log/*
+    /var/log/kern.log:May  1 20:27:19 xxx-159c207d kernel: [446105.825033] java invoked oom-killer: gfp_mask=0x24201ca, order=0, oom_score_adj=0
+    /var/log/kern.log-May  1 20:27:19 xxx-159c207d kernel: [446105.825037] java cpuset=4cbbf7dbb8d88b210789ea5450cce80e294db551521fbc7a4fd6781c7ac5983e mems_allowed=0
+    --
+    /var/log/kern.log:May  1 20:27:19 xxx-159c207d kernel: [446105.825063]  [<ffffffff81192722>] oom_kill_process+0x202/0x3c0
+    /var/log/kern.log-May  1 20:27:19 xxx-159c207d kernel: [446105.825065]  [<ffffffff81192b49>] out_of_memory+0x219/0x460
+    --
+    /var/log/kern.log:May  1 20:27:19 xxx-159c207d kernel: [446105.825165] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log-May  1 20:27:19 xxx-159c207d kernel: [446105.825169] [  376]     0   376    10367     3288      26       3        0             0 systemd-journal
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812269] ntpd invoked oom-killer: gfp_mask=0x24201ca, order=0, oom_score_adj=0
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812275] ntpd cpuset=/ mems_allowed=0
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812303]  [<ffffffff81192722>] oom_kill_process+0x202/0x3c0
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812305]  [<ffffffff81192b49>] out_of_memory+0x219/0x460
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812395] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812400] [  376]     0   376    10367     3009      25       3        0             0 systemd-journal
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825537] ntpd invoked oom-killer: gfp_mask=0x24201ca, order=0, oom_score_adj=0
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825539] ntpd cpuset=/ mems_allowed=0
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825559]  [<ffffffff81192722>] oom_kill_process+0x202/0x3c0
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825561]  [<ffffffff81192b49>] out_of_memory+0x219/0x460
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825643] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825647] [  376]     0   376    10367     3009      25       3        0             0 systemd-journal
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836474] ntpd invoked oom-killer: gfp_mask=0x24201ca, order=0, oom_score_adj=0
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836475] ntpd cpuset=/ mems_allowed=0
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836494]  [<ffffffff81192722>] oom_kill_process+0x202/0x3c0
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836496]  [<ffffffff81192b49>] out_of_memory+0x219/0x460
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836576] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836580] [  376]     0   376    10367     3009      25       3        0             0 systemd-journal
+
+And:
+
+    root@xxx-159c207d:/home/ubuntu# grep -A 1 total_vm /var/log/*
+    /var/log/kern.log:May  1 20:27:19 xxx-159c207d kernel: [446105.825165] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log-May  1 20:27:19 xxx-159c207d kernel: [446105.825169] [  376]     0   376    10367     3288      26       3        0             0 systemd-journal
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812395] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.812400] [  376]     0   376    10367     3009      25       3        0             0 systemd-journal
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825643] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.825647] [  376]     0   376    10367     3009      25       3        0             0 systemd-journal
+    --
+    /var/log/kern.log.1:Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836576] [ pid ]   uid  tgid total_vm      rss nr_ptes nr_pmds swapents oom_score_adj name
+    /var/log/kern.log.1-Apr 27 10:07:24 ip-10-96-3-112 kernel: [63310.836580] [  376]     0   376    10367     3009      25       3        0             0 systemd-journal
+
+* Mem-info
+
+getting mem info
+
+    dmesg -T | grep -A26 'Mem-Info'
+
+to:
+
+    --
+    [Mon May  1 20:27:18 2017] Mem-Info:
+    [Mon May  1 20:27:18 2017] active_anon:980153 inactive_anon:2532 isolated_anon:0
+                                active_file:20 inactive_file:1 isolated_file:8
+                                unevictable:914 dirty:1 writeback:0 unstable:0
+                                slab_reclaimable:6389 slab_unreclaimable:5448
+                                mapped:1360 shmem:2735 pagetables:2915 bounce:0
+                                free:6084 free_pcp:48 free_cma:0
+    [Mon May  1 20:27:18 2017] Node 0 DMA free:15760kB min:28kB low:32kB high:40kB active_anon:140kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15988kB managed:15904kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB free_pcp:0kB local_pcp:0kB free_cma:0kB writeback_tmp:0kB pages_scanned:4 all_unreclaimable? yes
+    [Mon May  1 20:27:18 2017] lowmem_reserve[]: 0 3745 3934 3934 3934
+    [Mon May  1 20:27:18 2017] Node 0 DMA32 free:8240kB min:7528kB low:9408kB high:11292kB active_anon:3747816kB inactive_anon:9792kB active_file:76kB inactive_file:4kB unevictable:3548kB isolated(anon):0kB isolated(file):32kB present:3915776kB managed:3835156kB mlocked:3548kB dirty:4kB writeback:0kB mapped:5228kB shmem:10580kB slab_reclaimable:24376kB slab_unreclaimable:18984kB kernel_stack:4160kB pagetables:4696kB unstable:0kB bounce:0kB free_pcp:136kB local_pcp:120kB free_cma:0kB writeback_tmp:0kB pages_scanned:948 all_unreclaimable? yes
+    [Mon May  1 20:27:18 2017] lowmem_reserve[]: 0 0 189 189 189
+    [Mon May  1 20:27:18 2017] Node 0 Normal free:336kB min:380kB low:472kB high:568kB active_anon:172656kB inactive_anon:336kB active_file:4kB inactive_file:0kB unevictable:108kB isolated(anon):0kB isolated(file):0kB present:393216kB managed:193908kB mlocked:108kB dirty:0kB writeback:0kB mapped:212kB shmem:360kB slab_reclaimable:1180kB slab_unreclaimable:2808kB kernel_stack:784kB pagetables:6964kB unstable:0kB bounce:0kB free_pcp:56kB local_pcp:56kB free_cma:0kB writeback_tmp:0kB pages_scanned:12200 all_unreclaimable? yes
+    [Mon May  1 20:27:18 2017] lowmem_reserve[]: 0 0 0 0 0
+    [Mon May  1 20:27:18 2017] Node 0 DMA: 2*4kB (UM) 1*8kB (U) 2*16kB (UM) 1*32kB (M) 3*64kB (UM) 1*128kB (U) 2*256kB (UM) 1*512kB (M) 2*1024kB (UM) 0*2048kB 3*4096kB (ME) = 15760kB
+    [Mon May  1 20:27:18 2017] Node 0 DMA32: 550*4kB (UME) 289*8kB (UE) 95*16kB (UME) 41*32kB (UME) 12*64kB (UME) 1*128kB (M) 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 8240kB
+    [Mon May  1 20:27:18 2017] Node 0 Normal: 66*4kB (UME) 9*8kB (UM) 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 336kB
+    [Mon May  1 20:27:18 2017] Node 0 hugepages_total=0 hugepages_free=0 hugepages_surp=0 hugepages_size=2048kB
+    [Mon May  1 20:27:18 2017] 3375 total pagecache pages
+    [Mon May  1 20:27:18 2017] 0 pages in swap cache
+    [Mon May  1 20:27:18 2017] Swap cache stats: add 0, delete 0, find 0/0
+    [Mon May  1 20:27:18 2017] Free swap  = 0kB
+    [Mon May  1 20:27:18 2017] Total swap = 0kB
+    [Mon May  1 20:27:18 2017] 1081245 pages RAM
+    [Mon May  1 20:27:18 2017] 0 pages HighMem/MovableOnly
+    [Mon May  1 20:27:18 2017] 70003 pages reserved
+    [Mon May  1 20:27:18 2017] 0 pages cma reserved
+    [Mon May  1 20:27:18 2017] 0 pages hwpoisoned
+
+* View from docker
+
+    root@es5-master-qa-qa-10-96-3-112-159c207d:/home/ubuntu# docker stats --no-stream 9f1623bcd254
+    CONTAINER           CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+    9f1623bcd254        0.15%               3.332GiB / 3.858GiB   86.37%              0B / 0B             95.8MB / 2.93GB     43
+
+- https://docs.docker.com/engine/admin/resource_constraints/
+- https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt
+
+
+    I had a similar issue with a few java based Docker containers that were running on a single Docker host. The problem was each container saw the total available memory of the host machine and assumed it could use all of that memory for itself. It didn't run GC very often and I ended up getting out of memory exceptions. I ended up manually limiting the amount of memory each container could use and I no longer got OOMs. Within the contianer I also limited the memory of the JVM.
+
+- https://docs.docker.com/engine/reference/run/#runtime-constraints-on-resources
+
+VERY IMPORTANT: https://github.com/moby/moby/issues/32788
+
+- https://developers.redhat.com/blog/2017/03/14/java-inside-docker/
+
+    We need to understand that the docker switches (-m, –memory and –memory-swap) and the kubernetes switch (–limits) instruct the Linux kernel to kill the process if it tries to exceed the specified limit, but the JVM is completely unaware of the limits and when it exceeds the limits, bad things happen!
+
+    It’s clear that increasing the memory and letting the JVM set its own parameters is not always a good idea when running inside containers. When running a Java application inside containers, we should set the maximum heap size (-Xmx parameter) ourselves based on the application needs and the container limits.
+
+???
+- https://fabiokung.com/2014/03/13/memory-inside-linux-containers/
+
+- https://github.com/moby/moby/blob/master/docs/reference/run.md
+
+- https://github.com/moby/moby/issues/31594
+- https://www.infoq.com/news/2017/02/java-memory-limit-container
+
+
+top - 16:17:41 up 11 days, 23:45,  0 users,  load average: 0.16, 0.03, 0.01
+Tasks:   3 total,   1 running,   2 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.3 us,  0.2 sy,  0.0 ni, 99.5 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+KiB Mem:   4044968 total,  4011812 used,    33156 free,    17716 buffers
+KiB Swap:        0 total,        0 used,        0 free.   153136 cached Mem
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+    1 elastic+  20   0 5826796 3.328g   2188 S   0.3 86.3  28:15.80 java
+   85 root      20   0   21952   3392   2888 S   0.0  0.1   0:00.02 bash
+  101 root      20   0   23620   2652   2312 R   0.0  0.1   0:00.00 top
+
+  root@es5-master-qa-qa-10-96-3-112-159c207d:/usr/share/elasticsearch# free -h
+               total       used       free     shared    buffers     cached
+  Mem:          3.9G       3.8G        32M        15M        17M       149M
+  -/+ buffers/cache:       3.7G       199M
+  Swap:           0B         0B         0B
+
+
+* Sources
+
+- https://linux-mm.org/OOM_Killer
+- https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/vm/overcommit-accounting?id=HEAD
+- https://lwn.net/Articles/317814/
+- [[http://www.dennyzhang.com/monitor_oom/][Monitor OOM]]
+- [[https://serverfault.com/questions/134669/how-to-diagnose-causes-of-oom-killer-killing-processes][how-to-diagnose-causes-of-oom-killer-killing-processes]]
+- https://stackoverflow.com/questions/35791416/how-to-disable-the-oom-killer-in-linux
+- https://unix.stackexchange.com/questions/128642/debug-out-of-memory-with-var-log-messages
+- https://stackoverflow.com/questions/18845857/what-does-anon-rss-and-total-vm-mean
+- https://www.digitalocean.com/community/tutorials/how-to-use-journalctl-to-view-and-manipulate-systemd-logs

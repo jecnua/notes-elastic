@@ -1,0 +1,43 @@
+Linuxkit on Mac
+|| Last update: 8 May 2017
+
+
+* Prerequisite
+
+- http://www.nebulaworks.com/blog/2017/04/23/getting-started-linuxkit-mac-os-x-xhyve
+
+Need
+- xhyve
+
+NOTE: use xhyve instead of hyperkit
+
+* On xhyve
+
+READ https://github.com/moby/moby/blob/moby/README.md
+https://news.ycombinator.com/item?id=14139691
+
+TBD
+
+*
+
+on linux kit
+
+    % moby build sshd output
+    Extract kernel image: linuxkit/kernel:4.9.x
+    Add init containers:
+    Process init image: linuxkit/init:63eed9ca7a09d2ce4c0c5e7238ac005fa44f564b
+    Process init image: linuxkit/runc:b0fb122e10dbb7e4e45115177a61a3f8d68c19a9
+    Process init image: linuxkit/containerd:18eaf72f3f4f9a9f29ca1951f66df701f873060b
+    Process init image: linuxkit/ca-certificates:e091a05fbf7c5e16f18b23602febd45dd690ba2f
+    Add onboot containers:
+      Create OCI config for linuxkit/sysctl:2cf2f9d5b4d314ba1bfc22b2fe931924af666d8c
+    Add service containers:
+      Create OCI config for linuxkit/rngd:c42fd499690b2cb6e4e6cb99e41dfafca1cf5b14
+      Create OCI config for linuxkit/dhcpcd:48e249ebef6a521eed886b3bce032db69fbb4afa
+      Create OCI config for linuxkit/sshd:e108d208adf692c8a0954f602743e0eec445364e
+    Add files:
+      root/.ssh/authorized_keys
+    Create outputs:
+      sshd-kernel sshd-initrd.img sshd-cmdline
+      sshd.iso
+      sshd-efi.iso

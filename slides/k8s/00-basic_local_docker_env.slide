@@ -1,5 +1,9 @@
 Local docker env and minikube
-Fabrizio Sabatini || Last update: 08 Feb 2017
+Fabrizio Sabatini || Last update: 12 Apr 2017
+
+* Disclaimer
+
+This installation and usage guide is for MacOSX
 
 * Install Docker machine (via docker toolbox)
 
@@ -14,6 +18,7 @@ Fabrizio Sabatini || Last update: 08 Feb 2017
 
     brew install \
       kubernetes-cli \
+      kubectl \
       docker-machine-driver-xhyve --HEAD xhyve
 
 OS X the options are:
@@ -37,6 +42,7 @@ Create a new machine on xhyve:
 
 Stop and remove:
 
+    # docker-machine start xhyve-local
     docker-machine stop xhyve-local
     yes | docker-machine rm xhyve-local
 
@@ -44,18 +50,19 @@ Stop and remove:
 
 [[https://github.com/kubernetes/minikube][kubernetes/minikube]]
 
+Clean any old version:
+
+    # Check what you are going to destroy first :)
+    minikube stop
+    minikube delete
+
 Set the machine:
 
-    docker-machine start xhyve-local
     # To opt-out from sending anonymised crash report
     minikube config set WantReportErrorPrompt false
     minikube config get vm-driver
     minikube config set vm-driver xhyve
     minikube config get vm-driver
-
-Clean any old version:
-
-    minikube delete
 
 Start a new machine:
 
@@ -70,7 +77,7 @@ Start a new machine:
         --container-runtime=rkt \
         --iso-url=http://storage.googleapis.com/minikube/iso/buildroot/minikube-v0.0.6.iso
 
-* Stop and delete minikube (don't do it now)
+* Stop and delete minikube
 
     minikube stop
     minikube delete
@@ -87,5 +94,14 @@ Run a box:
 Access it:
 
     kubectl expose deployment hello-minikube --type=NodePort
-    kubectl get pod
+    # The -w flag will "wait" on the command
+    kubectl get pod -w
     curl $(minikube service hello-minikube --url)
+
+More info:
+
+    minikube dashboard
+
+* Mount and access dirs [v0.18.0+]
+
+- [[https://github.com/kubernetes/minikube/blob/v0.18.0/README.md#persistent-volumes][persistent-volumes]]

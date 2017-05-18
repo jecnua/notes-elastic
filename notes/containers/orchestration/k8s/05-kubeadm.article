@@ -1,4 +1,5 @@
-Kubeadm (added in k8s 1.4.0)
+Kubeadm
+|| Last update: 18 May 2017
 
 * Links
 
@@ -9,12 +10,14 @@ Kubeadm (added in k8s 1.4.0)
 - [[http://kubernetes.io/docs/admin/kubeadm/][Kubeadm reference]]
 - [[http://kubernetes.io/docs/getting-started-guides/kubeadm/#limitations][Limitations]]
 
-** Why?
+(added in k8s 1.4.0)
+
+* Why?
 
 It will decouple me from using salt/ansible to configure the system
 and actually UNDERSTANDING how it works.
 
-** How does kubeadm works?
+* How does kubeadm works?
 
 Kubeadm will deploy:
 
@@ -87,3 +90,26 @@ At the time of this writing the docs are appalling:
 
 - no way to know how to use cloud config
 - no way how to use systemd drop pin
+
+* Known problems
+
+** ERROR: kubelet dir is not empty
+
+While configuring a new node, I was receiving the following error:
+
+    [preflight] Some fatal errors occurred:
+    /var/lib/kubelet is not empty
+
+As a temporary fix I added
+
+    --skip-preflight-checks
+
+So now the new join call is:
+
+    kubeadm join \
+    --skip-preflight-checks \
+    --token=$CONTROLLER_JOIN_TOKEN $MASTER_IP
+
+** Problems with k8s 1.6+
+
+TBD

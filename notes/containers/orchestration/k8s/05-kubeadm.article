@@ -110,6 +110,6 @@ So now the new join call is:
     --skip-preflight-checks \
     --token=$CONTROLLER_JOIN_TOKEN $MASTER_IP
 
-** Problems with k8s 1.6+
+** ERROR: You need to pass the port
 
 TBD

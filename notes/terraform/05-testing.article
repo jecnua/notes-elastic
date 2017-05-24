@@ -1,0 +1,44 @@
+Testing terraform
+|| Last update: 24 May 2017
+
+* Intro
+
+Testing infrastructure is very slow, and so are feedbacks.
+
+* Unit test
+
+** terraform validate
+
+The most basic test. Does not catch much.
+
+** terraform_validate
+
+- [[https://github.com/elmundio87/terraform_validate][terraform_validate github]]
+
+Python based. Is pretty new and hard to use.
+I think I could use it to enforce best practices.
+
+* Integration test
+
+** awsspec
+
+- [[https://github.com/k1LoW/awspec][awspec github]]
+
+Work only for AWS.
+
+** test kitchen and inspec
+
+Test kitchen as a plugin to use terraform.
+Unfortunately test kitchen does not support multiple provisioners.
+So you can't use terraform AND puppet.
+
+*** Null resource
+
+Is a resource terraform run AFTER everything else.
+Can be used to trigger provisioners (or run inspect after).
+
+* Resources
+
+- VIDEO: [[https://www.youtube.com/watch?v=hsjgUVhq6KQ][Hashicorp London Meetup - Testing programmable infrastructure, Matt Long]]
+- SLIDES:  [[https://www.slideshare.net/opencredo/london-hashicorp-meetup-8-testing-programmable-infrastructure-by-matt-long][https://www.slideshare.net/opencredo/london-hashicorp-meetup-8-testing-programmable-infrastructure-by-matt-long]]
+- VIDEO: [[https://www.youtube.com/watch?v=1Kj3I4PZXdE][DevOpsDays Chicago 2016 - Untangling Infrastructure Code... by Nell Shamrell-Harrington ]]

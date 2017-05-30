@@ -1,0 +1,14 @@
+Containers are not VMs
+|| Last update: 30 May 2017
+
+Containers are not VMs.
+
+Type 1 hypervisors:
+
+- hyperkit for MacOS
+- HyperV for windows
+- Kvm for linux
+
+Type 2 hypervisors:
+- Virtualbox
+- VMware

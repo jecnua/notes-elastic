@@ -1,5 +1,5 @@
 Local docker env and minikube
-Fabrizio Sabatini || Last update: 12 Apr 2017
+Fabrizio Sabatini || Last update: 20 Jun 2017
 
 * Disclaimer
 
@@ -20,6 +20,9 @@ This installation and usage guide is for MacOSX
       kubernetes-cli \
       kubectl \
       docker-machine-driver-xhyve --HEAD xhyve
+
+    sudo chown root:wheel $(brew --prefix)/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+    sudo chmod u+s $(brew --prefix)/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
 
 OS X the options are:
  - xhyve driver

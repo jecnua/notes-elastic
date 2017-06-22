@@ -1,0 +1,78 @@
+Milestones
+||
+
+* Intro
+
+Is something big enough to be of value for the Sponsors.
+Every _key_milestone_ is at least a couple of weeks.
+6 weeks - 2 months, depending on the situation could be smaller.
+
+** Definition
+
+A milestone should specify what _we_think_ we need to do.
+Then, when speaking with the sponsors, we can decide:
+
+- Is it correct?
+- Is it all?
+
+And so on.
+
+** Estimations
+
+Estimation should be about the *time* we think it will take.
+This too can be presented to the sponsor and discussed.
+
+- resources? are they enough?
+- this is our timing. is it ok?
+
+Estimations needs to be real:
+
+- not padded
+- non exaggerated
+
+Should not be used as a hammer.
+On a weekly base the percentage should be updated.
+
+Example:
+
+    If you can work on it "3 hours in 3 days" the
+    estimation is 3 days! Is calendar time a difficulty estimate.
+
+The resulting timeline will be based on dependencies too.
+
+If the sponsors have a problem with the estimation they are gonna help with prioritization.
+
+** Resources
+
+Allocate resources in that period of time.
+If you are not very confident on some estimation, explain why and the reasons.
+
+** Presentation
+
+Should be *ONE*line* per milestone.
+
+- milestone name
+- Start this date
+- How long do we _think_ is gonna take (duration in days)
+- Who is the owner
+
+* The process
+
+Creating the Milestone plan:
+- “Real work” details such as stories will be contained in Jira by the engineering teams.  Not in this milestone plan.  Our milestone plan will sync to the real work at a higher level/1 page view.
+- These are realistic “estimates” not overly aggressive or with excessive padding.
+
+** The table
+
+- Milestone name
+- Status (jira status component)
+- + planning
+- + not started
+- + in process
+- + done
+- Start
+- Target finish (or duration)
+- Owner
+- Links
+- Dependencies (if any)
+- Comments

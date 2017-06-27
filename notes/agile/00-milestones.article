@@ -66,10 +66,11 @@ Creating the Milestone plan:
 
 - Milestone name
 - Status (jira status component)
-- + planning
-- + not started
-- + in process
-- + done
+- + not started (grey)
+- + planning (blue)
+- + in progress (green)
+- + delayed (yellow)
+- + done (green)
 - Start
 - Target finish (or duration)
 - Owner

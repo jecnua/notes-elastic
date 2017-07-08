@@ -1,0 +1,91 @@
+Generate new key/cert for admin on k8s 1.7
+
+* Generate certs and key for a new user
+
+    # As sudo
+    sudo su
+
+    USERNAME='jecnua'
+    GROUP='system:masters'
+
+    cd /etc/kubernetes/pki
+
+    openssl genrsa -out $USERNAME.key 2048
+
+    openssl req -new \
+      -key $USERNAME.key \
+      -out $USERNAME.csr \
+      -subj "/CN=$USERNAME/O=$GROUP"
+
+    openssl x509 -req \
+      -in $USERNAME.csr \
+      -CA ca.crt -CAkey ca.key -CAcreateserial \
+      -out $USERNAME.crt -days 10000
+
+* Write the base64 on file
+
+    touch /opt/$USERNAME.data
+    echo "CA CRT:" > /opt/$USERNAME.data
+    base64 -w0 ca.crt >> /opt/$USERNAME.data
+    echo "" >> /opt/$USERNAME.data
+    echo "$USERNAME CRT:" >> /opt/$USERNAME.data
+    base64 -w0 $USERNAME.crt >> /opt/$USERNAME.data
+    echo "" >> /opt/$USERNAME.data
+    echo "$USERNAME KEY:" >> /opt/$USERNAME.data
+    base64 -w0 $USERNAME.key >> /opt/$USERNAME.data
+    echo "" >> /opt/$USERNAME.data
+
+* On another server (like your laptop)
+
+    apiVersion: v1
+    clusters:
+    - cluster:
+        certificate-authority-data: <here>
+        server: https://<your_ip>:6443
+      name: kubernetes
+    contexts:
+    - context:
+        cluster: kubernetes
+        namespace: testing
+        user: jecnua
+      name: jecnua@kubernetes
+    current-context: jecnua@kubernetes
+    kind: Config
+    preferences: {}
+    users:
+    - name: jecnua
+      user:
+        client-certificate-data: <here>
+        client-key-data: <here>
+
+* Then export and try to connect
+
+    export KUBECONFIG=test.conf
+    kubectl get nodes
+
+* Yaml
+
+In case you want to use another group:
+
+    kind: ClusterRoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1beta1
+    metadata:
+      name: my-admins
+    subjects:
+    - kind: Group
+      name: admin
+      apiGroup: rbac.authorization.k8s.io
+    roleRef:
+      kind: ClusterRole
+      name: cluster-admin
+      apiGroup: rbac.authorization.k8s.io
+
+* Links
+
+- [[https://lukemarsden.github.io/docs/admin/authorization/][admin/authorization/]]
+- [[https://kubernetes.io/docs/admin/authentication/#x509-client-certs][authentication/#x509-client-certs]]
+- [[https://kubernetes.io/docs/admin/authorization/rbac/#user-facing-roles][rbac/#user-facing-roles]]
+- [[https://kubernetes.io/docs/admin/authorization/rbac/#kubectl-create-rolebinding][rbac/#kubectl-create-rolebinding]]
+- [[https://github.com/kubernetes/dashboard/blob/master/docs/design/access-control.md][dashboard: access-control]]
+- [[https://github.com/kubernetes/kubernetes/blob/master/plugin/pkg/auth/authorizer/rbac/bootstrappolicy/testdata/cluster-roles.yaml][rbac/bootstrappolicy/testdata/cluster-roles.yaml]]
+- [[https://github.com/janwillies/kubernetes-rbac-howto][https://github.com/janwillies/kubernetes-rbac-howto]]

@@ -1,4 +1,5 @@
 Kubernetes
+|| Last update: 8 Jul 2017 || k8s 1.7.0
 
 * Intro
 
@@ -236,6 +237,10 @@ Among the functionality added in this version:
 - k8s performance
 
 replication controllers have been replaced by replica sets.
+
+** 1.7
+
+- https://kubernetes.io/docs/tasks/administer-cluster/kubeadm-upgrade-1-7/
 
 * Future
 

@@ -1,14 +1,7 @@
 Kubeadm
-|| Last update: 18 May 2017
+|| Last update: 8 Jul 2017 || kubeadm 1.7
 
-* Links
-
-- [[http://kubernetes.io/docs/admin/kubeadm/][[kubeadm reference]]]
-- [[https://github.com/kubernetes/kubeadm/blob/master/CHANGELOG.md][Github CHANGELOG]]
-- [[https://github.com/kubernetes/kubeadm/issues][Github ISSUES]]
-- [[http://kubernetes.io/docs/getting-started-guides/kubeadm/][Getting started guide]]
-- [[http://kubernetes.io/docs/admin/kubeadm/][Kubeadm reference]]
-- [[http://kubernetes.io/docs/getting-started-guides/kubeadm/#limitations][Limitations]]
+* Intro
 
 (added in k8s 1.4.0)
 
@@ -112,4 +105,13 @@ So now the new join call is:
 
 ** ERROR: You need to pass the port
 
-TBD
+* Resources
+
+- [[http://blog.kubernetes.io/2016/09/how-we-made-kubernetes-easy-to-install.html][Mark post about kubeadm]]
+- [[http://kubernetes.io/docs/admin/kubeadm/][[kubeadm reference]]]
+- [[https://github.com/kubernetes/kubeadm/blob/master/CHANGELOG.md][Github CHANGELOG]]
+- [[https://github.com/kubernetes/kubeadm/issues][Github ISSUES]]
+- [[http://kubernetes.io/docs/getting-started-guides/kubeadm/][Getting started guide]]
+- [[http://kubernetes.io/docs/admin/kubeadm/][Kubeadm reference]]
+- [[http://kubernetes.io/docs/getting-started-guides/kubeadm/#limitations][Limitations]]
+- [[https://kubernetes.io/docs/tasks/administer-cluster/kubeadm-upgrade-1-7/][Upgrade from 1.6 to 1.7]]

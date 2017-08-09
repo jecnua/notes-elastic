@@ -65,6 +65,11 @@ Be optional:
 
 * ELB/ALB
 
+** Naming conventions
+
+- int-elb
+- ext-elb
+
 ** ALB only: Span a subnet for each AZ
 
 They should be defined *outside* the module and point to the module you are going
@@ -144,6 +149,7 @@ They should have the following files
 ** Check all terraform.tfvars
 
     find . -name "terraform.tfvars" | xargs cat
+    find . -name "*.tfvars" | xargs cat
 
 They should only have:
 

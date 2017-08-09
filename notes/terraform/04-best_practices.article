@@ -1,5 +1,84 @@
 Best practices
-|| Last update: 6 Mar 2017
+|| Last update: 9 Aug 2017
+
+* Tags
+
+** Terraform code reference
+
+Tag the code you refer to in terraform:
+
+    tf_code_path = "${join("/",slice(split("/", path.cwd),length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
+
+* Security groups
+
+** Explicit names
+
+To avoid to look like:
+
+    name: "terraform-006466ad9f29d55036287b004f"
+
+Set *names*:
+
+    name   = "${substr(format("app-ag-alb-sg-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+
+** Make them injectable
+
+All sg should have NO inline definition. When inside a module the id should be returned to allow *injection* if needed.
+
+* Autoscaling groups
+
+** Explicit names
+
+AG and LC should have explict names:
+
+    name = "${substr(format("openweb-api-lc-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+
+** Notifications
+
+They should all have notifications!
+However, the SNS queque should never be created INSIDE the module.
+Pass it to the module as a variable.
+
+    variable "sns_topic_notifications" {
+      type        = "string"
+      description = "The SNS topic to use when the system autoscale. If empty no notification will be sent"
+      default     = ""
+    }
+
+Be optional:
+
+    resource "aws_autoscaling_notification" "mod_asg_notification" {
+      count     = "${var.sns_topic_notifications == "" ? 0 : 1}"
+      topic_arn = "${var.sns_topic_notifications}"
+
+      group_names = [
+        "${aws_autoscaling_group.ag_name.name}",
+      ]
+
+      notifications = [
+        "autoscaling:EC2_INSTANCE_LAUNCH",
+        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+        "autoscaling:EC2_INSTANCE_TERMINATE",
+        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+      ]
+    }
+
+* ELB/ALB
+
+** ALB only: Span a subnet for each AZ
+
+They should be defined *outside* the module and point to the module you are going
+to use.
+
+** ELB only: for autoscaling groups healthchecks
+
+** Explicit names
+
+** Logs on s3
+
+*** No external access
+
+- Should have only default listener 80 and no SSL or other access
 
 * AMI
 
@@ -39,3 +118,41 @@ On a module level:
       [...]
       ami_id_worker     = "ami-f0768de6"
     }
+
+* Modules
+
+** Never create DNS
+
+NEVER create DNS inside a module!
+
+** Make thinks optional
+
+Use count=0.
+
+** Files
+
+They should have the following files
+
+- README
+- CHANGELOG
+- params.md
+
+* Tips and tricks
+
+    terraform show
+
+** Check all terraform.tfvars
+
+    find . -name "terraform.tfvars" | xargs cat
+
+They should only have:
+
+    terragrunt = {
+      include {
+        path = "${find_in_parent_folders()}"
+      }
+    }
+
+** Check there is no terragrunt file
+
+    find . -name ".terragrunt" | xargs cat

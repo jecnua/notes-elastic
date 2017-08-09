@@ -1,7 +1,7 @@
 # Notes, slides and stuff
- 
+
 ## Articles
- 
+
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/explore/links.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/agile/00-milestones.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/aws/00-acm.article
@@ -78,9 +78,9 @@
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/k8s/creating.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/k8s/k8s.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/weave/weave_cloud.article
- 
+
 ## Slides
- 
+
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/beaker.slide
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/containers/container_networking.slide
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/elasticsearch.slide

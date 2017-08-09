@@ -161,6 +161,15 @@ On a module level:
       ami_id_worker     = "ami-f0768de6"
     }
 
+* Variables
+
+All variable should have:
+
+- type
+- description
+
+And optionally default.
+
 * Modules
 
 ** Never create DNS

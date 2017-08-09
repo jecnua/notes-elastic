@@ -165,7 +165,9 @@ On a module level:
 
 ** Never create DNS
 
-NEVER create DNS inside a module!
+*NEVER* create DNS entries inside a module!
+
+You can check for any such reference in the files.
 
 ** Make thinks optional
 
@@ -279,3 +281,13 @@ Some plugins:
     ├── language-terraform
     ├── linter-terraform-syntax
     ├── terraform-fmt
+
+* Workflow
+
+** Create a new environment
+
+The in _01-main_blue.tf_:
+
+    module "mymodule_01" {
+    [...]
+    }

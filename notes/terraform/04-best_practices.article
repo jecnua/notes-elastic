@@ -218,7 +218,17 @@ You will need to put:
 On mac:
 
     brew install terraform-docs
+    brew list | grep terraform
 
 And then:
 
     terraform-docs md `pwd` > `pwd`/params.md
+
+** Atom only
+
+Some plugins:
+
+    apm list | grep terraform
+    ├── language-terraform
+    ├── linter-terraform-syntax
+    ├── terraform-fmt

@@ -169,13 +169,23 @@ On a module level:
 
 You can check for any such reference in the files.
 
+    TOTAL=`find . -name "*.tf" | xargs cat | grep 'resource "aws_route53_record"' | wc -l`
+    if [[ $TOTAL -ne 0 ]]
+    then
+      printf "$RED Failed! Found $TOTAL occurrence/s $NC \n"
+      let N_FAILED=N_FAILED+1
+    else
+      echo "ALL GOOD"
+      let N_SUCCESS=N_SUCCESS+1
+    fi
+
 ** Make thinks optional
 
 Use count=0.
 
 ** Files
 
-They should have the following files
+They should have the following files:
 
 - 00-backend_and_provider.tf
 - 00-remote-states.tf

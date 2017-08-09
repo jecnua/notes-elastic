@@ -292,6 +292,21 @@ Some plugins:
     ├── linter-terraform-syntax
     ├── terraform-fmt
 
+** Functions
+
+Avoid checks like this:
+
+    count = "${var.num_nodes_for_app == 0 ? 0 : 1}"
+
+It's useful when you want to parametrise things like AG or CN.
+But instead of:
+
+    == 0 ? 0 : 1
+
+Use [[https://www.terraform.io/docs/configuration/interpolation.html#signum-int-][signum]]:
+
+    count = "${signum(var.num_nodes_for_app)}"
+
 * Workflow
 
 ** Create a new environment

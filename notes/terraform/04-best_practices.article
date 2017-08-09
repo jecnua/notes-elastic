@@ -9,6 +9,17 @@ Tag the code you refer to in terraform:
 
     tf_code_path = "${join("/",slice(split("/", path.cwd),length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
 
+*** Try
+
+    tf_path_cwd    = "${path.cwd}"
+    tf_path_module = "${path.module}"
+    # not_useful = "${path.root}"
+
+    tags.%:          "3" => "6"
+    tags.applied_in: "" => "~/my-module/qa/example"
+    tags.saddas:     "" => "~/my-module/qa/example"
+    tags.ss:         "" => "~/my-module/qa/example/.terraform/modules/cce9e46809250e9cbc58f246e0e3008c"
+
 * Security groups
 
 ** Explicit names
@@ -17,9 +28,12 @@ To avoid to look like:
 
     name: "terraform-006466ad9f29d55036287b004f"
 
+Don't use name prefix!!! They limit to too little characters.
 Set *names*:
 
     name   = "${substr(format("app-ag-alb-sg-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+
+And 32 is the limit.
 
 ** Make them injectable
 
@@ -31,7 +45,24 @@ All sg should have NO inline definition. When inside a module the id should be r
 
 AG and LC should have explict names:
 
-    name = "${substr(format("openweb-api-lc-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+    name = "${substr(format("example-api-lc-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+
+** Enable metrics
+
+- [[https://aws.amazon.com/about-aws/whats-new/2016/08/free-auto-scaling-group-metrics-with-graphs/][https://aws.amazon.com/about-aws/whats-new/2016/08/free-auto-scaling-group-metrics-with-graphs/]]
+
+Activate on all auto-scaling group because they are [[https://docs.aws.amazon.com/cli/latest/reference/autoscaling/enable-metrics-collection.html][not by default]]:
+
+    enabled_metrics = [
+      "GroupMinSize",
+      "GroupMaxSize",
+      "GroupDesiredCapacity",
+      "GroupInServiceInstances",
+      "GroupPendingInstances",
+      "GroupStandbyInstances",
+      "GroupTerminatingInstances",
+      "GroupTotalInstances",
+    ]
 
 ** Notifications
 
@@ -70,10 +101,16 @@ Be optional:
 - int-elb
 - ext-elb
 
-** ALB only: Span a subnet for each AZ
+** ALB only
+
+*** Span a subnet for each AZ
 
 They should be defined *outside* the module and point to the module you are going
 to use.
+
+*** Limit ALB name to 32 chars
+
+*** Limit Target group names to 32 chars
 
 ** ELB only: for autoscaling groups healthchecks
 
@@ -162,3 +199,26 @@ They should only have:
 ** Check there is no terragrunt file
 
     find . -name ".terragrunt" | xargs cat
+
+** Don't use uuid to create names
+
+If you do this:
+
+    name = "${substr(format("myelb-int-80-%s", uuid()), 0, 32)}"
+
+You will need to put:
+
+    lifecycle {
+      [...]
+      ignore_changes        = ["name"]
+    }
+
+** Always generate params file
+
+On mac:
+
+    brew install terraform-docs
+
+And then:
+
+    terraform-docs md `pwd` > `pwd`/params.md

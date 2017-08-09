@@ -175,9 +175,56 @@ Use count=0.
 
 They should have the following files
 
+- 00-backend_and_provider.tf
+- 00-remote-states.tf
+- 00-variables.tf
+- 00-variables_default.tf (only for modules)
+- 00-variables_required_inputs.tf (only for modules)
+- 99-output.tf
 - README
-- CHANGELOG
-- params.md
+- CHANGELOG (only for modules)
+- params.md (generated)
+- terraform.tfvars
+
+*** 00-backend_and_provider.tf
+
+Stuff that usually doesn't change:
+
+    terraform {
+      # The configuration for this backend will be filled in by Terragrunt
+      backend          "s3"             {}
+      required_version = ">= 0.9.11"
+    }
+
+    provider "aws" {
+      region     = "${var.network_region}"
+      access_key = "${var.access_key}"
+      secret_key = "${var.secret_key}"
+    }
+
+    variable "access_key" {
+      description = "Read at run-time"
+      type        = "string"
+    }
+
+    variable "secret_key" {
+      description = "Read at run-time"
+      type        = "string"
+    }
+
+*** 00-remote-states.tf
+
+If needed: It can host the reference to remote states.
+
+    data "terraform_remote_state" "lb_network_global" {
+      backend = "s3"
+
+      config {
+        bucket = "my-terraform-state"
+        key    = "global/lb-network/terraform.tfstate"
+        region = "us-east-1"
+      }
+    }
 
 * Tips and tricks
 

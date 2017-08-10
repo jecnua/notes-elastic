@@ -84,9 +84,9 @@ Activate on all auto-scaling group because they are [[https://docs.aws.amazon.co
 
 ** Notifications
 
-They should all have notifications!
-However, the SNS queque should never be created INSIDE the module.
-Pass it to the module as a variable.
+All Autoscaling Groups should notify in case of events.
+However, a SNS queue should *never be created INSIDE a module*.
+Instead, pass it to the module as a variable.
 
     variable "sns_topic_notifications" {
       type        = "string"
@@ -94,7 +94,7 @@ Pass it to the module as a variable.
       default     = ""
     }
 
-Be optional:
+And be optional if alerting or not:
 
     resource "aws_autoscaling_notification" "mod_asg_notification" {
       count     = "${var.sns_topic_notifications == "" ? 0 : 1}"

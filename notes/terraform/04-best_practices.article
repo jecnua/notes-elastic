@@ -3,6 +3,14 @@ Best practices
 
 * Tags
 
+Everywhere terraform allow to have tags, add them.
+At least try to have:
+
+- Name
+- description (optional)
+- tf_code_path: Follows
+- env: The environment
+
 ** Terraform code reference
 
 Tag the code you refer to in terraform (ALWAYS):
@@ -25,6 +33,10 @@ Will result in:
     tags.tf_path_module: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
       .terraform/modules/a3eda4daf706c9875a23dc8a678dd035"
     tags.tf_path_root:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+
+** Name and/or description
+
+Human readable.
 
 * Security groups
 

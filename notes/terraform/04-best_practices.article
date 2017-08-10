@@ -7,11 +7,13 @@ Best practices
 
 Tag the code you refer to in terraform (ALWAYS):
 
-    tf_code_path   = "${join("/",slice(split("/", path.cwd),length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
+    tf_code_path   = "${join("/",slice(split("/", path.cwd),
+    length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
 
 The other are not very useful:
 
-    tf_code_path   = "${join("/",slice(split("/", path.cwd),length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
+    tf_code_path   = "${join("/",slice(split("/", path.cwd),
+    length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
     tf_path_cwd    = "${path.cwd}"
     tf_path_module = "${path.module}"
     tf_path_root   = "${path.root}"
@@ -20,7 +22,8 @@ Will result in:
 
     tags.tf_code_path:   "my-terraform-repo/development/my-module"
     tags.tf_path_cwd:    "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
-    tags.tf_path_module: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/.terraform/modules/a3eda4daf706c9875a23dc8a678dd035"
+    tags.tf_path_module: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
+      .terraform/modules/a3eda4daf706c9875a23dc8a678dd035"
     tags.tf_path_root:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
 
 * Security groups

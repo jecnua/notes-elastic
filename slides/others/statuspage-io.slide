@@ -1,21 +1,75 @@
 Statuspage.io
+"Slides? Seriously?" - Everybody
+
+* Objective of a Business Dashboard
+
+High-level overview of the health of the system from a
+customer point of view.
 
 * What is not
 
-Is not you simple, clear, internal dashboard.
+Is _not_ my simple, clear, fancy, to the point internal dashboard...
 
 * Real screenshot from our es dashboard
 
-...
+.image images/grafana.png 450 _
 
-* What it should be
+* It would make this...
 
-High level overview of the health of the system from a
-customer point of view
+.image images/support.jpg 450 _
 
-* Basically
+.caption Random guy with headset I found on google
+
+* ... become this
+
+.image images/Samuel_Johnson_by_Joshua_Reynolds.jpg 500 _
+
+.caption Samuel Johnson c. 1772, painted by Sir Joshua Reynolds
+
+* What we said it should be?
+
+*High*level* overview of the health of the system from a
+_customer_ point of view.
+
+Important points:
+
+- *High*level*
+- _customer_
+
+* Dropbox statuspage
+
+.image images/dropbox_status.png 500 _
+
+.caption https://status.dropbox.com/
+
+* Statuspage.io key concepts
+
+- Components (_things_ with status)
+- Metrics (5 minutes granularity datapoint)
+- Incidents (not covered today)
+
+* Reddit status page
+
+.image images/reddit.png 500 _
+
+.caption http://www.redditstatus.com/
+
+* Components
+
+Status:
+
+- operational
+- degraded_performance
+- partial_outage
+- major_outage
+
+* Watch and change
+
+ADD
 
 * Demo
+
+* Prepare (skip)
 
     kubectl create namespace demo
     kubectl create -f es-discovery-svc.yaml
@@ -26,6 +80,8 @@ customer point of view
     kubectl create -f es-client.yaml
     kubectl create -f es-data.yaml
     watch kubectl get po -n demo
+
+* Create index (skip)
 
     # kubectl exec -it es-client-3159607856-zdttt -n demo /bin/bash
     apk update && apk add curl
@@ -40,8 +96,50 @@ customer point of view
     }
     '
 
+* Make the system unhappy
+
+    # kubectl exec -it es-client-3159607856-zdttt -n demo /bin/bash
+    curl -XPUT 'elasticsearch:9200/demo/_settings?pretty' -H 'Content-Type: application/json' -d'
+    {
+        "number_of_replicas": 2
+    }
+    '
+
+Restore:
+
     curl -XPUT 'elasticsearch:9200/demo/_settings?pretty' -H 'Content-Type: application/json' -d'
     {
         "number_of_replicas": 1
     }
     '
+
+* Make the system really unhappy...
+
+    cd ~/kubernetes-elasticsearch-cluster
+    kubectl delete -f es-data.yaml
+
+Restore
+
+    kubectl create -f es-data.yaml
+
+
+    # kubectl exec -it es-client-3159607856-zdttt -n demo /bin/bash
+    curl -XDELETE 'elasticsearch:9200/demo'
+    curl -XPUT 'elasticsearch:9200/demo?pretty' -H 'Content-Type: application/json' -d'
+    {
+        "settings" : {
+            "index" : {
+                "number_of_shards" : 3,
+                "number_of_replicas" : 1
+            }
+        }
+    }
+    '
+
+* Also...
+
+- Create incidents
+
+.image images/reddit_incidents.png 400 _
+
+.caption http://www.redditstatus.com/

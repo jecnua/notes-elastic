@@ -1,0 +1,47 @@
+Statuspage.io
+
+* What is not
+
+Is not you simple, clear, internal dashboard.
+
+* Real screenshot from our es dashboard
+
+...
+
+* What it should be
+
+High level overview of the health of the system from a
+customer point of view
+
+* Basically
+
+* Demo
+
+    kubectl create namespace demo
+    kubectl create -f es-discovery-svc.yaml
+    kubectl create -f es-svc.yaml
+    kubectl create -f es-master.yaml
+    watch kubectl get po -n demo
+
+    kubectl create -f es-client.yaml
+    kubectl create -f es-data.yaml
+    watch kubectl get po -n demo
+
+    # kubectl exec -it es-client-3159607856-zdttt -n demo /bin/bash
+    apk update && apk add curl
+    curl -XPUT 'elasticsearch:9200/demo?pretty' -H 'Content-Type: application/json' -d'
+    {
+        "settings" : {
+            "index" : {
+                "number_of_shards" : 3,
+                "number_of_replicas" : 1
+            }
+        }
+    }
+    '
+
+    curl -XPUT 'elasticsearch:9200/demo/_settings?pretty' -H 'Content-Type: application/json' -d'
+    {
+        "number_of_replicas": 1
+    }
+    '

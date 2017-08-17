@@ -10,21 +10,21 @@ customer point of view.
 
 Is _not_ my simple, clear, fancy, to the point internal dashboard...
 
-* Real screenshot from our es dashboard
+* Real screenshot of (part of) our es (only) dashboard
 
 .image images/grafana.png 450 _
 
-* It would make this...
-
-.image images/support.jpg 450 _
-
-.caption Random guy with headset I found on google
-
-* ... become this
-
-.image images/Samuel_Johnson_by_Joshua_Reynolds.jpg 500 _
-
-.caption Samuel Johnson c. 1772, painted by Sir Joshua Reynolds
+#* It would make this...
+#
+#.image images/support.jpg 450 _
+#
+#.caption Random guy with headset I found on google
+#
+#* ... become this
+#
+#.image images/Samuel_Johnson_by_Joshua_Reynolds.jpg 500 _
+#
+#.caption Samuel Johnson c. 1772, painted by Sir Joshua Reynolds
 
 * What we said it should be?
 
@@ -65,7 +65,7 @@ Status:
 
 * Watch and change
 
-ADD
+.image images/graph.png _ 500
 
 * Demo
 

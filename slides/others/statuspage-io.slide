@@ -1,14 +1,13 @@
 Statuspage.io
 "Slides? Seriously?" - Everybody
 
-* Objective of a Business Dashboard
+* Objective
 
-High-level overview of the health of the system from a
-customer point of view.
+Business Dashboard (def): High-level overview of the health of the system from a customer point of view.
 
-* What is not
+* But we already have dashboards... lots...
 
-Is _not_ my simple, clear, fancy, to the point internal dashboard...
+It's _not_ the simple, clear, fancy, to the point internal dashboard...
 
 * Real screenshot of (part of) our es (only) dashboard
 
@@ -36,11 +35,11 @@ Important points:
 - *High*level*
 - _customer_
 
-* Dropbox statuspage
-
-.image images/dropbox_status.png 500 _
-
-.caption https://status.dropbox.com/
+#* Dropbox statuspage
+#
+#.image images/dropbox_status.png 500 _
+#
+#.caption https://status.dropbox.com/
 
 * Statuspage.io key concepts
 
@@ -48,11 +47,11 @@ Important points:
 - Metrics (5 minutes granularity datapoint)
 - Incidents (not covered today)
 
-* Reddit status page
-
-.image images/reddit.png 500 _
-
-.caption http://www.redditstatus.com/
+#* Reddit status page
+#
+#.image images/reddit.png 500 _
+#
+#.caption http://www.redditstatus.com/
 
 * Components
 
@@ -67,7 +66,7 @@ Status:
 
 .image images/graph.png _ 500
 
-* Demo
+* Demo time!
 
 * Prepare (skip)
 

@@ -11,6 +11,7 @@ At least try to have:
 - Name
 - description (optional)
 - tfCodePath: Follows
+- tfModuleName (only if a module): The module name
 - env: The environment
 
 ** Terraform code reference

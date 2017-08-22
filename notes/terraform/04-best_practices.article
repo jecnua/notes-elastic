@@ -1,38 +1,40 @@
 Best practices
-|| Last update: 9 Aug 2017
+|| Last update: 22 Aug 2017
 
 * Tags
+
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/ec2-resource-tags/][Best practices]]
 
 Everywhere terraform allow to have tags, add them.
 At least try to have:
 
 - Name
 - description (optional)
-- tf_code_path: Follows
+- tfCodePath: Follows
 - env: The environment
 
 ** Terraform code reference
 
 Tag the code you refer to in terraform (ALWAYS):
 
-    tf_code_path   = "${join("/",slice(split("/", path.cwd),
+    tfCodePath   = "${join("/",slice(split("/", path.cwd),
     length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
 
 The other are not very useful:
 
-    tf_code_path   = "${join("/",slice(split("/", path.cwd),
+    tfCodePath   = "${join("/",slice(split("/", path.cwd),
     length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
-    tf_path_cwd    = "${path.cwd}"
-    tf_path_module = "${path.module}"
-    tf_path_root   = "${path.root}"
+    tfPathCwd    = "${path.cwd}"
+    tfPathModule = "${path.module}"
+    tfPathRoot   = "${path.root}"
 
 Will result in:
 
-    tags.tf_code_path:   "my-terraform-repo/development/my-module"
-    tags.tf_path_cwd:    "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
-    tags.tf_path_module: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
+    tags.tfCodePath:   "my-terraform-repo/development/my-module"
+    tags.tfPathCwd:    "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+    tags.tfPathModule: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
       .terraform/modules/a3eda4daf706c9875a23dc8a678dd035"
-    tags.tf_path_root:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+    tags.tfPathRoot:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
 
 ** Name and/or description
 

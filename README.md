@@ -1,7 +1,7 @@
 # Notes, slides and stuff
-
+ 
 ## Articles
-
+ 
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/explore/links.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/agile/00-milestones.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/aws/00-acm.article
@@ -9,6 +9,8 @@
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/aws/02-ami.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/aws/03-perf.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/aws/04-ecr.article
+- http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/aws/05-x_ray.article
+- http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/aws/elb/01-408_errors.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/00_intro.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/01_docker.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/01b_docker_advices.article
@@ -78,9 +80,9 @@
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/k8s/creating.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/k8s/k8s.article
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/weave/weave_cloud.article
-
+ 
 ## Slides
-
+ 
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/beaker.slide
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/containers/container_networking.slide
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/elasticsearch.slide
@@ -95,3 +97,4 @@
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/05-advanced_mesh_network.slide
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/06-generate-keys-for-admins.slide
 - http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/99-recap.slide
+- http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/others/statuspage-io.slide

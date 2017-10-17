@@ -1,24 +1,33 @@
-RabbitMQ: Clustering
+RabbitMQ
+|| Last update: 17 Oct 2017
 
-* Ramblings
+* Notes
 
-You need a cluster of 2 nodes in two azs.
+** Name
 
-The *hostname* is the *nodename*. By default rabbitmq will use rabbit@hostname for the name of the node.
+The *hostname* is the *nodename*. By default rabbitmq will use rabbit@hostname
+for the name of the node.
+
+** Connections
+
+Once the nodes are identified, they communicate through a *random*port*.
+To specify a single/range port, you have to change *rabbitmq*config* entries:
+
+    inet_dist_listen_min
+    inet_dist_listen_max
+
+** Ports
 
 Firewall ports:
+
 - 5672 (rabbit)
 - 4369 (epmd - erlang port mapper deamon) Erlang uses this to identify the node in the cluster
 - 65535 (to specify in the config)
 - 15672 (rabbitmq management)
 
-Once the nodes are identified by default. they communicate through a *random*port*. To specify a single/range port, you have to change *rabbitmq*config*.
-
-    inet_dist_listen_min
-    inet_dist_listen_max
-
 * Clustering
 
+You need a cluster of at least 2 nodes in two AZs to have AH.
 RabbitMQ *don't* span wan boundaries by itself.
 So how to obtain:
 
@@ -26,12 +35,13 @@ So how to obtain:
 - HA
 - performance
 
-A cluster or mirrored queues goes as far as HA, but no benefit gains.
+A cluster or mirrored queues goes as far as HA, but no benefit gained.
 
 ** The erlang way
 
-Erlang in clustered mode *is*not* tolerant to network partitions (including micro-partitions) and WILL cause some problems.
-The normal clustering (rabbitmq cluster) doesn't work!
+Erlang in clustered mode *is*not* tolerant to network partitions (including
+micro-partitions) and WILL cause some problems. The normal clustering
+(rabbitmq cluster) doesn't work!
 
 ** Federation
 
@@ -52,7 +62,7 @@ You need to choose a topology:
 
 *** Exchanges
 
-The message will be delibered to:
+The message will be delivered to:
 
 - Upstream exchange
 - Local queue

@@ -1,4 +1,5 @@
 RabbitMQ monitoring: CollectD + Graphite
+|| Last update: 17 Oct 2017
 
 * About
 
@@ -6,6 +7,56 @@ Installing RabbitMQ collectd plugin via puppet on Ubuntu 12.04 LTS.
 
     https://github.com/NYTimes/collectd-rabbitmq
     https://github.com/voxpupuli/puppet-collectd#class-collectdpluginrabbitmq
+
+* What to monitor?
+
+I use collectd to monitor:
+
+- https://pypi.python.org/pypi/collectd-rabbitmq
+- https://github.com/NYTimes/collectd-rabbitmq/
+
+    For each node the following statistics are gathered:
+    disk_free_limit
+    fd_total
+    fd_used
+    mem_limit
+    mem_used
+    proc_total
+    proc_used
+    processors
+    run_queue
+    sockets_total
+    sockets_used
+
+** Notes after 1y of usage
+
+This year:
+
+    sockets_total
+    sockets_used
+    proc_total
+    proc_used
+    fd_total
+    fd_used
+
+Not even close. No need to monitor.
+
+Only thing that created problem is:
+
+    mem_limit
+    mem_used
+
+to keep under control.
+
+Load was always ok. Even short term never over 1.
+
+*** What to look at
+
+- Free memory on the server
+- Disk space
+- Memory used/limit by erlang
+
+How to fix the problem that RabbitMQ stops replying when GC?
 
 * With puppet
 

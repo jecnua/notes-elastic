@@ -1,19 +1,52 @@
 RabbitMQ monitoring: CollectD + Graphite
 || Last update: 17 Oct 2017
 
-* About
+* Intro
+
+I would advice to read the following:
+
+- [[http://www.rabbitmq.com/monitoring.html][http://www.rabbitmq.com/monitoring.html]]
+
+* How to monitor
 
 Installing RabbitMQ collectd plugin via puppet on Ubuntu 12.04 LTS.
 
-    https://github.com/NYTimes/collectd-rabbitmq
-    https://github.com/voxpupuli/puppet-collectd#class-collectdpluginrabbitmq
-
-* What to monitor?
+- https://github.com/NYTimes/collectd-rabbitmq
+- https://github.com/voxpupuli/puppet-collectd#class-collectdpluginrabbitmq
 
 I use collectd to monitor:
 
-- https://pypi.python.org/pypi/collectd-rabbitmq
-- https://github.com/NYTimes/collectd-rabbitmq/
+- [[https://pypi.python.org/pypi/collectd-rabbitmq][https://pypi.python.org/pypi/collectd-rabbitmq]]
+- [[https://github.com/NYTimes/collectd-rabbitmq/][https://github.com/NYTimes/collectd-rabbitmq]]
+
+To investigate:
+
+- https://github.com/deadtrickster/prometheus_rabbitmq_exporter
+
+* Aliveness test
+
+- https://pulse.mozilla.org/api/
+- https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html
+
+    /api/aliveness-test/vhost
+    Declares a test queue, then publishes and consumes a message. Intended for use by monitoring tools. If everything is working correctly, will return HTTP status 200 with body:
+    {"status":"ok"}
+    Note: the test queue will not be deleted (to to prevent queue churn if this is repeatedly pinged).
+
+* What to monitor?
+
+RabbitMQ [[http://www.rabbitmq.com/monitoring.html][docs]] adivices to monitor:
+
+    CPU (idle, user, system, iowait)
+    Memory (free, cached, buffered)
+    Disk I/O (reads & writes per unit time, I/O wait percentages)
+    Free Disk Space
+    File descriptors used by beam.smp vs. max system limit
+    Network throughput (bytes received, bytes sent) vs. maximum network link throughput
+    VM statistics (dirty page flushes, writeback volume)
+    System load average (/proc/loadavg)
+
+The plugin extract this:
 
     For each node the following statistics are gathered:
     disk_free_limit
@@ -28,9 +61,9 @@ I use collectd to monitor:
     sockets_total
     sockets_used
 
-** Notes after 1y of usage
+** Notes after one year of usage
 
-This year:
+I collected data for one year and I noticed that of the following:
 
     sockets_total
     sockets_used
@@ -39,7 +72,7 @@ This year:
     fd_total
     fd_used
 
-Not even close. No need to monitor.
+There was basically no usage/divergence. There is no need to monitor.
 
 Only thing that created problem is:
 

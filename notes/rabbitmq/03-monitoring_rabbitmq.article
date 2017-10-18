@@ -1,32 +1,16 @@
-RabbitMQ monitoring: CollectD + Graphite
-|| Last update: 17 Oct 2017
+RabbitMQ monitoring
+|| Last update: 18 Oct 2017
 
 * Intro
 
-I would advice to read the following:
+I would advice to read the following doc page:
 
 - [[http://www.rabbitmq.com/monitoring.html][http://www.rabbitmq.com/monitoring.html]]
 
-* How to monitor
-
-Installing RabbitMQ collectd plugin via puppet on Ubuntu 12.04 LTS.
-
-- https://github.com/NYTimes/collectd-rabbitmq
-- https://github.com/voxpupuli/puppet-collectd#class-collectdpluginrabbitmq
-
-I use collectd to monitor:
-
-- [[https://pypi.python.org/pypi/collectd-rabbitmq][https://pypi.python.org/pypi/collectd-rabbitmq]]
-- [[https://github.com/NYTimes/collectd-rabbitmq/][https://github.com/NYTimes/collectd-rabbitmq]]
-
-To investigate:
-
-- https://github.com/deadtrickster/prometheus_rabbitmq_exporter
-
 * Aliveness test
 
-- https://pulse.mozilla.org/api/
-- https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html
+- [[https://pulse.mozilla.org/api/][https://pulse.mozilla.org/api/]]
+- [[https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html][https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html]]
 
     /api/aliveness-test/vhost
     Declares a test queue, then publishes and consumes a message. Intended for use by monitoring tools. If everything is working correctly, will return HTTP status 200 with body:
@@ -83,17 +67,37 @@ to keep under control.
 
 Load was always ok. Even short term never over 1.
 
-*** What to look at
+** What to look for (my take)
 
+- Aliveness
 - Free memory on the server
-- Disk space
 - Memory used/limit by erlang
+- Disk space
+- Disk I/O
+- CPU (load or usage)
 
 How to fix the problem that RabbitMQ stops replying when GC?
 
-* With puppet
+* How to monitor
 
-** After v5.0.0
+Installing RabbitMQ collectd plugin via puppet on Ubuntu 12.04 LTS.
+
+- [[https://github.com/NYTimes/collectd-rabbitmq]]
+- [[https://github.com/voxpupuli/puppet-collectd#class-collectdpluginrabbitmq]]
+
+I use collectd to monitor:
+
+- [[https://pypi.python.org/pypi/collectd-rabbitmq]]
+- [[https://github.com/NYTimes/collectd-rabbitmq/]]
+
+To investigate:
+
+- [[https://github.com/deadtrickster/prometheus_rabbitmq_exporter]]
+- [[https://github.com/klen/graphite-beacon]]
+
+** With puppet
+
+*** After v5.0.0
 
 In hiera:
 

@@ -13,17 +13,17 @@ It's _not_ the simple, clear, fancy, to the point internal dashboard...
 
 .image images/grafana.png 450 _
 
-#* It would make this...
-#
-#.image images/support.jpg 450 _
-#
-#.caption Random guy with headset I found on google
-#
-#* ... become this
-#
-#.image images/Samuel_Johnson_by_Joshua_Reynolds.jpg 500 _
-#
-#.caption Samuel Johnson c. 1772, painted by Sir Joshua Reynolds
+* It would make this...
+
+.image images/support.jpg 450 _
+
+.caption Random guy with headset I found on google
+
+* ... become this
+
+.image images/Samuel_Johnson_by_Joshua_Reynolds.jpg 500 _
+
+.caption Samuel Johnson c. 1772, painted by Sir Joshua Reynolds
 
 * What we said it should be?
 

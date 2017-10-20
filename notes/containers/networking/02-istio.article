@@ -1,0 +1,48 @@
+Istio
+|| Last update: 20 Oct 2017
+
+* Intro
+
+- https://istio.io/
+
+opentracing
+vault
+nginx
+prometheus
+spify ???? (secrets?) identy to application
+
+sits in datapath
+
+map events
+
+* Usage
+
+How do you make it so that is applies?
+It uses sidecars.
+You build a config pushed on every node.
+
+You don't need to instrument your code
+Attach functionality to the system
+
+    istioctl kube-inject -f
+
+lol
+attach sidecar without changing the yaml
+add a second container
+grab info from the data plane
+
+add zipkin so you have tracing
+
+** Istio and Rancher
+
+It will probably be integrated in Rancher soon.
+
+    # From a QA in October 2017
+    Q: Any plans on supporting Istio in Rancher 2.0?
+    A: :)
+
+* Resources
+
+- Me: Notes from London Kubernetes Meetup -  October 2017
+- [[https://www.youtube.com/watch?v=s4qasWn_mFc][Youtube: Istio and Kubernetes - Kelsey Hightower]] Jul 2017
+- https://www.safaribooksonline.com/library/view/velocity-conference-2017/9781491976265/video311439.html (safari book)

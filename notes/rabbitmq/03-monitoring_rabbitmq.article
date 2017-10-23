@@ -74,7 +74,7 @@ Load was always ok. Even short term never over 1.
 - Memory used/limit by erlang
 - Disk space
 - Disk I/O
-- CPU (load or usage)
+- CPU (load or/and perc)
 
 How to fix the problem that RabbitMQ stops replying when GC?
 

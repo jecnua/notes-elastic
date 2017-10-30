@@ -59,6 +59,10 @@ _initialisers_ allow you to have *automatic*sidecar*injection* in all your pods.
 
 * Installation
 
+** Helm
+
+- Video: [[https://www.youtube.com/watch?v=Bh7sWtrkijY][Istio 0.2 automatic sidecar injection using Kubernetes Initializers]] - 6 Oct 2017
+
 Helm is a two step installation.
 
     rbac.install=true,sitio.install=true,initialiser.enabled=true
@@ -71,8 +75,15 @@ It will probably be integrated in Rancher soon.
     Q: Any plans on supporting Istio in Rancher 2.0?
     A: :)
 
+* Changelog
+
+** 0.2
+
+- RBAC
+- Initialisers
+
 * Resources
 
 - Me: Notes from London Kubernetes Meetup -  October 2017
 - [[https://www.youtube.com/watch?v=s4qasWn_mFc][Youtube: Istio and Kubernetes - Kelsey Hightower]] Jul 2017
-- https://www.safaribooksonline.com/library/view/velocity-conference-2017/9781491976265/video311439.html (safari book)
+- [[https://www.safaribooksonline.com/library/view/velocity-conference-2017/9781491976265/video311439.html]] (safari book)

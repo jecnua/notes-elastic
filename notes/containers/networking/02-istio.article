@@ -1,9 +1,10 @@
 Istio
-|| Last update: 20 Oct 2017
+|| Last update: 30 Oct 2017
 
 * Intro
 
-- https://istio.io/
+- [[https://istio.io]]
+- [[https://github.com/istio/istio]]
 
 opentracing
 vault
@@ -15,6 +16,16 @@ sits in datapath
 
 map events
 
+* Requirements
+
+*Requires*kubernetes*1.7+*
+
+Istio now uses CRD so it needs k8s 1.7+.
+
+* Components
+
+** Istio ingresses
+
 * Usage
 
 How do you make it so that is applies?
@@ -24,16 +35,35 @@ You build a config pushed on every node.
 You don't need to instrument your code
 Attach functionality to the system
 
-    istioctl kube-inject -f
-
-lol
 attach sidecar without changing the yaml
 add a second container
 grab info from the data plane
 
 add zipkin so you have tracing
 
-** Istio and Rancher
+** Option 1: Initialisers
+
+*From*v0.2*only*
+
+For the newer versions you can use [[https://kubernetes.io/docs/admin/extensible-admission-controllers/#enable-initializers-alpha-feature][_initialisers_]]
+to avoid having to inject yaml with istioctl all the time. _initialisers_ are pretty new to k8s so you may
+need to abilitate them via the alpha API.
+
+_initialisers_ allow you to have *automatic*sidecar*injection* in all your pods.
+
+    before ???
+
+** Option 2: The old way
+
+    istioctl kube-inject -f
+
+* Installation
+
+Helm is a two step installation.
+
+    rbac.install=true,sitio.install=true,initialiser.enabled=true
+
+* Istio and Rancher
 
 It will probably be integrated in Rancher soon.
 

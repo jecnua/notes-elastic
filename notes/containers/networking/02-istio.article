@@ -6,25 +6,123 @@ Istio
 - [[https://istio.io]]
 - [[https://github.com/istio/istio]]
 
-opentracing
-vault
-nginx
-prometheus
-spify ???? (secrets?) identy to application
+*IMPORTANT*: *Istio*is*very*immature*.*Don't*use*it*in*any*important*environment*.
+
+*IMPORTANT*: The user contract won't stabilise until version 0.4.
+
+Istio is not just a k8s technology and can work with other orchestrators.
+
+Istio is:
+
+- A network mesh
+- Cluster wide policy enforcer (access control)
+- In depth telemetry reporting
+
+Is very useful to help connect _legacy_ and _distribuited_.
+
+Divide:
+
+- run-time
+- configuration
+- context
+
+Like:
+
+- routes
+- firewall routes
+- security context
+
+** Deployments
+
+Can give you out of the box stuff like canary deployments.
+Sending a percentage of the traffic at a time.
+
+k8s have already _rolling_deployments_ under the cover, but what if you want to
+filter traffic by:
+
+- tokens
+- headers
+- network
+
+and much more.
+
+** Access control
+
+k8s have _network_policies_ but they have problems:
+
+- They are op focused (and devs usually don't do them)
+- They are more cluster side
+- Difficult to write
+
+** Ingress
+
+Istio doesn't work with nginx ingress containers (http1 problem?).
+
+Some people replaced nginx with Traefik (very low footprint)
+
+** Egress
+
+While k8s have ingresses, it does not have egress. *Egress* is a new way to funnel all
+the traffic exiting my cluster through a deployment group.
+
+As a DEV they know if an application needs or not external access, and this allow them to
+_close_ egress access.
+
+** Telemetry
+
+Istio will give you access to app telemetry without having to instrument the
+application itself. You can add and have this metrics without having to go
+through the DEVs.
+
+** Tracing
+
+Tracing is not about debugging you application, is about debugging the _process_.
+
+Debugging is hard in k8s:
+
+- kubectl proxy
+- run a debug pod
+- inject debug (sidecar) containers
+- mTLS is hard!
+
+Istio will inject headers, but you need to *forward* them in the code.
+
+    NO FRAMEWORK WILL SAVE YOU FROM BAD CODE
+
+** API gateway
+
+    API gateway ~= Ingress
+
+* Technologies
+
+- consul support
+- opentracing
+- vault support
+- nginx
+- prometheus
+- spify ???? (secrets?) identy to application
 
 sits in datapath
 
 map events
 
-* Requirements
+* Structure
 
-*Requires*kubernetes*1.7+*
+The structure is very similar to k8s itself.
 
-Istio now uses CRD so it needs k8s 1.7+.
+** Mixer
 
-* Components
+If you want an API gateway you usually will put on something like Kong. *Mixer*
+is the component of Istio that takes decisions.
 
-** Istio ingresses
+Mixer has plugins for tracing, prometeus and much more.
+
+Unfortunately (as of 2.9), you still need to fork, build and maintain the code
+youself if you want to add a new functionality to mixer.
+
+They are working on modularity.
+
+* Istio ingresses
 
 * Usage
 
@@ -59,6 +157,12 @@ _initialisers_ allow you to have *automatic*sidecar*injection* in all your pods.
 
 * Installation
 
+** Requirements
+
+*Requires*kubernetes*1.7.4+*
+
+Istio now uses CRD (CustomResourceDefinitions) so it needs k8s 1.7.4+.
+
 ** Helm
 
 - Video: [[https://www.youtube.com/watch?v=Bh7sWtrkijY][Istio 0.2 automatic sidecar injection using Kubernetes Initializers]] - 6 Oct 2017
@@ -77,9 +181,20 @@ It will probably be integrated in Rancher soon.
 
 * Changelog
 
-** 0.2
+There is no changelog, this is the best we have: [[https://github.com/istio/istio/wiki/v0.2.9]]
 
-- RBAC
+Notable changes follow.
+
+** 0.3 (unreleased)
+
+- HA
+- Better RBAC support
+- Mutual tsl
+
+** 0.2.6
+
+- [[https://github.com/istio/istio/wiki/v0.2.6]]
+- RBAC beta
 - Initialisers
 
 * Resources

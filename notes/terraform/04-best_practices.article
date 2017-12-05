@@ -58,7 +58,8 @@ And 32 is the limit.
 
 ** Make them injectable
 
-All sg should have NO inline definition. When inside a module the id should be returned to allow *injection* if needed.
+All sg should have NO inline definition. When inside a module the id should
+be returned to allow *injection* if needed.
 
 * Autoscaling groups
 
@@ -124,16 +125,17 @@ And be optional if alerting or not:
 
 ** ALB only
 
+ELB are deprecated to use only ALB to manage traffic. Put the ALB only outside
+the module! The ALB needs to live outside the module to do blue/green
+deployments.
+
+Also Limit ALB name to 32 chars.
+
 *** Span a subnet for each AZ
-
-They should be defined *outside* the module and point to the module you are going
-to use.
-
-*** Limit ALB name to 32 chars
 
 *** Limit Target group names to 32 chars
 
-** ELB only: for autoscaling groups healthchecks
+** Use ELB only for autoscaling groups healthchecks
 
 ** Explicit names
 

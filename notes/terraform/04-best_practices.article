@@ -71,7 +71,7 @@ AG and LC should have explict names:
 
 ** Enable metrics
 
-- [[https://aws.amazon.com/about-aws/whats-new/2016/08/free-auto-scaling-group-metrics-with-graphs/][https://aws.amazon.com/about-aws/whats-new/2016/08/free-auto-scaling-group-metrics-with-graphs/]]
+- [[https://aws.amazon.com/about-aws/whats-new/2016/08/free-auto-scaling-group-metrics-with-graphs/]]
 
 Activate on all auto-scaling group because they are [[https://docs.aws.amazon.com/cli/latest/reference/autoscaling/enable-metrics-collection.html][not by default]]:
 

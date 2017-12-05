@@ -9,35 +9,35 @@ Everywhere terraform allow to have tags, add them.
 At least try to have:
 
 - Name
-- description (optional)
-- tfCodePath: Follows
-- tfModuleName (only if a module): The module name
-- env: The environment
+- Description (optional)
+- TfCodePath: Follows
+- TfModuleName (only if a module): The module name
+- Env: The environment
 
 ** Terraform code reference
 
 Tag the code you refer to in terraform (ALWAYS):
 
-    tfCodePath   = "${join("/",slice(split("/", path.cwd),
+    TfCodePath   = "${join("/",slice(split("/", path.cwd),
     length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
 
 The other are not very useful:
 
-    tfCodePath   = "${join("/",slice(split("/", path.cwd),
+    TfCodePath   = "${join("/",slice(split("/", path.cwd),
     length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
-    tfPathCwd    = "${path.cwd}"
-    tfPathModule = "${path.module}"
-    tfPathRoot   = "${path.root}"
+    TfPathCwd    = "${path.cwd}"
+    TfPathModule = "${path.module}"
+    TfPathRoot   = "${path.root}"
 
 Will result in:
 
-    tags.tfCodePath:   "my-terraform-repo/development/my-module"
-    tags.tfPathCwd:    "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
-    tags.tfPathModule: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
+    tags.TfCodePath:   "my-terraform-repo/development/my-module"
+    tags.TfPathCwd:    "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+    tags.TfPathModule: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
       .terraform/modules/a3eda4daf706c9875a23dc8a678dd035"
-    tags.tfPathRoot:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+    tags.TfPathRoot:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
 
-** Name and/or description
+** Name and/or Description
 
 Human readable.
 
@@ -93,7 +93,7 @@ Instead, pass it to the module as a variable.
 
     variable "sns_topic_notifications" {
       type        = "string"
-      description = "The SNS topic to use when the system autoscale. If empty no notification will be sent"
+      Description = "The SNS topic to use when the system autoscale. If empty no notification will be sent"
       default     = ""
     }
 
@@ -150,7 +150,7 @@ However, if nothing is passed, the module should fetch the latest AMI on AWS fil
 Passing an AMI should override this dynamic search.
 
     variable "ami_id" {
-      description = "The id of the AMI to use. If empty, the LATEST will be used."
+      Description = "The id of the AMI to use. If empty, the LATEST will be used."
       default     = ""
     }
 
@@ -187,7 +187,7 @@ On a module level:
 All variable should have:
 
 - type
-- description
+- Description
 
 And optionally default.
 
@@ -245,12 +245,12 @@ Stuff that usually doesn't change:
     }
 
     variable "access_key" {
-      description = "Read at run-time"
+      Description = "Read at run-time"
       type        = "string"
     }
 
     variable "secret_key" {
-      description = "Read at run-time"
+      Description = "Read at run-time"
       type        = "string"
     }
 

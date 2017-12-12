@@ -1,5 +1,11 @@
-Best practices
-|| Last update: 5 Dec 2017
+Best practices for AWS and Terraform
+|| Last update: 12 Dec 2017
+
+* Intro
+
+Always changing sets of rule to follow the best practices
+I find around or discover by using the tools directly.
+Ever changing and totally opinionated :)
 
 * Tags
 
@@ -41,6 +47,15 @@ Will result in:
 
 Human readable.
 
+* Sizing the servers
+
+With the release of [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/t2-unlimited.html][t2 unlimited]] I would say use t2 for all DEV/QA
+projects when possible and alert just on *CPUSurplusCreditsCharged*
+(and ignore when using the surplus).
+
+This will solve the annoying problems of being throttled when the
+credits ends.
+
 * Security groups
 
 ** Explicit names
@@ -68,6 +83,15 @@ be returned to allow *injection* if needed.
 AG and LC should have explict names:
 
     name = "${substr(format("example-api-lc-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+
+** LT over LC
+
+Prefer [[https://docs.aws.amazon.com/autoscaling/latest/userguide/create-asg-launch-template.html][launch templates]] over [[https://docs.aws.amazon.com/autoscaling/latest/userguide/LaunchConfiguration.html][launch config]] since this is the new
+way AWS will manage AG from now on (plus they are more powerful).
+Among the benefits:
+
+- You can use t2 unlimited
+- You can tag EBS volumes
 
 ** Enable metrics
 

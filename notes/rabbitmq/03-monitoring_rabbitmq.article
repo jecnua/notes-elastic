@@ -9,13 +9,30 @@ I would advice to read the following doc page:
 
 * Aliveness test
 
-- [[https://pulse.mozilla.org/api/][https://pulse.mozilla.org/api/]]
-- [[https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html][https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html]]
+From outside the box:
+
+    curl -s -u <user>:<password> 'http://<url>:15672/api/aliveness-test/%2F'
+
+Find and login on the box. The run:
+
+    curl -s -u <user>:<password> 'localhost:15672/api/aliveness-test/%2F'
+
+You should see:
+
+    {"status":"ok"}
+
+How does this work?
 
     /api/aliveness-test/vhost
     Declares a test queue, then publishes and consumes a message. Intended for use by monitoring tools. If everything is working correctly, will return HTTP status 200 with body:
     {"status":"ok"}
     Note: the test queue will not be deleted (to to prevent queue churn if this is repeatedly pinged).
+
+Further readings:
+
+- [[https://pulse.mozilla.org/api/][RabbitMQ Management HTTP API]]
+- [[https://stackoverflow.com/a/13249331][How to call aliveness test]]
+- [[https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html][How to set it up]]
 
 * What to monitor?
 

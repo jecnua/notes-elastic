@@ -1,0 +1,8 @@
+Best practices AWS
+|| Last update: 14 Dec 2017
+
+* ACM
+
+Renew ACM certs via DNS not email.
+
+- [[https://aws.amazon.com/about-aws/whats-new/2017/11/aws-certificate-manager-easier-certificate-validation-using-dns/]]

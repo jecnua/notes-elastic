@@ -1,5 +1,5 @@
 RabbitMQ monitoring
-|| Last update: 18 Oct 2017
+|| Last update: 14 Dec 2017
 
 * Intro
 
@@ -7,15 +7,17 @@ I would advice to read the following doc page:
 
 - [[http://www.rabbitmq.com/monitoring.html][http://www.rabbitmq.com/monitoring.html]]
 
-* Aliveness test
+* Troubleshooting
+
+** Aliveness test
 
 From outside the box:
 
-    curl -s -u <user>:<password> 'http://<url>:15672/api/aliveness-test/%2F'
+    $ curl -s -u <user>:<password> 'http://<url>:15672/api/aliveness-test/%2F'
 
 Find and login on the box. The run:
 
-    curl -s -u <user>:<password> 'localhost:15672/api/aliveness-test/%2F'
+    $ curl -s -u <user>:<password> 'localhost:15672/api/aliveness-test/%2F'
 
 You should see:
 
@@ -32,7 +34,15 @@ Further readings:
 
 - [[https://pulse.mozilla.org/api/][RabbitMQ Management HTTP API]]
 - [[https://stackoverflow.com/a/13249331][How to call aliveness test]]
-- [[https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html][How to set it up]]
+- [[https://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2012-November/024132.html][How to set permissions for the check]]
+
+** Interact with RabbitMQ
+
+Use the command
+
+    $ sudo rabbitmqctl status
+
+Will give you data about the node.
 
 * What to monitor?
 

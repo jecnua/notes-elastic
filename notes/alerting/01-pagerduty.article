@@ -1,0 +1,41 @@
+Pagerduty: Best practices
+|| Last update: 20 December 2017
+
+* Services
+
+** Name
+
+Start with a standard PREFIX so it will be easier to sort them.
+
+** Types
+
+Create two version of every service:
+
+- HIGH
+- LOW
+
+Example:
+
+- grafana-HIGH
+- grafana-LOW
+
+One will collect the incidents of type P1/P2, the second the lower level incident.
+
+** Extensions
+
+They should both notify on Hipchat.
+
+Extensions -> Hipchat
+
+NOTE: You will need to do at least once for EACH hipchat channel.
+
+There is no way to check if you added all services on hipchat but to use the search of the browser.
+
+** Notifications urgency
+
+- HIGH: Notify until someone responds (escalates)
+- LOW: Notify (does not escalate)
+
+** Escalation Policy
+
+Two different escalation policy.

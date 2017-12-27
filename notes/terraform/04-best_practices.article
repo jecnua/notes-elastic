@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 12 Dec 2017
+|| Last update: 27 Dec 2017
 
 * Intro
 
@@ -139,6 +139,10 @@ And be optional if alerting or not:
         "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
       ]
     }
+
+* EIP -  Elastic IP
+
+[[https://aws.amazon.com/about-aws/whats-new/2017/12/amazon-virtual-private-cloud-vpc-now-allows-customers-to-tag-their-elastic-ip-addresses/][Now]] is finally possible to tag EIP so we should do it for all of them.
 
 * ELB/ALB
 

@@ -1,24 +1,32 @@
-Local docker env and minikube
-Fabrizio Sabatini || Last update: 20 Jun 2017
+Local k8s environment (minikube)
+Fabrizio Sabatini || Last update: 27 Dec 2017
 
 * Disclaimer
 
 This installation and usage guide is for MacOSX
 
-* Install Docker machine (via docker toolbox)
-
-[[https://www.docker.com/products/docker-toolbox][Docker toolbox]]
-
-.image images/toolbox.png _ 900
-
-* Install engine dependencies on MAC (via brew)
+* Install generic dependencies
 
     brew cask install \
       minikube
 
     brew install \
       kubernetes-cli \
-      kubectl \
+      kubectl
+
+* Install engine dependencies for hyperkit
+
+    curl -LO https://storage.googleapis.com/minikube/releases/latest/docker-machine-driver-hyperkit \
+    && chmod +x docker-machine-driver-hyperkit \
+    && sudo mv docker-machine-driver-hyperkit /usr/local/bin/ \
+    && sudo chown root:wheel /usr/local/bin/docker-machine-driver-hyperkit \
+    && sudo chmod u+s /usr/local/bin/docker-machine-driver-hyperkit
+
+.link https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#hyperkit-driver minikube/hyperkit-driver
+
+* Install engine dependencies for xhyve (deprecated)
+
+    brew install \
       docker-machine-driver-xhyve --HEAD xhyve
 
     sudo chown root:wheel \
@@ -26,38 +34,25 @@ This installation and usage guide is for MacOSX
     sudo chmod u+s \
       $(brew --prefix)/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
 
-OS X the options are:
- - xhyve driver
- - VirtualBox
- - VMware Fusion
+.link https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#xhyve-driver minikube/xhyve-driver
 
-* Test docker machine
+* Other options
 
-List machines:
+ - KVM2
+ - KVM
+ - Hyperkit
+ - xhyve
+ - HyperV
 
-    docker-machine ls
-
-Create a new machine on xhyve:
-
-    docker-machine create --driver xhyve xhyve-local
-    docker-machine ls # Check if created
-    docker-machine env xhyve-local
-    eval $(docker-machine env xhyve-local)
-    docker info | grep name
-
-Stop and remove:
-
-    # docker-machine start xhyve-local
-    docker-machine stop xhyve-local
-    yes | docker-machine rm xhyve-local
+.link https://github.com/kubernetes/minikube/blob/master/docs/drivers.md github.com minikube/drivers
 
 * Minikube
 
 [[https://github.com/kubernetes/minikube][kubernetes/minikube]]
 
-Clean any old version:
+Clean any old running cluster:
 
-    # Check what you are going to destroy first :)
+    # NOTE: Check what you are going to destroy first :)
     minikube stop
     minikube delete
 
@@ -66,7 +61,7 @@ Set the machine:
     # To opt-out from sending anonymised crash report
     minikube config set WantReportErrorPrompt false
     minikube config get vm-driver
-    minikube config set vm-driver xhyve
+    minikube config set vm-driver hyperkit
     minikube config get vm-driver
 
 Start a new machine:

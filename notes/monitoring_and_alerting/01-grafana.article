@@ -1,10 +1,11 @@
 Grafana
+|| Last update: 28 December 2017
 
 * Intro
 
-TBD
-
 ** Docker
+
+*** Run Grafana manually
 
 .link http://docs.grafana.org/installation/configuration/ Grafana configuration
 
@@ -21,4 +22,35 @@ TBD
     -e "GF_ANALYTICS_REPORTING_ENABLED=false" \
     -v /opt/data/grafana:/var/lib/grafana \
     -p 3000:3000 \
-    grafana/grafana
+    grafana/grafana:4.6.3
+
+*** Run Grafana with puppet
+
+    docker::run { 'grafana':
+      image            => 'grafana/grafana:4.6.3',
+      ports            => ['3000'],
+      net              => 'host',
+      privileged       => false,
+      pull_on_start    => true,
+      env              => [
+        'GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel',
+        'GF_AWS_PROFILES=default',
+        'GF_AWS_default_ACCESS_KEY_ID=',
+        'GF_AWS_default_SECRET_ACCESS_KEY=',
+        'GF_AWS_default_REGION=us-east-1',
+        'GF_AUTH_ANONYMOUS_ENABLED=true',
+        'GF_AUTH_ANONYMOUS_ORG_ROLE=viewer',
+        'GF_SECURITY_ADMIN_PASSWORD=',
+        'GF_ANALYTICS_REPORTING_ENABLED=false',
+        'GF_SERVER_ROOT_URL=',
+      ],
+      volumes          => [
+        '/opt/data/grafana:/var/lib/grafana',
+      ],
+      extra_parameters => [
+        '--sig-proxy=false',
+        '--log-driver=fluentd',
+        '--log-opt tag="docker.{{.Name}}',
+        '--log-opt fluentd-async-connect=true"',
+      ],
+  }

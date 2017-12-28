@@ -16,6 +16,8 @@ CON:
     Cost is too high
     Running/Changes to the service are connected to terraform changes
 
+- [[https://github.com/jecnua/terraform-fargatetest]]
+
 ** Cost
 
     Cost    1 vCPU 0.0506/h	1 GB RAM 0.0127/h

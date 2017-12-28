@@ -3,6 +3,43 @@ Grafana
 
 * Intro
 
+** Alerting: best practices
+
+Name of alert:
+
+    <ENV> <Descriptive name>
+
+Description of the alert:
+
+    <A description>
+    Runbook: <Runbook link (to anchor) if present>
+    Code: <Code in the runbook>
+
+Example: Normal graph alert
+
+    Name:
+    PROD RabbitMQ erlang memory usage
+    Description:
+    Memory used by erland on RabbitMQ is too high. GC may have failed to run or may still be running.
+    Runbook: <link>/RabbitMQ+runbook#RabbitMQrunbook-#201-Memoryusagetoohigh
+    Code: #201
+
+Example: Graph alert with runbook page but no runbook number
+
+    Description:
+    Disk space used over safe limit on the RabbitMQ node.
+    Runbook: <link>/RabbitMQ+runbook
+    Code: /
+
+Example: Statuspage watcher with no runbook
+
+    Name:
+    PROD STATUSPAGE Redis
+    Description:
+    Redis watcher is DOWN.
+    Runbook: /
+    Code: /
+
 ** Docker
 
 *** Run Grafana manually

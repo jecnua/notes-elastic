@@ -1,0 +1,30 @@
+FARGATE
+|| Last update: 28 Dec 2017
+
+* Intro
+
+** FARGATE for ECS
+
+I run a quick test and run a docker container via fargate for ECS (4h SPIKE).
+
+PRO:
+
+    No cluster maintainance
+
+CON:
+
+    Cost is too high
+    Running/Changes to the service are connected to terraform changes
+
+** Cost
+
+    Cost    1 vCPU 0.0506/h	1 GB RAM 0.0127/h
+    xDay    1.5192
+    xMonth  45.576
+
+The cost of a small container (only 1vCPU and 1GB of RAM) for 1 month is $45.5
+dollars. The cost of a m5.large (2vCPU and 8GB of RAM) on demand per month is
+$69.12.
+
+- [[https://aws.amazon.com/fargate/pricing/]]
+- [[https://www.ec2instances.info/?selected=m5.large]]

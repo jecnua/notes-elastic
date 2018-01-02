@@ -150,34 +150,26 @@ And be optional if alerting or not:
 
 [[https://aws.amazon.com/about-aws/whats-new/2017/12/amazon-virtual-private-cloud-vpc-now-allows-customers-to-tag-their-elastic-ip-addresses/][Now]] is finally possible to tag EIP so we should do it for all of them.
 
-* ELB/ALB
+* Load balancers: ELB/ALB/NLB
 
 ** Naming conventions
 
 - int-elb
 - ext-elb
 
-** ALB only
+** ALB/NLB only
 
 ELB are deprecated to use only ALB to manage traffic. Put the ALB only outside
 the module! The ALB needs to live outside the module to do blue/green
 deployments.
 
-Also Limit ALB name to 32 chars.
-
-*** Span a subnet for each AZ
-
-*** Limit Target group names to 32 chars
-
-** Use ELB only for autoscaling groups healthchecks
-
-** Explicit names
-
-** Logs on s3
-
-*** No external access
-
-- Should have only default listener 80 and no SSL or other access
+- Also Limit ALB name to 32 chars.
+- Span a subnet for each AZ
+- Limit Target group names to 32 chars
+- Use ELB only for autoscaling groups healthchecks
+- Explicit names
+- Logs on s3
+- No external access: hould have only default listener 80 and no SSL or other access
 
 * AMI
 

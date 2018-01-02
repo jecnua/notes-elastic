@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 27 Dec 2017
+|| Last update: 02 Jan 2018
 
 * Intro
 
@@ -47,7 +47,9 @@ Will result in:
 
 Human readable.
 
-* Sizing the servers
+* EC2
+
+** T2 unlimited for DEV envs
 
 With the release of [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/t2-unlimited.html][t2 unlimited]] I would say use t2 for all DEV/QA
 projects when possible and alert just on *CPUSurplusCreditsCharged*
@@ -55,6 +57,10 @@ projects when possible and alert just on *CPUSurplusCreditsCharged*
 
 This will solve the annoying problems of being throttled when the
 credits ends.
+
+** M5 over M4 for general purposes
+
+M5 over M4 when possible for new projects (cheaper and better)
 
 * Security groups
 

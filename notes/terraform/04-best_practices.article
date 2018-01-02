@@ -159,17 +159,19 @@ And be optional if alerting or not:
 
 ** ALB/NLB only
 
-ELB are deprecated to use only ALB to manage traffic. Put the ALB only outside
-the module! The ALB needs to live outside the module to do blue/green
-deployments.
+ELB are deprecated (to use only with EC2 classic) so use only A/NLB to manage traffic.
+Put the ALB only outside a module!
 
-- Also Limit ALB name to 32 chars.
+REASON: The ALB needs to live outside the module to do blue/green deployments.
+
+Other best practices and gotchas:
+
+- Limit ALB name to 32 chars.
 - Span a subnet for each AZ
-- Limit Target group names to 32 chars
-- Use ELB only for autoscaling groups healthchecks
+- Use NLB for autoscaling groups healthchecks instead of ELB
 - Explicit names
 - Logs on s3
-- No external access: hould have only default listener 80 and no SSL or other access
+- No external access for module NLBs: should have only default listener 80 and no SSL or other access
 
 * AMI
 

@@ -173,6 +173,11 @@ Other best practices and gotchas:
 - Logs on s3
 - No external access for module NLBs: should have only default listener 80 and no SSL or other access
 
+*** Terraform resource
+
+Use the new [[https://www.terraform.io/docs/providers/aws/r/lb.html][aws_lb]] over
+aws_alb. That's the new preferred way to create A/NLBs.
+
 * AMI
 
 Every module should allow an AMI id to be passed as parameter.

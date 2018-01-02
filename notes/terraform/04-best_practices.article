@@ -235,6 +235,16 @@ All variable should have:
 
 And optionally default.
 
+* ACM - SSL certificates
+
+** Validation
+
+For new ZONES, use the DNS method to validate SSL certs.
+It will avoid the problems of sending email and having to click on a link to
+renew it every year.
+
+- [[https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html]]
+
 * Modules
 
 ** Never create DNS

@@ -178,6 +178,10 @@ Other best practices and gotchas:
 Use the new [[https://www.terraform.io/docs/providers/aws/r/lb.html][aws_lb]] over
 aws_alb. That's the new preferred way to create A/NLBs.
 
+Be explicit with the type (don't default silently).
+
+    load_balancer_type         = "application"
+
 * AMI
 
 Every module should allow an AMI id to be passed as parameter.

@@ -171,7 +171,7 @@ Other best practices and gotchas:
 - Use NLB for autoscaling groups healthchecks instead of ELB
 - Explicit names
 - Logs on s3
-- No external access for module NLBs: should have only default listener 80 and no SSL or other access
+- No external access for module NLBs: should have only default listener 80 and no other access
 
 *** Terraform resource
 

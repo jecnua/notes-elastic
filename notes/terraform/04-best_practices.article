@@ -182,10 +182,15 @@ Be explicit with the type (don't default silently).
 
     load_balancer_type         = "application"
 
+Also use the new:
+
+- aws_lb_listener
+- aws_lb_target_group
+
 * AMI
 
 Every module should allow an AMI id to be passed as parameter.
-However, if nothing is passed, the module should fetch the latest AMI on AWS filtered by a specic regex.
+If nothing is passed, the module should fetch the latest AMI on AWS filtered by a specic regex.
 Passing an AMI should override this dynamic search.
 
     variable "ami_id" {
@@ -256,18 +261,18 @@ Use count=0.
 
 They should have the following files:
 
-- 00-backend_and_provider.tf
+- 00-backend_and_providers.tf
 - 00-remote-states.tf
 - 00-variables.tf
 - 00-variables_default.tf (only for modules)
 - 00-variables_required_inputs.tf (only for modules)
-- 99-output.tf
+- 99-outputs.tf
 - README
 - CHANGELOG (only for modules)
 - params.md (generated)
 - terraform.tfvars
 
-*** 00-backend_and_provider.tf
+*** 00-backend_and_providers.tf
 
 This is an example:
 

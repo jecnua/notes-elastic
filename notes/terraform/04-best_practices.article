@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 02 Jan 2018
+|| Last update: 04 Jan 2018
 
 * Intro
 
@@ -234,6 +234,17 @@ All variable should have:
 - Description
 
 And optionally default.
+
+* Route52
+
+* Zones
+
+Some things like ZONES and some RECORD SETS, you NEVER want to destroy.
+To protect against errors, add:
+
+    lifecycle {
+      prevent_destroy = true
+    }
 
 * ACM - SSL certificates
 

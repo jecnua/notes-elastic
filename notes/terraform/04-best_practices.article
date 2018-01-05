@@ -444,4 +444,4 @@ This 'export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"' it is used t
 
 * Resources
 
-- [[https://www.hashicorp.com/blog/announcing-terraform-recommended-practices]]
+- [[https://www.terraform.io/docs/enterprise/guides/recommended-practices/index.html]]

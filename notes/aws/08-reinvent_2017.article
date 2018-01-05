@@ -1,0 +1,50 @@
+REINVENT NOTES 2017
+|| Last update: 5 Jan 2017
+
+* TLC301: Always online: Real-time communications on AWS
+
+Nothing useful
+
+* MAE303: OTT state of play: Innovation at Netflix, amazon video and aws elemental
+
+Nothing useful
+
+* DVC302: And you though you knew amazon EC2
+
+New C5: KVM replaced ZEN for new instance types (curiosity: this info was in the
+release article but was later removed :D)
+
+All new instance types have ENA up to 25 Gbps (in placement groups)
+
+New per second billing (with aggressive tuning and fast booting instances you
+can get to save up to 30% on AG)
+
+ELASTIC GPU: You can attach GPU to almost any instance (BUT you share the network
+bandwith of the node so be careful)
+
+New Target Tracking Scaling policies for Autoscaling
+
+cloudwatch event handling: Tie events to another GroupInServiceInstances
+
+Scheduled events: Cronlike ability in a distribuited fashion
+Distribuited cron to trigger a lambda.
+You can be notified when there is an instance state change.
+
+System management
+- Cross account event delivery, EBS snapshots, Encryption/Description
+
+Cloudwatch metrics
+- Added: High resolution 1s/3h (custom metric)
+- High resolution alarm (10s)
+- Collect cloudwatch plugin
+
+Percentile statistic added (before only average)
+- p50
+- p90
+- p99  <--- the more useful
+
+Metric filter for log parsing and alarms (you can use lambda to send alerts to something else)
+
+ECS added the ability to run a custom init process
+blox/blox (probably obsolete) - https://github.com/blox/blox
+cron/empire ?????? <----

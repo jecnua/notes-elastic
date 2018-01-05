@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 04 Jan 2018
+|| Last update: 05 Jan 2018
 
 * Intro
 
@@ -441,3 +441,7 @@ The in _01-main_blue.tf_:
     }
 
 This 'export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"' it is used to cache plugins.
+
+* Resources
+
+- [[https://www.hashicorp.com/blog/announcing-terraform-recommended-practices]]

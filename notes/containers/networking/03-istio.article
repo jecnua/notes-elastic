@@ -10,8 +10,6 @@ Istio
 
 *IMPORTANT*: The user contract won't stabilise until version 0.4.
 
-- [[https://istio.io/about/notes/][Release notes]]
-
 Istio is not a k8s technology and can work with other orchestrators.
 
 * What is Istio
@@ -182,7 +180,10 @@ It will probably be integrated in Rancher soon.
 
 * Changelog
 
-There is no changelog, this is the best we have: [[https://github.com/istio/istio/wiki/v0.2.9]]
+There is no changelog, this is the best we have:
+
+- [[https://github.com/istio/istio/wiki/v0.2.9]]
+- [[https://istio.io/about/notes/][Release notes]]
 
 Notable changes follow.
 

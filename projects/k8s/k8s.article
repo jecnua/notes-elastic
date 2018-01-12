@@ -1,4 +1,4 @@
-k8s
+k8s (OBSOLETE)
 
 * Intro
 
@@ -83,10 +83,6 @@ To get the password:
 To temporary proxy the UI:
 
     kubectl proxy
-
-* Try something
-
-TBD
 
 * Links
 

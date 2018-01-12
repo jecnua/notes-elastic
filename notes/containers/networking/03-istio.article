@@ -1,50 +1,116 @@
 Istio
-|| Last update: 30 Oct 2017
+|| Last update: 05 Jan 2018
 
 * Intro
 
 - [[https://istio.io]]
 - [[https://github.com/istio/istio]]
 
-*IMPORTANT*: *Istio*is*very*immature*.*Don't*use*it*in*any*important*environment*.
+*IMPORTANT*: *Istio*is*very*immature*.*Don't*use*it*in*any*MAJOR*environment*.
 
 *IMPORTANT*: The user contract won't stabilise until version 0.4.
 
-Istio is not just a k8s technology and can work with other orchestrators.
+Istio is not a k8s technology and can work with other orchestrators.
 
-Istio is:
+* What is Istio
 
-- A network mesh
-- Cluster wide policy enforcer (access control)
-- In depth telemetry reporting
+Istio is a:
+
+- Network mesh
+- Cluster wide policy enforcer (for access control)
+- In depth telemetry exporter
 
 Is very useful to help connect _legacy_ and _distribuited_.
 
-Divide:
+It helps to separate:
 
-- run-time
-- configuration
-- context
+- Run-time
+- Configuration
+- Context
 
 Like:
 
-- routes
-- firewall routes
-- security context
+- Routes
+- Firewall routes
+- Security context
+
+* Installing Istio
+
+** Requirements
+
+Requires kubernetes *1.7.4+*
+
+Istio now uses CRD (CustomResourceDefinitions) so it needs k8s 1.7.4+.
+
+You can install it manually but is not covered by this page.
+
+** Helm
+
+Helm is a two step installation.
+
+    rbac.install=true,sitio.install=true,initialiser.enabled=true
+
+* Usage
+
+How do you make it so that is applies?
+It uses sidecars.
+You build a config pushed on every node.
+
+You don't need to instrument your code
+Attach functionality to the system
+
+attach sidecar without changing the yaml
+add a second container
+grab info from the data plane
+
+add zipkin so you have tracing
+
+** Option 1: Initialisers
+
+*From*v0.2*only*
+
+For the newer versions you can use [[https://kubernetes.io/docs/admin/extensible-admission-controllers/#enable-initializers-alpha-feature][_initialisers_]]
+to avoid having to inject yaml with istioctl all the time. _initialisers_ are pretty new to k8s so you may
+need to abilitate them via the alpha API.
+
+_initialisers_ allow you to have *automatic*sidecar*injection* in all your pods.
+
+    before ???
+
+** Option 2: The old way
+
+    istioctl kube-inject -f
+
+* Structure
+
+The structure is very similar to k8s itself.
+
+** Mixer
+
+If you want an API gateway you usually will put on something like Kong. *Mixer*
+is the component of Istio that takes decisions.
+
+Mixer has plugins for tracing, prometeus and much more.
+
+Unfortunately (as of 2.9), you still need to fork, build and maintain the code
+youself if you want to add a new functionality to mixer.
+
+They are working on modularity.
+
+* Capabilities
 
 ** Deployments
 
-Can give you out of the box stuff like canary deployments.
-Sending a percentage of the traffic at a time.
+Istio can give you out of the box tools like _canary_deployments_.
+Sending a percentage of the traffic to a new version of your service.
 
-k8s have already _rolling_deployments_ under the cover, but what if you want to
-filter traffic by:
+K8S already have _rolling_deployments_ under the cover, but what if you want to filter traffic by:
 
 - tokens
 - headers
 - network
 
-and much more.
+and much more, Istio can help you.
 
 ** Access control
 
@@ -102,74 +168,7 @@ Istio will inject headers, but you need to *forward* them in the code.
 - prometheus
 - spify ???? (secrets?) identy to application
 
-sits in datapath
-
-map events
-
-* Structure
-
-The structure is very similar to k8s itself.
-
-** Mixer
-
-If you want an API gateway you usually will put on something like Kong. *Mixer*
-is the component of Istio that takes decisions.
-
-Mixer has plugins for tracing, prometeus and much more.
-
-Unfortunately (as of 2.9), you still need to fork, build and maintain the code
-youself if you want to add a new functionality to mixer.
-
-They are working on modularity.
-
-* Istio ingresses
-
-* Usage
-
-How do you make it so that is applies?
-It uses sidecars.
-You build a config pushed on every node.
-
-You don't need to instrument your code
-Attach functionality to the system
-
-attach sidecar without changing the yaml
-add a second container
-grab info from the data plane
-
-add zipkin so you have tracing
-
-** Option 1: Initialisers
-
-*From*v0.2*only*
-
-For the newer versions you can use [[https://kubernetes.io/docs/admin/extensible-admission-controllers/#enable-initializers-alpha-feature][_initialisers_]]
-to avoid having to inject yaml with istioctl all the time. _initialisers_ are pretty new to k8s so you may
-need to abilitate them via the alpha API.
-
-_initialisers_ allow you to have *automatic*sidecar*injection* in all your pods.
-
-    before ???
-
-** Option 2: The old way
-
-    istioctl kube-inject -f
-
-* Installation
-
-** Requirements
-
-*Requires*kubernetes*1.7.4+*
-
-Istio now uses CRD (CustomResourceDefinitions) so it needs k8s 1.7.4+.
-
-** Helm
-
-- Video: [[https://www.youtube.com/watch?v=Bh7sWtrkijY][Istio 0.2 automatic sidecar injection using Kubernetes Initializers]] - 6 Oct 2017
-
-Helm is a two step installation.
-
-    rbac.install=true,sitio.install=true,initialiser.enabled=true
+sits in datapath, map events
 
 * Istio and Rancher
 
@@ -181,11 +180,14 @@ It will probably be integrated in Rancher soon.
 
 * Changelog
 
-There is no changelog, this is the best we have: [[https://github.com/istio/istio/wiki/v0.2.9]]
+There is no changelog, this is the best we have:
+
+- [[https://github.com/istio/istio/wiki/v0.2.9]]
+- [[https://istio.io/about/notes/][Release notes]]
 
 Notable changes follow.
 
-** 0.3 (unreleased)
+** 0.3
 
 - HA
 - Better RBAC support
@@ -200,5 +202,7 @@ Notable changes follow.
 * Resources
 
 - Me: Notes from London Kubernetes Meetup -  October 2017
+- Video: [[https://www.youtube.com/watch?v=wq1nlJNvy1w][Setting Sail with Istio [B] - Lachlan Evenson, Microsoft]]
+- Video: [[https://www.youtube.com/watch?v=Bh7sWtrkijY][Istio 0.2 automatic sidecar injection using Kubernetes Initializers]] - 6 Oct 2017
 - [[https://www.youtube.com/watch?v=s4qasWn_mFc][Youtube: Istio and Kubernetes - Kelsey Hightower]] Jul 2017
 - [[https://www.safaribooksonline.com/library/view/velocity-conference-2017/9781491976265/video311439.html]] (safari book)

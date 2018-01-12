@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 29 Dec 2017
+|| Last update: 05 Jan 2018
 
 * Intro
 
@@ -47,7 +47,9 @@ Will result in:
 
 Human readable.
 
-* Sizing the servers
+* EC2
+
+** T2 unlimited for DEV envs
 
 With the release of [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/t2-unlimited.html][t2 unlimited]] I would say use t2 for all DEV/QA
 projects when possible and alert just on *CPUSurplusCreditsCharged*
@@ -55,6 +57,10 @@ projects when possible and alert just on *CPUSurplusCreditsCharged*
 
 This will solve the annoying problems of being throttled when the
 credits ends.
+
+** M5 over M4 for general purposes
+
+M5 over M4 when possible for new projects (cheaper and better)
 
 * Security groups
 
@@ -157,39 +163,47 @@ And be optional if alerting or not:
 
 [[https://aws.amazon.com/about-aws/whats-new/2017/12/amazon-virtual-private-cloud-vpc-now-allows-customers-to-tag-their-elastic-ip-addresses/][Now]] is finally possible to tag EIP so we should do it for all of them.
 
-* ELB/ALB
+* Load balancers: ELB/ALB/NLB
 
 ** Naming conventions
 
 - int-elb
 - ext-elb
 
-** ALB only
+** ALB/NLB only
 
-ELB are deprecated to use only ALB to manage traffic. Put the ALB only outside
-the module! The ALB needs to live outside the module to do blue/green
-deployments.
+ELB are deprecated (to use only with EC2 classic) so use only A/NLB to manage traffic.
+Put the ALB only outside a module!
 
-Also Limit ALB name to 32 chars.
+REASON: The ALB needs to live outside the module to do blue/green deployments.
 
-*** Span a subnet for each AZ
+Other best practices and gotchas:
 
-*** Limit Target group names to 32 chars
+- Limit ALB name to 32 chars.
+- Span a subnet for each AZ
+- Use NLB for autoscaling groups healthchecks instead of ELB
+- Explicit names
+- Logs on s3
+- No external access for module NLBs: should have only default listener 80 and no other access
 
-** Use ELB only for autoscaling groups healthchecks
+*** Terraform resource
 
-** Explicit names
+Use the new [[https://www.terraform.io/docs/providers/aws/r/lb.html][aws_lb]] over
+aws_alb. That's the new preferred way to create A/NLBs.
 
-** Logs on s3
+Be explicit with the type (don't default silently).
 
-*** No external access
+    load_balancer_type         = "application"
 
-- Should have only default listener 80 and no SSL or other access
+Also use the new:
+
+- aws_lb_listener
+- aws_lb_target_group
 
 * AMI
 
 Every module should allow an AMI id to be passed as parameter.
-However, if nothing is passed, the module should fetch the latest AMI on AWS filtered by a specic regex.
+If nothing is passed, the module should fetch the latest AMI on AWS filtered by a specic regex.
 Passing an AMI should override this dynamic search.
 
     variable "ami_id" {
@@ -234,6 +248,27 @@ All variable should have:
 
 And optionally default.
 
+* Route52
+
+* Zones
+
+Some things like ZONES and some RECORD SETS, you NEVER want to destroy.
+To protect against errors, add:
+
+    lifecycle {
+      prevent_destroy = true
+    }
+
+* ACM - SSL certificates
+
+** Validation
+
+For new ZONES, use the DNS method to validate SSL certs.
+It will avoid the problems of sending email and having to click on a link to
+renew it every year.
+
+- [[https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html]]
+
 * Modules
 
 ** Never create DNS
@@ -260,18 +295,18 @@ Use count=0.
 
 They should have the following files:
 
-- 00-backend_and_provider.tf
+- 00-backend_and_providers.tf
 - 00-remote-states.tf
 - 00-variables.tf
 - 00-variables_default.tf (only for modules)
 - 00-variables_required_inputs.tf (only for modules)
-- 99-output.tf
+- 99-outputs.tf
 - README
 - CHANGELOG (only for modules)
 - params.md (generated)
 - terraform.tfvars
 
-*** 00-backend_and_provider.tf
+*** 00-backend_and_providers.tf
 
 This is an example:
 
@@ -419,3 +454,7 @@ The in _01-main_blue.tf_:
     }
 
 This 'export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"' it is used to cache plugins.
+
+* Resources
+
+- [[https://www.terraform.io/docs/enterprise/guides/recommended-practices/index.html]]

@@ -1,8 +1,14 @@
-Generate new key/cert for admin on k8s 1.7
+Generate new key/cert for admins on k8s 1.7+
+|| Last update: 05 Jan 2018
+
+* Tested on
+
+- 1.7
+- 1.9.0
 
 * Generate certs and key for a new user
 
-    # As sudo
+    # As sudo on the controller box
     sudo su
 
     USERNAME='jecnua'
@@ -46,7 +52,7 @@ Generate new key/cert for admin on k8s 1.7
     contexts:
     - context:
         cluster: kubernetes
-        namespace: testing
+        #namespace: testing
         user: jecnua
       name: jecnua@kubernetes
     current-context: jecnua@kubernetes
@@ -62,6 +68,10 @@ Generate new key/cert for admin on k8s 1.7
 
     export KUBECONFIG=test.conf
     kubectl get nodes
+
+* Or use the contexts
+
+    TBD
 
 * Yaml
 

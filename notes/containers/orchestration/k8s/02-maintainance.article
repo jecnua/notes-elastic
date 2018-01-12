@@ -1,5 +1,10 @@
 Kubernetes maintainance
-|| Last update: 18 Jul 2017
+|| Last update: 05 Jan 2018
+
+* Stop all Deployments
+
+    kubectl get deploy | cut -f 1 -d ' ' | grep -v 'NAME'  > /tmp/deployments.txt
+    while read line; do kubectl scale deployment $line --replicas=0; done < /tmp/deployments.txt
 
 * Resources
 

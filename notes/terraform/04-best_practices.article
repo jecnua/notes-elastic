@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 27 Dec 2017
+|| Last update: 29 Dec 2017
 
 * Intro
 
@@ -75,6 +75,19 @@ And 32 is the limit.
 
 All sg should have NO inline definition. When inside a module the id should
 be returned to allow *injection* if needed.
+
+* Routes
+
+** Make them injectable
+
+Like SG, routes have both inline and injectable versions.
+Choosing the inline version for a module, will force you to ask
+parameters like IGW or NATGW when callig the module. What if
+the caller doesn't need it? What if they need different routes?
+
+Make a simple route_table in the module with only the NEEDED
+routes (also this injected) and return the id of the route route_table
+to allow more injections.
 
 * Autoscaling groups
 

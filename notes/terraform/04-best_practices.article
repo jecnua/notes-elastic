@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 05 Jan 2018
+|| Last update: 17 Jan 2018
 
 * Intro
 
@@ -96,6 +96,48 @@ routes (also this injected) and return the id of the route route_table
 to allow more injections.
 
 * Autoscaling groups
+
+** Launch Configuration Gotcha
+
+Changes made to the Launch Configuration normally require a new resource, but the original Launch Config is tied to the Autoscaling group, so the name needs the change whenever the resource is recreated.  This will not happen if you use the generic random_id.  To avoid, create a specific random_id with additional keepers, which force the change of the random_id if specific things change.  See [[https://www.terraform.io/docs/providers/random/r/id.html]] for details.  Here is an example:
+
+    resource "random_id" "random_lc_gen" {
+      keepers = {
+        lc_image_id         = "${var.ami_id_pm_node != "" ? var.ami_id_pm_node : data.aws_ami.ubuntu.id}"
+        lc_instance_type    = "${var.ec2_instance_type}"
+        lc_key_name         = "${var.ec2_key_name}"
+        lc_user_data        = "${data.template_file.bootstrap_node.rendered}"
+        lc_root_volumetype  = "${var.root_volumetype}"
+        lc_root_device_size = "${var.ec2_instance_root_device_size}"
+      }
+
+      byte_length = 32
+    }
+
+    resource "aws_launch_configuration" "example_launch_configuration" {
+      count                       = "${signum(var.num_nodes)}"
+      name                        = "${substr(format("example-lc-%s-%s", var.environment, random_id.random_lc_gen.dec), 0, 32)}"
+      image_id                    = "${random_id.random_lc_gen.keepers.lc_image_id}"
+      instance_type               = "${random_id.random_lc_gen.keepers.lc_instance_type}"
+      key_name                    = "${random_id.random_lc_gen.keepers.lc_key_name}"
+      user_data                   = "${random_id.random_lc_gen.keepers.lc_user_data}"
+      associate_public_ip_address = false
+      ebs_optimized               = false
+
+      root_block_device = {
+        volume_type           = "${random_id.random_lc_gen.keepers.lc_root_volumetype}"
+        volume_size           = "${random_id.random_lc_gen.keepers.lc_root_device_size}"
+        delete_on_termination = true
+      }
+
+      lifecycle {
+        create_before_destroy = true
+      }
+
+      security_groups = [
+        "${aws_security_group.node_sg.id}",
+      ]
+    }
 
 ** Explicit names
 

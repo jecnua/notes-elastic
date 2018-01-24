@@ -1,5 +1,5 @@
 Best practices for AWS and Terraform
-|| Last update: 17 Jan 2018
+|| Last update: 24 Jan 2018
 
 * Intro
 
@@ -230,7 +230,7 @@ Other best practices and gotchas:
 
 *** Terraform resource
 
-Use the new [[https://www.terraform.io/docs/providers/aws/r/lb.html][aws_lb]] over
+Use the new [[https://www.terraform.io/docs//aws/r/lb.html][aws_lb]] over
 aws_alb. That's the new preferred way to create A/NLBs.
 
 Be explicit with the type (don't default silently).
@@ -312,6 +312,32 @@ renew it every year.
 - [[https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html]]
 
 * Modules
+
+** Providers (0.11+)
+
+Providers should not be defined in modules but injected from root (the caller).
+
+Quoting:
+
+    The recommended design pattern moving forward is to place all explicit
+    provider blocks in the root module of the configuration, and to pass providers
+    explicitly to child modules so that the associations are obvious from
+    configuration
+
+Quoting:
+
+    With the new provider inheritance model, it is strongly recommended to
+    refactor any configuration where child modules define their own provider
+    blocks so that all explicit configuration is defined in the root module.
+    This approach will ensure that removing a module from the configuration
+    will not cause any provider configurations to be removed along with it,
+    and thus ensure that all of the module's resources can be successfully
+    refreshed and destroyed.
+
+Sources:
+
+- [[https://www.terraform.io/upgrade-guides/0-11.html#interactions-between-providers-and-modules]]
+- [[https://www.hashicorp.com/blog/hashicorp-terraform-0-11]]
 
 ** Never create DNS
 

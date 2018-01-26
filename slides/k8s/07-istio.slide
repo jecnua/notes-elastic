@@ -1,4 +1,5 @@
-Istio
+Istio - Installation guide on k8s 1.9.0
+|| Last update: 26 Jan 2018
 
 * Install Helm
 
@@ -77,21 +78,42 @@ Possible error:
     Error: UPGRADE FAILED: apiVersion "admissionregistration.k8s.io/v1alpha1"
     in istio/templates/initializer/initializer.yaml is not available
 
-/etc/kubernetes/manifests/kube-apiserver.yaml
+You need to change this file:
 
-changed and added the line
+    /etc/kubernetes/manifests/kube-apiserver.yaml
 
+And add:
 
-* checking
+    --runtime-config=admissionregistration.k8s.io/v1alpha1
 
-kubectl describe svc istio-ingress -n istio-system
+Also check if initialiser are added:
 
-    - --runtime-config=admissionregistration.k8s.io/v1alpha1
-    - --admission-control=Initializers...
+- --admission-control=Initializers...
 
+* Check it works
+
+    kubectl describe svc istio-ingress -n istio-system
 
 * What to change
 
-    helm del --purge istio
-    helm upgrade istio incubator/istio --devel --reuse-values --set istio.install=true --set ingress.service.type=NodePort
-    kubectl get svc --all-namespaces
+    $ helm del --purge istio
+    $ helm upgrade istio incubator/istio --devel --reuse-values --set istio.install=true --set ingress.service.type=NodePort
+    $ kubectl get svc --all-namespaces
+
+* Test hello world
+
+-  [[https://github.com/istio/istio/tree/master/samples/helloworld]]
+
+* Test bookinfo
+
+    $ git clone https://github.com/istio/istio.git
+    $ cd istio
+    $ kubectl apply -f samples/bookinfo/kube/bookinfo.yaml
+
+Check it worked:
+
+    $ kubectl get po,svc,ingress -o wide
+
+* Search for NodePorts
+
+    $ kubectl get svc -n istio-system | grep 'zipkin'

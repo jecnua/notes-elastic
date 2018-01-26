@@ -74,6 +74,9 @@ platform.
 Istio is a distribuited control plane to configure envoy system records for
 service mesh.
 
+.image images/istio_arch.svg _ 750
+.caption Source: [[https://istio.io/]]
+
 .image images/all_istio.png _ 750
 .caption Source: [[https://www.youtube.com/watch?v=IfPt3z6UAGw][JavaDay UA 2017: 8 Steps to Become Awesome with Kubernetes (Burr Sutter)]]
 
@@ -156,8 +159,8 @@ istio is a unified control plane.
 
 ** Envoy
 
-.image images/envoy.png
-.caption Source: [[https://www.youtube.com/watch?v=wq1nlJNvy1w][Setting Sail with Istio [B] - Lachlan Evenson, Microsoft]]
+.image images/envoy.svg _ 750
+.caption Source: [[https://istio.io/]]
 
 - [[https://www.envoyproxy.io/]]
 
@@ -208,8 +211,8 @@ The distributed system has been abstracted away from the service programmer.
 
 ** Pilot
 
-.image images/pilot.png
-.caption Source: [[https://www.youtube.com/watch?v=wq1nlJNvy1w][Setting Sail with Istio [B] - Lachlan Evenson, Microsoft]]
+.image images/pilot.svg _ 750
+.caption Source: [[https://istio.io/]]
 
 _Envoy_ has been fully rewritten in C - is connected to a distribuited system and
 highly dinamically configurable.
@@ -232,6 +235,9 @@ Plus, it has a plugging api for routing and other stuff like:
 - ingestion
 
 ** Mixer
+
+.image images/mixer.svg _ 250
+.caption Source: [[https://istio.io/]]
 
 Is the policy engine: telemetry, billing, quota and so on.
 

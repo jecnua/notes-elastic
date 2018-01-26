@@ -1,0 +1,97 @@
+Istio
+
+* Install Helm
+
+- [[https://github.com/kubernetes/helm/blob/master/docs/install.md]]
+
+On ubuntu:
+
+    $ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+    $ chmod 700 get_helm.sh
+    $ ./get_helm.sh
+
+Init helm:
+
+    $ helm init
+
+* Add the incubator
+
+- [[github.com/kubernetes/charts/tree/master/incubator/istio]]
+
+    $ helm repo add \
+      incubator https://kubernetes-charts-incubator.storage.googleapis.com
+
+* First step installation (CustomResourceDefinition)
+
+    $ helm install --name istio incubator/istio \
+      --devel \
+      --namespace istio-system \
+      --set istio.release=0.4.0,initializer.enabled=true,rbac.install=true
+
+Possible problems:
+
+- [[https://stackoverflow.com/questions/45619365/error-when-creating-install-kubernetes-istio-rbac-beta-yaml]]
+- [[https://github.com/istio/issues/issues/48]]
+
+    Error: release istio failed: namespaces "istio-system" is forbidden:
+    User "system:serviceaccount:kube-system:default" cannot get
+    namespaces in the namespace "istio-system"
+
+Apply:
+
+    $ kubectl create clusterrolebinding add-on-cluster-admin \
+     --clusterrole=cluster-admin --serviceaccount=kube-system:default
+
+* Output
+
+    RESOURCES:
+    ==> v1beta1/CustomResourceDefinition
+    NAME                                 AGE
+    listentries.config.istio.io          0s
+    svcctrls.config.istio.io             0s
+    prometheuses.config.istio.io         0s
+    rules.config.istio.io                0s
+    attributemanifests.config.istio.io   0s
+    deniers.config.istio.io              0s
+    listcheckers.config.istio.io         0s
+    stdios.config.istio.io               0s
+    logentries.config.istio.io           0s
+    statsds.config.istio.io              0s
+    checknothings.config.istio.io        0s
+    stackdrivers.config.istio.io         0s
+    metrics.config.istio.io              0s
+    quotas.config.istio.io               0s
+    reportnothings.config.istio.io       0s
+    memquotas.config.istio.io            0s
+    noops.config.istio.io                0s
+    routerules.config.istio.io           0s
+    egressrules.config.istio.io          0s
+    destinationpolicies.config.istio.io  0s
+
+* Second step (Deployments)
+
+    $ helm upgrade istio incubator/istio --devel --reuse-values --set istio.install=true
+
+Possible error:
+
+    Error: UPGRADE FAILED: apiVersion "admissionregistration.k8s.io/v1alpha1"
+    in istio/templates/initializer/initializer.yaml is not available
+
+/etc/kubernetes/manifests/kube-apiserver.yaml
+
+changed and added the line
+
+
+* checking
+
+kubectl describe svc istio-ingress -n istio-system
+
+    - --runtime-config=admissionregistration.k8s.io/v1alpha1
+    - --admission-control=Initializers...
+
+
+* What to change
+
+    helm del --purge istio
+    helm upgrade istio incubator/istio --devel --reuse-values --set istio.install=true --set ingress.service.type=NodePort
+    kubectl get svc --all-namespaces

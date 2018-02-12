@@ -1,0 +1,8 @@
+Docker for Mac
+Fabrizio Sabatini || Last update: 12 Feb 2017
+
+* Tips
+
+Open root shell Docker for Mac:
+
+    screen ~/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/tty

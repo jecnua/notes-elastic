@@ -40,7 +40,7 @@ https://github.com/k1LoW/awspec/blob/master/doc/resource_types.md
 [[https://github.com/serverworks/aws-spec][aws-spec]]
 
 
-** Continuos validation on file change
+** Continuous validation on file change
 
 The following implementation is in place to continuously run terraform validate on every file change in the background.
 It will help you not to break terraform while working locally.

@@ -1,5 +1,5 @@
-Filebeat
-|| Last update: 20 Feb 2018
+Filebeat 6.2+
+|| Last update: 26 Feb 2018
 
 * Intro
 
@@ -22,6 +22,33 @@ Example:
         apache: true
       fields_under_root: true
 
+Or real example:
+
+    $ cat /opt/prospectors.yml
+
+    - type: log
+      paths:
+        - /var/log/apache2/*.log
+        - /var/log/myapp/*.log
+
+* Configuration
+
+    $ cat /opt/filebeat.yml
+    ---
+    filebeat.config:
+      prospectors:
+        path: /usr/share/filebeat/prospectors.d/*.yml
+        reload.enabled: false
+
+    processors:
+    - add_cloud_metadata:
+
+    output.elasticsearch:
+      hosts: ['http://es-url:9200']
+      index: "env-index-%{+yyyy.MM.dd}"
+
+    setup.template.enabled: false
+
 A real example:
 
     filebeat:
@@ -41,6 +68,22 @@ A real example:
           max_backoff: 10s
           backoff_factor: 2
           max_bytes: 10485760
+
+* Processors
+
+One thing that I didn't notice in the old version is the processors
+
+    processors:
+    - add_cloud_metadata:
+
+When this setting is configured in the main yaml, the following data is added
+to the index:
+
+    INFO    add_cloud_metadata/add_cloud_metadata.go:301    add_cloud_metadata:
+    hosting provider type detected as ec2, metadata={"availability_zone":"us-east-1c","instance_id":"i-xxx",
+    "machine_type":"t2.small","provider":"ec2","region":"us-east-1"}
+
+NOTE: This works only on docker and not via package (at least out of the box).
 
 * Modules
 
@@ -84,76 +127,30 @@ If you need to setup kibana:
     filebeat.modules:
       - module: apache2
 
-* Changes in 6.x
-
-      filebeat:
-        spool_size: 1024
-        idle_timeout: "5s"
-        registry_file: ".filebeat"
-        config_dir: /etc/filebeat/conf.d
-      output:
-        elasticsearch:
-          hosts:
-            - "http://elk.address.com:9200"
-          index: production-myindex
-      shipper: {}
-      logging: {}
-      runoptions: {}
-
-
-** Changes number 0
-
-    DEPRECATED: input_type prospector config is deprecated. Use type instead. Will be removed in version: 6.0.0
-
-Solution change:
-
-    input_type: log
-
-to
-
-    type: log
-
-** Changes number 0
-
-      filebeat[14500]: Exiting: 1 error: setting 'queue_size' has been removed
-
-** Changes number 1
-
-output:
-  elasticsearch:
-    hosts:
-      - \"http://elk-rul.com\"
-    index: \"${logs_index_name}-%{+yyyy.MM.dd}\"
-
-** Changes number 2
-
-    $ tail /var/log/filebeat/filebeat
-    2018-02-16T14:50:38.144Z    INFO    instance/beat.go:468    Home path: [/usr/share/filebeat] Config path: [/etc/filebeat] Data path: [/var/lib/filebeat] Logs path: [/var/log/filebeat]
-    2018-02-16T14:50:38.144Z    INFO    instance/beat.go:475    Beat UUID: 72474bd1-1ea4-480e-80d0-dd86ab9b13f8
-    2018-02-16T14:50:38.144Z    INFO    instance/beat.go:213    Setup Beat: filebeat; Version: 6.2.1
-    2018-02-16T14:50:38.146Z    ERROR    instance/beat.go:667    Exiting: setup.template.name and setup.template.pattern have to be set if index name is modified.
-
-** Changes number 3
-
-    $ tail /var/log/filebeat/filebeat
-    2018-02-16T14:52:52.144Z    INFO    instance/beat.go:468    Home path: [/usr/share/filebeat] Config path: [/etc/filebeat] Data path: [/var/lib/filebeat] Logs path: [/var/log/filebeat]
-    2018-02-16T14:52:52.144Z    INFO    instance/beat.go:475    Beat UUID: 72474bd1-1ea4-480e-80d0-dd86ab9b13f8
-    2018-02-16T14:52:52.144Z    INFO    instance/beat.go:213    Setup Beat: filebeat; Version: 6.2.1
-    2018-02-16T14:52:52.145Z    INFO    elasticsearch/client.go:145    Elasticsearch url: http://elk.address.com:9200
-    2018-02-16T14:52:52.145Z    INFO    pipeline/module.go:76    Beat name: name-e6779568
-    2018-02-16T14:52:52.148Z    ERROR    instance/beat.go:667    Exiting: 2 errors: setting 'filebeat.spool_size' has been removed; setting 'filebeat.idle_timeout' has been removed
-
-      setup.template.enabled: false # This is the new line
-
-** Coming changes
-
-    DEPRECATED: config_dir is deprecated. Use `filebeat.config.prospectors` instead. Will be removed in version: 7.0.0s
-
 * Installing
 
 ** Docker
 
 - [[https://www.elastic.co/guide/en/beats/filebeat/current/running-on-docker.html]]
+
+The docker image automatically read in /mnt/:
+
+    INFO    log/prospector.go:111    Configured paths: [/mnt/log/*.log]
+
+So you can map the dirs in there or change the yaml:
+
+    -E 'filebeat.prospectors.paths: [/mnt/log/apache2/*.log]'
+
+This example is using config files in /opt:
+
+    /usr/bin/docker run \
+      -u root --net host -m 0b \
+      -v /opt/prospectors.yml:/usr/share/filebeat/prospectors.d/default.yml \
+      -v /opt/filebeat.yml:/usr/share/filebeat/filebeat.yml \
+      -v /var/log/:/mnt/log \
+      --sig-proxy=false --log-driver=fluentd --log-opt tag=docker.{{.Name}} \
+      --log-opt fluentd-async-connect=true --name filebeat \
+      docker.elastic.co/beats/filebeat:6.2.1
 
 ** Package
 
@@ -208,3 +205,68 @@ The filebeat is locking the files. Run:
     $ service filebeat stop
     $ service apache2 restart
     $ service filebeat start
+
+* Changes in 6.x
+
+      filebeat:
+        spool_size: 1024
+        idle_timeout: "5s"
+        registry_file: ".filebeat"
+        config_dir: /etc/filebeat/conf.d
+      output:
+        elasticsearch:
+          hosts:
+            - "http://elk.address.com:9200"
+          index: production-myindex
+      shipper: {}
+      logging: {}
+      runoptions: {}
+
+
+** input_type prospector config is deprecated
+
+    DEPRECATED: input_type prospector config is deprecated. Use type instead. Will be removed in version: 6.0.0
+
+Solution change:
+
+    input_type: log
+
+to
+
+    type: log
+
+** queue_size has been removed
+
+      filebeat[14500]: Exiting: 1 error: setting 'queue_size' has been removed
+
+** Index name pattern
+
+output:
+  elasticsearch:
+    hosts:
+      - \"http://elk-rul.com\"
+    index: \"${logs_index_name}-%{+yyyy.MM.dd}\"
+
+** setup.template has to be set
+
+    $ tail /var/log/filebeat/filebeat
+    2018-02-16T14:50:38.144Z    INFO    instance/beat.go:468    Home path: [/usr/share/filebeat] Config path: [/etc/filebeat] Data path: [/var/lib/filebeat] Logs path: [/var/log/filebeat]
+    2018-02-16T14:50:38.144Z    INFO    instance/beat.go:475    Beat UUID: 72474bd1-1ea4-480e-80d0-dd86ab9b13f8
+    2018-02-16T14:50:38.144Z    INFO    instance/beat.go:213    Setup Beat: filebeat; Version: 6.2.1
+    2018-02-16T14:50:38.146Z    ERROR    instance/beat.go:667    Exiting: setup.template.name and setup.template.pattern have to be set if index name is modified.
+
+** filebeat.spool_size has been removed
+
+    $ tail /var/log/filebeat/filebeat
+    2018-02-16T14:52:52.144Z    INFO    instance/beat.go:468    Home path: [/usr/share/filebeat] Config path: [/etc/filebeat] Data path: [/var/lib/filebeat] Logs path: [/var/log/filebeat]
+    2018-02-16T14:52:52.144Z    INFO    instance/beat.go:475    Beat UUID: 72474bd1-1ea4-480e-80d0-dd86ab9b13f8
+    2018-02-16T14:52:52.144Z    INFO    instance/beat.go:213    Setup Beat: filebeat; Version: 6.2.1
+    2018-02-16T14:52:52.145Z    INFO    elasticsearch/client.go:145    Elasticsearch url: http://elk.address.com:9200
+    2018-02-16T14:52:52.145Z    INFO    pipeline/module.go:76    Beat name: name-e6779568
+    2018-02-16T14:52:52.148Z    ERROR    instance/beat.go:667    Exiting: 2 errors: setting 'filebeat.spool_size' has been removed; setting 'filebeat.idle_timeout' has been removed
+
+      setup.template.enabled: false # This is the new line
+
+** Coming changes
+
+    DEPRECATED: config_dir is deprecated. Use `filebeat.config.prospectors` instead. Will be removed in version: 7.0.0s

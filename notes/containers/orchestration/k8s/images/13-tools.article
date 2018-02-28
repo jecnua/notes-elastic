@@ -1,0 +1,7 @@
+Kubernetes tools
+
+
+* list
+
+- Kubectx: [[https://github.com/ahmetb/kubectx]]
+- Kube-shell: [[https://github.com/cloudnativelabs/kube-shell]]

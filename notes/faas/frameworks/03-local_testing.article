@@ -28,6 +28,16 @@ It lets you simulate function invocations from known event sources like Amazon S
 
 Before deploying the Lambda functions, a npm install must be ran to fetch the dependencies. For SAM, there is a Makefile example where these pre-package scripts are being executed. It would be great if a formal, built-in specification would exist for the frameworks.
 
-* Local environment
+* To check
 
 - [[https://github.com/heitorlessa/sam-local-python-hot-reloading/blob/master/README.MD]]
+
+* Walkthrough
+
+    npm install -g aws-sam-local
+    docker pull lambci/lambda
+    docker pull lambci/lambda:python3.6
+    cd /tmp
+    git clone https://github.com/awslabs/aws-sam-local.git
+    cd aws-sam-local/samples/api-event-source/python
+    sam local start-api

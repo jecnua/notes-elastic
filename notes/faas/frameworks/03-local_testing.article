@@ -34,6 +34,8 @@ Before deploying the Lambda functions, a npm install must be ran to fetch the de
 
 * Walkthrough
 
+** SAM local for SAM
+
     npm install -g aws-sam-local
     docker pull lambci/lambda
     docker pull lambci/lambda:python3.6
@@ -41,3 +43,20 @@ Before deploying the Lambda functions, a npm install must be ran to fetch the de
     git clone https://github.com/awslabs/aws-sam-local.git
     cd aws-sam-local/samples/api-event-source/python
     sam local start-api
+
+** SAM local for Serverless
+
+- [[https://github.com/SAPessi/serverless-sam]]
+- [[https://read.iopipe.com/go-serverless-with-sam-for-local-dev-test-f6f23eb6a2bf]]
+
+[[https://serverless.com/framework/docs/providers/aws/guide/testing/]]
+
+** Serverless offline
+
+- [[https://github.com/dherault/serverless-offline]]
+- [[https://bespoken.io/blog/serverless-plugin-local-aws-lambda-development/]]
+
+* Mocking services
+
+Amazon kineses [[https://github.com/mhart/kinesalite]]
+DynamoDB [[https://github.com/mhart/dynalite]] - [[https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html]]

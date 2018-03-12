@@ -5,6 +5,7 @@ AWS Serverless Application Model (SAM)
 
 - [[https://github.com/awslabs/serverless-application-model]]
 - [[https://github.com/awslabs/serverless-application-model/blob/master/HOWTO.md]]
+- [[https://aws.amazon.com/serverless/developer-tools/]]
 
 Abstraction layer in front of CloudFormation.
 
@@ -14,8 +15,6 @@ AM on the other hand is an abstraction layer specifically for AWS using not only
 - Generate CloudFormation configs.
 
 * How it's build
-
-- [[https://www.slideshare.net/AmazonWebServices/local-testing-and-deployment-best-practices-for-serverless-applications-aws-online-tech-talks]]
 
 AWS SAM is written as an extension of CloudFormation, using transformations to transform the syntax to valid CloudFormation.
 
@@ -72,6 +71,8 @@ The Serverless framework does allow you to specify a different default role for 
 
 - [[https://github.com/awslabs/aws-sam-local]]
 - [[https://github.com/lambci/docker-lambda]]
+- [[AWS re:Invent 2017: Local Serverless Development using SAM Local (DEM77)]]
+- [[https://aws.amazon.com/blogs/aws/new-aws-sam-local-beta-build-and-test-serverless-applications-locally/]]
 
 CLI tools for local testing of lambda functions.
 
@@ -94,6 +95,17 @@ Before deploying the Lambda functions, a npm install must be ran to fetch the de
 * Local environment
 
 - [[https://github.com/heitorlessa/sam-local-python-hot-reloading/blob/master/README.MD]]
+
+* Best practices
+
+.image images/best_practices.png _ 500
+.caption Source:  [[https://www.slideshare.net/AmazonWebServices/local-testing-and-deployment-best-practices-for-serverless-applications-aws-online-tech-talks][local-testing-and-deployment-best-practices-for-serverless-applications-aws-online-tech-talks]]
+
+- Use language specific packages to share common code between functions
+- Validate yaml before committing
+- Env variable should be injected via ENV
+
+API gateway stage variable act like env variables (use them to store config variable) and are available in the $context object.
 
 * Sources
 

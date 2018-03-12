@@ -6,6 +6,7 @@ AWS Serverless Application Model (SAM)
 - [[https://github.com/awslabs/serverless-application-model]]
 - [[https://github.com/awslabs/serverless-application-model/blob/master/HOWTO.md]]
 - [[https://aws.amazon.com/serverless/developer-tools/]]
+- [[https://aws.amazon.com/blogs/compute/introducing-simplified-serverless-application-deplyoment-and-management/]]
 
 Abstraction layer in front of CloudFormation.
 
@@ -66,35 +67,6 @@ Another difference is that SAM Local allows you to run Lambda functions locally 
 Specifying IAM permissions is the first bigger difference between the two services. As mentioned above, IAM is the main reason that the Serverless yaml file is significantly bigger. This is because it is not possible to extend the IAM policies per-function. One function needs permissions to S3, another one to SNS. To specify these permissions, an entire role needs to be created, including the default Lambda managed policy (AWSLambdaBasicExecutionRole) and the AssumeRolePolicyDocument. A GitHub issue with this feature request already exists. With SAM, it is possible to extend the role of a function with specific policies.
 
 The Serverless framework does allow you to specify a different default role for each Lambda function on a global level. In addition, it is possible to extend the role for all Lambda functions. This is not possible through SAM.
-
-* SAM Local
-
-- [[https://github.com/awslabs/aws-sam-local]]
-- [[https://github.com/lambci/docker-lambda]]
-- [[AWS re:Invent 2017: Local Serverless Development using SAM Local (DEM77)]]
-- [[https://aws.amazon.com/blogs/aws/new-aws-sam-local-beta-build-and-test-serverless-applications-locally/]]
-
-CLI tools for local testing of lambda functions.
-
-Uses open source docker-lambda images to mimic lambda. The function is then run using a Docker container created by the people behind LambCI. Supports:
-
-- Timeout, memory limits and runtimes
-- Does not emulate CPU limits
-- Partial API gateway emulation (proxy calls)
-
-SAM Local can spin up a local API Gateway environment. Any Lambda functions integrated with API Gateway can be invoked through your browser or curl command. This is great for local development.
-
-Supports multiple languages. Support live debugging for Java and node.js.
-
-* Pipeline
-
-- [[https://github.com/awslabs/aws-sam-local/blob/develop/samples/python-with-packages/Makefile]]
-
-Before deploying the Lambda functions, a npm install must be ran to fetch the dependencies. For SAM, there is a Makefile example where these pre-package scripts are being executed. It would be great if a formal, built-in specification would exist for the frameworks.
-
-* Local environment
-
-- [[https://github.com/heitorlessa/sam-local-python-hot-reloading/blob/master/README.MD]]
 
 * Best practices
 

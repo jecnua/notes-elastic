@@ -1,0 +1,17 @@
+AWS Serverless Application Model (SAM)
+|| Last update: 12 Mar 2018
+
+- [[https://github.com/awslabs/serverless-application-model]]
+- [[https://github.com/awslabs/serverless-application-model/blob/master/HOWTO.md]]
+- [[https://github.com/awslabs/aws-sam-local]]
+
+Abstraction layer in front of CloudFormation.
+
+There is support for three different resource types: Lambda, DynamoDB and API Gateway. Using [[https://github.com/awslabs/aws-sam-local][SAM Local]], Lambda and API Gateway can be run locally through the use of Docker containers.
+AM on the other hand is an abstraction layer specifically for AWS using not only FaaS but also DynamoDB for storage and API Gateway for creating a serverless HTTP endpoint.
+
+- Generate CloudFormation configs.
+
+** Difference
+
+Another difference is that SAM Local allows you to run Lambda functions locally and to spin up an API Gateway locally. This makes it easier to develop and test Lambda functions without deploying them to AWS. With the Serverless framework you can also invoke Lambda functions from the command line, but only if they are deployed to AWS and available through API Gateway.

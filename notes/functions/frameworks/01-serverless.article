@@ -5,8 +5,32 @@ Serverless Framework
 - [[https://github.com/serverless/serverless]]
 
 Multi providers. Open source. Generate CloudFormation configs.
-Serverless is written to deploy FaaS (Function as a Service) functions to different providers. 
+Serverless is written to deploy FaaS (Function as a Service) functions to different providers.
 
-** Difference
+* Deployments
+
+The Serverless framework generates the S3 bucket itself and picks its own stack name and package name. If you already have an S3 bucket, you can specify this in the yaml file using the provider.deploymentBucket key
+
+The -v flag (verbose) outputs any updates to the stack in the console. when removing a stack, the Serverless CLI waits until the stack is destroyed.
+
+* Drawbacks
+
+This is a general drawback of the Serverless framework: the shorthand syntax is not supported, requiring us to use multiple lines of code in some situations. For example, the GetAtt function as is required
+
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 10
+          startingPosition: TRIM_HORIZON
+          arn:
+            Fn::GetAtt:
+              - DynamoDBTable
+              - StreamArn
+
+* Difference
 
 Another difference is that SAM Local allows you to run Lambda functions locally and to spin up an API Gateway locally. This makes it easier to develop and test Lambda functions without deploying them to AWS. With the Serverless framework you can also invoke Lambda functions from the command line, but only if they are deployed to AWS and available through API Gateway.
+
+* Sources
+
+- [[https://sanderknape.com/2018/02/comparing-aws-sam-with-serverless-framework/]] - February 22, 2018

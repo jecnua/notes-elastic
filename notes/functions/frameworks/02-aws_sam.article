@@ -1,9 +1,10 @@
 AWS Serverless Application Model (SAM)
 || Last update: 12 Mar 2018
 
+* Intro
+
 - [[https://github.com/awslabs/serverless-application-model]]
 - [[https://github.com/awslabs/serverless-application-model/blob/master/HOWTO.md]]
-- [[https://github.com/awslabs/aws-sam-local]]
 
 Abstraction layer in front of CloudFormation.
 
@@ -12,6 +13,88 @@ AM on the other hand is an abstraction layer specifically for AWS using not only
 
 - Generate CloudFormation configs.
 
-** Difference
+* How it's build
+
+- [[https://www.slideshare.net/AmazonWebServices/local-testing-and-deployment-best-practices-for-serverless-applications-aws-online-tech-talks]]
+
+AWS SAM is written as an extension of CloudFormation, using transformations to transform the syntax to valid CloudFormation.
+
+    # Tell CF this is a SAM syntax
+    AWSTemplateFormatVersion : "2010-09-09"
+    Transform: AWS::Serverless-2016-10-31
+
+It container new serverless resource types:
+
+- functions
+- APIs
+- Tables
+
+Supports all that CF supports and can mix with non-SAM CF templates. Supports:
+
+- Parameters
+- Mappings
+- Outputs
+
+etc...
+
+* Commands
+
+- package
+- deploy
+
+* Deployment
+
+With SAM, an S3 bucket must first be created to which the deployment artifacts are used.
+
+    sam package --template-file template.yaml --s3-bucket [your_s3_bucket] --output-template-file package.yaml
+
+    sam deploy --template-file package.yaml --stack-name serverless-application --capabilities CAPABILITY_IAM
+
+To delete:
+
+    aws cloudformation delete-stack --stack-name serverless-application
+
+SAM requires two commands to create and to work directly with CF when deleting.
+
+With SAM, creating or updating a stack doesn’t show any other info than “Waiting for stack create/update to complete”. The default Cloudformation CLI immediately exits, giving you no info whether the stack is successfully deleted or not.
+
+* Difference
 
 Another difference is that SAM Local allows you to run Lambda functions locally and to spin up an API Gateway locally. This makes it easier to develop and test Lambda functions without deploying them to AWS. With the Serverless framework you can also invoke Lambda functions from the command line, but only if they are deployed to AWS and available through API Gateway.
+
+* Permissions
+
+Specifying IAM permissions is the first bigger difference between the two services. As mentioned above, IAM is the main reason that the Serverless yaml file is significantly bigger. This is because it is not possible to extend the IAM policies per-function. One function needs permissions to S3, another one to SNS. To specify these permissions, an entire role needs to be created, including the default Lambda managed policy (AWSLambdaBasicExecutionRole) and the AssumeRolePolicyDocument. A GitHub issue with this feature request already exists. With SAM, it is possible to extend the role of a function with specific policies.
+
+The Serverless framework does allow you to specify a different default role for each Lambda function on a global level. In addition, it is possible to extend the role for all Lambda functions. This is not possible through SAM.
+
+* SAM Local
+
+- [[https://github.com/awslabs/aws-sam-local]]
+- [[https://github.com/lambci/docker-lambda]]
+
+CLI tools for local testing of lambda functions.
+
+Uses open source docker-lambda images to mimic lambda. The function is then run using a Docker container created by the people behind LambCI. Supports:
+
+- Timeout, memory limits and runtimes
+- Does not emulate CPU limits
+- Partial API gateway emulation (proxy calls)
+
+SAM Local can spin up a local API Gateway environment. Any Lambda functions integrated with API Gateway can be invoked through your browser or curl command. This is great for local development.
+
+Supports multiple languages. Support live debugging for Java and node.js.
+
+* Pipeline
+
+- [[https://github.com/awslabs/aws-sam-local/blob/develop/samples/python-with-packages/Makefile]]
+
+Before deploying the Lambda functions, a npm install must be ran to fetch the dependencies. For SAM, there is a Makefile example where these pre-package scripts are being executed. It would be great if a formal, built-in specification would exist for the frameworks.
+
+* Local environment
+
+- [[https://github.com/heitorlessa/sam-local-python-hot-reloading/blob/master/README.MD]]
+
+* Sources
+
+- [[https://sanderknape.com/2018/02/comparing-aws-sam-with-serverless-framework/]] - February 22, 2018

@@ -25,6 +25,8 @@ Lambda
 
 * Metrics
 
+- https://www.datadoghq.com/blog/monitoring-lambda-functions-datadog/
+
 Of course, you can employ both approaches in your architecture and use the appropriate one for each situation:
 
 for functions on the critical path (that will directly impact the latency your users experience), choose the approach of publishing metrics as special log messages;
@@ -33,6 +35,14 @@ for other functions (cron jobs, kinesis processors, etc.) where invocation durat
 * Tracing
 
 - https://github.com/serverless/serverless/issues/3495
+
+Additionally, you might wish to pass along other useful contextual information (such as payment ID, tournament ID, etc.) about the request to downstream services. Otherwise they would only appear in log messages from services where they originated from.
+
+- x-ray
+- tracing for telling startup time
+
+turns it on by default
+and you can wrap certain calls
 
 * External advices
 

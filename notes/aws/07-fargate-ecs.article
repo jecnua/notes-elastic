@@ -39,7 +39,7 @@ four component
 
 - agent communication service (two way communication)
 - API
-- Cluster mamagement engine
+- Cluster management engine
 - Key/Value store (paxos based system) - transactional log of all that happens
 
 When it was lunched there was no GUI, just API.

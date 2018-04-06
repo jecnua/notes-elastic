@@ -1,7 +1,9 @@
 Grafana
-|| Last update: 28 December 2017
+|| Last update: 6 April 2017
 
 * Intro
+
+New in 5.0 [[https://www.youtube.com/watch?v=Izr0IBgoTZQ]]
 
 ** Alerting: best practices (learned the hard way)
 
@@ -91,3 +93,7 @@ Example: Statuspage watcher with no runbook
         '--log-opt fluentd-async-connect=true"',
       ],
   }
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=Izr0IBgoTZQ][What's New In Grafana v5.0]] - 5 Feb 2018

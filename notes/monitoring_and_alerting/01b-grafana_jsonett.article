@@ -1,0 +1,42 @@
+Grafana + Jsonett & Grafonnet
+|| Last update: 6 April 2017
+
+* Intro
+
+.image images/grafana_as_code.png
+.caption Source: [[https://www.youtube.com/watch?v=zmsZq9Pfp1g][Automating Grafana Dashboards with Jsonnet]]
+
+Scripted dashboard: [[http://docs.grafana.org/reference/scripting/]]
+
+* Jsonnet
+
+- [[http://jsonnet.org/]]
+
+Superset of json.
+Will output in json.
+
+- IT ACCEPTS COMMENTS
+- You can put a comma at the eng of an array
+- You can avoid comma in the key
+- You have variables
+- You have functions (with parameters)
+- Import libraries: like Grafonnet
+- You can output on multiple files
+- jsonnet ftm (just one best practices with styleguide)
+
+** stdlib
+
+.image images/jsonnet_stdlib.png
+.caption Source: [[https://www.youtube.com/watch?v=zmsZq9Pfp1g][Automating Grafana Dashboards with Jsonnet]]
+
+* Grafonnet
+
+- [[https://github.com/grafana/grafonnet-lib]]
+
+YOu have a lot of functions to avoid repeatable tasks.
+Multiple files can be savad in multiple directories.
+Reuse existing dashbords.
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=zmsZq9Pfp1g][Automating Grafana Dashboards with Jsonnet]] - [[https://www.slideshare.net/roidelapluie/grafonnet-grafana-dashboards-as-code][SLIDES]] - 23 Mar 2018

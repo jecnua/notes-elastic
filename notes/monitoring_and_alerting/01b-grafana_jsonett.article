@@ -13,6 +13,7 @@ Scripted dashboard: [[http://docs.grafana.org/reference/scripting/]]
 ** Jsonett
 
 - [[http://jsonnet.org/]]
+- [[https://www.youtube.com/watch?v=i5PVp92tAmE]]
 
 Superset of json.
 Will output in json.
@@ -47,3 +48,4 @@ Reuse existing dashbords.
 
 - [[https://www.youtube.com/watch?v=zmsZq9Pfp1g][Automating Grafana Dashboards with Jsonnet]] - [[https://www.slideshare.net/roidelapluie/grafonnet-grafana-dashboards-as-code][SLIDES]] - 23 Mar 2018
 - [[https://www.youtube.com/watch?v=OOyEGG98B7w][Grafanalib: Dasbhoards as Code]] - 23 Mar 2018
+- [[https://www.youtube.com/watch?v=i5PVp92tAmE]]

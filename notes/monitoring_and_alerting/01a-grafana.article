@@ -3,9 +3,8 @@ Grafana
 
 * Intro
 
-New in 5.0 [[https://www.youtube.com/watch?v=Izr0IBgoTZQ]]
-
-- [[https://www.youtube.com/channel/UCYCwgQAMm9sTJv0rgwQLCxw/videos?view=0&flow=grid&sort=dd]]
+- [[https://www.youtube.com/watch?v=Mno1nYBmlIE][The Launch of Grafana v5]]
+- [[https://www.youtube.com/channel/UCYCwgQAMm9sTJv0rgwQLCxw/videos?view=0&flow=grid&sort=dd][Grafana latest videos]]
 
 ** Alerting: best practices (learned the hard way)
 
@@ -98,4 +97,4 @@ Example: Statuspage watcher with no runbook
 
 * Re/Sources
 
-- [[https://www.youtube.com/watch?v=Izr0IBgoTZQ][What's New In Grafana v5.0]] - 5 Feb 2018
+- [[https://www.youtube.com/watch?v=Mno1nYBmlIE][The Launch of Grafana v5]] - 23 Mar 2018

@@ -1,5 +1,5 @@
 Grafana + Jsonett & Grafonnet
-|| Last update: 6 April 2017
+|| Last update: 11 April 2017
 
 * Intro
 
@@ -13,6 +13,8 @@ Scripted dashboard: [[http://docs.grafana.org/reference/scripting/]]
 ** Jsonett
 
 - [[http://jsonnet.org/]]
+- [[https://github.com/google/jsonnet]]
+- [[http://jsonnet.org/docs/tutorial.html]] - Tutorials
 - [[https://www.youtube.com/watch?v=i5PVp92tAmE]]
 
 Superset of json.
@@ -27,6 +29,18 @@ Will output in json.
 - You can output on multiple files
 - jsonnet ftm (just one best practices with styleguide)
 
+*** Installation
+
+On MACOSX:
+
+    brew install jsonnet
+
+*** Atom support
+
+You can find an Atom language package at [[https://github.com/google/language-jsonnet]]:
+
+    apm install language-jsonnet
+
 *** stdlib
 
 .image images/jsonnet_stdlib.png
@@ -39,6 +53,15 @@ Will output in json.
 YOu have a lot of functions to avoid repeatable tasks.
 Multiple files can be savad in multiple directories.
 Reuse existing dashbords.
+
+* KLUMPS (only prometheus)
+
+KLUMPS: Kubernetes/Linux USE Method with Prometheus.
+
+kausal has been bought by Grafana
+
+- [[https://kausal.co/blog/]]
+- [[https://github.com/kausalco/public/tree/master/klumps]]
 
 * Grafanalib
 

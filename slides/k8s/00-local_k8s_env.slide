@@ -11,8 +11,7 @@ This installation and usage guide is for MacOSX
       minikube
 
     brew install \
-      kubernetes-cli \
-      kubectl
+      kubernetes-cli
 
 * Install engine dependencies for hyperkit
 
@@ -105,3 +104,8 @@ More info:
 * Mount and access dirs [v0.18.0+]
 
 - [[https://github.com/kubernetes/minikube/blob/v0.18.0/README.md#persistent-volumes][persistent-volumes]]
+
+* Slides latest updates
+
+- 27 Dec 2017: Updated to work on 0.25 and setting hyperkit as new default
+- [...]

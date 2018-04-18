@@ -1,5 +1,5 @@
 FaaS local testing
-|| Last update: 12 Mar 2018
+|| Last update: 18 Apr 2018
 
 * SAM Local
 
@@ -55,6 +55,28 @@ Before deploying the Lambda functions, a npm install must be ran to fetch the de
 
 - [[https://github.com/dherault/serverless-offline]]
 - [[https://bespoken.io/blog/serverless-plugin-local-aws-lambda-development/]]
+
+    npm install serverless-offline --save-dev
+
+And config:
+
+    ##############
+    ...
+    functions:
+      hello:
+        handler: handler.hello
+    ...
+    ...
+    ##############
+    # Added these two lines!
+    plugins:
+      - serverless-offline
+
+To start:
+
+    serverless offline start
+
+A local development simulation of API Gateway and Lambda.
 
 * Mocking services
 

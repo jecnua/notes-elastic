@@ -75,7 +75,6 @@ It doesn't scale in the sense that it doesn't shard. Every instance is self
 contained and autonomous. Run 1 or more, but they should be all the same if you
 want HA.
 
-
 ** Decision
 
 *** The opinions
@@ -185,8 +184,11 @@ json you need it all togheter
 
 client libs keep state but not much (no history, only current state)
 
-counters (sum? aggregation?)
-gauge last count
+    - Counter: cumulative metric that represents a single numerical value that only ever goes up
+    - Gauge: represents a single numerical value that can arbitrarily go up and down
+    - Histogram: samples observations and counts them in configurable buckets
+    - Summary: similar to a histogram, samples observations, it calculates configurable quantiles over a sliding time window
+    Source: https://blog.risingstack.com/node-js-performance-monitoring-with-prometheus/
 
 rates not computes!!! data as raw as possible and you do in on phrometeus side
 

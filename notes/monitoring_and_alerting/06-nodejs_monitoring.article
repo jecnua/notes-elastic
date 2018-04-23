@@ -1,3 +1,36 @@
 NodeJS monitoring
+|| Last update: 23 Apr 2018
 
 * Intro
+
+- https://nodejs.org/en/docs/guides/nodejs-docker-webapp/
+
+Dockerize nodejs
+
+* Possible approach
+
+** Prometheus
+
+- [[https://github.com/siimon/prom-client]]
+
+
+
+*** Pull model
+
+You need long-living applicaitions for this (not lambda).
+
+*** Push module
+
+Via Pushgateway.
+This should be tested with lambda.
+
+
+
+
+* Obsolete solutions
+
+- [[https://github.com/lorenwest/node-monitor]] - last update 2014
+
+* Resources
+
+- [[https://blog.risingstack.com/node-js-performance-monitoring-with-prometheus/]] -  June 27th, 2017

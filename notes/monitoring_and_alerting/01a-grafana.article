@@ -1,9 +1,14 @@
 Grafana
-|| Last update: 6 April 2017
+|| Last update: 30 April 2018
 
 * Intro
 
 - [[https://www.youtube.com/channel/UCYCwgQAMm9sTJv0rgwQLCxw/videos?view=0&flow=grid&sort=dd][Grafana latest videos]]
+- [[https://community.grafana.com/]]
+
+
+    /var/lib/grafana (mounted)
+    /usr/share/grafana/ (code)
 
 * Alerting: best practices (learned the hard way)
 
@@ -61,9 +66,9 @@ An example of simple:
     -e "GF_ANALYTICS_REPORTING_ENABLED=false" \
     -e "GF_SECURITY_ADMIN_PASSWORD=pass" \
     -p 3000:3000 \
-    grafana/grafana:5.0.4
+    grafana/grafana:5.1.0
 
-Or if you se AWS:
+Or if [[http://docs.grafana.org/installation/docker/#configuring-aws-credentials-for-cloudwatch-support][you use AWS]]:
 
     docker run -d \
     --name=grafana \
@@ -78,12 +83,12 @@ Or if you se AWS:
     -e "GF_ANALYTICS_REPORTING_ENABLED=false" \
     -v /opt/data/grafana:/var/lib/grafana \
     -p 3000:3000 \
-    grafana/grafana:5.0.4
+    grafana/grafana:5.1.0
 
 ** Run Grafana with puppet and docker
 
     docker::run { 'grafana':
-      image            => 'grafana/grafana:5.0.4',
+      image            => 'grafana/grafana:5.1.0',
       ports            => ['3000'],
       net              => 'host',
       privileged       => false,
@@ -110,6 +115,14 @@ Or if you se AWS:
         '--log-opt fluentd-async-connect=true"',
       ],
   }
+
+* Updates
+
+** 5.1.0 Breaking changes in the docker container
+
+You need to change directory ownership
+
+- [[http://docs.grafana.org/v5.1/guides/whats-new-in-v5-1/#improved-docker-image-breaking-change]]
 
 * Re/Sources
 

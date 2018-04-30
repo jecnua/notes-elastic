@@ -3,17 +3,44 @@ NodeJS monitoring
 
 * Intro
 
-- https://nodejs.org/en/docs/guides/nodejs-docker-webapp/
+- [[https://nodejs.org/en/docs/guides/nodejs-docker-webapp/]]
 
 Dockerize nodejs
+
+How to gather the metrics?
+
+- APM
+- Asynch Hooks API - https://nodejs.org/dist/latest-v9.x/docs/api/async_hooks.html (exp in node9, stable in node10)
+- Performance Hooks API (experimental)
+
+The basic is always the same. If you want to see how much time you spend on a
+function, you need to take the time BEFORE and AFTER the function run.
+Doing this manually doesn't scale.
+
+** APM
+
+- [[https://www.youtube.com/watch?v=2sdOvuLiBb8]]
+- [[https://www.youtube.com/watch?v=gR3OhOnCMf8]]
+
+openzipkin (ouput for elasticsearch)
+oppit (sas for apm)
+GA with 6.2
+APM tab
+also collect the errors
+endpoints - rpm/errors/rpm for each one
+distribution of the request time
+more instances of the same errors are grouped togheter
+from 6.3 will be open
+
+** Asynch Hooks API
+
+Allows us to place hooks around asynchronous operations.
 
 * Possible approach
 
 ** Prometheus
 
 - [[https://github.com/siimon/prom-client]]
-
-
 
 *** Pull model
 
@@ -24,13 +51,11 @@ You need long-living applicaitions for this (not lambda).
 Via Pushgateway.
 This should be tested with lambda.
 
-
-
-
 * Obsolete solutions
 
 - [[https://github.com/lorenwest/node-monitor]] - last update 2014
 
 * Resources
 
-- [[https://blog.risingstack.com/node-js-performance-monitoring-with-prometheus/]] -  June 27th, 2017
+- [[https://blog.sqreen.io/diy-node-apm/]] - Nov 21, 2017 - Very good
+- [[https://blog.risingstack.com/node-js-performance-monitoring-with-prometheus/]] -  Jun 27th, 2017

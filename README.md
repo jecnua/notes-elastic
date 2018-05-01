@@ -43,6 +43,7 @@
 - [/notes/monitoring_and_alerting/TSD/01-graphite.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/monitoring_and_alerting/TSD/01-graphite.article)
 - [/notes/monitoring_and_alerting/01b-grafana_jsonett.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/monitoring_and_alerting/01b-grafana_jsonett.article)
 - [/notes/monitoring_and_alerting/06-nodejs_monitoring.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/monitoring_and_alerting/06-nodejs_monitoring.article)
+- [/notes/monitoring_and_alerting/00-monitoring.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/monitoring_and_alerting/00-monitoring.article)
 - [/notes/monitoring_and_alerting/04d-prometheus-consul-registrator.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/monitoring_and_alerting/04d-prometheus-consul-registrator.article)
 - [/notes/monitoring_and_alerting/04c-prometheus_on_k8s.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/monitoring_and_alerting/04c-prometheus_on_k8s.article)
 - [/notes/monitoring_and_alerting/01a-grafana.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/monitoring_and_alerting/01a-grafana.article)

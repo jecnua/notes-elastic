@@ -18,16 +18,18 @@ You can compare traces to understand why certain requests take longer than other
 
 ** Span
 
-A span contains:
+A *Span* is a logical unit of work. Contains:
 
-- timestamped events
-- [[https://github.com/opentracing/specification/blob/master/semantic_conventions.md#standard-span-tags-and-log-fields][tags]]
+- operation name
+- start time
+- duration
+- [[https://github.com/opentracing/specification/blob/master/semantic_conventions.md#standard-span-tags-and-log-fields][tags/metadata]]
 
-Every span has it's own id and an optional _parent-id_ to create the hierarchy.
+Every span has it's own _id_ and an optional _parent-id_ to create the hierarchy.
 They also support what is called _span_tags_. They are a key-value pair where the
-jey is always a string. Some of them are _reserved_.
-
- For example if a span contains the tag error a lot of tracers colored it red.
+key is always a string. Some of them are _reserved_. For example if a span
+contains the tag error a lot of tracers colored it red.
+They can be nested.
 
 Logs are covered by the spec because you can attach to every spans one or multiple Span Logs
 
@@ -41,6 +43,20 @@ Trace/Span identifiers don't have to propagate downstream.
 In band context propagation?
 
 ** Trace
+
+A *trave* is a group of one or more spans.
+It's a _DAG_ (Directly acyclic graph).
+
+To connect spans you need to define connection sharing a *tracing*context*.
+Basically you need to define a parent-child relationship between spans.
+
+To share context between process we can use metadata like the http header
+requests. Examples:
+
+- x-trace
+- trace-parent-id
+
+All this need code instrumentation.
 
 ** Tracers
 
@@ -66,6 +82,10 @@ Instrumentation is applied use of Tracer libraries. Decides what and how to trac
     can understand their position in a trace.
 
     Source: https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf
+
+
+The component that transport the spam is called _reporter_.
+The reporter lives in the code and:
 
 - Is invisible to users
 - Decides what to record

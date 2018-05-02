@@ -31,8 +31,6 @@ Most of they definitions on this page is in the context of OpenTracing.
 - Tracers: Records span and passes context required to connect them into a trace
 - Instrumentation: Use tracers to record a _task_
 
-Baggage items.
-
 ** Span
 
 A *Span* is a logical single unit of work. Contains:
@@ -130,6 +128,13 @@ _Baggage_items_ allow metadata propagation to children. This functionality
 is powerful but should be used sparingly. Sending a lot of data down the
 line can easily saturate network link.
 
+    Distributed tracing works because certain meta-data is propagated across
+    thread and process boundaries, throughout the whole call graph, by the
+    tracing instrumentation using the OpenTracing API. One example of such
+    meta-data is trace and span IDs. Another example is baggage, which is a
+    general key-value store embedded in every inter-process request.
+    Source: https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941
+
 ** Relationship
 
 There are two types of relationship:
@@ -180,6 +185,7 @@ Both of theses are compatible with OpenTracing:
 - Zipkin
 - Jaeger
 - [[https://github.com/sourcegraph/appdash][AppDash]]
+- [[https://github.com/lightstep/lightstep-tracer-go][Lightstep]]
 
 Inspired by google [[https://research.google.com/pubs/pub36356.html][Dapper]]
 

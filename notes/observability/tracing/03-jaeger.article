@@ -4,6 +4,7 @@ Jaeger
 * Intro
 
 - [[http://www.jaegertracing.io/]]
+- [[https://github.com/uber/jaeger]]
 
 It's written in GO (UI in react).
 Being pretty new, it's build to be scalable and it's cloud friendy. The client

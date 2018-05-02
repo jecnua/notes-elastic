@@ -42,7 +42,18 @@ allow batching.
 
 ** Instrumentations
 
-What and how to trace.
+Instrumentation is applied use of Tracer libraries. Decides what and how to trace.
+
+    They extract trace context from incoming messages, pass it
+    through the process, allocating child spans for intermediate
+    operations. Finally, they inject trace context onto outgoing
+    messages so the process can repeat on the other side.
+
+    Instrumentation encode request-scoped state required for
+    tracing to work. Services that use a compatible context format
+    can understand their position in a trace.
+
+    Source: https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf
 
 - Is invisible to users
 - Decides what to record
@@ -77,6 +88,13 @@ Both of theses are compatible with OpenTracing:
 
 - Zipkin
 - Jaeger
+
+* Others
+
+OpenCensus - Observability SDK (metrics, tracing, tags):
+
+- Most notably, gRPC’s tracing library
+- Includes exporters in Zipkin format and B3 propagation format
 
 * Re/Sources
 

@@ -3,10 +3,25 @@ Zipkin
 
 * Intro
 
-Implemented in Java.
+- [[https://github.com/openzipkin]]
+- [[https://gitter.im/openzipkin/zipkin]]
+- [[https://twitter.com/zipkinproject]]
+
+Zipkin is a distribuited tracing system written in Java.
 It's responsible for SPAN ingestion and storage.
+
+Zipkin was created by Twitter in 2012 based on the Google Dapper paper. In 2015,
+OpenZipkin became the primary fork.
+
+OpenZipkin is an org on GitHub. It contains tracers, OpenApi spec,
+service components and docker images.
 
 ** Components
 
-- Collectors: HTTP, kafka, scribe, etc
-- Storage engines: Mysql, Cassandra, etc
+- Tracers collectors report spans to HTTP, kafka, scribe, etc
+- Storage engines collect spans storing them in Mysql, Cassandra, etc
+- Users query for traces via Zipkin’s Web UI or Api.
+
+* Re/Sources
+
+- [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts

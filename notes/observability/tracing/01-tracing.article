@@ -138,10 +138,12 @@ FollowFrom is mostly used to model asynchronous executions like emitting message
 
 ** Context propagation
 
+Inject/Extract pattern
+
 Distributed context propagation is the ability to extract/forward propagated span context from carriers (HTTP headers, AMQP headers, etc) and join it in a trace.
 It is efficient because it _only_ involves propagating _identifiers_ and
-_baggage_items_. All other metadata like tags and logs is not propagated but
-sent asynchronous to the tracer system.
+_baggage_items_. All other metadata like _tags_ and _logs_ is not propagated but
+sent asynchronous out-of-band to the tracer system.
 
 ** Side effects
 

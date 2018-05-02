@@ -216,6 +216,6 @@ Observability SDK (metrics, tracing, tags):
 
 * Re/Sources
 
-- EBOOK: OpenTracing: Distributed Tracing's Emerging Industry Standard
+- [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]]
 - VIDEO: [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
 - [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts

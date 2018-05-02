@@ -17,11 +17,39 @@ to the collector.
 .image images/jaeger_arch.png 500 _
 .caption Souce: [[https://www.jaegertracing.io/docs/architecture/]]
 
+** Agents
+
+The agents receive the span over UDP (5775) and batches it, encode it and when
+needed push it forward.
+
+The agent *POLL* for a _sampling_strategy_, from the tracing backend and propagate
+the rate. This is very useful in dynamic environments. It also abstract away the
+discovery phase of the collectors.
+
+They can accept Zipkin span :D
+
+** Span
+
+Fields are:
+
+- traceID
+- spanID
+- parentSpanID
+- operationName
+- startTime (unix epoch)
+- duration (millis)
+- tags
+
 ** Storage
 
 - In-memory
 - Cassandra
 - Elasticsearch
+- ScyllaDB (in progress)
+
+You can use Elasticsearch as storage by passing to the collector:
+
+    --span-storage.type elasticsearch
 
 * Query API
 

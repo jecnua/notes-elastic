@@ -6,16 +6,22 @@ Tracing
 .image images/tracing.png
 .caption [[https://www.jaegertracing.io/docs/architecture/]]
 
-* OpenTracing
-
-- [[http://opentracing.io/]]
-
-OpenTracing is just a specification. A vendor neutral  interface for
-instrumentations.
+Distributed tracing collects end-to-end latency graphs, called traces.
+You can compare traces to understand why certain requests take longer than others.
 
 * Concepts
 
-** Spans
+- Span: _Individual_operation_ that took place
+- Trace: Latency graph composed of spans
+- Tracers: Records span and passes context required to connect them into a trace
+- Instrumentation: Use tracers to record a _task_
+
+** Span
+
+A span contains:
+
+- timestamped events
+- tags
 
 SPANS can and should be send asynchronously.
 Trace/Span identifiers don't have to propagate downstream.
@@ -23,6 +29,19 @@ Trace/Span identifiers don't have to propagate downstream.
 In band context propagation?
 
 ** Trace
+
+** Tracers
+
+TBD
+
+** Instrumentations
+
+* OpenTracing
+
+- [[http://opentracing.io/]]
+
+OpenTracing is just a specification. A vendor neutral  interface for
+instrumentations.
 
 ** Implementations
 

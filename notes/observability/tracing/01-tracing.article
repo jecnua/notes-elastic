@@ -40,8 +40,8 @@ A *Span* is a logical single unit of work. Contains:
 - operation name
 - start timestamp
 - end timestamp / duration
-- tags
-- log events
+- [[http://opentracing.io/spec/#tags][tags]]
+- [[http://opentracing.io/spec/#logs][log events]]
 
 Every span has it's own _unique_id_ and an optional _parent-id_ to create the
 hierarchy (if the parent it's omitted it's considered a _root_span_).
@@ -52,6 +52,7 @@ Trace/Span identifiers don't have to propagate downstream.
 *** Span tags
 
 - [[https://github.com/opentracing/specification/blob/master/semantic_conventions.md][tags specification]]
+- [[http://opentracing.io/spec/#tags]]
 
 Span also support what is called _tags_. They are an unbounded sequence of
 key-value pair where the key is always a string.
@@ -63,6 +64,8 @@ For example if a span contains the tag error a lot of tracers colors it red.
 Tags can be nested.
 
 *** Log events
+
+- [[http://opentracing.io/spec/#logs]]
 
 They represent timestamped textual annotations. Events could express any occurrence
 of interest to the active span.

@@ -32,15 +32,43 @@ In band context propagation?
 
 ** Tracers
 
-TBD
+Tracers are libraries.
+
+They are used to record time, duration and host.
+
+Tracers propagate IDs/Structural data *in-band*, to tell the receiver that there is a trace in
+progress. Completed spans are reported *out-of-band*, to reduce the overhead and
+allow batching.
 
 ** Instrumentations
+
+What and how to trace.
+
+- Is invisible to users
+- Decides what to record
+- Decides how to propagate the state
+
+They usually have a _data_sampling_policy_ to manage volume.
+
+* Side effects
+
+Tracing cases size and latency overhead. Tracers should never cause application
+failure if they fail. Instrumentation are written to not slow or overload the
+request.
+
+* Tracing systems
+
+Tracing systems collect, process and present data reported by tracers:
+
+- Aggregate spans into trace trees
+- Provide query and visualization focused on latency
+- Have retention policy
 
 * OpenTracing
 
 - [[http://opentracing.io/]]
 
-OpenTracing is just a specification. A vendor neutral  interface for
+OpenTracing is just a specification. A vendor neutral interface for
 instrumentations.
 
 ** Implementations
@@ -52,5 +80,5 @@ Both of theses are compatible with OpenTracing:
 
 * Re/Sources
 
-- [[https://www.youtube.com/watch?v=GccUVCI5TkM]]
-- [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very usefult to understand the concepts
+- [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
+- [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts

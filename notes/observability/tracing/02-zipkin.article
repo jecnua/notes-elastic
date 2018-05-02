@@ -23,6 +23,9 @@ service components and docker images.
 - Storage engines collect spans storing them in Mysql, Cassandra, etc
 - Users query for traces via Zipkin’s Web UI or Api.
 
+The component that transport the span is called _reporter_.
+The reporter lives in the code and:
+
 * Re/Sources
 
 - [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts

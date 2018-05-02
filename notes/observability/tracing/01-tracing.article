@@ -113,9 +113,7 @@ Instrumentation is applied use of Tracer libraries. Decides what and how to trac
 
     Source: https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf
 
-
-The component that transport the spam is called _reporter_.
-The reporter lives in the code and:
+It is:
 
 - Is invisible to users
 - Decides what to record

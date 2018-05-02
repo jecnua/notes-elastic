@@ -1,15 +1,28 @@
-Tracing
+Tracing (concepts)
 || Last update: 2 May 2018
 
 * Intro
 
-.image images/tracing.png
-.caption [[https://www.jaegertracing.io/docs/architecture/]]
-
+Tracing is about analysing, recording and describing transactions.
 Distributed tracing collects end-to-end latency graphs, called traces.
 You can compare traces to understand why certain requests take longer than others.
+This type of tools is born from the need to have Visibility/Observability into
+transactions spanning multiple independent codebase and services
+(common in a microservices type of infrastructure). When using microservices,
+APMs are not enough since there is the need to track transactions across boundaries.
+
+Spans transport error messages and stack traces. They can be used to identify
+_cause_factors_. Trace data can also be forwarded to log processing fro query
+analysis.
+
+** Future
+
+- [[https://github.com/w3c/distributed-tracing]] - Specification for TraceContext propagation format
 
 * Concepts
+
+.image images/tracing.png
+.caption [[https://www.jaegertracing.io/docs/architecture/]]
 
 - Span: _Individual_operation_ that took place
 - Trace: Latency graph composed of spans
@@ -112,8 +125,8 @@ Tracing systems collect, process and present data reported by tracers:
 - [[http://opentracing.io/]]
 - [[https://github.com/opentracing/specification]]
 
-OpenTracing is just a specification. A vendor neutral interface for
-instrumentations.
+OpenTracing offer s a consistent, unified and tracer-agnostic instrumentation API.
+As a specification, it's a vendor neutral interface for instrumentations.
 
 Stats and tracing objects, they both accept exporters and they can be
 Prometheus, Zipkin, Jaeger, StackDriver and so on.
@@ -124,6 +137,9 @@ Both of theses are compatible with OpenTracing:
 
 - Zipkin
 - Jaeger
+- [[https://github.com/sourcegraph/appdash][AppDash]]
+
+Inspired by google [[https://research.google.com/pubs/pub36356.html][Dapper]]
 
 * OpenCensus
 
@@ -145,7 +161,13 @@ Observability SDK (metrics, tracing, tags):
 - Most notably, gRPC’s tracing library
 - Includes exporters in Zipkin format and B3 propagation format
 
+* Other Services
+
+- Google Stackdriver https://cloud.google.com/trace/
+- Amazon X-Ray
+
 * Re/Sources
 
-- [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
+- SLIDES: [[OpenTracing update][https://docs.google.com/presentation/d/1Nvr9rrPEsAsp7uDJ27zZhv7SBboZ_82l_0XF-5daff4/edit]] - 2 Feb 2018
+- VIDEO: [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
 - [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts

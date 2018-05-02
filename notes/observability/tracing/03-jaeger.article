@@ -3,4 +3,6 @@ Jaeger
 
 * Intro
 
+- [[http://www.jaegertracing.io/]]
+
 Is written in GO. Uses cassandra as a data store and the ui is in react.

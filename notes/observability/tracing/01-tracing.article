@@ -1,4 +1,4 @@
-Tracing (concepts)
+Tracing (concepts) and OpenTracing
 || Last update: 2 May 2018
 
 * Intro
@@ -24,12 +24,14 @@ Most of they definitions on this page is in the context of OpenTracing.
 * Concepts
 
 .image images/tracing.png
-.caption [[https://www.jaegertracing.io/docs/architecture/]]
+.caption Source: [[https://www.jaegertracing.io/docs/architecture/]]
 
 - Span: _Individual_operation_ that took place
 - Trace: Latency graph composed of spans
 - Tracers: Records span and passes context required to connect them into a trace
 - Instrumentation: Use tracers to record a _task_
+
+Baggage items.
 
 ** Span
 
@@ -121,7 +123,29 @@ The reporter lives in the code and:
 
 They usually have a _data_sampling_policy_ to manage volume.
 
-* Side effects
+** Baggage Items
+
+_Baggage_items_ allow metadata propagation to children. This functionality
+is powerful but should be used sparingly. Sending a lot of data down the
+line can easily saturate network link.
+
+** Relationship
+
+There are two types of relationship:
+
+- ChildOf
+- FollowFrom: When parents span isn't linked to the outcome of the child span.
+
+FollowFrom is mostly used to model asynchronous executions like emitting messages to a queue/bus.
+
+** Context propagation
+
+Distributed context propagation is the ability to extract/forward propagated span context from carriers (HTTP headers, AMQP headers, etc) and join it in a trace.
+It is efficient because it _only_ involves propagating _identifiers_ and
+_baggage_items_. All other metadata like tags and logs is not propagated but
+sent asynchronous to the tracer system.
+
+** Side effects
 
 Tracing cases size and latency overhead. Tracers should never cause application
 failure if they fail. Instrumentation are written to not slow or overload the

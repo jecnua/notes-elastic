@@ -1,0 +1,12 @@
+Zipkin
+|| Last update: 2 May 2018
+
+* Intro
+
+Implemented in Java.
+It's responsible for SPAN ingestion and storage.
+
+** Components
+
+- Collectors: HTTP, kafka, scribe, etc
+- Storage engines: Mysql, Cassandra, etc

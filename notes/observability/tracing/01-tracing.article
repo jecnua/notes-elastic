@@ -1,0 +1,37 @@
+Tracing
+|| Last update: 2 May 2018
+
+* Intro
+
+.image images/tracing.png
+.caption [[https://www.jaegertracing.io/docs/architecture/]]
+
+* OpenTracing
+
+- [[http://opentracing.io/]]
+
+OpenTracing is just a specification. A vendor neutral  interface for
+instrumentations.
+
+* Concepts
+
+** Spans
+
+SPANS can and should be send asynchronously.
+Trace/Span identifiers don't have to propagate downstream.
+
+In band context propagation?
+
+** Trace
+
+** Implementations
+
+Both of theses are compatible with OpenTracing:
+
+- Zipkin
+- Jaeger
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=GccUVCI5TkM]]
+- [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very usefult to understand the concepts

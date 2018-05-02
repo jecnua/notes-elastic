@@ -5,4 +5,28 @@ Jaeger
 
 - [[http://www.jaegertracing.io/]]
 
-Is written in GO. Uses cassandra as a data store and the ui is in react.
+It's written in GO (UI in react).
+Being pretty new, it's build to be scalable and it's cloud friendy. The client
+emits the traces to the _agent_ which listen to spans (inbound) and route them
+to the collector.
+
+* Architecture
+
+- [[https://www.jaegertracing.io/docs/architecture/]]
+
+.image images/jaeger_arch.png 500 _
+.caption Souce: [[https://www.jaegertracing.io/docs/architecture/]]
+
+** Storage
+
+- In-memory
+- Cassandra
+- Elasticsearch
+
+* Query API
+
+Expose a rest interface.
+
+* Re/Sources
+
+- EBOOK: OpenTracing: Distributed Tracing's Emerging Industry Standard

@@ -30,6 +30,7 @@
 - [/notes/rabbitmq/01-rabbitmq.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/rabbitmq/01-rabbitmq.article)
 - [/notes/rabbitmq/02-export_import.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/rabbitmq/02-export_import.article)
 - [/notes/observability/tracing/02-zipkin.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/02-zipkin.article)
+- [/notes/observability/tracing/03-jaeger.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/03-jaeger.article)
 - [/notes/observability/tracing/01-tracing.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/01-tracing.article)
 - [/notes/observability/monitoring_and_alerting/04b-prometheus-monitor-nodes.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/monitoring_and_alerting/04b-prometheus-monitor-nodes.article)
 - [/notes/observability/monitoring_and_alerting/nodejs/01-nodejs_monitoring.article](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/monitoring_and_alerting/nodejs/01-nodejs_monitoring.article)

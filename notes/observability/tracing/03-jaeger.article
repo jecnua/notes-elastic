@@ -3,6 +3,12 @@ Jaeger
 
 * Intro
 
+- [[https://github.com/jecnua/tracing-nodejs]]
+
+My related code project.
+
+* Jaeger
+
 - [[http://www.jaegertracing.io/]]
 - [[https://github.com/uber/jaeger]]
 
@@ -62,6 +68,20 @@ Expose a rest interface.
 
     docker run -d --name jaeger --rm -p 6831:6831/udp -p 16686:16686 jaegertracing/all-in-one:latest
     docker run --rm -it --link jaeger -p8080-8083:8080-8083 jaegertracing/example-hotrod:latest --jaeger-agent.host-port=jaeger:6831
+
+* Infrastructure info
+
+** Span context
+
+The span context *is*NOT*defined* in the opentracing javascript
+
+- [[https://github.com/opentracing/opentracing-javascript/blob/master/src/span_context.ts]]
+
+* Monitoring
+
+- [[https://www.jaegertracing.io/docs/monitoring/]]
+
+Jeager export metrics via prometheus endpoint.
 
 * Re/Sources
 

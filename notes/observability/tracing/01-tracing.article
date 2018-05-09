@@ -153,6 +153,19 @@ It is efficient because it _only_ involves propagating _identifiers_ and
 _baggage_items_. All other metadata like _tags_ and _logs_ is not propagated but
 sent asynchronous out-of-band to the tracer system.
 
+*** SpanContext and descendant
+
+    * SpanContext represents Span state that must propagate to descendant Spans
+    * and across process boundaries.
+    *
+    * SpanContext is logically divided into two pieces: the user-level "Baggage"
+    * (see setBaggageItem and getBaggageItem) that propagates across Span
+    * boundaries and any Tracer-implementation-specific fields that are needed to
+    * identify or otherwise contextualize the associated Span instance (e.g., a
+    * <trace_id, span_id, sampled> tuple).
+
+They are defined in the implementation.
+
 ** Side effects
 
 Tracing cases size and latency overhead. Tracers should never cause application
@@ -178,14 +191,19 @@ As a specification, it's a vendor neutral interface for instrumentations.
 Stats and tracing objects, they both accept exporters and they can be
 Prometheus, Zipkin, Jaeger, StackDriver and so on.
 
+** OpenTracing for JavaScript
+
+- [[https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/]]
+- [[https://github.com/opentracing/opentracing-javascript/blob/master/src/ext/tags.ts]]
+
 ** Implementations
 
 Both of theses are compatible with OpenTracing:
 
 - Zipkin
 - Jaeger
-- [[https://github.com/sourcegraph/appdash][AppDash]]
 - [[https://github.com/lightstep/lightstep-tracer-go][Lightstep]]
+- [[https://github.com/sourcegraph/appdash][AppDash]]
 
 Inspired by google [[https://research.google.com/pubs/pub36356.html][Dapper]]
 

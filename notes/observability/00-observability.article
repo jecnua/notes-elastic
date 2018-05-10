@@ -1,7 +1,12 @@
 Observability
-|| Last update: 2 May 2018
+|| Last update: 10 May 2018
 
 * Intro
+
+- [[https://peter.bourgon.org/blog/2017/02/21/metrics-tracing-and-logging.html]]
+
+.image images/venn.png
+.caption Source: [[https://peter.bourgon.org/blog/2017/02/21/metrics-tracing-and-logging.html]]
 
 -  Logging - recording events
 -  Metrics - data combined from measuring events
@@ -39,3 +44,4 @@ where that time was spent inside the call and how was it distribuited.
 * Re/Sources
 
 - [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] Amazing clear read
+- [[https://peter.bourgon.org/blog/2017/02/21/metrics-tracing-and-logging.html]] - Feb 2017

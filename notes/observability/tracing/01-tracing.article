@@ -1,7 +1,9 @@
-Tracing (concepts) and OpenTracing
+Distributed tracing (concepts) and OpenTracing
 || Last update: 10 May 2018
 
 * Intro
+
+- [[http://microservices.io/patterns/observability/distributed-tracing.html]]
 
 Tracing is about analysing, recording and describing transactions.
 Distributed tracing collects end-to-end latency graphs, called traces.

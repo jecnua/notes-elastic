@@ -1,5 +1,5 @@
 Jaeger
-|| Last update: 2 May 2018
+|| Last update: 10 May 2018
 
 * Intro
 
@@ -61,6 +61,16 @@ You can use Elasticsearch as storage by passing to the collector:
 * Query API
 
 Expose a rest interface.
+
+* Sampling
+
+For now they do not support tail-based sampling.
+They allow:
+
+- probabilist, head based sampling
+- constant
+
+- [[https://github.com/jaegertracing/jaeger/issues/425]] - Discuss post-trace (tail-based) sampling
 
 * Test it
 

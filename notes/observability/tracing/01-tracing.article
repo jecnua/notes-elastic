@@ -1,5 +1,5 @@
 Tracing (concepts) and OpenTracing
-|| Last update: 2 May 2018
+|| Last update: 10 May 2018
 
 * Intro
 
@@ -198,14 +198,58 @@ Prometheus, Zipkin, Jaeger, StackDriver and so on.
 
 ** Implementations
 
-Both of theses are compatible with OpenTracing:
+Both of [[http://opentracing.io/documentation/pages/supported-tracers]][theses are compatible with OpenTracing]].
+Among them:
 
-- Zipkin
 - Jaeger
-- [[https://github.com/lightstep/lightstep-tracer-go][Lightstep]]
 - [[https://github.com/sourcegraph/appdash][AppDash]]
+- [[https://github.com/lightstep/lightstep-tracer-go][Lightstep]] - Closed source
 
 Inspired by google [[https://research.google.com/pubs/pub36356.html][Dapper]]
+
+*** Dapper
+
+Dapper has a minimal overhead for non-traced requests.
+If you are interested in the 99p latency, then yes, the only way would
+be to trace everything.
+
+    [...] it's extremely simple to implement, as it handles scaling challenges by doing
+    client-side sampling. A bit of background about how Dapper-style distributed
+    tracing works. Things typically start with an RPC call of some kind (typically
+    from an external source like a public load balancer). At that point, you must
+    decide whether to trace this request or not, which is typically done as a
+    random sample (say, 1% of requests). At that point, the request gets assigned
+    a _trace id_, a random identifier for that request.
+
+    The trace id is stored in some request context and propagated to each subsequent
+    service. Each service, meanwhile, divides up its request processing flow into a
+    series of "spans" which represent some piece of computation. For example, a span
+    cover an RPC call or a DB query. Spans are identified by a random _span id_.
+    Once a request has been sampled, all spans for that request are sent to a central
+    span collector where they're stored for later querying.
+
+    This model is simple but very limited. It's often hard to know whether a trace
+    is interesting at the outset, hence the reliance on random sampling. For example,
+    you might want to understand why your 99p latency is high, but if you're just
+    sampling 1% the 99p requests will only be 0.01% of your sample.
+
+    More generally, interesting events (like errors or slow requests) tend to be rare,
+    and sampling a random, small percent of requests is unlikely to turn up the
+    interesting cases.
+
+    A better model, as implemented by lightstep [1] (and an in-progress distributed
+    tracer I've been working on) is to collect all spans. Even with very high request
+    volume it's reasonable to store all spans for at least a few minutes. Doing so
+    opens up all sorts of interesting possibilities, because you can start tracing
+    a request at any point during that window. For example, you might want to trace
+    all requests that have errors in them. Or all requests that take longer than a
+    certain time. Or get a google sample of requests across different latency buckets.
+    Or requests that violate some application invariants you've defined.
+
+    Ultimately, though, distributed tracing is so helpful for understanding complex
+    distributed systems and webs of microservices, and it's exciting to see more
+    open-source competition for zipkin.
+    Source: https://news.ycombinator.com/item?id=15326272
 
 * OpenCensus
 
@@ -237,3 +281,4 @@ Observability SDK (metrics, tracing, tags):
 - [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]]
 - VIDEO: [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
 - [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts
+- https://news.ycombinator.com/item?id=15326272

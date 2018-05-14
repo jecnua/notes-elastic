@@ -156,6 +156,10 @@ The bottleneck is typically the storage, which is hard to auto-scale.
 Jaeger is newer in respect of Zipking, but allow dynamic sampling and has a lower
 footprint.
 
+* Roadmap
+
+- [[https://www.jaegertracing.io/docs/roadmap/]]
+
 * Re/Sources
 
 - VIDEO [[https://www.youtube.com/watch?v=tFZAHWl8y_I][Jaeger Project Deep Dive - Juraci Kröhling, Red Hat]] - 4 May 2018

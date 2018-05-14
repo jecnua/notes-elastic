@@ -11,6 +11,7 @@ My related code project [[https://github.com/jecnua/tracing-nodejs]].
 
 - [[http://www.jaegertracing.io/]]
 - [[https://github.com/uber/jaeger]]
+- [[https://github.com/cncf/toc/blob/master/proposals/jaeger.adoc]] CNCF proposal
 
     Low overhead, dynamic sampling, scalable
 
@@ -18,6 +19,9 @@ The backend is written in GO and the UI is in react.
 Being pretty new, it's build to be scalable and it's cloud friendy. The client
 emits the traces to the _agent_ which listen to spans (inbound) and route them
 to the collector.
+
+*Sponsorship*: Uber has 7 full time maintainers and Red Hat has 4 full time
+maintainers
 
 * Architecture
 
@@ -49,6 +53,10 @@ mind.
 The agents receive spans over UDP on port 5775. The spans are batched, encoded
 as [[https://thrift.apache.org/][Thrift structures]] and submitted to the
 collector.
+
+*NOTE*: The app is using Thrift because at Uber was what they are used to.
+However, it's in the planning a move to _gRPC_.
+Source: https://groups.google.com/forum/#!topic/jaeger-tracing/toBNkL_zEDE
 
 The Routing and Discovery phase of the collectors from the client library is also
 the responsibility of the agent.
@@ -84,8 +92,8 @@ Fields are:
 It supports for _span_stores_:
 
 - In-memory
-- Cassandra
-- ElasticSearch
+- *Cassandra*
+- *ElasticSearch*
 - ScyllaDB (in progress)
 
 In Elasticsearch two indices will be created: one for storing the services and
@@ -133,6 +141,15 @@ The span context *is*NOT*defined* in the opentracing javascript
 - [[https://www.jaegertracing.io/docs/monitoring/]]
 
 Jeager export metrics via prometheus endpoint.
+
+At Uber, they monitor:
+
+- Node signals: CPU/memory usage, file descriptors, network usage, etc
+- Go runtime signals: goroutine count, GC, etc
+- Jaeger internals: dropped span count, mem queue size, storage write counts/latencies
+
+At Uber they don't use auto-scaling for collectors, just a fixed size pool.
+The bottleneck is typically the storage, which is hard to auto-scale.
 
 * PRO and CON
 

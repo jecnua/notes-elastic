@@ -48,6 +48,7 @@ hierarchy (if the parent it's omitted it's considered a _root_span_).
 
 SPANS can and should be send asynchronously.
 Trace/Span identifiers don't have to propagate downstream.
+Span can contain other spans.
 
 *** Span tags
 
@@ -147,8 +148,6 @@ There are two types of relationship:
 FollowFrom is mostly used to model asynchronous executions like emitting messages to a queue/bus.
 
 ** Context propagation
-
-Inject/Extract pattern
 
 Distributed context propagation is the ability to extract/forward propagated span context from carriers (HTTP headers, AMQP headers, etc) and join it in a trace.
 It is efficient because it _only_ involves propagating _identifiers_ and

@@ -212,7 +212,8 @@ Among them:
 
 - Jaeger
 - [[https://github.com/sourcegraph/appdash][AppDash]]
-- [[https://github.com/lightstep/lightstep-tracer-go][Lightstep]] - Closed source
+- [[https://github.com/lightstep/lightstep-tracer-go][Lightstep]] - Closed source/PAID
+- Instana - Closed source/PAID
 
 Inspired by google [[https://research.google.com/pubs/pub36356.html][Dapper]]
 

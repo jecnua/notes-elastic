@@ -188,10 +188,17 @@ Tracing systems collect, process and present data reported by tracers:
 - [[https://github.com/opentracing/specification]]
 
 OpenTracing offer s a consistent, unified and tracer-agnostic instrumentation API.
-As a specification, it's a vendor neutral interface for instrumentations.
+It's a vendor neutral interface for instrumentations.
 
-Stats and tracing objects, they both accept exporters and they can be
-Prometheus, Zipkin, Jaeger, StackDriver and so on.
+    OpenTracing enables developers to instrument applications for distributed
+    tracing with minimal effort. In order to instrument an application via
+    OpenTracing API, it’s necessary to have an OpenTracing-compatible tracer
+    correctly deployed and listening for incoming span requests. The job of the
+    OpenTracing API is to hide the differences between distributed tracer
+    implementations, so you can easily swap them out at any time without
+    needing to change your instrumentation.
+    Source: https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/
+
 
 ** OpenTracing for JavaScript
 
@@ -200,7 +207,7 @@ Prometheus, Zipkin, Jaeger, StackDriver and so on.
 
 ** Implementations
 
-Both of [[http://opentracing.io/documentation/pages/supported-tracers]][theses are compatible with OpenTracing]].
+All of [[http://opentracing.io/documentation/pages/supported-tracers][theses]] are compatible with OpenTracing.
 Among them:
 
 - Jaeger
@@ -280,7 +287,8 @@ Observability SDK (metrics, tracing, tags):
 
 * Re/Sources
 
-- [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]]
+- [[https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/]] - 8 May 2018
+- [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]] - 25 Apr 2018
 - VIDEO: [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
 - [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts
 - https://news.ycombinator.com/item?id=15326272

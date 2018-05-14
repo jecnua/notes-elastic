@@ -1,18 +1,20 @@
 Jaeger
-|| Last update: 10 May 2018
+|| Last update: 14 May 2018
 
 * Intro
 
-- [[https://github.com/jecnua/tracing-nodejs]]
+.image images/Jaeger_Logo_Final_BLACK.png 400 _
 
-My related code project.
+My related code project [[https://github.com/jecnua/tracing-nodejs]].
 
 * Jaeger
 
 - [[http://www.jaegertracing.io/]]
 - [[https://github.com/uber/jaeger]]
 
-It's written in GO (UI in react).
+    Low overhead, dynamic sampling, scalable
+
+The backend is written in GO and the UI is in react.
 Being pretty new, it's build to be scalable and it's cloud friendy. The client
 emits the traces to the _agent_ which listen to spans (inbound) and route them
 to the collector.
@@ -24,16 +26,37 @@ to the collector.
 .image images/jaeger_arch.png 500 _
 .caption Souce: [[https://www.jaegertracing.io/docs/architecture/]]
 
+Jaeger was an uber project and has been build with scalability and parallelism in
+mind.
+
+** Workflow
+
+.image images/jaeger_work.png 700 _
+.caption Souce: [[https://www.jaegertracing.io/docs/architecture/]]
+
+
+    The client emits traces to the agent which listens for inbound spans and routes
+    them to the collector. The responsibility of the collector is to validate,
+    transform and store the spans to the persistent storage. To access tracing data
+    from the storage, the query service exposes a REST API endpoints and the React
+    based UI.
+    Source: https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/
+
 ** Agents
 
-The agents receive the span over UDP (5775) and batches it, encode it and when
-needed push it forward.
+    $ [...] --collector.zipkin.http-port
 
-The agent *POLL* for a _sampling_strategy_, from the tracing backend and propagate
-the rate. This is very useful in dynamic environments. It also abstract away the
-discovery phase of the collectors.
+The agents receive spans over UDP on port 5775. The spans are batched, encoded
+as [[https://thrift.apache.org/][Thrift structures]] and submitted to the
+collector.
 
-They can accept Zipkin span :D
+The Routing and Discovery phase of the collectors from the client library is also
+the responsibility of the agent.
+
+The agent *POLL* for a _sampling_strategy_ from the tracing backend and propagate
+the sampling rate to all tracer clients. This is useful in dynamic environments.
+
+Jaeger can accept Zipkin span transparently :D
 
 ** Span
 
@@ -42,21 +65,31 @@ Fields are:
 - traceID
 - spanID
 - parentSpanID
+- flags
 - operationName
+- references
 - startTime (unix epoch)
 - duration (millis)
 - tags
+- logs
+- processID
+- process
+- serviceName
+- warnings
 
 ** Storage
 
+    $ jaeger-collector --span-storage.type elasticsearch [...]
+
+It supports for _span_stores_:
+
 - In-memory
 - Cassandra
-- Elasticsearch
+- ElasticSearch
 - ScyllaDB (in progress)
 
-You can use Elasticsearch as storage by passing to the collector:
-
-    --span-storage.type elasticsearch
+In Elasticsearch two indices will be created: one for storing the services and
+the other one for the spans of given services.
 
 * Query API
 
@@ -79,7 +112,15 @@ They allow:
     docker run -d --name jaeger --rm -p 6831:6831/udp -p 16686:16686 jaegertracing/all-in-one:latest
     docker run --rm -it --link jaeger -p8080-8083:8080-8083 jaegertracing/example-hotrod:latest --jaeger-agent.host-port=jaeger:6831
 
-* Infrastructure info
+If you want to sping the component separately:
+
+- [[https://www.jaegertracing.io/docs/deployment/]]
+
+** On k8s
+
+- [[https://github.com/jaegertracing/jaeger-kubernetes]]
+
+* Infrastructure
 
 ** Span context
 
@@ -93,6 +134,12 @@ The span context *is*NOT*defined* in the opentracing javascript
 
 Jeager export metrics via prometheus endpoint.
 
+* PRO and CON
+
+Jaeger is newer in respect of Zipking, but allow dynamic sampling and has a lower
+footprint.
+
 * Re/Sources
 
-- [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]]
+- VIDEO [[https://www.youtube.com/watch?v=tFZAHWl8y_I][Jaeger Project Deep Dive - Juraci Kröhling, Red Hat]] - 4 May 2018
+- [[https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/]] - 8 May 2018

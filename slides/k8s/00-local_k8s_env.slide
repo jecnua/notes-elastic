@@ -1,11 +1,13 @@
 Local k8s environment (minikube)
-Fabrizio Sabatini || Last update: 27 Dec 2017
+Fabrizio Sabatini || Last update: 19 Jun 2018
 
 * Disclaimer
 
-This installation and usage guide is for MacOSX
+This installation and usage guide is for MacOSX and Linux
 
 * Install generic dependencies
+
+MacOSX:
 
     brew cask install \
       minikube
@@ -13,7 +15,17 @@ This installation and usage guide is for MacOSX
     brew install \
       kubernetes-cli
 
-* Install engine dependencies for hyperkit
+Linux:
+
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+    sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+    sudo apt-get install -y kubectl
+
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && \
+    chmod +x minikube && \
+        sudo mv minikube ~/bin/
+
+* Install engine dependencies for hyperkit (optional)
 
     curl -LO https://storage.googleapis.com/minikube/releases/latest/docker-machine-driver-hyperkit \
     && chmod +x docker-machine-driver-hyperkit \
@@ -38,9 +50,9 @@ This installation and usage guide is for MacOSX
 * Other options
 
  - KVM2
- - KVM
+ - KVM (deprecated)
  - Hyperkit
- - xhyve
+ - xhyve (deprecated)
  - HyperV
 
 .link https://github.com/kubernetes/minikube/blob/master/docs/drivers.md github.com minikube/drivers
@@ -69,7 +81,7 @@ Start a new machine:
     kubectl config use-context minikube # switch context to minikube
     minikube status
 
-* Optional: Use rocket engine
+* Use rocket engine (optional)
 
     minikube start \
         --network-plugin=cni \

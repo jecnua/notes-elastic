@@ -1,0 +1,14 @@
+Cloudformation
+|| Last update: 19 Jun 2018
+
+* Validate
+
+robertstettner/drone-cloudformation validate
+
+* best practices
+
+stackname: Name-${BUILD_NUMBER}
+
+* labels
+
+- account: data

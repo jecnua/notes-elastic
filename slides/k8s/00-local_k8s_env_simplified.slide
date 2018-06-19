@@ -1,0 +1,89 @@
+Local k8s environment (minikube)
+Fabrizio Sabatini || Last update: 19 Jun 2018
+
+* Disclaimer
+
+This installation and usage guide is for MacOSX and Linux
+
+* Install generic dependencies
+
+MacOSX:
+
+    brew cask install \
+      minikube
+
+    brew install \
+      kubernetes-cli
+
+Linux:
+
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+    sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+    sudo apt-get install -y kubectl
+
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && \
+    chmod +x minikube && \
+        sudo mv minikube ~/bin/
+
+* Install backend drivers
+
+For MacOSX:
+
+ - Hyperkit
+
+For Linux:
+
+ - KVM2
+
+* Minikube
+
+[[https://github.com/kubernetes/minikube][kubernetes/minikube]]
+
+Clean any old running cluster:
+
+    # NOTE: Check what you are going to destroy first :)
+    minikube stop
+    minikube delete
+
+Set the machine:
+
+On MacOSX:
+
+    # To opt-out from sending anonymised crash report
+    minikube config set WantReportErrorPrompt false
+    minikube config set vm-driver hyperkit
+
+On Linux:
+
+    # To opt-out from sending anonymised crash report
+    minikube config set WantReportErrorPrompt false
+    minikube config set vm-driver kvm2
+
+
+Start a new machine:
+
+    minikube start # Start a cluster
+    kubectl config use-context minikube # switch context to minikube
+    minikube status
+
+* Check if it works
+
+    # Should be empty
+    kubectl get pods
+
+    # This should have pods 
+    kubectl get pods --all-namespaces
+
+* Stop and delete minikube
+
+    minikube stop
+    minikube delete
+
+* Usage (example on github repo)
+
+    minikube status
+    minikube --help
+
+* Dashboard
+
+    minikube dashboard

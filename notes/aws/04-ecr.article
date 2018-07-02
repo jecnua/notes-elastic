@@ -1,5 +1,77 @@
 ECR
-|| Last update: 27 Jan 2017
+|| Last update: 2 Jul 2018
+
+* Possible issues
+
+** Debug problems with running docker behind a NAT
+
+If you have ec2 servers inside a private subnet using a NAT gateway you may incur in a strange error.
+
+You may have this error even if you can speak to the interenet.
+Pulling from dockerhub works, same for pulling images from there.
+IAM access works, as you may have access to che cli and query the repo.
+
+        eval "$(aws ecr get-login --region=eu-west-1 --no-include-email)"
+
+Actually, you will also see the layers!
+
+        root@4a3b010c:/home/ubuntu# aws ecr list-images --repository-name xxx --region=eu-west-1
+        {
+            "imageIds": [
+                {
+                    "imageDigest": "sha256:5e6ac35b762b287aa4c4fab37d5a8d9eccdc7df85af7fe88e907412575979954",
+                    "imageTag": "latest"
+                },
+                {
+                    "imageDigest": "sha256:5e6ac35b762b287aa4c4fab37d5a8d9eccdc7df85af7fe88e907412575979954",
+                    "imageTag": "jenkins_build_24"
+                },
+                {
+                    "imageDigest": "sha256:5e6ac35b762b287aa4c4fab37d5a8d9eccdc7df85af7fe88e907412575979954",
+                    "imageTag": "jenkins_build_23"
+                }
+            ]
+        }
+
+But you will have this error:
+
+        root@4a3b010c:/home/ubuntu# docker pull xxx.dkr.ecr.eu-west-1.amazonaws.com/xxx:jenkins_build_24
+        jenkins_build_24: Pulling from xxx:jenkins_build_24
+        7dc0dca2b151: Pulling fs layer
+        a50481268b4a: Pulling fs layer
+        f2b07ded3946: Waiting
+        667f672695bc: Waiting
+        cac067b95dd8: Waiting
+        a9a49e0c3fb3: Waiting
+        92213d9d6258: Waiting
+        b89b85fc646e: Waiting
+
+But it will be stuck THERE. At pulling. Until it gets into timeout!
+
+
+        error pulling image configuration: Get 
+        https://prod-eu-west-1-starport-layer-bucket.s3.eu-west-1.amazonaws.com/xxx:
+        dial tcp 52.218.84.34:443: i/o timeout
+
+You will notice the issue if you use traceroute:
+
+        # 52.218.16.188 is the aws ip aliased by prod-eu-west-1-starport-layer-bucket.s3.eu-west-1.amazonaws.com
+        root@4a3b010c:/home/ubuntu# traceroute 52.218.16.188
+        traceroute to 52.218.16.188 (52.218.16.188), 30 hops max, 60 byte packets
+        1  ip-x-x-x-x.eu-west-1.compute.internal (x.x.x.x)  0.316 ms  0.299 ms  0.283 ms
+        2  * * *
+        3  * * *
+        4  * * *
+        5  * * *
+        [...]
+
+And so on. 
+
+When you see that error you may have a VPC s3 endpoint!
+
+- [[https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-endpoints.html]]
+- [[https://www.terraform.io/docs/providers/aws/r/vpc_endpoint_route_table_association.html]]
+
 
 * Give developers access to ecs
 

@@ -1,45 +1,34 @@
 ElasticSearch [v1.7+]
-
-* Intro
-
-We can see two primary function in ES: writing index and quering it.
+|| Last update: 21 June 2018
 
 * Nodes
 
 A node is a running instance of elasticsearch.
-Nodes can store data locally or not. If you have set to store data, shards can
-and will be allocated locally.
-
-    ## In puppet:
-    node.data = false
-
-Master
-Data:
+Nodes can store data locally or not.
+If you have set the app to store data, shards can and will be allocated locally.
 
 ** Data nodes
 
-Holds the data in shards (which are lucene indexes). Performs indexing and
-search queries.
+Holds the data in shards (which are lucene indexes).
+Performs indexing and search queries.
 
     node.data = true
     node.masters = false
 
-** Client nodes
+** Coordinating nodes (known before as client nodes)
 
-Smart load balancers that expose a rest interface. It is responsible for routing
-queries to nodes with relevant shards and aggregating results.
+Smart load balancers that expose a rest interface.
+It is responsible for routing queries to nodes with relevant shards and aggregating results.
 It is never rerouted to another client node.
 
-The reason behind the creation of dedicated clients is (no
-data on them) is to dedicate all their computational power to the *scatter/gather*
-phase of the search.
+The reason behind the creation of dedicated clients is (no data on them) is to dedicate all 
+their computational power to the *scatter/gather* phase of the search.
 
     node.data = false
     node.masters = false
 
-You can actually _shut_down_ the HTTP transport on the
-other nodes to make sure they don't reply HTTP at all (I didn't thought, I call
-them sometimes to check stuff).
+You can actually _shut_down_ the HTTP transport on the other nodes to make sure they don't 
+reply HTTP at all (I didn't thought, I call them sometimes to check stuff).
 
     ## You can still communicate through the transport module (TCP)
     http.enabled = false
@@ -131,19 +120,18 @@ Currently ingest node only executes ingest preprocessing on the index thread poo
 
 * Road to ES 5.0
 
-.link https://www.elastic.co/guide/en/elasticsearch/reference/master/breaking-changes-5.0.html breaking-changes-5.0
+- [[https://www.elastic.co/guide/en/elasticsearch/reference/master/breaking-changes-5.0.html]] breaking-changes-5.0
 
 No node.client!
-https://github.com/elastic/elasticsearch/pull/16963
+
+- [[https://github.com/elastic/elasticsearch/pull/16963]]
 
 Query cache settings deprecated! ?
-https://github.com/elastic/elasticsearch/pull/15592
 
-.link https://www.elastic.co/guide/en/elasticsearch/reference/master/release-notes-5.0.0-alpha1.html alpha1
+- [[https://github.com/elastic/elasticsearch/pull/15592]]
 
 - API for listing index file sizes
-- Enable the indices request cache by default (when you do a req with size 0)
-https://github.com/elastic/elasticsearch/pull/16870
+- Enable the indices request cache by default (when you do a req with size 0) [[https://github.com/elastic/elasticsearch/pull/16870]]
 - Added ingest statistics to node stats API
 
 The ingest stats include the following statistics:
@@ -164,7 +152,8 @@ The ingest stats include the following statistics:
 - STATS: Add I/O statistics on Linux (WAO)
 
 New: /_cluster/allocation/explain
-https://github.com/elastic/elasticsearch/pull/17305
+
+- [[https://github.com/elastic/elasticsearch/pull/17305]]
 
 ** Test and fix
 
@@ -173,18 +162,17 @@ Check difference in settings between 2.4 and 5
 - changed the version
 - set the right amount of memory
 
-https://www.elastic.co/guide/en/elasticsearch/reference/5.2/heap-size.html
+[[https://www.elastic.co/guide/en/elasticsearch/reference/5.2/heap-size.html]]
+
+    TESTED (OK)
+    # docker logs 4454ad8a30e7 | grep 'heap size'
+    [2017-02-02T15:56:40,739][INFO ][o.e.e.NodeEnvironment    ] [xxx] heap size [29.9gb], compressed ordinary object pointers [true]
 
 TESTED (OK)
-# docker logs 4454ad8a30e7 | grep 'heap size'
-[2017-02-02T15:56:40,739][INFO ][o.e.e.NodeEnvironment    ] [xxx] heap size [29.9gb], compressed ordinary object pointers [true]
 
-TESTED (OK)
-
-        'ES_JAVA_OPTS="-Xms30g -Xmx30g -XX:+UnlockDiagnosticVMOptions -XX:+PrintCompressedOopsMode"',
-
-# docker logs 4454ad8a30e7 | grep 'heap address'
-heap address: 0x0000000080000000, size: 30720 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+    'ES_JAVA_OPTS="-Xms30g -Xmx30g -XX:+UnlockDiagnosticVMOptions -XX:+PrintCompressedOopsMode"',
+    # docker logs 4454ad8a30e7 | grep 'heap address'
+    heap address: 0x0000000080000000, size: 30720 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
 
 FIX
 using [1] data paths, mounts [[/usr/share/elasticsearch/data (/dev/xvda1)]], net usable_space [13gb], net total_space [15.6gb], spins? [possibly], types [ext4]
@@ -241,12 +229,10 @@ In puppet:
 
 .link https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_parameters.html action.destructive_requires_name
 
-** Dump
+* Re/Sources
 
-*** To explore
-
-https://www.npmjs.com/package/elasticdump2
-http://blog.kiyanpro.com/2016/03/11/elasticsearch/Export-Index-Using-Elasticsearch-Dump
-http://blog.tamasboros.com/export-elasticsearch-database-to-json-dumps/
-https://github.com/taskrabbit/elasticsearch-dump
-https://hub.docker.com/r/khanhicetea/elasticsearch-dump/~/dockerfile/
+- [[https://www.npmjs.com/package/elasticdump2]]
+- [[http://blog.kiyanpro.com/2016/03/11/elasticsearch/Export-Index-Using-Elasticsearch-Dump]]
+- [[http://blog.tamasboros.com/export-elasticsearch-database-to-json-dumps/]]
+- [[https://github.com/taskrabbit/elasticsearch-dump]]
+- [[https://hub.docker.com/r/khanhicetea/elasticsearch-dump/~/dockerfile/]]

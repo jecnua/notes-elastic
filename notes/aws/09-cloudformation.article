@@ -3,7 +3,7 @@ Cloudformation
 
 * Validate
 
-robertstettner/drone-cloudformation validate
+TBD
 
 * best practices
 
@@ -11,4 +11,4 @@ stackname: Name-${BUILD_NUMBER}
 
 * labels
 
-- account: data
+- account: xxx

@@ -1,0 +1,40 @@
+Python
+|| Last update: 13 Jul 2018
+
+* Manging environment
+
+** Pipenv
+
+- Github: [[https://github.com/pypa/pipenv]]
+- Docs: [[https://docs.pipenv.org/]]
+- [[https://www.kennethreitz.org/essays/announcing-pipenv][Blog: Announcement]]
+
+    It harnesses Pipfile, pip, and virtualenv into one single toolchain.
+    [...]
+    t automatically creates and manages a virtualenv for your projects, 
+    as well as adds/removes packages from your Pipfile as you install/uninstall packages. 
+    Source: https://www.kennethreitz.org/essays/announcing-pipenv
+
+Created from the creator of Request.
+It is the[[https://packaging.python.org/guides/tool-recommendations/#application-dependency-management][advised tool]]
+from the python packages community.
+
+* Unit test
+
+pytest
+
+- [[https://docs.pytest.org/en/latest/getting-started.html#getstarted]]
+
+* Mock
+
+Mock boto with Moto:
+
+- [[https://github.com/spulec/moto]]
+
+* Libraries
+
+- [[https://elasticsearch-py.readthedocs.io/en/master/]]
+
+* Re/Sources
+
+- [[https://stackoverflow.com/questions/41573587/what-is-the-difference-between-venv-pyvenv-pyenv-virtualenv-virtualenvwrappe]]

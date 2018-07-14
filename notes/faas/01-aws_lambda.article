@@ -1,10 +1,6 @@
 Lambda
 || Last update: 12 Mar 2018
 
-* Intro
-
-
-
 * Logging
 
     Whenever you write to the stdout from your Lambda function, it ends up in the function’s Log Group in CloudWatch Logs.
@@ -73,6 +69,12 @@ Lambda share the same infra with a LOT of other functions.
 ** Failures
 
 In lambda you don't know it failed you need to know when you fail - wait timeout.
+
+* Use it with terraform
+
+Something like this:
+
+- [[https://github.com/hashicorp/terraform/issues/8344#issuecomment-345807204]]
 
 * Sources
 

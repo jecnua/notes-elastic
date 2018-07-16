@@ -82,6 +82,36 @@ Mock boto with Moto:
 
 - [[https://github.com/spulec/moto]]
 
+* Deployments
+
+If you need to deploy (like on lambda) you will need a trick
+
+- [[https://docs.aws.amazon.com/lambda/latest/dg/lambda-python-how-to-create-deployment-package.html]]
+- [[https://github.com/pypa/pipenv/issues/986#issuecomment-394748973]]
+
+    pipenv run pip install -r <(pipenv lock -r) --target _build/
+
+    resource "null_resource" "pipenv" {
+    triggers {
+        main         = "${base64sha256(file("${path.module}/../src/main.py"))}"
+        requirements = "${base64sha256(file("${path.module}/../Pipfile.lock"))}"
+    }
+
+    provisioner "local-exec" {
+        interpreter = ["/bin/bash", "-c"]
+        command     = "pipenv run pip install -r <(pipenv lock -r) --target _build/ && cp /src/main.py _build/main.py"
+    }
+    }
+
+    # Lambda
+    data "archive_file" "source" {
+    type        = "zip"
+    source_dir  = "${path.module}/../src"
+    output_path = "${path.module}/../source.zip"
+    depends_on  = ["null_resource.pipenv"]
+    }
+
+
 * Libraries
 
 - [[https://elasticsearch-py.readthedocs.io/en/master/]]

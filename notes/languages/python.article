@@ -1,5 +1,5 @@
 Python
-|| Last update: 13 Jul 2018
+|| Last update: 14 Jul 2018
 
 * Manging environment
 
@@ -19,13 +19,64 @@ Created from the creator of Request.
 It is the[[https://packaging.python.org/guides/tool-recommendations/#application-dependency-management][advised tool]]
 from the python packages community.
 
+*** Usage
+
+Create a new dir
+
+    mkdir test
+
+Enter a project with pipenv
+
+    PIPENV_IGNORE_VIRTUALENVS=1 pipenv --python 3.6
+    PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell --anyway
+    pipenv install
+
+Now you can install dependencies
+
+    pipenv install --dev pylint
+    pipenv install boto3
+
+    pipenv graph
+
+    pipenv run pylint <source_dir>
+
 * Unit test
 
-pytest
+** pytest
 
 - [[https://docs.pytest.org/en/latest/getting-started.html#getstarted]]
 
-* Mock
+The most common and stable way to unittest python.
+
+Four section
+
+- setting up the test: It is vital to mock all the side effects of the 
+function or method that is being tested
+- executing the method
+- doing assetion
+- wrap up
+
+We need a setup a teardown methos (in some languages knows as before and after)
+
+    However you might not notice this pattern when using mocks in python.
+    That is because, when you use the patch decorator or context manager, 
+    the mocks will be automatically restored when the test ends. Because 
+    of this behavior, you rarely will need to use the setup and teardown 
+    methods in pytest.
+
+Run pytest
+
+    pipenv install pytest --dev
+    pipenv run pytest
+
+Location. Best practice is inside the code
+the best place to define tests is, alongside the source file
+
+*** Mocks
+
+The python mock library
+
+- https://docs.python.org/dev/library/unittest.mock.html
 
 Mock boto with Moto:
 
@@ -38,3 +89,4 @@ Mock boto with Moto:
 * Re/Sources
 
 - [[https://stackoverflow.com/questions/41573587/what-is-the-difference-between-venv-pyvenv-pyenv-virtualenv-virtualenvwrappe]]
+- [[https://hackernoon.com/untold-stories-about-python-unit-tests-a141501f0ee]]

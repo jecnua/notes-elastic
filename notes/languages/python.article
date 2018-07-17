@@ -19,17 +19,24 @@ Created from the creator of Request.
 It is the[[https://packaging.python.org/guides/tool-recommendations/#application-dependency-management][advised tool]]
 from the python packages community.
 
+*** Installation
+
+    pip install pipenv
+
 *** Usage
 
 Create a new dir
 
     mkdir test
 
-Enter a project with pipenv
+Create a new pipenv project where nothing exists:
 
     PIPENV_IGNORE_VIRTUALENVS=1 pipenv --python 3.6
-    PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell --anyway
-    pipenv install
+
+Enter a project with pipenv
+
+    # PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell --anyway
+    pipenv install --dev
 
 Now you can install dependencies
 
@@ -120,3 +127,4 @@ If you need to deploy (like on lambda) you will need a trick
 
 - [[https://stackoverflow.com/questions/41573587/what-is-the-difference-between-venv-pyvenv-pyenv-virtualenv-virtualenvwrappe]]
 - [[https://hackernoon.com/untold-stories-about-python-unit-tests-a141501f0ee]]
+- [[https://robots.thoughtbot.com/how-to-manage-your-python-projects-with-pipenv]]

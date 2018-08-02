@@ -49,6 +49,38 @@ Now you can install dependencies
 
 * Unit test
 
+Use tyest doubles. There are many.
+
+- Dummy: Can be passed around but usually they have no implementation
+- Fake: Simplified implementation of an interface but not adequate for production
+- Stub: Provide implementation with canned answers (suitable for test)
+- Spies: Record the values that are passed so they can be tested
+- Mocks: Expect specific parameters, mocks only specific part, check ordering and so on
+
+You can use the Mock library.
+unittest.mock (3.3+) is built in
+
+inittest.mock implemet the mock class. can be used for fakes, stub, spy or mock
+
+** unittest.mock and magicmock
+
+When initializing the spec parameter specifies the interface that Mock object is implementing.
+the parameter return_value specify the value to return.
+
+many built in function to asert:
+
+- assser_called
+- aseert_called_once
+- assert_called_with
+- assert_called_once_with
+- assert_any_call
+- assert_not_called
+
+and so on.
+
+MagicMock is derived from mock and implement the default implementation of
+many "magic" method of python.
+
 ** pytest
 
 - [[https://docs.pytest.org/en/latest/getting-started.html#getstarted]]
@@ -118,10 +150,21 @@ If you need to deploy (like on lambda) you will need a trick
     depends_on  = ["null_resource.pipenv"]
     }
 
-
 * Libraries
 
 - [[https://elasticsearch-py.readthedocs.io/en/master/]]
+
+* Logs
+
+- [[https://blog.sneawo.com/blog/2017/07/28/json-logging-in-python/]]
+
+- [[http://structlog.readthedocs.io/]]
+
+api reference http://www.structlog.org/en/stable/api.html
+https://github.com/hynek/structlog/issues/87
+https://github.com/hynek/structlog
+http://www.structlog.org/en/stable/examples.html
+
 
 * Re/Sources
 

@@ -3,4 +3,35 @@ EKS
 
 * Intro
 
-- https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/
+TBD
+
+* VPC CNI
+
+- [[https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/]]
+
+** Limitations
+
+Set node type of internet access at node level:
+
+    Disable SNAT if you need to allow inbound communication to your pods from external 
+    VPNs, direct connections, and external VPCs, and your pods do not need to access 
+    the Internet directly via an IGW. In other words, disabling SNAT is incompatible 
+    with nodes running in a public subnet; your nodes need to run in a private subnet 
+    and connect to the internet through an AWS NAT Gateway or another external NAT device.
+    Source: https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/
+
+Reduce IP allocation overhead:
+
+    The EKS CNI plugin creates a “warm pool” of IP addresses by pre-allocating IP addresses 
+    on EKS nodes to reduce scheduling latency. In other words: because the instance already 
+    has IP addresses allocated to it, Kubernetes doesn’t need to wait for an IP address to 
+    be assigned before it can schedule a pod. However, there are some tradeoffs in this 
+    approach: if your EKS nodes are larger instance types and can support larger numbers 
+    of IP addresses, you might find that your nodes are hogging more IP addresses than you
+    want.
+    You can use the WARM_IP_TARGET environment variable to tune the size of the IP address
+    “warm pool.” You can define a threshold for available IP addresses below which
+    L-IPAMD creates and attaches a new ENI to a node, allocates new IP addresses, 
+    and then adds them to the warm pool. This threshold can be configured using the 
+    WARM_IP_TARGET environment variable; it can also be configured in amazon-vpc-cni.yaml.
+    Source: https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/

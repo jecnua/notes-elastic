@@ -1,24 +1,27 @@
 Lambda
-|| Last update: 12 Mar 2018
+|| Last update: 07 Aug 2018
 
 * Logging
 
     Whenever you write to the stdout from your Lambda function, it ends up in the function’s Log Group in CloudWatch Logs.
-    To ship your logs from CloudWatch Logs to ELK you can subscribe the Log Group to a cloudwatch-logs-to-elk function that is responsible for shipping the logs.
-    it’s better to setup a rule in CloudWatch Events to invoke a subscribe-log-group Lambda function to set up the subscription for new Log Groups.
+    To ship your logs from CloudWatch Logs to ELK you can subscribe the Log Group to a cloudwatch-logs-to-elk function that
+    is responsible for shipping the logs. it’s better to setup a rule in CloudWatch Events to invoke a subscribe-log-group 
+    Lambda function to set up the subscription for new Log Groups.
     2 things to keep in mind:
-    lots services create logs in CloudWatch Logs, so you’d want to filter Log Groups by name, Lambda function logs have the prefix /aws/lambda/
-    don’t subscribe the Log Group for the cloudwatch-logs-to-elk function (or whatever you decide to call it), otherwise you create an infinite loop for the cloudwatch-logs-to-elk function where its own logs will trigger itself and produce more logs and so on
+    lots services create logs in CloudWatch Logs, so you’d want to filter Log Groups by name, Lambda function logs have the 
+    prefix /aws/lambda/ don’t subscribe the Log Group for the cloudwatch-logs-to-elk function (or whatever you decide to 
+    call it), otherwise you create an infinite loop for the cloudwatch-logs-to-elk function where its own logs will trigger 
+    itself and produce more logs and so on
     - https://theburningmonk.com/2017/03/yubls-road-to-serverless-architecture-part-3/
 
+More:
 
-    Another approach is to take a leaf from Datadog’s book and use special log messages and process them after the fact. For instance, if you write logs in the format MONITORING|epoch_timestamp|metric_value|metric_type|metric_name like below..
-
+    Another approach is to take a leaf from Datadog’s book and use special log messages and process them after the fact. For 
+    instance, if you write logs in the format MONITORING|epoch_timestamp|metric_value|metric_type|metric_name like below..
     console.log(“MONITORING|1489795335|27.4|latency|user-api-latency”);
-
     console.log(“MONITORING|1489795335|8|count|yubls-served”);
-
-    then you can process these log messages (see Logging section above) and publish them as metrics instead. With this approach you’ll be trading off liveness of metrics for less API latency overhead.
+    then you can process these log messages (see Logging section above) and publish them as metrics instead. With this approach 
+    you’ll be trading off liveness of metrics for less API latency overhead.
     - https://theburningmonk.com/2017/03/yubls-road-to-serverless-architecture-part-3/
 
 * Metrics
@@ -69,6 +72,37 @@ Lambda share the same infra with a LOT of other functions.
 ** Failures
 
 In lambda you don't know it failed you need to know when you fail - wait timeout.
+
+* Synch or asynch
+
+Some types of lambda are synch and some are asynch. If you want use functionality of the asynch version (like dead letter queue)
+for the synch you can change one in another.
+In python you can do it this way:
+
+At the start of the lambda:
+
+    def lambda_handler(event, context):
+        """
+        Your docs
+        """
+        if not event.get('async'):
+            invoke_self_async(event, context)
+            return
+
+Then define the function:
+
+    def invoke_self_async(event, context):
+        """
+        Have the Lambda invoke itself asynchronously, passing the same event it received originally,
+        and tagging the event as 'async' so it's actually processed
+        """
+        event['async'] = True
+        called_function = context.invoked_function_arn
+        boto3.client('lambda').invoke(
+            FunctionName=called_function,
+            InvocationType='Event',
+            Payload=bytes(json.dumps(event))
+        )
 
 * Use it with terraform
 

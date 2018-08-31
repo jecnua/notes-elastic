@@ -1,0 +1,20 @@
+DynamoDB
+|| Last update: 31 Aug 2018
+
+* Intro
+
+TDB
+
+* Local environment
+
+You can run a docker image with a dynamodb server using the AWS docker image:
+
+- [[https://hub.docker.com/r/amazon/dynamodb-local/]]
+
+Example:
+
+    docker run -p 8000:8000 amazon/dynamodb-local
+
+* Re/Sources
+
+- [[https://aws.amazon.com/about-aws/whats-new/2018/08/use-amazon-dynamodb-local-more-easily-with-the-new-docker-image/]]

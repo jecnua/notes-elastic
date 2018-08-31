@@ -5,7 +5,8 @@ EKS
 
 - [[https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/]]
 
-VPC CIDR choice is restricted (even for a demo you need to choice an allowed CIDR).
+VPC CIDR choice is restricted (even for a demo you need to choice an allowed
+CIDR).
 
     * aws_eks_cluster.demo: error creating EKS Cluster (terraform-eks-demo):
     InvalidParameterException: CIDR(s) attached to your VPC is invalid.

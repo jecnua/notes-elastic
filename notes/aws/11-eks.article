@@ -1,37 +1,87 @@
 EKS
-|| Last update: 2 Aug 2018
-
-* Intro
-
-TBD
+|| Last update: 21 Aug 2018
 
 * VPC CNI
 
 - [[https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/]]
 
-** Limitations
+VPC CIDR choice is restricted (even for a demo you need to choice an allowed CIDR).
+
+    * aws_eks_cluster.demo: error creating EKS Cluster (terraform-eks-demo):
+    InvalidParameterException: CIDR(s) attached to your VPC is invalid.
+    Your VPC must have only RFC1918 CIDRs. Invalid CIDRs: [12.0.0.0/16]
+    status code: 400, request id: xxx-xxx-xxx-xxx-xxx
+
+* Start time
+
+It takes 10 minutes to start.
+
+* Authentication
+
+By default the way to use kubectl is to be authenticated with the help of a go
+binary.
+
+You need the following steps:
+
+    go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
+
+Beware in some tutorial you may find the old link to the plugin, but this one
+doesn't work:
+
+    go get -u -v github.com/heptio/authenticator/cmd/heptio-authenticator-aws
+
+* Reduced visibility
+
+AWS is hiding system pods and master nodes.
+kubectl doesn't show them to you.
+
+** Events
+
+The only events you can see from the hidden stuff is the leader election.
+
+    $ kubectl --kubeconfig kube.conf get events --all-namespaces
+    NAMESPACE      NAME                                         KIND         REASON              SOURCE                  MESSAGE
+    kube-system   kube-scheduler.154babff8545dbc8              Endpoints     LeaderElection      default-scheduler       ip-10-0-123-194.ec2.internal_b180ef40-a219-11e8-8d39-0adc8704f5c4 became leader
+    kube-system   kube-controller-manager.154babfffe808959     Endpoints     LeaderElection      controller-manager      ip-10-0-123-194.ec2.internal_b46ac32c-a219-11e8-aa37-0adc8704f5c4 became leader
+    kube-system   kube-dns-64b69465b4.154bac008da66e90         ReplicaSet    SuccessfulCreate    replicaset-controller   Created pod: kube-dns-64b69465b4-qn59j
+    kube-system   kube-dns.154bac008c601e32                    Deployment    ScalingReplicaSet   deployment-controller   Scaled up replica set kube-dns-64b69465b4 to 1
+    kube-system   kube-dns-64b69465b4-qn59j.154bac008db3439e   Pod           FailedScheduling    default-scheduler       no nodes available to schedule pods
+
+* No access on logs by default
+
+By default they are not logging on CWLogs at the time of this writing.
+
+* Costs
+
+EKS is .20/hour.
+
+* Lack of advanced LB support
+
+It doesn't support ALB/NLB yet.
+
+* Limitations
 
 Set node type of internet access at node level:
 
-    Disable SNAT if you need to allow inbound communication to your pods from external 
-    VPNs, direct connections, and external VPCs, and your pods do not need to access 
-    the Internet directly via an IGW. In other words, disabling SNAT is incompatible 
-    with nodes running in a public subnet; your nodes need to run in a private subnet 
+    Disable SNAT if you need to allow inbound communication to your pods from external
+    VPNs, direct connections, and external VPCs, and your pods do not need to access
+    the Internet directly via an IGW. In other words, disabling SNAT is incompatible
+    with nodes running in a public subnet; your nodes need to run in a private subnet
     and connect to the internet through an AWS NAT Gateway or another external NAT device.
     Source: https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/
 
 Reduce IP allocation overhead:
 
-    The EKS CNI plugin creates a “warm pool” of IP addresses by pre-allocating IP addresses 
-    on EKS nodes to reduce scheduling latency. In other words: because the instance already 
-    has IP addresses allocated to it, Kubernetes doesn’t need to wait for an IP address to 
-    be assigned before it can schedule a pod. However, there are some tradeoffs in this 
-    approach: if your EKS nodes are larger instance types and can support larger numbers 
+    The EKS CNI plugin creates a “warm pool” of IP addresses by pre-allocating IP addresses
+    on EKS nodes to reduce scheduling latency. In other words: because the instance already
+    has IP addresses allocated to it, Kubernetes doesn’t need to wait for an IP address to
+    be assigned before it can schedule a pod. However, there are some tradeoffs in this
+    approach: if your EKS nodes are larger instance types and can support larger numbers
     of IP addresses, you might find that your nodes are hogging more IP addresses than you
     want.
     You can use the WARM_IP_TARGET environment variable to tune the size of the IP address
     “warm pool.” You can define a threshold for available IP addresses below which
-    L-IPAMD creates and attaches a new ENI to a node, allocates new IP addresses, 
-    and then adds them to the warm pool. This threshold can be configured using the 
+    L-IPAMD creates and attaches a new ENI to a node, allocates new IP addresses,
+    and then adds them to the warm pool. This threshold can be configured using the
     WARM_IP_TARGET environment variable; it can also be configured in amazon-vpc-cni.yaml.
     Source: https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/

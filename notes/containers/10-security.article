@@ -1,0 +1,33 @@
+Containers security
+|| Last update: 30 May 2017
+
+* Intro
+
+    To be truly secure you need more than one layer of security so that when there
+    is a vulnerability in one layer, the attacker also needs a vulnerability in
+    another layer to bypass the isolation mechanism.
+    [...]
+    Container runtimes have security layers defined by Seccomp, Apparmor,
+    kernel namespaces, cgroups, capabilities, and an unprivileged Linux user.
+    All the layers don’t perfectly overlap, but a few do.
+    - https://blog.jessfraz.com/post/containers-security-and-echo-chambers/
+
+    The mount syscall is prevented by the default Apparmor profile, default
+    Seccomp profile, and CAP_SYS_ADMIN. This is a neat example as it is
+    literally three layers.
+
+    Everyone’s favorite thing to complain about in containers or to prove that
+    they know something is creating a fork bomb. Well this is actually easily
+    preventable. With the PID cgroup you can set a max number of processes per
+    container.
+    Source: https://blog.jessfraz.com/post/containers-security-and-echo-chambers/
+
+* Tools
+
+- [[https://github.com/google/gvisor]]
+
+* Re/Sources
+
+- [[https://blog.jessfraz.com/post/containers-security-and-echo-chambers/]] May 20, 2018
+- [[https://blog.jessfraz.com/post/hard-multi-tenancy-in-kubernetes/]]
+- PDF [[https://www.nccgroup.trust/us/our-research/understanding-and-hardening-linux-containers/]]

@@ -1,0 +1,299 @@
+Prometheus
+|| Last update: 13 Jul 2018
+
+* Disclaimer
+
+While this article is highly opinionated, it's based on a LOT of reading
+(+ conferences) and by following this specific technology a lot.
+
+* Intro
+
+.image images/prometheus.png 100 _
+
+Prometheus is a cloud aware monitoring and alerting tool.
+Before docker and k8s, Soundcould had a sort of heroku infrastructure.
+They used nagios, statsd and the sort but finding all the usual limitations we
+all find when using these tools.
+
+** Backing
+
+Prometheus is the second project in [[https://www.cncf.io/][CNCF]] after k8s.
+There is a lot of investments and backing behind it, being supported out of the
+box by k8s, cAdvisor and other mainstream technologies.
+
+** What it is
+
+Prometheus is a time based monitoring ecosystem that pulls metrics out of
+your systems *to* give:
+
+- instrumentation
+- storage
+- querying
+- alerting
+- dashboards
+
+It _FOCUS_ on operation system monitoring but can be used in other contexts.
+
+** What it's not
+
+Prometheus is not a time series database.
+
+To quote someone I don't remember now:
+
+    "Prometheus is not a time series database, it just happens to use one."
+
+** Selling points
+
+- key=value pair on any metrics (came form, pertaining to)
+- PromQL query language
+- Very efficient on a single node
+- Operation simplicity (single static library and small config file)
+- Cloud aware (getting the metadata from autodiscovery systems)
+
+** What it doesn't do
+
+- no collection of individual events (ip address, exact path and so on)
+- no request tracing
+- no magic anomaly detection
+- no durable long-term storage
+- no automatic horizontal scaling
+- no user/auth management
+
+*** Limitations
+
+- Only numeric time series
+
+* Architecture
+
+** Text over http
+
+Phrometeus choosed to use http as a transport.
+
+** Scaling?
+
+It doesn't scale in the sense that it doesn't shard. Every instance is self
+contained and autonomous. Run 1 or more, but they should be all the same if you
+want HA.
+
+** Decision
+
+*** The opinions
+
+label data model NOT hierarchical data model
+
+- more flexible (cross cutting)
+- more efficient
+- explicit dimension
+
+What you have to do with grafite is like this:
+
+    api-server.*.*.post.*
+
+** Query language
+
+not a sql style query language
+PromQL is very good to do arithmetics between rating
+will join them up in the same metrics (?)
+
+does only read
+
+** Pull vs push
+
+- automatic upness monitoring
+- horizontal monitoring (tell to push to different things) WRONG
+- more flexyble (production monitoring on your laptop ? ) NO, NOT SG
+- simple HA - two phrometeus server pulling in the same one (many of the same configured service)
+- less configuration (tell my mornitoring service - do that in any case) NO. zk
+- scales
+
+difference in perf between text and protobuf
+both format are both http
+not much different
+encoding/payload
+
+phrometeus push metrics to _something_else_
+replay your historical metadata (???)
+flag for turning local storage
+just turn local storage and only push remotely
+
+digital ocean
+VULCAN
+cassandra/elasticsearch
+
+bosun didn't take it
+
+** Storage
+
+Local storage is epehemerial.
+They don't reccomend keeping it for years
+
+problem: not enough disk space
+
+you can't dump and you can't redeploy
+
+one workaroud:
+many prometheus server that federates on a single ...
+one phrometeus that pulls every x minues
+
+** Alerts
+
+a query that return timeseries
+- no timeseries: all ok
+- some timeseries: an alert for each one of them
+
+nobody wants to set up an openbsd XD
+
+alert manage is a different part?
+is a a different service but part
+of the binary
+
+pull doesn scale or it does it?
+
+** Pull
+
+run on every network segment
+fewer step as possible
+- open port in firewll/router
+- open VPN tunnel
+
+** Uber exportors or per process exporters
+
+main uber exporter
+
+not only one (for them)
+- operation bottleneck
+- spof, no isolation
+- can't scrape selectively (not because is only us)
+- harder to associate metadaat
+
+phtometeus by discovering your node
+with auto-discovery
+so can put metadata from this process
+they advice: *one*exporter*per*process*
+
+** why not json
+
+text or protobus
+json is bad for both
+
+json is not really streamable
+with text you can start processing line by line
+json you need it all togheter
+
+** client libraries
+
+client libs keep state but not much (no history, only current state)
+
+    - Counter: cumulative metric that represents a single numerical value that only ever goes up
+    - Gauge: represents a single numerical value that can arbitrarily go up and down
+    - Histogram: samples observations and counts them in configurable buckets
+    - Summary: similar to a histogram, samples observations, it calculates configurable quantiles over a sliding time window
+    Source: https://blog.risingstack.com/node-js-performance-monitoring-with-prometheus/
+
+rates not computes!!! data as raw as possible and you do in on phrometeus side
+
+metrics for you
+manage metrics for you
+pre-aggregation is more efficient
+
+* Gathering metrics
+
+When we speak about collecting metrics we consider two types:
+
+- _whitebox_ instrumentation: applications/systems expose their metrics
+- _blackbox_ instrumentation: use exporter (or batch jobs)
+
+There is some limitations when working with a scraping system:
+
+CON
+
+- *ONLY* the latest metric of a type and *NO*HYSTORY*
+
+PRO
+
+- idempotent
+- many phrometeus scraping the smae node have the same data
+
+Prometheus can gather data by any source that exposes metrics in it's format.
+When this is not available, _exporters_ can be written to do the heavy
+lifting of _translating_ the data from another format (or gather the data
+directly).
+
+Examples of application exposing metrics natively for Prometheus:
+
+- [[https://github.com/google/cadvisor][cAdvisor]]: Container metrics
+- [[http://kubernetes.io/][Kubernetes]]
+
+** From an exporter
+
+An examples of exporters is the [[https://github.com/prometheus/node_exporter][Node exporter]]
+ to gather node metrics.
+
+All exporters can be found [[https://prometheus.io/docs/instrumenting/exporters/][here]].
+
+** From an application
+
+If you are creating a new app and you want Prometheus to gather your metrics,
+the convention is to expose a */metrics* endpoint with the metrics you want.
+
+    The mentality:
+    Dev own the metrics
+
+** Prometheus federation: data from another Prometheus
+
+Prometheus can grab metric from another instance using what it's called
+[[https://prometheus.io/docs/operating/federation/][federation]]. This allow to
+have redundancy (HA) in the system or machines _specialised_ in a
+subset of the metrics.
+
+*** A Prometheus on every laptop?
+
+DEVs can spin their own Prometheus to read their own metrics. Let's say you
+have a team working on a project. They can spin a Prometheus instance locally
+pulling the data ONLY from these services/endpoints.
+
+This can help if you want to isolate environments (e.s. DEVs cannot see some
+metrics) or just to have a less cluttered view of what's out there.
+
+* How to approach Prometheus
+
+- Start with grafana
+- Show how HA works
+- Share the success stories
+- Help DEVs see and understand how to use the tool
+
+** Download the Grafana dashboards
+
+They are just json so you can just pull from the grafana.net website or any
+github repo. You can use the api to push them on the app or do it manually.
+
+* Persistance
+
+Well... that's one of the sad points. Prometheus *by*choice* does not cluster.
+
+** Possible solutions?
+
+- Only one node
+- Long term storage of metrics (kafka + elasticsearch)
+- persistange storage in k8s (statelass)
+- VM vsan plugin
+
+Some phrometeus from inside the cluster and one from outside in a VM
+In AWS 9090 in /metrics
+
+*** Long term storage
+
+- [[https://github.com/improbable-eng/thanos][Thanos]]
+- [[https://github.com/weaveworks/cortex][Cortex]]
+
+Thanos videos
+
+- [[https://www.youtube.com/watch?v=IpGfmmJ2hcw][Declarative Multi-Cluster Monitoring with Prometheus - Matthias Loibl, Loodse & Frederic Branczyk]]
+
+* Advanced
+
+** relabeling
+
+most useful part of phrometeus
+but maybe not very useful
+very flexyble

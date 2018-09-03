@@ -1,0 +1,130 @@
+Grafana
+|| Last update: 30 April 2018
+
+* Intro
+
+- [[https://www.youtube.com/channel/UCYCwgQAMm9sTJv0rgwQLCxw/videos?view=0&flow=grid&sort=dd][Grafana latest videos]]
+- [[https://community.grafana.com/]]
+
+
+    /var/lib/grafana (mounted)
+    /usr/share/grafana/ (code)
+
+* Alerting: best practices (learned the hard way)
+
+Name of alert:
+
+    <ENV> <Descriptive name>
+
+Description of the alert:
+
+    <A description>
+    Runbook: <Runbook link (to anchor) if present>
+    Code: <Code in the runbook>
+
+Example: Normal graph alert
+
+    Name:
+    PROD RabbitMQ erlang memory usage
+    Description:
+    Memory used by erland on RabbitMQ is too high. GC may have failed to run or may still be running.
+    Runbook: <link>/RabbitMQ+runbook#RabbitMQrunbook-#201-Memoryusagetoohigh
+    Code: #201
+
+Example: Graph alert with runbook page but no runbook number
+
+    Description:
+    Disk space used over safe limit on the RabbitMQ node.
+    Runbook: <link>/RabbitMQ+runbook
+    Code: /
+
+Example: Statuspage watcher with no runbook
+
+    Name:
+    PROD STATUSPAGE Redis
+    Description:
+    Redis watcher is DOWN.
+    Runbook: /
+    Code: /
+
+* Docker
+
+** Run Grafana manually
+
+- [[http://docs.grafana.org/installation/configuration/][Grafana configuration]]
+
+An example of simple:
+
+    # You can login with
+    # User: admin
+    # Pass: pass
+    docker run -i \
+    --name=grafana \
+    --restart=always \
+    -e "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel" \
+    -e "GF_AUTH_ANONYMOUS_ENABLES=true" \
+    -e "GF_ANALYTICS_REPORTING_ENABLED=false" \
+    -e "GF_SECURITY_ADMIN_PASSWORD=pass" \
+    -p 3000:3000 \
+    grafana/grafana:5.1.0
+
+Or if [[http://docs.grafana.org/installation/docker/#configuring-aws-credentials-for-cloudwatch-support][you use AWS]]:
+
+    docker run -d \
+    --name=grafana \
+    --restart=always \
+    -e "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel" \
+    -e "GF_AWS_PROFILES=default" \
+    -e "GF_AWS_default_ACCESS_KEY_ID=<>" \
+    -e "GF_AWS_default_SECRET_ACCESS_KEY=<>" \
+    -e "GF_AWS_default_REGION=us-east-1" \
+    -e "GF_AUTH_ANONYMOUS_ENABLES=true" \
+    -e "GF_SECURITY_ADMIN_PASSWORD=<>" \
+    -e "GF_ANALYTICS_REPORTING_ENABLED=false" \
+    -v /opt/data/grafana:/var/lib/grafana \
+    -p 3000:3000 \
+    grafana/grafana:5.1.0
+
+** Run Grafana with puppet and docker
+
+    docker::run { 'grafana':
+      image            => 'grafana/grafana:5.1.0',
+      ports            => ['3000'],
+      net              => 'host',
+      privileged       => false,
+      pull_on_start    => true,
+      env              => [
+        'GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel',
+        'GF_AWS_PROFILES=default',
+        'GF_AWS_default_ACCESS_KEY_ID=',
+        'GF_AWS_default_SECRET_ACCESS_KEY=',
+        'GF_AWS_default_REGION=us-east-1',
+        'GF_AUTH_ANONYMOUS_ENABLED=true',
+        'GF_AUTH_ANONYMOUS_ORG_ROLE=viewer',
+        'GF_SECURITY_ADMIN_PASSWORD=',
+        'GF_ANALYTICS_REPORTING_ENABLED=false',
+        'GF_SERVER_ROOT_URL=',
+      ],
+      volumes          => [
+        '/opt/data/grafana:/var/lib/grafana',
+      ],
+      extra_parameters => [
+        '--sig-proxy=false',
+        '--log-driver=fluentd',
+        '--log-opt tag="docker.{{.Name}}',
+        '--log-opt fluentd-async-connect=true"',
+      ],
+  }
+
+* Updates
+
+** 5.1.0 Breaking changes in the docker container
+
+You need to change directory ownership
+
+- [[http://docs.grafana.org/v5.1/guides/whats-new-in-v5-1/#improved-docker-image-breaking-change]]
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=Mno1nYBmlIE][The Launch of Grafana v5]] - 23 Mar 2018
+- [[https://www.youtube.com/watch?v=9nfCH7qe3EQ][Welcome and an Intro to Provisioning Grafana]] - 23 Mar 2018

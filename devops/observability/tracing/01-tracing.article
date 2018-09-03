@@ -1,0 +1,294 @@
+Distributed tracing (concepts) and OpenTracing
+|| Last update: 10 May 2018
+
+* Intro
+
+- [[http://microservices.io/patterns/observability/distributed-tracing.html]]
+
+Tracing is about analysing, recording and describing transactions.
+Distributed tracing collects end-to-end latency graphs, called traces.
+You can compare traces to understand why certain requests take longer than others.
+This type of tools is born from the need to have Visibility/Observability into
+transactions spanning multiple independent codebase and services
+(common in a microservices type of infrastructure). When using microservices,
+APMs are not enough since there is the need to track transactions across boundaries.
+
+Spans transport error messages and stack traces. They can be used to identify
+_cause_factors_. Trace data can also be forwarded to log processing fro query
+analysis.
+
+Most of they definitions on this page is in the context of OpenTracing.
+
+** Future
+
+- [[https://github.com/w3c/distributed-tracing]] - Specification for TraceContext propagation format
+
+* Concepts
+
+.image images/tracing.png
+.caption Source: [[https://www.jaegertracing.io/docs/architecture/]]
+
+- Span: _Individual_operation_ that took place
+- Trace: Latency graph composed of spans
+- Tracers: Records span and passes context required to connect them into a trace
+- Instrumentation: Use tracers to record a _task_
+
+** Span
+
+A *Span* is a logical single unit of work. Contains:
+
+- operation name
+- start timestamp
+- end timestamp / duration
+- [[http://opentracing.io/spec/#tags][tags]]
+- [[http://opentracing.io/spec/#logs][log events]]
+
+Every span has it's own _unique_id_ and an optional _parent-id_ to create the
+hierarchy (if the parent it's omitted it's considered a _root_span_).
+
+SPANS can and should be send asynchronously.
+Trace/Span identifiers don't have to propagate downstream.
+Span can contain other spans.
+
+*** Span tags
+
+- [[https://github.com/opentracing/specification/blob/master/semantic_conventions.md][tags specification]]
+- [[http://opentracing.io/spec/#tags]]
+
+Span also support what is called _tags_. They are an unbounded sequence of
+key-value pair where the key is always a string.
+They represent contextual metadata relevant to a specific request used to enrich
+the _context_.
+Some of them are _reserved_ but for user-defined ones is adviced to follow the
+[[https://github.com/opentracing/specification/blob/master/semantic_conventions.md#standard-span-tags-and-log-fields][semantic conventions]].
+For example if a span contains the tag error a lot of tracers colors it red.
+Tags can be nested.
+
+*** Log events
+
+- [[http://opentracing.io/spec/#logs]]
+
+They represent timestamped textual annotations. Events could express any occurrence
+of interest to the active span.
+
+    [...] each of which is itself a key:value map paired with a timestamp.
+    The keys must be strings, though the values may be of any type.
+    Source: https://github.com/opentracing/specification/blob/master/specification.md
+
+** Trace
+
+A *trace* encapsulate the transactions state as it propagates through the sistem.
+Implementation-wise it's a group of one or more spans. In the OpenTracing standards
+the spans are structured around a _DAG_ (Directly acyclic graph).
+
+To connect spans you need to define connection sharing a *tracing*context*.
+Basically you need to define a parent-child relationship between spans.
+
+To share context between process we can use metadata like the http header
+requests. Examples:
+
+- x-trace
+- trace-parent-id
+
+All this need code instrumentation.
+
+** Tracers
+
+Tracers are libraries.
+
+They are used to record time, duration and host.
+
+Tracers propagate IDs/Structural data *in-band*, to tell the receiver that there is a trace in
+progress. Completed spans are reported *out-of-band*, to reduce the overhead and
+allow batching.
+
+** Instrumentations
+
+Instrumentation is applied use of Tracer libraries. Decides what and how to trace.
+
+    They extract trace context from incoming messages, pass it
+    through the process, allocating child spans for intermediate
+    operations. Finally, they inject trace context onto outgoing
+    messages so the process can repeat on the other side.
+
+    Instrumentation encode request-scoped state required for
+    tracing to work. Services that use a compatible context format
+    can understand their position in a trace.
+
+    Source: https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf
+
+It is:
+
+- Is invisible to users
+- Decides what to record
+- Decides how to propagate the state
+
+They usually have a _data_sampling_policy_ to manage volume.
+
+** Baggage Items
+
+_Baggage_items_ allow metadata propagation to children. This functionality
+is powerful but should be used sparingly. Sending a lot of data down the
+line can easily saturate network link.
+
+    Distributed tracing works because certain meta-data is propagated across
+    thread and process boundaries, throughout the whole call graph, by the
+    tracing instrumentation using the OpenTracing API. One example of such
+    meta-data is trace and span IDs. Another example is baggage, which is a
+    general key-value store embedded in every inter-process request.
+    Source: https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941
+
+** Relationship
+
+There are two types of relationship:
+
+- ChildOf
+- FollowFrom: When parents span isn't linked to the outcome of the child span.
+
+FollowFrom is mostly used to model asynchronous executions like emitting messages to a queue/bus.
+
+** Context propagation
+
+Distributed context propagation is the ability to extract/forward propagated span context from carriers (HTTP headers, AMQP headers, etc) and join it in a trace.
+It is efficient because it _only_ involves propagating _identifiers_ and
+_baggage_items_. All other metadata like _tags_ and _logs_ is not propagated but
+sent asynchronous out-of-band to the tracer system.
+
+*** SpanContext and descendant
+
+    * SpanContext represents Span state that must propagate to descendant Spans
+    * and across process boundaries.
+    *
+    * SpanContext is logically divided into two pieces: the user-level "Baggage"
+    * (see setBaggageItem and getBaggageItem) that propagates across Span
+    * boundaries and any Tracer-implementation-specific fields that are needed to
+    * identify or otherwise contextualize the associated Span instance (e.g., a
+    * <trace_id, span_id, sampled> tuple).
+
+They are defined in the implementation.
+
+** Side effects
+
+Tracing cases size and latency overhead. Tracers should never cause application
+failure if they fail. Instrumentation are written to not slow or overload the
+request.
+
+* Tracing systems
+
+Tracing systems collect, process and present data reported by tracers:
+
+- Aggregate spans into trace trees
+- Provide query and visualization focused on latency
+- Have retention policy
+
+* OpenTracing
+
+- [[http://opentracing.io/]]
+- [[https://github.com/opentracing/specification]]
+
+OpenTracing offer s a consistent, unified and tracer-agnostic instrumentation API.
+It's a vendor neutral interface for instrumentations.
+
+    OpenTracing enables developers to instrument applications for distributed
+    tracing with minimal effort. In order to instrument an application via
+    OpenTracing API, it’s necessary to have an OpenTracing-compatible tracer
+    correctly deployed and listening for incoming span requests. The job of the
+    OpenTracing API is to hide the differences between distributed tracer
+    implementations, so you can easily swap them out at any time without
+    needing to change your instrumentation.
+    Source: https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/
+
+
+** OpenTracing for JavaScript
+
+- [[https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/]]
+- [[https://github.com/opentracing/opentracing-javascript/blob/master/src/ext/tags.ts]]
+
+** Implementations
+
+All of [[http://opentracing.io/documentation/pages/supported-tracers][theses]] are compatible with OpenTracing.
+Among them:
+
+- Jaeger
+- [[https://github.com/sourcegraph/appdash][AppDash]]
+- [[https://github.com/lightstep/lightstep-tracer-go][Lightstep]] - Closed source/PAID
+- Instana - Closed source/PAID
+
+Inspired by google [[https://research.google.com/pubs/pub36356.html][Dapper]]
+
+*** Dapper
+
+Dapper has a minimal overhead for non-traced requests.
+If you are interested in the 99p latency, then yes, the only way would
+be to trace everything.
+
+    [...] it's extremely simple to implement, as it handles scaling challenges by doing
+    client-side sampling. A bit of background about how Dapper-style distributed
+    tracing works. Things typically start with an RPC call of some kind (typically
+    from an external source like a public load balancer). At that point, you must
+    decide whether to trace this request or not, which is typically done as a
+    random sample (say, 1% of requests). At that point, the request gets assigned
+    a _trace id_, a random identifier for that request.
+
+    The trace id is stored in some request context and propagated to each subsequent
+    service. Each service, meanwhile, divides up its request processing flow into a
+    series of "spans" which represent some piece of computation. For example, a span
+    cover an RPC call or a DB query. Spans are identified by a random _span id_.
+    Once a request has been sampled, all spans for that request are sent to a central
+    span collector where they're stored for later querying.
+
+    This model is simple but very limited. It's often hard to know whether a trace
+    is interesting at the outset, hence the reliance on random sampling. For example,
+    you might want to understand why your 99p latency is high, but if you're just
+    sampling 1% the 99p requests will only be 0.01% of your sample.
+
+    More generally, interesting events (like errors or slow requests) tend to be rare,
+    and sampling a random, small percent of requests is unlikely to turn up the
+    interesting cases.
+
+    A better model, as implemented by lightstep [1] (and an in-progress distributed
+    tracer I've been working on) is to collect all spans. Even with very high request
+    volume it's reasonable to store all spans for at least a few minutes. Doing so
+    opens up all sorts of interesting possibilities, because you can start tracing
+    a request at any point during that window. For example, you might want to trace
+    all requests that have errors in them. Or all requests that take longer than a
+    certain time. Or get a google sample of requests across different latency buckets.
+    Or requests that violate some application invariants you've defined.
+
+    Ultimately, though, distributed tracing is so helpful for understanding complex
+    distributed systems and webs of microservices, and it's exciting to see more
+    open-source competition for zipkin.
+    Source: https://news.ycombinator.com/item?id=15326272
+
+* OpenCensus
+
+- [[https://opencensus.io/]]
+
+OpenCensus is a framework not only for tracing and supports multiple signals types.
+You can export traces to any backend as you are exporting metrics to any backend
+of your choice too. OC and OT are data model compatible.
+They have first-class support for pprof. And considering about logs to be the
+next signal type to add support. OpenCensus provides both tracing and stats.
+
+OpenCensus [1] provides an implementation for tracing and app-level metrics, a
+context wire protocol, and exporters for various backends. While it provides
+similar tracing APIs to OpenTracing, they're not identical, though there have
+been some early conversations about resolving this.
+
+Observability SDK (metrics, tracing, tags):
+
+- Most notably, gRPC’s tracing library
+- Includes exporters in Zipkin format and B3 propagation format
+
+* Other Services
+
+- Google Stackdriver https://cloud.google.com/trace/
+- Amazon X-Ray
+
+* Re/Sources
+
+- [[https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/]] - 8 May 2018
+- [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]] - 25 Apr 2018
+- VIDEO: [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
+- [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts
+- https://news.ycombinator.com/item?id=15326272

@@ -1,0 +1,49 @@
+Intro
+
+* History
+
+*2013* (3y ago)
+
+There was nothing
+
+*2014* (2.5y ago)
+
+- Docker engine released [2014-06]
+- CoreOS [2014-12]
+
+*2015*
+
+- Kubernetes 1.0
+- AppC
+- OCI
+
+*2016*
+
+- Kubernetes 1.3
+- Etcd 3.0
+- Docker for mac and windows
+- Docker orchestration [1.12] (integrated swarm and run on AWS)
+
+Now is time for production
+
+* ECS (very quick)
+
+A container is created as a member of a task.
+Task are created from *task*definition* (conceptually similar to compose file).
+
+ecs-cli don't accept BUILD section but can transform all the rest is on a Docker composer file!
+Making it mostly portable.
+
+* Rant
+
+.image images/dev-prod.png _ 600
+.caption twitter https://twitter.com/mfdii/status/697532387240996864
+
+.image images/Gareth_Rushgrove_on_Twitter.png  _ 600
+.caption twitter https://twitter.com/mfdii/status/697532387240996864
+
+    The isolation is not perfect, though: containers cannot prevent interference in resources that the operating-system kernel doesn't manage, such as level 3 processor caches and memory bandwidth, and containers need to be supported by an additional security layer (such as virtual machines) to protect against the kinds of malicious actors found in the cloud.
+    The original purpose of the cgroup, chroot, and namespace facilities in the kernel was to protect applications from noisy, nosey, and messy neighbors. Combining these with container images created an abstraction that also isolates applications from the (heterogeneous) operating systems on which they run. This decoupling of image and OS makes it possible to provide the same deployment environment in both development and production, which, in turn, improves deployment reliability and speeds up development by reducing inconsistencies and friction.
+    [...] it ties telemetry collected by the management system (e.g., metrics such as CPU and memory usage) to applications rather than machines, which dramatically improves application monitoring and introspection, especially when scale-up, machine failures, or maintenance cause application instances to move.
+
+.link https://queue.acm.org/detail.cfm?id=2898444

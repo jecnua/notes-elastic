@@ -1,0 +1,25 @@
+AWS performance
+|| Last update: 18 Jan 2017
+
+* ENA
+
+Look at ENA docs.
+
+* Persistent grants
+
+    $ dmesg | egrep -i 'blkfront'
+    [    0.000000] Blkfront and the Xen platform PCI driver have been compiled for this kernel: unplug emulated disks.
+    [    2.748691] blkfront: xvda: barrier or flush: disabled; persistent grants: disabled; indirect descriptors: enabled;
+    [    2.755861] blkfront: xvdb: flush diskcache: enabled; persistent grants: disabled; indirect descriptors: enabled;
+    [    2.758369] blkfront: xvdi: barrier or flush: disabled; persistent grants: disabled; indirect descriptors: enabled;
+
+* Clock source
+
+    $ cat /sys/devices/system/cl*/cl*/current_clocksource
+    xen
+    $ cat /sys/devices/system/cl*/cl*/available_clocksource
+    xen tsc hpet acpi_pm
+
+* Sources
+
+- AWS re -Invent 2016 - Deep Dive on Amazon EC2 Instances, Featuring Performance Optimization (CMP301)

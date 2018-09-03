@@ -1,0 +1,76 @@
+Mcollective
+
+* Code
+
+https://github.com/puppetlabs/mcollective-puppet-agent
+
+Get data source:
+
+      $ mco rpc rpcutil get_data source=puppet | grep qa
+      Discovering hosts using the mc method for 2 second(s) .... 60
+      es-master-qa-***
+      es-client-qa-***
+      es-data-qa-***
+      tools-***         Unknown Request Status
+      api-***           Unknown Request Status
+
+
+      $ mco rpc rpcutil get_data source=puppet
+
+    api-upi-qa-***           Unknown Request Status
+       No plugin puppet_data defined
+
+    tools-upi-qa-***         Unknown Request Status
+       No plugin puppet_data defined
+
+
+    $ mco inventory api-***
+    Inventory for api-***:
+
+       Server Statistics:
+                          Version: 2.6.0
+                       Start Time: 2016-11-17 13:57:10 +0000
+                      Config File: /etc/mcollective/server.cfg
+                      Collectives: mcollective
+                  Main Collective: mcollective
+                       Process ID: 20733
+                   Total Messages: 1
+          Messages Passed Filters: 1
+                Messages Filtered: 0
+                 Expired Messages: 0
+                     Replies Sent: 0
+             Total Processor Time: 0.36 seconds
+                      System Time: 0.01 seconds
+
+       Agents:
+          discovery       puppet          rpcutil
+          service
+
+       Data Plugins:
+          agent           fact            fstat
+          puppet          resource        service
+
+       Configuration Management Classes:
+        apache                           apache::default_confd_files
+        [...]
+
+       Facts:
+          mcollective => 1
+
+
+
+Find slow one:
+
+    mco find -S "resource().total_time>50"
+
+
+
+    mco puppet runonce -I /^tools-upi-qa-***
+
+
+List of last time puppet run:
+
+    $ mco puppet status
+    $ mco puppet status | grep qa
+
+    $ mco puppet count -v

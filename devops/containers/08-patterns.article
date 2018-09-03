@@ -1,0 +1,139 @@
+Patterns
+|| Last update: 21 April 2017
+
+* Intro
+
+Most of these notes were taken from a talk called: "Avoid cascading in highly distribuited systems" from Sheriff Jackson.
+
+- https://twitter.com/sheriffjackson?lang=en
+- https://www.packtpub.com/application-development/building-microservices-go
+
+    Quote: Partial failure by design
+
+* Asynch
+
+First choice would be to decouple all the calls to a third party with a
+_message_queue_.
+
+    Use queues to abstract connections.
+
+But what are the CON?
+
+- Is not atomic anymore
+- How can you guarantee consistency?
+
+Which type of sending policy?
+
+- fan out
+- at least once
+- filo
+- etc
+
+Message queues add complexity and build on needed knoweledge on the system.
+
+* Synch
+
+If you don't or can't use asynch, you need to be smart about that.
+
+- Timeouts
+- Backoff
+- Circuit breakers
+
+Is important to measure failures:
+
+- Percentage of failures
+- Tolerance is in your hands
+
+** Timeouts
+
+    Any downstream connection call should have a timeout!
+
+** Backoff
+
+Is complementary to timeout. There should not be a continuous retry! If you do
+you will just DDOS the system. Some options:
+
+- constant backoff
+- exponential backoff
+
+Constant retry and even exponential backoff are dangerous. You can
+incurr in the weave effect! All retry at the same time!
+So you need to *randomise* the backoff.
+Add a random seed in the exponential backoff to avoid weave effect.
+
+Do not DDOS. Do not retry forever.
+
+** Circuit breaker
+
+Popolarised by Netflix with Hystrix but proposed in a good way in "release it".
+
+- Hystrics
+
+The circuit can be open or closed.
+
+When is *open*, the request fails immediatly!
+
+    The system won't even try to make a call when the circuit is
+    open.
+
+When is half/open, try 1 request. If the request works open the circuit
+again. Is a self healing mechanism.
+
+Implementing a circuit breakers will imply having a load balancer in your client.
+This way you have more controls in your hands.
+It is possible to minimise load.
+The circuit is protecting you and your system.
+
+*** Client side load balancer
+
+PRO:
+
+- Gives you more control
+
+CON:
+
+- Difficult
+- Too much knoweledge
+- Need service discovery
+
+Used when upstream wants to connect to external services.
+
+External connections coming in like elb or api gateway they usually
+fan out. For FE is ok and probably the only strategy.
+But what if is not http?
+
+GRPC have an LB in the client for example.
+
+* The role of metrics
+
+Metrics are incredibly important.
+What's a good metric? *success/events*
+
+    If a circuit is opening or flapping, you want to know about it.
+
+When you are using containers, usually the scheduler do this for you.
+
+Good metrics give you access to anomaly detection.
+Average deviations per amount of points.
+
+* Recap
+
+Wrap downstream services. You can use existing libraries:
+
+- Java: Hystrics
+- Go: "go resiliancy", "hystics go" or "go kits"
+
+    DESIGN FOR FAILURES
+
+So:
+
+- asynch when possible but beware atomicity
+- Synch when not
+-- timouts
+-- backoff
+-- circuit breakers
+- metrics
+
+* Resources
+
+- Linkerd

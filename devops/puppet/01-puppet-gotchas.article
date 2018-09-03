@@ -1,0 +1,21 @@
+Puppet gotchas
+
+* Puppet 3.7
+
+** fileserver
+
+https://docs.puppet.com/puppet/latest/reference/config_file_fileserver.html
+
+The file lives under:
+
+    $ cat /etc/puppet/fileserver.conf
+
+
+** msgpack error
+
+The following error is present hundreds of times in every puppet run:
+
+    Debug: Failed to load library 'msgpack' for feature 'msgpack'
+    Debug: Puppet::Network::Format[msgpack]: feature msgpack is missing
+
+https://ask.puppet.com/question/13846/failed-to-load-library-msgpack/

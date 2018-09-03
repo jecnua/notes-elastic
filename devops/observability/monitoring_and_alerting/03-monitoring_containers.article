@@ -1,0 +1,120 @@
+Monitoring containers
+
+* cAdvisor: containers metrics
+
+.image images/cAdvisor.png 100 _
+
+** Install and run
+
+Quick glance about the usage of containers in your system.
+
+    sudo docker run \
+      --volume=/:/rootfs:ro \
+      --volume=/var/run:/var/run:rw \
+      --volume=/sys:/sys:ro \
+      --volume=/var/lib/docker/:/var/lib/docker:ro \
+      --publish=8080:8080 \
+      --detach=true \
+      --name=cadvisor \
+      -l org.label-schema.group="ep-monitoring" \
+      google/cadvisor:latest
+
+cAdvisor exposes its raw and processed stats via a remote REST API.
+This is what Prometheus uses to pull the data.
+
+** Notes
+
+cAdvisor [[https://github.com/google/cadvisor/blob/master/docs/runtime_options.md][stores]] the latest historical data in memory.
+
+We could also [[https://github.com/google/cadvisor/blob/master/docs/storage/influxdb.md][save the data]] in InfluxDB and pull that from grafana directly, but we would lose Prometheus capabilities.
+
+** Links
+
+- [[https://github.com/google/cadvisor][github]]
+
+* Phrometeus
+
+.image images/prometheus.png 100 _
+
+** Install and run
+
+To [[https://prometheus.io/docs/introduction/install/][install]] it with docker:
+
+    docker run \
+    --publish=9090:9090 \
+    --name=prometheus \
+    --detach=true \
+    --volume=/opt/data/prometheus/metrics:/prometheus \
+    --volume=/opt/data/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+    -l org.label-schema.group="ep-monitoring" \
+    prom/prometheus:latest
+
+** Configurations
+
+To check what flags you can pass to Prometheus check the [[https://github.com/prometheus/prometheus/blob/master/Dockerfile][Dockerfile]].
+
+prometheus.yml holds the server configurations. For now I will use the [[https://github.com/prometheus/prometheus/blob/master/documentation/examples/prometheus.yml][default one]].
+
+    sudo docker exec -i -t prometheus /bin/bash
+
+** Notes
+
+The Prometheus image uses a volume to store the actual metrics. For production deployments it is highly recommended to use the [[https://docs.docker.com/engine/userguide/containers/dockervolumes/#creating-and-mounting-a-data-volume-container][Data Volume Container]] pattern to ease managing the data on Prometheus upgrades.
+
+** Testing
+
+To check the actual config:
+
+    http://ip:9090/config
+
+To add a new site to scrape you need to change the [[https://prometheus.io/docs/operating/configuration/][config file]].
+
+  - job_name: 'cAdvisor'
+    scrape_interval: 5s
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      - targets: ['ip:8080']
+
+And then you need to [[https://www.robustperception.io/reloading-prometheus-configuration/][reload]] the configurations:
+
+    # From the server
+    curl -X POST http://localhost:9090/-/reload
+
+** Node exporter for OS/node metrics
+
+Add the node exporter:
+
+    docker run \
+    --publish=9100:9100 \
+    --name=nodeexporter \
+    --detach=true \
+    -l org.label-schema.group="ep-monitoring" \
+    prom/node-exporter:latest
+
+Add the job:
+
+  - job_name: 'nodeexporter'
+    scrape_interval: 5s
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      - targets: ['10.96.221.143:9100']
+
+Now add grafana dashboards
+
+- https://github.com/stefanprodan/dockprom/blob/master/docker-compose.yml
+
+You can use these as a base
+
+https://stefanprodan.com/2016/a-monitoring-solution-for-docker-hosts-containers-and-containerized-services/
+
+Test?
+
+https://github.com/kbudde/rabbitmq_exporter
+
+** Links
+
+- [[https://prometheus.io/][website]]
+- [[https://github.com/prometheus/prometheus][github]]
+- [[https://hub.docker.com/r/prom/prometheus/][docker hub]]

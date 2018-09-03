@@ -1,0 +1,36 @@
+Data source
+
+* Availability zone
+
+    data "aws_vpc" "targeted_vpc" {
+      id      = "${var.vpc_id}"
+      default = false
+      state   = "available"
+    }
+
+    data "aws_availability_zones" "available_subnets" {
+      state = "available"
+    }
+
+    ## TODO: count.index+1 is to avoid zone a in us-east (see readme)
+    resource "aws_subnet" "my_private" {
+      count                   = 2
+      vpc_id                  = "${data.aws_vpc.targeted_vpc.id}"
+      availability_zone       = "${data.aws_availability_zones.available_subnets.names[count.index+1]}"
+      cidr_block              = "${var.subnets_cidr_block[count.index]}"
+      map_public_ip_on_launch = "false"
+    }
+
+This doesn't work:
+
+** Problem 1
+
+You can't use a. So you have to do something like this:
+
+    availability_zone       = "${data.aws_availability_zones.available_subnets.names[count.index+1]}"
+
+** Problem 2
+
+    FYI: Description:DescriptionLaunching a new EC2 instance. Status Reason: Your requested instance type (r4.2xlarge) is not supported in your requested Availability Zone (us-east-1c). Please retry your request by not specifying an Availability Zone or choosing us-east-1e, us-east-1d, us-east-1b. Launching EC2 instance failed.
+
+So you need to avoid some AZs.

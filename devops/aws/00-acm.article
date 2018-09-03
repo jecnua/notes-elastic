@@ -1,0 +1,146 @@
+AWS certificate manager
+|| Last update: 18 Jan 2017
+
+* Intro
+
+* Adding SSL certs
+
+Since Oct 13, 2016 you don't need to upload SSL certs for CF and ELBs on IAM, but
+you can use ACM directly.
+
+- [[https://forums.aws.amazon.com/ann.jspa?annID=4085][Forum notification]]
+- [[https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html][Docs]]
+
+NOTE: I would not advice to do this in terraform since you need all the data
+(key, etc).
+
+** New way
+
+    $ aws acm import-certificate \
+      --certificate file://cloudfront_star_test_co_uk_jan_2017.crt \
+      --certificate-chain file://abcd.crt \
+      --private-key file://cloudfront_star_test_co_uk_jan_2017.pem
+    {
+      "CertificateArn": "arn:aws:acm:us-east-1:xxx:certificate/xxx"
+    }
+
+** Old way (OBSOLETE)
+
+You need to push it twice. Once for the ELBs:
+
+    $ aws iam upload-server-certificate \
+      --server-certificate-name cloudfront_star_test_co_uk_april_2016 \
+      --certificate-body file://abcd.crt \
+      --private-key file://cloudfront_star_test_co_uk_april_2016.key \
+      --certificate-chain file://gd_bundle-g2-g1.crt
+
+And one for Cloudfront (with PATH):
+
+    $ aws iam upload-server-certificate \
+      --server-certificate-name cloudfront_star_test_co_uk_april_2016 \
+      --certificate-body file://abcd.crt \
+      --private-key file://cloudfront_star_test_co_uk_april_2016.key \
+      --certificate-chain file://gd_bundle-g2-g1.crt \
+      --path /cloudfront/cloudfront_star_test_co_uk_april_2016/
+
+- https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html#list-server-certificates
+
+* API
+
+To get the list of SSL certs run:
+
+    aws acm list-certificates
+
+Example of reply at the time of this doc:
+
+    {
+        "CertificateSummaryList": [
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd",
+                "DomainName": "staging.test.co.uk"
+            },
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd",
+                "DomainName": "qa.test.co.uk"
+            },
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd",
+                "DomainName": "production.test.co.uk"
+            },
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd",
+                "DomainName": "internal.test.co.uk"
+            },
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd",
+                "DomainName": "development.test.co.uk"
+            }
+        ]
+    }
+
+On the gui:
+
+** Request a cert
+
+    > aws acm request-certificate --domain-name staging.test.co.uk
+    {
+        "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd"
+    }
+
+    > aws acm request-certificate --domain-name qa.test.co.uk
+    {
+        "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd"
+    }
+
+    > aws acm request-certificate --domain-name production.test.co.uk
+    {
+        "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd"
+    }
+
+    > aws acm request-certificate --domain-name internal.test.co.uk
+    {
+        "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd"
+    }
+
+    > aws acm request-certificate --domain-name development.test.co.uk
+    {
+        "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd"
+    }
+
+** Describe a cert
+
+NOTE: You need to have the cert arn!
+
+    aws acm describe-certificate --certificate-arn "arn:aws:acm:us-east-1:12345:certificate/abcd"
+    {
+        "Certificate": {
+            "CertificateArn": "arn:aws:acm:us-east-1:12345:certificate/abcd",
+            "Status": "PENDING_VALIDATION",
+            "SubjectAlternativeNames": [
+                "staging.test.co.uk"
+            ],
+            "DomainName": "staging.test.co.uk",
+            "InUseBy": [],
+            "DomainValidationOptions": [
+                {
+                    "ValidationEmails": [
+                        "hostmaster@staging.test.co.uk",
+                        "postmaster@staging.test.co.uk",
+                        "administrator@staging.test.co.uk",
+                        "admin@staging.test.co.uk",
+                        "webmaster@staging.test.co.uk"
+                    ],
+                    "ValidationDomain": "staging.test.co.uk",
+                    "DomainName": "staging.test.co.uk"
+                }
+            ],
+            "KeyAlgorithm": "RSA-2048",
+            "SignatureAlgorithm": "SHA256WITHRSA",
+            "CreatedAt": 1470143570.0,
+            "Subject": "CN=staging.test.co.uk"
+        }
+    }
+
+** Delete cert
+
+    aws acm delete-certificate --certificate-arn 'arn:aws:acm:us-east-1:12345:certificate/abcd'

@@ -1,0 +1,84 @@
+FaaS local testing
+|| Last update: 18 Apr 2018
+
+* SAM Local
+
+- [[https://github.com/awslabs/aws-sam-local]] - AWS SAM local tool
+- [[https://github.com/lambci/docker-lambda]] - Images used to mock lambda
+- [[https://aws.amazon.com/blogs/aws/new-aws-sam-local-beta-build-and-test-serverless-applications-locally/]] - Blog post for the beta release
+- [[AWS re:Invent 2017: Local Serverless Development using SAM Local (DEM77)]]
+
+CLI tools for local testing of lambda functions.
+
+Uses open source docker-lambda images to mimic lambda. The function is then run using a Docker container created by the people behind LambCI. Supports:
+
+- Timeout, memory limits and runtimes
+- Does not emulate CPU limits
+- Partial API gateway emulation (proxy calls)
+
+SAM Local can spin up a local API Gateway environment. Any Lambda functions integrated with API Gateway can be invoked through your browser or curl command. Allows hot-reloading.
+
+Supports multiple languages. Support live debugging for Java and node.js.
+
+It lets you simulate function invocations from known event sources like Amazon Simple Storage Service (S3), Amazon DynamoDB, Amazon Kinesis, Amazon Simple Notification Service (SNS), and more.
+
+* Pipeline
+
+- [[https://github.com/awslabs/aws-sam-local/blob/develop/samples/python-with-packages/Makefile]]
+
+Before deploying the Lambda functions, a npm install must be ran to fetch the dependencies. For SAM, there is a Makefile example where these pre-package scripts are being executed. It would be great if a formal, built-in specification would exist for the frameworks.
+
+* To check
+
+- [[https://github.com/heitorlessa/sam-local-python-hot-reloading/blob/master/README.MD]]
+
+* Walkthrough
+
+** SAM local for SAM
+
+    npm install -g aws-sam-local
+    docker pull lambci/lambda
+    docker pull lambci/lambda:python3.6
+    cd /tmp
+    git clone https://github.com/awslabs/aws-sam-local.git
+    cd aws-sam-local/samples/api-event-source/python
+    sam local start-api
+
+** SAM local for Serverless
+
+- [[https://github.com/SAPessi/serverless-sam]]
+- [[https://read.iopipe.com/go-serverless-with-sam-for-local-dev-test-f6f23eb6a2bf]]
+
+[[https://serverless.com/framework/docs/providers/aws/guide/testing/]]
+
+** Serverless offline
+
+- [[https://github.com/dherault/serverless-offline]]
+- [[https://bespoken.io/blog/serverless-plugin-local-aws-lambda-development/]]
+
+    npm install serverless-offline --save-dev
+
+And config:
+
+    ##############
+    ...
+    functions:
+      hello:
+        handler: handler.hello
+    ...
+    ...
+    ##############
+    # Added these two lines!
+    plugins:
+      - serverless-offline
+
+To start:
+
+    serverless offline start
+
+A local development simulation of API Gateway and Lambda.
+
+* Mocking services
+
+Amazon kineses [[https://github.com/mhart/kinesalite]]
+DynamoDB [[https://github.com/mhart/dynalite]] - [[https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html]]

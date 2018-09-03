@@ -1,0 +1,376 @@
+Docker swarm training
+
+* Operations - Beginner
+
+    docker compose up -d
+    > detached
+
+a netwrok can be in as many container as you want
+
+List:
+
+    docker-compose ps
+
+Scale one of the container:
+
+    docker-compose scale worker=2
+
+
+    brew install httping
+    httping -c 10 localhost:8001
+
+The Docker CLI features three new commands:
+
+- docker swarm (enable Swarm mode; join a Swarm; adjust cluster parameters)
+- docker node (view nodes; promote/demote managers; manage nmodes)
+- docker service (create and manage services)
+
+The cluster is initialized with docker swarm init
+
+This should be executed on a first, seed node
+DO NOT execute docker swarm init on multiple nodes!
+
+You would have multiple disjoint clusters.
+
+    > docker swarm init
+
+If the node has multiple IP addresses, you must specify which one to use
+(Docker refuses to pick one randomly)
+
+You can specify an IP address or an interface name
+(in the latter case, Docker will read the IP address of the interface and use it)
+You can also specify a port number (otherwise, the default port 2377 will be used)
+
+    docker swarm join \
+    --token SWMTKN-1-4tt24pq4ygv0ovzkiwhobmbfdw02fot9hi4iz0x6eljoto8wa2-do7kzvb1scz6ytdovweik
+sxd4 \
+    10.1.22.2:2377
+
+So I create 2 nodes with docker-machine
+
+λ ~/git/my-test-orchestration/swarm/ master* docker-machine ls
+NAME       ACTIVE   DRIVER      STATE     URL                        SWARM   DOCKER    ERRORS
+swarm-01   *        amazonec2   Running   tcp://35.156.17.25:2376            v1.12.3
+swarm-02   -        amazonec2   Running   tcp://35.156.35.117:2376           v1.12.3
+
+docker-machine ssh swarm-01
+sudo su -
+docker swarm init --advertise-addr 172.31.16.46
+
+docker swarm join \
+    --token SWMTKN-1-6ccb4j87efwj0q1asjtdgw3j46dvz0f28na7malk005an5hniz-ceyqnjjfo1nbusd5wnmeutjkt \
+    172.31.16.46:2377
+
+https://docs.docker.com/swarm/provision-with-machine/
+
+no I don't want to use that
+
+# docker swarm join     --token SWMTKN-1-6ccb4j87efwj0q1asjtdgw3j46dvz0f28na7malk005an5hniz-ceyqnjjfo1nbusd5wnmeutjkt     172.31.16.46:2377
+This node joined a swarm as a worker.
+
+I had to open the sg
+
+now on the first node:
+
+# docker info | grep -A 7 Swarm
+WARNING: No swap limit support
+Swarm: active
+ NodeID: 7icqi0u8hvanotpyd4ywc1r4h
+ Is Manager: true
+ ClusterID: 454k0q4u3xv3ksn2j4qzixbxi
+ Managers: 1
+ Nodes: 3
+ Orchestration:
+  Task History Retention Limit: 5
+
+
+  # docker node ls
+  ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+  0epx63yfne8vogy2sftjehxly    swarm-02  Ready   Active
+  7icqi0u8hvanotpyd4ywc1r4h *  swarm-01  Ready   Active        Leader
+
+From the training docs:
+      When we do docker swarm init, a TLS root CA is created. Then a keypair is issued for the first node, and signed by the root CA.
+      When further nodes join the Swarm, they are issued their own keypair, signed by the root CA, and they also receive the root CA public key and certificate.
+      All communication is encrypted over TLS.
+      The node keys and certificates are automatically renewed on regular intervals
+    (by default, 90 days; this is tunable with docker swarm update).
+
+*** How to do it from outside?
+
+on the shell with the first node in mind
+TOKEN=$(docker swarm join-token -q worker)
+
+eval $(docker-machine env swarm-03)
+
+% TOKEN='SWMTKN-1-6ccb4j87efwj0q1asjtdgw3j46dvz0f28na7malk005an5hniz-ceyqnjjfo1nbusd5wnmeutjkt'
+% IP='172.31.16.46'
+
+docker swarm join --token $TOKEN $IP:2377
+
+To add nodes as manager
+TOKEN=$(docker swarm join-token -q manager)
+get the manager token
+
+You can't see the status from other nodes:
+
+    % docker node ls
+    Error response from daemon: This node is not a swarm manager. Worker nodes can't be used to view or modify cluster state. Please run this command on a manager node or promote the current node to a manager
+
+Promote
+
+    * docker node promote 0epx63yfne8vogy2sftjehxly
+    Node 0epx63yfne8vogy2sftjehxly promoted to a manager in the swarm.
+
+Now is a manager:
+
+    * docker node ls
+    ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+    0epx63yfne8vogy2sftjehxly    swarm-02  Ready   Active        Reachable
+    4q4z0va7l14tcypxqbaky54zn    swarm-03  Ready   Active
+    7icqi0u8hvanotpyd4ywc1r4h *  swarm-01  Ready   Active        Leader
+
+
+Create a new service
+
+    * docker service create alpine ping 8.8.8.8
+    * docker service ls
+    ID            NAME            REPLICAS  IMAGE   COMMAND
+    7jftfzzyoeww  adoring_turing  1/1       alpine  ping 8.8.8.8
+    * docker service ps 7jftfzzyoeww
+    ID                         NAME              IMAGE   NODE      DESIRED STATE  CURRENT STATE           ERROR
+    bn9fnm22t52mgbrpsrsf8up7x  adoring_turing.1  alpine  swarm-01  Running        Running 42 seconds ago
+
+Then you can scale
+
+    * docker service update 7jftfzzyoeww --replicas 4
+
+You can't see the logs from a container in a docker you are not "attached" to!
+
+Remove all services:
+
+    docker service ls -q | xargs docker service rm
+
+why is not on every node?
+
+https://github.com/docker/docker/issues/24310
+lool
+amazing
+
+** Create local registry
+
+% docker run -d --name registry --publish 5000:5000 registry:2                                                                                                                                                                                       1 ↵
+Unable to find image 'registry:2' locally
+2: Pulling from library/registry
+
+3690ec4760f9: Already exists
+930045f1e8fb: Pull complete
+feeaa90cbdbc: Pull complete
+61f85310d350: Pull complete
+b6082c239858: Pull complete
+Digest: sha256:1152291c7f93a4ea2ddc95e46d142c31e743b6dd70e194af9e6ebe530f782c17
+Status: Downloaded newer image for registry:2
+5bbf1667440c6e2ee75af007781b660ff4bf5b6ee8900b6df76509a489f5ea7e
+
+% curl localhost:5000/v2/_catalog
+{"repositories":[]}
+
+    docker pull busybox
+    docker tag busybox localhost:5000/busybox
+    docker push localhost:5000/busybox
+
+    curl localhost:5000/v2/_catalog
+    {"repositories":["busybox"]}
+
+Create new networks:
+
+ docker network create --driver overlay fab
+
+ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+c4f428402ae6        bridge              bridge              local
+6a4de4408d4d        docker_gwbridge     bridge              local
+b42r04k3eyuo        fab                 overlay             swarm
+f534dcdc7b4a        host                host                local
+djeiqvdotczb        ingress             overlay             swarm
+c2e9e4a28f71        none                null                local
+
+
+Spin in a network
+docker service create --network fab --name redis redis
+
+publishing a port later
+docker service update eitvkq4djjxe --publish-add 8000:80
+
+Global scheduling
+
+  --mode global
+We want to utilize as best as we can the entropy generators on our nodes
+
+READ MORE
+
+docker swarm mode added in 1.12
+
+** store
+
+Highly-available, distributed store based on Raft
+> Nomad is similar
+Automatic TLS keying and signing
+Integration with overlay networks and load balancing
+
+** concepts
+
+A cluster will be at least one node
+A node can be a manager or a worker
+A manager actively takes part in the Raft consensus
+You can talk to a manager using the SwarmKit API
+One manager is elected as the leader; other managers merely forward requests to it
+A service is specified by its desired state
+The leader uses different subsystems to break down services into tasks:
+orchestrator, scheduler, allocator, dispatcher
+A task corresponds to a specific container, assigned to a specific node
+Nodes know which tasks should be running, and will start or stop containers accordingly
+
+
+$ docker node ls
+
+# second course
+
+Services can be published using two modes: VIP and DNSRR.
+With VIP, you get a virtual IP for the service, and a load balancer based on IPVS
+
+drill tasks.rng
+
+docker service update worker --image $IMAGE
+
+We can set upgrade parallelism (how many instances to update at the same time)
+And upgrade delay (how long to wait between two batches of instances)
+docker service update worker --update-parallelism 2 --update-delay 5s
+
+
+docker logs --follow
+
+change log driver
+
+docker service update $SERVICE \
+--log-driver gelf --log-opt gelf-address=udp://127.0.0.1:12201
+
+The exporters expose metrics over HTTP using a simple line-oriented format
+
+(An optimized format using protobuf is also possible)
+
+
+
+Its configuration defines a list of exporter endpoints (that list can be dynamic, using e.g. Consul, DNS, Etcd...)\
+
+
+We will run two global services (i.e. scheduled on all our nodes):
+
+the Prometheus node exporter to get node metrics
+
+Google's cAdvisor to get container metrics
+
+We will run a Prometheus server to scrape these exporters
+
+The Prometheus server will be configured to use DNS service discovery
+
+We will use tasks.<servicename> for service discovery
+
+All these services will be placed on a private internal network
+
+docker network create --driver overlay prom
+
+
+    docker service create --name node --mode global --network prom \
+    --mount type=bind,source=/proc,target=/host/proc \
+    --mount type=bind,source=/sys,target=/host/sys \
+    --mount type=bind,source=/,target=/rootfs \
+    prom/node-exporter \
+    -collector.procfs /host/proc \
+    -collector.sysfs /host/proc \
+    -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($|/)"
+
+
+    docker service create --name cadvisor --network prom --mode global \
+    --mount type=bind,source=/,target=/rootfs \
+    --mount type=bind,source=/var/run,target=/var/run \
+    --mount type=bind,source=/sys,target=/sys \
+    --mount type=bind,source=/var/lib/docker,target=/var/lib/docker \
+    google/cadvisor:latest
+
+    - job_name: 'node'
+    dns_sd_configs:
+    - names: ['tasks.node']
+    type: 'A'
+    port: 9100
+    - job_name: 'cadvisor'
+    dns_sd_configs:
+    - names: ['tasks.cadvisor']
+    type: 'A'
+    port: 8080
+
+** Volumes
+
+Volumes are host directories that are mounted on to the container fs.
+volumes can be local fs or remote fs.
+
+There are two types of volumes:
+- global: exists in a single namespace, can be mounted on any node and any container, require extra plugin (flocker, portworx)
+- local: local node
+
+on swarm you pin a container to a node qith
+
+    --constraint-add node.name==<node_name>
+
+Service volumes are ephemereal by default.
+
+to mount a specific volume:
+
+    --mount-add type=volume,souce=<...>,target=/data
+
+docker volume ls
+
+** DAB (experimental)
+
+to create
+
+docker-compose bundle
+
+docker stack deploy <name>
+
+docker stack ps <name>
+
+** A docker to control docker
+
+- You need to mount the socket
+
+or
+
+- DOCKER_HOST and DOCKER_TSL_VERIFY and DOCKER_CERT_PATH set (and certs)
+
+** load balancing
+
+available are
+IPVS and DNSRR
+
+** Nodes
+
+setting a node to pause will drain the node.
+
+** Across regions
+
+it doesn't withstand network partition well
+so you need a swarm cluster per region
+
+
+** Obsolete
+
+swarm kit
+It is a reusable library, like libcontainer, libnetwork, vpnkit
+
+SwarmKit comes with two examples:
+
+- swarmctl (a CLI tool to "speak" the SwarmKit API)
+- swarmd (an agent that can federate existing Docker Engines into a Swarm)
+
+SwarmKit/swarmd/swarmctl → libcontainer/containerd/container-ctr

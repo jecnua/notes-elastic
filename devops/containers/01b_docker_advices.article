@@ -1,0 +1,29 @@
+Docker advices
+
+* TBD
+
+Python/rust applications have a lot of dependencies and is now becoming a patter to see people creating single static binary to add to containers. No dynamic linking!
+So basically just put a binary in your image and do your thing.
+EXPLORE THIS BETTER
+
+** Labels
+
+You need good labels.
+Use a make to do them:
+
+http://blog.microscaling.com/2016/06/the-joy-of-organising-container-image_6.html
+https://github.com/garethr/docker-label-inspector
+http://blog.microscaling.com/2016/06/microbadger-manage-your-containers.html
+https://microbadger.com/labels
+http://blog.benhall.me.uk/2015/05/using-make-to-manage-docker-image-creation/
+https://docs.docker.com/engine/userguide/labels-custom-metadata/
+
+Examples:
+
+https://github.com/microscaling/microscaling/blob/master/Makefile
+https://github.com/microscaling/microscaling/blob/master/Dockerfile
+
+## Linters
+
+https://github.com/projectatomic/dockerfile_lint
+https://github.com/garethr/docker-label-inspector

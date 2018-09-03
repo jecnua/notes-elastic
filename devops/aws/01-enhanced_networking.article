@@ -1,0 +1,231 @@
+Enhanced Networking
+|| Last update: 18 Jan 2017
+
+* Intro
+
+Links (in the order I think you should study them):
+
+- [[https://aws.amazon.com/about-aws/whats-new/2016/06/introducing-elastic-network-adapter-ena-the-next-generation-network-interface-for-ec2-instances/][Announcement]]
+- [[https://aws.amazon.com/blogs/aws/elastic-network-adapter-high-performance-network-interface-for-amazon-ec2/][Blog post]]
+- [[https://www.youtube.com/watch?v=CBmSl3O-AhI][AWS re:Invent 2016: Optimizing Network Performance for Amazon EC2 Instances (CMP315)]] - [[http://www.slideshare.net/AmazonWebServices/aws-reinvent-2016-optimizing-network-performance-for-amazon-ec2-instances-cmp315][Slides]]
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html][Enhanced networking on docs]]
+
+* Enhanced Networking flavours
+
+- SR-IOV (Intel 82599 VF) - [[http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/sriov-networking.html][docs]] - [[https://sourceforge.net/projects/e1000/files/ixgbevf%20stable/][drivers]]
+- Elastic Network Adapter (ENA) - [[http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking-ena.html][docs]] - [[https://github.com/amzn/amzn-drivers][drivers]]
+
+r4 have access to ENA drivers
+[[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html#supported_instances][Instances support]]
+
+** Before enhanced networking
+
+.image images/traditional2.png _ 600
+
+** Option 1) Intel 82599
+
+ixgbevf
+
+.image images/intel1.png _ 600
+
+** Option 2) ENA [best]
+
+From the docs:
+
+    The Elastic Network Adapter (ENA) supports network speeds of up to 20 Gbps.
+    P2, R4, X1, and m4.16xlarge instances use the Elastic Network Adapter for
+    enhanced networking.
+
+ENA is new (Jun 28, 2016) and when introducted was only working on X1.
+
+    ENA provides high network performance and improved CPU scalability through
+    a multi-queue software / device interface. ENA provides features such as
+    IPv4 header checksum and TCP / UDP checksum offloads to reduce CPU
+    utilization of network processing. ENA also features support for
+    Receive-Side Steering (RSS) with receive traffic distribution to multiple
+    vCPUs, and dynamic interrupt moderation mechanism with interrupt affinity
+    per vCPU. With support for multiple Tx / Rx queues, each with a dedicated
+    MSI-X interrupt, ENA is designed to scale well when used with modern
+    processors.
+
+*** Bandwith
+
+ENA supports network speeds of up to 20 Gbps
+[[https://forums.aws.amazon.com/thread.jspa?messageID=738112&#738112][however]]:
+
+    You can currently drive a maximum of 10 Gbps to a single instance in a
+    placement group. In order to achieve 20 Gbps, you will need to use three
+    or more X1 instances in a placement group. We are working on enabling 20
+    Gbps throughput between two instances across multiple flows, and will post
+    an update once we have rolled out this change.
+
+* Check availability/usage
+
+** Image (AMI) support
+
+To check if your image (the one you are using or want to use) support ENA you
+can run the following:
+
+    $ instance_id = 'xxx'
+    $ aws ec2 describe-instances --instance-id $instance_id --query 'Reservations[].Instances[].EnaSupport'
+
+It will return an empty array if not or:
+
+    [
+        true
+    ]
+
+If it does.
+
+*NOTE*: You can't call this command on an AMI that's not yours (like UBUNTU).
+
+    An error occurred (AuthFailure) when calling the DescribeImageAttribute operation: Not authorized for image:ami-9dcfdb8a
+
+** Check if the drivers are installed on your OS:
+
+    $ modinfo ena
+    filename:       /lib/modules/4.4.0-57-generic/kernel/drivers/net/ethernet/amazon/ena/ena.ko
+    version:        1.0.2
+    license:        GPL
+    description:    Elastic Network Adapter (ENA)
+    author:         Amazon.com, Inc. or its affiliates
+    srcversion:     881520E877FD2888486C76A
+    alias:          pci:v00001D0Fd0000EC21sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd0000EC20sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00001EC2sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00000EC2sv*sd*bc*sc*i*
+    depends:
+    intree:         Y
+    vermagic:       4.4.0-57-generic SMP mod_unload modversions
+    parm:           debug:Debug level (0=none,...,16=all) (int)
+
+** Check if you are using the drivers (OS)
+
+Find you interface:
+
+    $ ifconfig
+    [...]
+    ens3      Link encap:Ethernet  HWaddr 06:c2:9a:20:a4:b4
+              inet addr:10.96.30.23  Bcast:10.96.30.255  Mask:255.255.255.0
+              inet6 addr: fe80::4c2:9aff:fe20:a4b4/64 Scope:Link
+              UP BROADCAST RUNNING MULTICAST  MTU:9001  Metric:1
+              RX packets:63759808 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:10717624 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:1000
+              RX bytes:133612964393 (133.6 GB)  TX bytes:50435094047 (50.4 GB)
+    [...]
+
+On a r3:
+
+    $ ethtool -i ens3
+    driver: ixgbevf
+    version: 2.12.1-k
+    firmware-version:
+    expansion-rom-version:
+    bus-info: 0000:00:03.0
+    supports-statistics: yes
+    supports-test: yes
+    supports-eeprom-access: no
+    supports-register-dump: yes
+    supports-priv-flags: no
+
+On a r4:
+
+    $ vif
+
+If it's using the right drivers you will see:
+
+    $ ethtool -i ens3
+    driver: ena
+    version: 1.0.2
+    firmware-version:
+    expansion-rom-version:
+    bus-info: 0000:00:03.0
+    supports-statistics: yes
+    supports-test: no
+    supports-eeprom-access: no
+    supports-register-dump: no
+    supports-priv-flags: no
+
+*** Driver version
+
+On a r4:
+
+    $ modinfo ena
+    filename:       /lib/modules/4.4.0-57-generic/kernel/drivers/net/ethernet/amazon/ena/ena.ko
+    version:        1.0.2
+    license:        GPL
+    description:    Elastic Network Adapter (ENA)
+    author:         Amazon.com, Inc. or its affiliates
+    srcversion:     881520E877FD2888486C76A
+    alias:          pci:v00001D0Fd0000EC21sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd0000EC20sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00001EC2sv*sd*bc*sc*i*
+    alias:          pci:v00001D0Fd00000EC2sv*sd*bc*sc*i*
+    depends:
+    intree:         Y
+    vermagic:       4.4.0-57-generic SMP mod_unload modversions
+    parm:           debug:Debug level (0=none,...,16=all) (int)
+
+And:
+
+    $ modinfo ixgbevf
+    filename:       /lib/modules/4.4.0-57-generic/kernel/drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
+    version:        2.12.1-k
+    license:        GPL
+    description:    Intel(R) 10 Gigabit Virtual Function Network Driver
+    author:         Intel Corporation, <linux.nics@intel.com>
+    srcversion:     3BE9CE158D5544A1C1411D8
+    alias:          pci:v00008086d000015A9sv*sd*bc*sc*i*
+    alias:          pci:v00008086d000015A8sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001564sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001565sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001530sv*sd*bc*sc*i*
+    alias:          pci:v00008086d00001515sv*sd*bc*sc*i*
+    alias:          pci:v00008086d0000152Esv*sd*bc*sc*i*
+    alias:          pci:v00008086d000010EDsv*sd*bc*sc*i*
+    depends:
+    intree:         Y
+    vermagic:       4.4.0-57-generic SMP mod_unload modversions
+    parm:           debug:Debug level (0=none,...,16=all) (int)
+
+
+** How
+
+You cannot [[https://docs.aws.amazon.com/cli/latest/reference/ec2/modify-instance-attribute.html][modify]]
+a running instance:
+
+    $ aws ec2 modify-instance-attribute --instance-id i-0001efdba038f7bfa --ena-support
+    An error occurred (IncorrectInstanceState) when calling the
+    ModifyInstanceAttribute operation: The instance 'i-0001efdba038f7bfa' is not
+    in the 'stopped' state.
+
+You cannot [[https://docs.aws.amazon.com/cli/latest/reference/ec2/modify-image-attribute.html][modify]] an existing image.
+
+You cannot COPY it and change it on the fly.
+
+This is the only way:
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking-ena.html][docs]]
+
+** Terraform support
+
+- [[https://github.com/hashicorp/terraform/issues/7815][Github Issue]]
+- [[https://github.com/hashicorp/terraform/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20ENA][Issue search]]
+
+Support for this capability is still absent at the moment.
+
+** Packer support
+
+- [[https://github.com/mitchellh/packer/issues/3688][Issue]]
+- [[https://github.com/mitchellh/packer/pull/4312][WIP]]
+
+Still not available
+
+** Ubuntu support
+
+- https://bugs.launchpad.net/cloud-images/+bug/1254930
+
+* Sources
+
+- AWS re -Invent 2016 - Deep Dive on Amazon EC2 Instances, Featuring Performance Optimization (CMP301)

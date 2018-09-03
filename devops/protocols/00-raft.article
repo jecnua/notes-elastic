@@ -1,0 +1,22 @@
+Raft
+|| Last update: 30 Dec 2016
+
+** Performance
+
+From [[https://github.com/hashicorp/raft][hashicorp/raft (github)]]:
+
+    In terms of performance, Raft is comparable to Paxos. Assuming stable
+    leadership, committing a log entry requires a single round trip to half of
+    the cluster. Thus performance is bound by disk I/O and network latency.
+
+* Projects
+
+- https://github.com/hashicorp/raft-boltdb (raft backend for BoltDB)
+
+* Sources
+
+- [[https://ramcloud.stanford.edu/wiki/download/attachments/11370504/raft.pdf][Raft paper]]
+- [[https://raft.github.io/raft.pdf][Raft paper (github)]]
+- [[https://github.com/hashicorp/raft][hashicorp/raft (github)]]
+- [[https://github.com/coreos/etcd/tree/master/raft][etcd/raft (github)]]
+- [[http://collabnix.com/archives/1464][Understanding Node Failure Handling under Docker 1.12 Swarm Mode]] (15 Jul 2016)

@@ -1,0 +1,30 @@
+Moby
+|| Last update: 23 May 2017
+
+* Intro
+
+- [[http://mobyproject.org/][Mobyproject website]]
+
+.image images/moby-project.png _ 600
+
+Is a suite of toolkits.
+It aim to allow people to reuse components.
+Is similar to what happened before to:
+
+- OCI/runc
+- containerd
+
+The monolotic project has been moved from docker/docker to moby/moby. The goal is to create an upstream for docker.
+Also to create a clear division between project vs. product.
+
+    Quote from Solomon Hykes:
+    We are proposing the following list of changes:
+    - splitting up the engine into more open components - removing the docker UI, SDK etc to keep them in the Docker org - clarifying that the project is not limited to the engine, but to the assembly of all the individual components of the Docker platform - open-source new tools & components which we currently use to assemble the Docker product, but could benefit the community - defining an open, community-centric governance inspired by the Fedora project (a very successful example of balancing the needs of the community with the constraints of the primary corporate sponsor)
+
+* Other
+
+- https://github.com/docker/notary
+
+* Resources
+
+- https://news.ycombinator.com/item?id=14156954

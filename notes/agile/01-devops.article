@@ -1,0 +1,53 @@
+DevOps
+|| Last update: 3 Sep 2018
+
+* Intro
+
+Good article on netflix approach
+
+- [[https://medium.com/netflix-techblog/full-cycle-developers-at-netflix-a08c31f83249]] May 17 2018 by Netflix
+
+Original article about the three ways
+
+- [[http://itrevolution.com/the-three-ways-principles-underpinning-devops/]] August 22 2012 by Gene Kim
+
+
+  The problem with automation is the same as the problem with all
+  abstractions — in that at the end of the day, it’s leaky.
+  - Cindy Sridharan
+  Source: https://medium.com/@copyconstruct/the-death-of-ops-is-greatly-exaggerated-ff3bd4a67f24
+
+  better tooling is definitely a net positive, automation can be best leveraged
+  when the person using the automation understands the underlying abstractions,
+  whether it’s a complex deployment mechanism that is being abstracted by a
+  Slack command or a database primary failover or even a routine testing of
+  restoration a database backup.
+  - Cindy Sridharan
+  Source: https://medium.com/@copyconstruct/the-death-of-ops-is-greatly-exaggerated-ff3bd4a67f24
+
+  Automation isn’t making developers better at Ops. One could argue that it
+  isn’t even making Operations engineers better at Ops. Automation tools make
+  a ton of assumptions and tradeoffs that only become obvious to someone who
+  understands the consequences of these decisions.
+  - Cindy Sridharan
+  Source: https://medium.com/@copyconstruct/the-death-of-ops-is-greatly-exaggerated-ff3bd4a67f24
+
+  … all abstractions, leak, and the only way to deal with the leaks
+  competently is to learn about how the abstractions work and what they are
+  abstracting. So the abstractions save us time working, but they don’t save
+  us time learning.
+  - JOEL SPOLSKY
+  Source: https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/
+
+  show that we can't stop failure at design-time and that automation has its
+  limits (and often leads to unintended negative consequences). We need humans
+  and we need those humans to be experts at operating complex systems.
+  - John Allspaw
+  Source: https://www.rundeck.com/blog/reports-of-the-impending-demise-of-ops-are-greatly-exaggerated
+
+
+
+* Re/Sources
+
+- AMAZING [[https://medium.com/@copyconstruct/the-death-of-ops-is-greatly-exaggerated-ff3bd4a67f24]]
+- [[https://www.rundeck.com/blog/reports-of-the-impending-demise-of-ops-are-greatly-exaggerated]] - May 21, 2018

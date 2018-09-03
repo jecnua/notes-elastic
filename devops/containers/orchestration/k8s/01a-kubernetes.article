@@ -1,0 +1,253 @@
+Kubernetes
+|| Last update: 8 Jul 2017 || k8s 1.7.0
+
+* Intro
+
+Kubernetes (k8s) is a container management tool, scheduler and service discovery.
+It is NOT a PaaS. If you want a PaaS just choose:
+
+- Heroku
+- Deis
+- Cloud Foundry
+
+So many good companies are working to make it better:
+
+- Redhat (open-shift build on it)
+- CoreOS (they build on it and you know... etcd, flannel, coreos and so on)
+
+Kubernetes is 2 years old.
+Multizone cluster in k8s is called "ubernetes lite".
+
+** Kubernetes distribution
+
+- OpenShift from Red Hat
+- Tectonic from CoreOS
+- Kismatic from Apprenda
+- Rancher
+- Canonical Distribution of Kubernetes
+- GKE from Google
+- Azure Container Service from Microsoft
+- Photon Platform from VMware
+- Navops from Univa
+
+Read this article for the point: [[http://www.morethanseven.net/2016/11/23/the-coming-of-the-kubernetes-distributions/][The coming of the Kubernetes distributions]] (23 Nov 2016)
+
+* Architecture
+
+[[https://github.com/kubernetes/kubernetes/blob/master/docs/design/architecture.md][Architecture]]
+kublet talk to docker and manage the linking and locking of containers in a pod.
+
+** Node
+
+A node is a machine that runs a *kublet*.
+
+** POD
+
+Containers that share namespaces (es: network namespaces).
+You will need to use a lot of labels :)
+You can restart a container in a pod without restarting the whole pod.
+There is only one owner of an IP and a pod can own only 1 ip.
+
+** Scheduler
+
+Best fit based on pod requirements. It's pluggable (you can use mesos if you want for example).
+To make good decisions, the scheduler needs to know the limits of your containers. If you *don't* put limits, he will try his best, but boxes will probably be over/under utilised (since he has no clue about how to act best).
+
+*TAKEAWAY*: _Always_ declare memory and CPU limits
+
+** Deployments
+
+Checks labels not pods.
+
+Deployments are used instead of rolling updates. You can roll back now and is all server side.
+
+** Service
+
+- Service discovery for pods.
+- Virtual IPs (to avoid port collision... because you should care)
+- They are fixed cluster wide.
+
+There is a proxy binary on every node that updates iptables rules to forward traffic. Any requests to the box comes to it, he does a dynamic query to k8s to get all the pods that match the labels associated with that virtual ip.
+So when you deploy an app, you only need to care about the *vip*.
+Basic round robin with port session affinity (pin hard hitting client to the same backend).
+This all happens in userspace.
+
+When you create a service it will give you a public ip visible only from inside the network.
+
+Types:
+
+- nodeport (port collision)
+- public ips
+- loadbalancer
+
+and so on. Is pluggable.
+Pods are decoupled from services! This way it scales much better. They have no idea of each other.
+
+* Namespaces
+
+They are boundary for:
+
+- resources
+- policy (in the future)
+- views (queries)
+
+* Networking
+
+There are many solutions:
+
+- Flannel
+- Weawe
+- OpenVSwitch
+- Project Calico
+- Cloud Provider
+
+The k8s aws script use flannel.
+
+.link https://github.com/coreos/flannel flannel
+
+Flannel manages the docker bridge and talk at the start with etcd for subnet info.
+
+To do service discovery the proxy will query k8s. Paying 0 hit is difficult (almost impossible) but paying 1 hop for discovery should be acceptable in most cases. So this way of using VIP and proxies works in most cases.
+There are alternative mechanism like DNS but you have to configure it (???)
+
+All pods are in the same underlying flannel network and you *can't* contact them *directly* from outside the system. Nor you should. If you want to access from outside use *services*.
+
+    netstat -pantl
+
+If you want to check what flannel is doing.
+
+    ifconfig
+
+_docker0_ is the docker bridge.
+
+    netstat -rn
+
+to see the route tables.
+What flannel does is encapsulation and back on the other side.
+
+TAKEWAY: Layer 3 is your friend
+
+Without it:
+
+- container
+- virtual ethernet
+- docker bridge
+- docker tcp proxy
+- flannel
+- ***
+- wire
+
+and back.
+
+Flannel can run in a gataway mode to update the route table and then get out of the way with no encapsulation.
+
+** Quick note about fleet
+
+.link https://github.com/coreos/fleet fleet
+
+Is just a sysctl at global view.
+
+- No service discovery
+- No quotas
+- No rolling updates
+
+CoreOS themselves are dedicating more resources to develop k8s than fleet. It is just too simple for entrerprise use.
+
+** VIP
+
+The virtual ip *is*not* tied to an interface, but to a network entry.
+This way there is no risk of losing it. It can be moved around.
+
+** Sharing network namespaces
+
+How do you ensure memcached is on the same server as your application? What happens is that in docker you can share network namespaces to allow this app to talk like they are in _localhost_. This is done by k8s by creating a small, empty container that *own* the network (grabs the ip), that the others int he pod will *join* to share it. This container won't be seen in any kubectl command.
+This infrastructure pod consume no resource. Any other container is the pod says to docker "gimme a container and make me join the network of THAT container". In this way they logically became the same group.
+
+*** DNS
+
+.link http://kubernetes.io/docs/admin/dns/ Dns
+
+*** Node ip
+
+    $ kubectl describe service my-nginx
+    Name:           my-nginx
+    Namespace:      default
+    Labels:         run=my-nginx
+    Selector:       run=my-nginx
+    Type:           LoadBalancer
+    IP:         10.123.253.27
+    LoadBalancer Ingress:   104.197.129.240
+    Port:           <unnamed>   80/TCP
+    NodePort:       <unnamed>   30723/TCP
+    Endpoints:      10.120.0.6:80
+    Session Affinity:   None
+    No events.
+
+Port is the port the POD is listening to.
+NodePort is the actual port ON the server on which kubelet is listening. It will use it to redirect the traffic to the pods. This is the port you will see in the listeners of the ELB.
+
+.link https://stackoverflow.com/questions/33407638/what-is-the-cluster-ip-in-kubernetes How to get ips in k8s
+
+* Services
+
+By default, services and pods are only accessible inside the internal Kubernetes network.
+
+* Ingress
+
+    kubectl get ing
+
+Ingress is how kubernetes allow inbound connection to reach the _service_.
+More on other docs.
+
+* Scaling
+
+    $ kubectl scale deployments/my-hello-world --replicas=6
+    deployment "my-hello-world" scaled
+    $ kubectl scale deployments/my-hello-world --replicas=2
+    deployment "my-hello-world" scaled
+
+    kubectl autoscale rc foo --min=2 --max=5 --cpu-percent=80
+
+Or that one :)
+
+.link http://kubernetes.io/docs/user-guide/horizontal-pod-autoscaling/ pod autoscaling
+
+* Advices
+
+- Enable cross zone load balancing when using LoadBalancer (1.4+ is not manual)
+- DNS addon could get under load easily. Scale as required.
+- Study all the components under kube-system
+
+* Releases
+
+** 1.2
+
+- Deployments released as Beta feature
+
+** 1.3
+
+- Depoyments released
+
+Among the functionality added in this version:
+
+- PetSets: When you want applications to survive restarts maintaining filesystem and identity intact
+- Ubernetes: Yuhuu! Multiple k8s cluster with cross cluster management. better to separate work.
+- Jobs: Run only once. Sort of natch processing work. Once it's done the job it doesn't need the kublet to restart it.
+- etcd 3 with scalability improvements
+- k8s performance
+
+replication controllers have been replaced by replica sets.
+
+** 1.7
+
+- https://kubernetes.io/docs/tasks/administer-cluster/kubeadm-upgrade-1-7/
+
+* Future
+
+** Protobuf
+
+.link https://github.com/google/protobuf protobuf
+
+Work on protobuf (created by google) serialization alternative to json over the network.
+Serializing data to binary and send it over the newtwork.
+Platofrm/languge neutral.

@@ -1,0 +1,52 @@
+Puppet notes
+
+* Intro
+
+** 5.0 support
+
+The puppet module looks like is always behind.
+I don't honestly think they are investing in it as much as before.
+
+- https://github.com/elastic/puppet-elasticsearch/issues/765
+- https://github.com/elastic/puppet-elasticsearch/issues/764
+
+** Node names
+
+The puppet module at:
+
+https://github.com/elastic/puppet-elasticsearch/blob/master/manifests/instance.pp
+
+does the following:
+
+    if(has_key($instance_config, 'node.name')) {
+      $instance_node_name = {}
+    } else {
+      $instance_node_name = { 'node.name' => "${::hostname}-${name}" }
+    }
+
+and node name being:
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration.html#node-name
+
+    The hostname of the machine is provided in the environment variable HOSTNAME
+
+as a consequence you may have something like this:
+
+    HOSTNAME-HOSTNAME
+
+so
+
+    elasticsearch-data-master-192.168.x.x-elasticsearch-master-192.168.x.x
+
+and that's not good.
+In facter you have something like this:
+
+    $ facter | grep -e '^hostname =>'
+    hostname => elasticsearch-master-192.168.x.x
+
+    $ facter | grep fqdn
+    fqdn => elasticsearch-master-192.168.x.x.ec2.internal
+
+so do:
+
+    node.name = ${::hostname}

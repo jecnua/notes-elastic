@@ -1,0 +1,528 @@
+Best practices for AWS and Terraform
+|| Last update: 24 Jan 2018
+
+* Intro
+
+Always changing sets of rule to follow the best practices
+I find around or discover by using the tools directly.
+Ever changing and totally opinionated :)
+
+* Tags
+
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/ec2-resource-tags/][Best practices]]
+
+Everywhere terraform allow to have tags, add them.
+At least try to have:
+
+- Name
+- Description (optional)
+- TfCodePath: Follows
+- TfModuleName (only if a module): The module name
+- Env: The environment
+
+** Terraform code reference
+
+Tag the code you refer to in terraform (ALWAYS):
+
+    TfCodePath   = "${join("/",slice(split("/", path.cwd),
+    length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
+
+The other are not very useful:
+
+    TfCodePath   = "${join("/",slice(split("/", path.cwd),
+    length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
+    TfPathCwd    = "${path.cwd}"
+    TfPathModule = "${path.module}"
+    TfPathRoot   = "${path.root}"
+
+Will result in:
+
+    tags.TfCodePath:   "my-terraform-repo/development/my-module"
+    tags.TfPathCwd:    "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+    tags.TfPathModule: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
+      .terraform/modules/a3eda4daf706c9875a23dc8a678dd035"
+    tags.TfPathRoot:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+
+** Name and/or Description
+
+Human readable.
+
+* EC2
+
+** T2 unlimited for DEV envs
+
+With the release of [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/t2-unlimited.html][t2 unlimited]] I would say use t2 for all DEV/QA
+projects when possible and alert just on *CPUSurplusCreditsCharged*
+(and ignore when using the surplus).
+
+This will solve the annoying problems of being throttled when the
+credits ends.
+
+** M5 over M4 for general purposes
+
+M5 over M4 when possible for new projects (cheaper and better)
+
+* Security groups
+
+** Explicit names
+
+To avoid to look like:
+
+    name: "terraform-006466ad9f29d55036287b004f"
+
+Don't use name prefix!!! They limit to too little characters.
+Set *names*:
+
+    name   = "${substr(format("app-ag-alb-sg-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+
+And 32 is the limit.
+
+** Make them injectable
+
+All sg should have NO inline definition. When inside a module the id should
+be returned to allow *injection* if needed.
+
+* Routes
+
+** Make them injectable
+
+Like SG, routes have both inline and injectable versions.
+Choosing the inline version for a module, will force you to ask
+parameters like IGW or NATGW when callig the module. What if
+the caller doesn't need it? What if they need different routes?
+
+Make a simple route_table in the module with only the NEEDED
+routes (also this injected) and return the id of the route route_table
+to allow more injections.
+
+* Autoscaling groups
+
+** Launch Configuration Gotcha
+
+Changes made to the Launch Configuration normally require a new resource, but the original Launch Config is tied to the Autoscaling group, so the name needs the change whenever the resource is recreated.  This will not happen if you use the generic random_id.  To avoid, create a specific random_id with additional keepers, which force the change of the random_id if specific things change.  See [[https://www.terraform.io/docs/providers/random/r/id.html]] for details.  Here is an example:
+
+    resource "random_id" "random_lc_gen" {
+      keepers = {
+        lc_image_id         = "${var.ami_id_pm_node != "" ? var.ami_id_pm_node : data.aws_ami.ubuntu.id}"
+        lc_instance_type    = "${var.ec2_instance_type}"
+        lc_key_name         = "${var.ec2_key_name}"
+        lc_user_data        = "${data.template_file.bootstrap_node.rendered}"
+        lc_root_volumetype  = "${var.root_volumetype}"
+        lc_root_device_size = "${var.ec2_instance_root_device_size}"
+      }
+
+      byte_length = 32
+    }
+
+    resource "aws_launch_configuration" "example_launch_configuration" {
+      count                       = "${signum(var.num_nodes)}"
+      name                        = "${substr(format("example-lc-%s-%s", var.environment, random_id.random_lc_gen.dec), 0, 32)}"
+      image_id                    = "${random_id.random_lc_gen.keepers.lc_image_id}"
+      instance_type               = "${random_id.random_lc_gen.keepers.lc_instance_type}"
+      key_name                    = "${random_id.random_lc_gen.keepers.lc_key_name}"
+      user_data                   = "${random_id.random_lc_gen.keepers.lc_user_data}"
+      associate_public_ip_address = false
+      ebs_optimized               = false
+
+      root_block_device = {
+        volume_type           = "${random_id.random_lc_gen.keepers.lc_root_volumetype}"
+        volume_size           = "${random_id.random_lc_gen.keepers.lc_root_device_size}"
+        delete_on_termination = true
+      }
+
+      lifecycle {
+        create_before_destroy = true
+      }
+
+      security_groups = [
+        "${aws_security_group.node_sg.id}",
+      ]
+    }
+
+** Explicit names
+
+AG and LC should have explict names:
+
+    name = "${substr(format("example-api-lc-%s-%s", var.environment, random_id.random_gen.dec), 0, 32)}"
+
+** LT over LC
+
+Prefer [[https://docs.aws.amazon.com/autoscaling/latest/userguide/create-asg-launch-template.html][launch templates]] over [[https://docs.aws.amazon.com/autoscaling/latest/userguide/LaunchConfiguration.html][launch config]] since this is the new
+way AWS will manage AG from now on (plus they are more powerful).
+Among the benefits:
+
+- You can use t2 unlimited
+- You can tag EBS volumes
+
+** Enable metrics
+
+- [[https://aws.amazon.com/about-aws/whats-new/2016/08/free-auto-scaling-group-metrics-with-graphs/]]
+
+Activate on all auto-scaling group because they are [[https://docs.aws.amazon.com/cli/latest/reference/autoscaling/enable-metrics-collection.html][not by default]]:
+
+    enabled_metrics = [
+      "GroupMinSize",
+      "GroupMaxSize",
+      "GroupDesiredCapacity",
+      "GroupInServiceInstances",
+      "GroupPendingInstances",
+      "GroupStandbyInstances",
+      "GroupTerminatingInstances",
+      "GroupTotalInstances",
+    ]
+
+** Notifications
+
+All Autoscaling Groups should notify in case of events.
+However, a SNS queue should *never be created INSIDE a module*.
+Instead, pass it to the module as a variable.
+
+    variable "sns_topic_notifications" {
+      type        = "string"
+      Description = "The SNS topic to use when the system autoscale. If empty no notification will be sent"
+      default     = ""
+    }
+
+And be optional if alerting or not:
+
+    resource "aws_autoscaling_notification" "mod_asg_notification" {
+      count     = "${var.sns_topic_notifications == "" ? 0 : 1}"
+      topic_arn = "${var.sns_topic_notifications}"
+
+      group_names = [
+        "${aws_autoscaling_group.ag_name.name}",
+      ]
+
+      notifications = [
+        "autoscaling:EC2_INSTANCE_LAUNCH",
+        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+        "autoscaling:EC2_INSTANCE_TERMINATE",
+        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+      ]
+    }
+
+* EIP -  Elastic IP
+
+[[https://aws.amazon.com/about-aws/whats-new/2017/12/amazon-virtual-private-cloud-vpc-now-allows-customers-to-tag-their-elastic-ip-addresses/][Now]] is finally possible to tag EIP so we should do it for all of them.
+
+* Load balancers: ELB/ALB/NLB
+
+** Naming conventions
+
+- int-elb
+- ext-elb
+
+** ALB/NLB only
+
+ELB are deprecated (to use only with EC2 classic) so use only A/NLB to manage traffic.
+Put the ALB only outside a module!
+
+REASON: The ALB needs to live outside the module to do blue/green deployments.
+
+Other best practices and gotchas:
+
+- Limit ALB name to 32 chars.
+- Span a subnet for each AZ
+- Use NLB for autoscaling groups healthchecks instead of ELB
+- Explicit names
+- Logs on s3
+- No external access for module NLBs: should have only default listener 80 and no other access
+
+*** Terraform resource
+
+Use the new [[https://www.terraform.io/docs//aws/r/lb.html][aws_lb]] over
+aws_alb. That's the new preferred way to create A/NLBs.
+
+Be explicit with the type (don't default silently).
+
+    load_balancer_type         = "application"
+
+Also use the new:
+
+- aws_lb_listener
+- aws_lb_target_group
+
+* AMI
+
+Every module should allow an AMI id to be passed as parameter.
+If nothing is passed, the module should fetch the latest AMI on AWS filtered by a specic regex.
+Passing an AMI should override this dynamic search.
+
+    variable "ami_id" {
+      Description = "The id of the AMI to use. If empty, the LATEST will be used."
+      default     = ""
+    }
+
+Example of dynamic fetching:
+
+    data "aws_ami" "ami_dynamic" {
+      most_recent = true
+      owners      = ["${var.ami_owner}"] # For example Canonical ID
+      filter {
+        name   = "name"
+        values = ["${var.ami_name_filter_regex}"]
+      }
+      filter {
+        name   = "virtualization-type"
+        values = ["hvm"]
+      }
+      name_regex = "${var.ami_name_regex}"
+    }
+
+When using a resource that need an AMI:
+
+    image_id = "${var.ami_id != "" ? var.ami_id : data.aws_ami.ubuntu.id}"
+
+On a module level:
+
+    module "k8s" {
+      source            = "xxx"
+      [...]
+      ami_id_worker     = "ami-f0768de6"
+    }
+
+* Variables
+
+All variable should have:
+
+- type
+- Description
+
+And optionally default.
+
+* Route52
+
+* Zones
+
+Some things like ZONES and some RECORD SETS, you NEVER want to destroy.
+To protect against errors, add:
+
+    lifecycle {
+      prevent_destroy = true
+    }
+
+* ACM - SSL certificates
+
+** Validation
+
+For new ZONES, use the DNS method to validate SSL certs.
+It will avoid the problems of sending email and having to click on a link to
+renew it every year.
+
+- [[https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html]]
+
+* Modules
+
+** Providers (0.11+)
+
+Providers should not be defined in modules but injected from root (the caller).
+
+Quoting:
+
+    The recommended design pattern moving forward is to place all explicit
+    provider blocks in the root module of the configuration, and to pass providers
+    explicitly to child modules so that the associations are obvious from
+    configuration
+
+Quoting:
+
+    With the new provider inheritance model, it is strongly recommended to
+    refactor any configuration where child modules define their own provider
+    blocks so that all explicit configuration is defined in the root module.
+    This approach will ensure that removing a module from the configuration
+    will not cause any provider configurations to be removed along with it,
+    and thus ensure that all of the module's resources can be successfully
+    refreshed and destroyed.
+
+Sources:
+
+- [[https://www.terraform.io/upgrade-guides/0-11.html#interactions-between-providers-and-modules]]
+- [[https://www.hashicorp.com/blog/hashicorp-terraform-0-11]]
+
+** Never create DNS
+
+*NEVER* create DNS entries inside a module!
+
+You can check for any such reference in the files.
+
+    TOTAL=`find . -name "*.tf" | xargs cat | grep 'resource "aws_route53_record"' | wc -l`
+    if [[ $TOTAL -ne 0 ]]
+    then
+      printf "$RED Failed! Found $TOTAL occurrence/s $NC \n"
+      let N_FAILED=N_FAILED+1
+    else
+      echo "ALL GOOD"
+      let N_SUCCESS=N_SUCCESS+1
+    fi
+
+** Make thinks optional
+
+Use count=0.
+
+** Files
+
+They should have the following files:
+
+- 00-backend_and_providers.tf
+- 00-remote-states.tf
+- 00-variables.tf
+- 00-variables_default.tf (only for modules)
+- 00-variables_required_inputs.tf (only for modules)
+- 99-outputs.tf
+- README
+- CHANGELOG (only for modules)
+- params.md (generated)
+- terraform.tfvars
+
+*** 00-backend_and_providers.tf
+
+This is an example:
+
+    terraform {
+      # The configuration for this backend will be filled in by Terragrunt
+      backend          "s3"             {}
+      required_version = ">= 0.10.8"
+    }
+
+    provider "terraform" {
+      version = "~> 1.0"
+    }
+
+    provider "aws" {
+      region     = "${var.network_region}"
+      access_key = "${var.access_key}"
+      secret_key = "${var.secret_key}"
+      version    = "~> 1.1"
+    }
+
+    provider "random" {
+      version = "~> 1.0"
+    }
+
+    provider "template" {
+      version = "~> 1.0"
+    }
+
+    variable "access_key" {
+      description = "Read at run-time"
+      type        = "string"
+    }
+
+    variable "secret_key" {
+      description = "Read at run-time"
+      type        = "string"
+    }
+
+*** 00-remote-states.tf
+
+If needed: It can host the reference to remote states.
+
+    data "terraform_remote_state" "lb_network_global" {
+      backend = "s3"
+
+      config {
+        bucket = "my-terraform-state"
+        key    = "global/lb-network/terraform.tfstate"
+        region = "us-east-1"
+      }
+    }
+
+* Tips and tricks
+
+    terraform show
+
+** Check all terraform.tfvars
+
+    find . -name "terraform.tfvars" | xargs cat
+    find . -name "*.tfvars" | xargs cat
+
+They should only have:
+
+    terragrunt = {
+      include {
+        path = "${find_in_parent_folders()}"
+      }
+    }
+
+** Check there is no terragrunt file
+
+    find . -name ".terragrunt" | xargs cat
+
+** Don't use uuid to create names
+
+If you do this:
+
+    name = "${substr(format("myelb-int-80-%s", uuid()), 0, 32)}"
+
+You will need to put:
+
+    lifecycle {
+      [...]
+      ignore_changes        = ["name"]
+    }
+
+** Always generate params file
+
+On mac:
+
+    brew install terraform-docs
+    brew list | grep terraform
+
+And then:
+
+    terraform-docs md `pwd` > `pwd`/params.md
+
+** Atom only
+
+Some plugins:
+
+    apm list | grep terraform
+    ├── language-terraform
+    ├── linter-terraform-syntax
+    ├── terraform-fmt
+
+** Functions
+
+Avoid checks like this:
+
+    count = "${var.num_nodes_for_app == 0 ? 0 : 1}"
+
+It's useful when you want to parametrise things like AG or CN.
+But instead of:
+
+    == 0 ? 0 : 1
+
+Use [[https://www.terraform.io/docs/configuration/interpolation.html#signum-int-][signum]]:
+
+    count = "${signum(var.num_nodes_for_app)}"
+
+* Workflow
+
+** Create a new environment
+
+The in _01-main_blue.tf_:
+
+    module "mymodule_01" {
+    [...]
+    }
+
+** Load variables in environment
+
+    tf-load-aws(){
+      AK=`cat ~/.aws/credentials | grep -a3 '\[default\]' | grep aws_access_key_id | cut -d '=' -f 2 | xargs`
+      SK=`cat ~/.aws/credentials | grep -a3 '\[default\]' | grep aws_secret_access_key | cut -d '=' -f 2 | xargs`
+      export AWS_USER="default"
+      export TF_VAR_access_key="$AK"
+      export TF_VAR_secret_key="$SK"
+      # https://github.com/hashicorp/terraform/blob/34956cd12449cb77db3f55e3286cd369e8332eeb/website/docs/configuration/providers.html.md#provider-plugin-cache
+      export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+      unset AWS_SECRET_ACCESS_KEY
+      unset AWS_ACCESS_KEY_ID
+      unset AWS_SESSION_TOKEN
+    }
+
+This 'export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"' it is used to cache plugins.
+
+* Resources
+
+- [[https://www.terraform.io/docs/enterprise/guides/recommended-practices/index.html]]

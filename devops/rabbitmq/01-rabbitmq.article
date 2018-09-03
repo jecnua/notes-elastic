@@ -1,0 +1,80 @@
+RabbitMQ
+|| Last update: 17 Oct 2017
+
+* Notes
+
+** Name
+
+The *hostname* is the *nodename*. By default rabbitmq will use rabbit@hostname
+for the name of the node.
+
+** Connections
+
+Once the nodes are identified, they communicate through a *random*port*.
+To specify a single/range port, you have to change *rabbitmq*config* entries:
+
+    inet_dist_listen_min
+    inet_dist_listen_max
+
+** Ports
+
+Firewall ports:
+
+- 5672 (rabbit)
+- 4369 (epmd - erlang port mapper deamon) Erlang uses this to identify the node in the cluster
+- 65535 (to specify in the config)
+- 15672 (rabbitmq management)
+
+* Clustering
+
+You need a cluster of at least 2 nodes in two AZs to have AH.
+RabbitMQ *don't* span wan boundaries by itself.
+So how to obtain:
+
+- scalability
+- HA
+- performance
+
+A cluster or mirrored queues goes as far as HA, but no benefit gained.
+
+** The erlang way
+
+Erlang in clustered mode *is*not* tolerant to network partitions (including
+micro-partitions) and WILL cause some problems. The normal clustering
+(rabbitmq cluster) doesn't work!
+
+** Federation
+
+So what about *federation*?
+You can federate with other upstream exanges or queues. It means *forwarded*.
+Every new node would need to change the config to add the reference to the new ones and remove the old ones.
+
+NOTE: federation is MUCH slower than simple clustering!!!
+
+In the case of rabbitmq, a cluster of *mirrored*queues* really only provides only the ability to allow providers and consumers to continue in case of problems. No performance gains!
+
+Federated queues increase in capacity and throughput.
+
+You need to choose a topology:
+
+- Exchanges
+- Queues
+
+*** Exchanges
+
+The message will be delivered to:
+
+- Upstream exchange
+- Local queue
+- Other exchange
+- His queue
+
+*** Queues
+
+The message is moved by rabbit where there is more space. You can let LB and obtain more thorughput.
+
+** Shovel
+
+What about *shovel*?
+Is basically a distribuited broker.
+Just forward messages.

@@ -12,3 +12,7 @@ stackname: Name-${BUILD_NUMBER}
 * labels
 
 - account: xxx
+
+
+aws cloudformation validate-template
+https://github.com/awslabs/cfn-python-lint

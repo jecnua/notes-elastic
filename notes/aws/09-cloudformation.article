@@ -1,18 +1,45 @@
 Cloudformation
-|| Last update: 19 Jun 2018
+|| Last update: 4 Sep 2018
 
-* Validate
+* Linting and Validation (to test)
 
-TBD
+- aws cloudformation validate-template
+- [[https://github.com/awslabs/cfn-python-lint]]
 
-* best practices
+* Tagging
 
-stackname: Name-${BUILD_NUMBER}
+CF does not allow you to tag everything that the CLI does. Terraform does a much
+better job at that.
+To see the list of Resources you can tag on creation, you can go here:
 
-* labels
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-resources]]
 
-- account: xxx
+You can fasten the process by adding tags when you apply create-stack so that it gets
+propagates to all of them.
 
+    create-stack
+    --stack-name <value>
+    ...
+    [--tags <value>]
 
-aws cloudformation validate-template
-https://github.com/awslabs/cfn-python-lint
+    Key-value pairs to associate with this stack. AWS CloudFormation also
+    propagates these tags to the resources created in the stack. A maximum
+    number of 50 tags can be specified.
+    Source: https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-stack.html
+
+- [[https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-stack.html]]
+
+*HOWEVER* It gets propagated only to the ones that can be tagged at start (so
+you won't really solve the problem of tagging everything).
+
+Some resources are not even in the list. You can't tag things like:
+
+- Parameter store entry
+- CloudWatch logs
+
+and I expect more.
+
+* Re/Sources
+
+- [[https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-stack.html]]
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-resources]]

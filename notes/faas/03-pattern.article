@@ -1,0 +1,21 @@
+Patterns
+|| Last update: 4 Sep 2018
+
+* Patterns
+
+    Deep diving into CQRS with event sourcing you will find that a queue
+    separates the write and the read model.
+    [...]
+    Meaning the functionality as a whole is eventually consistent.
+    Source: https://medium.com/@hugo.oliveira.rocha/what-they-dont-tell-you-about-event-sourcing-6afc23c69e9a
+
+* About the 12 factor app
+
+Interesting view:
+
+- [[https://krisbuytaert.be/blog/115-factor-apps/]]
+
+* Re/Sources
+
+- [[https://medium.com/@hugo.oliveira.rocha/what-they-dont-tell-you-about-event-sourcing-6afc23c69e9a]]
+- [[https://krisbuytaert.be/blog/115-factor-apps/]]

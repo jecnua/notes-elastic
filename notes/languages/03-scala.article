@@ -1,0 +1,166 @@
+Scala (random notes)
+|| Last update: 4 Sept 2018
+
+* Intro
+
+use val not var
+val are immutable
+var is reusable
+
+ever variable access is translate is a function
+is a getter or a setter
+
+using var is bed practice
+
+* The case word
+
+case class
+allows you to create an object without new
+You can avoid using new in scala
+
+usually using case you won't have logging in it
+it just stores the data
+
+for normal objects with logic you need to use new
+
+you define functions with def
+
+the return value of a function is the last expression
+of the functions
+
+* tuples
+
+is a container for all data types
+when it gets too complicated you se a case ora class
+
+you can define up to 22
+
+you start counting from 1 in tuples
+
+case class Tuple2[T1, T2]()
+
+you have from tuple 1 to tuple 22
+
+they serialize automatically and deserialise too
+
+* Array
+
+in array is 0 the starting point
+is 1 only in tuples
+
+* case class
+
+business objects
+you should not add functions
+getter and setters
+are automatically
+
+* function as types
+
+> lambda functions
+
+in the definition of the function you need to define the types in but you
+don't have to define the typesof the return
+is better to return it however
+
+  def move(x:Int, y:Int) = {}
+
+  val addOne: Int => Int = x => x + 1
+
+this is an anonymous functions
+
+the return value is the last *statement* of the function
+
+(x:Any)
+
+any types
+
+** match
+
+you can use regular expression
+in match
+
+or it will just work as type of
+
+case _ is case default basically
+
+
+* List
+
+("a" :: "b" :: "c" :: Nil )
+
+in this syntax you need to put Nil at the end
+
+* Akka
+
+is a toolkit is not a framework
+lower level of abstraction
+
+messages are delivered asynchronously
+
+pass messages
+
+** Distribution model
+
+actor
+no access to the obecjt
+you accrss a ref called ActorRef
+
+location transparency (remoting)
+called akka remorting
+
+you can use akka cluster to create pools of actors
+autoscaling and transparent reference (clustering)
+
+it's using threads in the background
+
+threads are mapped to cpu corresponding actor and message are allowated to a
+threads for executions
+the dispatcher picks actor and message for mailbox
+
+** actors
+
+you can have multiple classes n a files
+
+  extends Actor
+
+you need to override at least the method Receive
+
+what methods are in the Actor?
+
+there are four different methods in there
+
+in case one of the actor dies it will bubble up
+and it can be managed
+
+you can send a reference of the father (reference)
+to receive acknoweledgement or ignore what happens to the moment
+
+** Actor system
+
+You need to instantiate an actor system
+
+system
+
+Props???
+is better than new to use the actor
+
+* object
+
+case objects name
+
+is a case class with no parameter
+
+* Usage
+
+you need to extend App
+is the one you need to do to use it
+is like main
+
+system.scheduler.schedule
+
+* Akka streams
+
+it spawn actors in the background
+
+.via

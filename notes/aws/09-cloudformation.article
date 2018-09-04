@@ -39,7 +39,10 @@ Some resources are not even in the list. You can't tag things like:
 
 and I expect more.
 
+- [[https://github.com/capitalone/cloud-custodian/issues/1994]]
+
 * Re/Sources
 
 - [[https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-stack.html]]
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-resources]]
+- [[https://github.com/capitalone/cloud-custodian/issues/1994]]

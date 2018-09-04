@@ -1,5 +1,5 @@
 Helm (chaotic notes)
-|| Last update: 3 Feb 2017
+|| Last update: 3 Sep 2018
 
 * Intro
 
@@ -82,49 +82,16 @@ Information about releases are stored as config maps.
 
     help repo updates
 
-
 git push
 drone.io build the project
 builds the docker image
 help plugin
 call the help chart and change the value
-
 all this info is passed to helm
 and send it to the cluster
 
-==
+* Helm 3
 
-fluentd cloudwatch
+- [[https://sweetcode.io/a-first-look-at-the-helm-3-plan/]]
 
-image
-tag
-pullPolicy: always
-
-aws:
- log_group: 'k8s-staging'
-
-==
-
-  .drone.io
-
-helm_deploy_staging
-
-drone branch-dron_commit
-
-interesting
-
-PIPELINE
-
-==
-
-helm rollback xxx ?
-
-==
-
-https://kubernetes.io/docs/user-guide/volumes/#awselasticblockstore
-
-==
-
-kubectl port forward
-
-==
+Moving to Lua

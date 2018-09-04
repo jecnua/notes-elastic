@@ -1,7 +1,27 @@
 DevOps
-|| Last update: 3 Sep 2018
+|| Last update: 4 Sep 2018
 
 * Intro
+
+Collection of links and analisys on devops.
+
+* Good analisys
+
+    The Dev vs. Ops split, DevOps, and Site Reliability Engineering are
+    examples of three different approaches used by companies to structure work:
+    Specialisation, convergence, and split incentives.
+    Source: https://medium.com/@skirsch/dev-vs-ops-devops-and-sre-f160dc6180f9
+
+* Others
+
+Best article I found on devops problems with growth
+
+- [[https://medium.com/@mattklein123/the-human-scalability-of-devops-e36c37d3db6a]]
+
+New companies are being built with a workforce that lacks critical, not
+easily replaceable, skillsets.
+- Matt Klein
+Source: https://medium.com/@mattklein123/the-human-scalability-of-devops-e36c37d3db6a
 
 Good article on netflix approach
 
@@ -10,7 +30,6 @@ Good article on netflix approach
 Original article about the three ways
 
 - [[http://itrevolution.com/the-three-ways-principles-underpinning-devops/]] August 22 2012 by Gene Kim
-
 
   The problem with automation is the same as the problem with all
   abstractions — in that at the end of the day, it’s leaky.
@@ -45,9 +64,9 @@ Original article about the three ways
   - John Allspaw
   Source: https://www.rundeck.com/blog/reports-of-the-impending-demise-of-ops-are-greatly-exaggerated
 
-
-
 * Re/Sources
 
+- AMAZING [[https://medium.com/@mattklein123/the-human-scalability-of-devops-e36c37d3db6a]]
 - AMAZING [[https://medium.com/@copyconstruct/the-death-of-ops-is-greatly-exaggerated-ff3bd4a67f24]]
 - [[https://www.rundeck.com/blog/reports-of-the-impending-demise-of-ops-are-greatly-exaggerated]] - May 21, 2018
+- Very good [[https://medium.com/@skirsch/dev-vs-ops-devops-and-sre-f160dc6180f9][Dev vs. Ops, DevOps, and SRE]] Aug 3 2018

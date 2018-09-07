@@ -1,0 +1,81 @@
+container camp 2018
+
+client go
+-> state where is hangs
+
+k8s control plane does not have an etcd reconnect
+
+* keynote
+
+nothing
+
+* the route to rootless
+
+docker deamon usually runs as rootless
+but that is dangerous
+so how to run it rootless
+
+layered filesystem
+
+pivot root
+when see at / or root
+pivot_root will redirect at /busybox/foo
+so the syscall will be intercepted
+
+https://linux.die.net/man/8/pivot_root
+
+your rootfs
+will be a read/write layer over the overlay
+
+caps + seccomp + apparmor
+
+rootless filesystem via capabilities
+so restricting the caps it can use
+
+all thid were run with cap all? because
+
+can runc run as user?
+
+you don't need to be root to create a namspace
+you just need the cap
+once you create auserspace, you can be root in tha a user space
+
+user maximum
+container 0
+you only need setuid
+become root for execution
+now you in root
+
+shadowmp?
+newuidmap, newgidmap (setuid)
+setuid become root for execution
+
+maximum
+
+cat /proc/self/uid_map
+uid of container
+uid in host (parent ns) <-- maximus
+number of ids to map
+
+cgrop rootless
+all files are owned by root
+they did it with a hack
+
+rootfs mounts
+layer mounting sometimes requires root
+
+ubuntu + overlayFS
+so there you can actually users can mount
+only in ubuntu
+
+unprivledge outside the container
+runc will mount ??? first
+
+for now they chown all the cgroup
+as unprivledged users
+
+containerd is ALMOST rootless
+
+https://rootlesscontaine.rs
+
+==

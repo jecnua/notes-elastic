@@ -1,0 +1,14 @@
+ElasticSearch logs indexing
+|| Last update: 5 Sept 2018
+
+* Intro
+
+If you are trying to add metadata into the log document beware of the
+limitations:
+
+  RequestError(400, 'illegal_argument_exception', 'Limit of mapping depth [20] in
+  index [xxx-2018.09.05] has been exceeded due to object field [...]'):
+
+* Re/Sources
+
+- [[https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html]]

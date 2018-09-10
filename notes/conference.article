@@ -1,4 +1,4 @@
-container camp 2018
+Container camp 2018
 
 client go
 -> state where is hangs
@@ -68,7 +68,7 @@ ubuntu + overlayFS
 so there you can actually users can mount
 only in ubuntu
 
-unprivledge outside the container
+unpriviledge outside the container
 runc will mount ??? first
 
 for now they chown all the cgroup
@@ -78,4 +78,149 @@ containerd is ALMOST rootless
 
 https://rootlesscontaine.rs
 
-==
+* kubernetes service catalog
+
+api allow for custom integration
+
+- CRDs
+- API aggregation
+
+how to integrate with cloud providers.
+
+open service broker
+standard way
+api in this way you can talk to cloud providers
+
+provision, bind, unbin, deprovision, update
+
+kubernetes service catalog
+
+allow to speak/talk to open service broker compliance API
+5 nw types:
+- ClusterServiceBroker
+- ClusterServiceClass
+- ClusterServicePlan
+- ServiceInstance
+- ServiceBinding
+
+awslabs/aws-servicebroker
+define the catalog of resources available to talk
+with k8s
+
+service catalog can be installed with an helm chart
+the service catalog talk with the broker
+and you can speak with more than one
+
+URI extwnd-kubernetes/service-catalog
+
+also the broker is something like an helm chart
+
+so when the broker speaks with aws
+it will take the token and store as a k8s secret
+and it can be consumed by the app
+
+SVCAT
+command line tool for managing sercvice catalog object
+- convenience tool
+installed separately
+
+osba???
+
+there is the list of services from azure than you can consume
+list a list of cloud services ready for consumption
+
+https://kubernetes.io/docs/concepts/extend-kubernetes/service-catalog/
+
+rough edges around
+errorinstancenotready
+
+until the new instance is created it cannot create the binding
+some things will throw up an error
+
+service brokers are independent and not couple with k8s
+azure - 35 / service broker only a couple
+plus they are not FULL of all the service
+
+if an application is not fully on containers
+but if you deende on external services than it may take some time
+"deploy" (because it's building it or spinning things up)
+
+the standard in provision, bind, update is not in the result of the binding
+
+* Istio
+
+nothing
+
+* panel
+
+not there
+
+* security
+
+nothing
+
+* a million way to crash your cluster
+
+out of memory of k8s api server
+-> if all is unhealthy it will send to healrhy
+
+use quota for number of pods
+
+api server memory
+
+api load this object in memory
+in etcd???
+
+human is never the root cause
+
+backuo etcs to s3
+and moniotru the snapshots
+
+flannel stuff going on
+etcd and api server hanging
+network issue
+
+etcd and k8s never recover
+t2 handle with care
+
+one reset package gets dropped every hangs
+
+updates k8s
+pr
+ready to rootlesscontaineend to extend
+zalando incubator.cluster-lifecycle-manager
+
+testing the update
+
+problem with kubedbs
+node-local dnsmasq+coredns
+switch away from kubedns
+
+disable cpu throttling
+remove cpu limits and cfs quota
+to avoid latency issues
+cgroups is qound of wrong??? bug in the kernel
+
+kubelet flag
+
+client-go still seems to gave issues with timeouts
+using tcd rproxy
+
+502's during cluster update, race conditions during updare
+
+graceful pod shutdown and eace conditions
+
+incompatible kubernetes changes
+
+coreos container linux stable won't boot <- kind of good
+
+kubernetes ebs volumes handling
+
+docker is bad
+
+race condition for flannel
+extcd proxy
+
+101 ways to crush your ClusterServicePlanan
+anatomu of a production k9s
+inside a k8s xxx

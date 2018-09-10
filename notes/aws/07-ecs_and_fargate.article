@@ -3,24 +3,34 @@ ECS and FARGATE
 
 * ECS
 
-- [[http://www.expeditessl.com/aws-in-plain-english]]
+- My terraform module: [[https://github.com/jecnua/tf-aws-ecs]]
 
-number of machine
-different size
-SAME REGION
-pool of resources (cluster)
+A cluster is formed by a variable number of machines that subscribe to a
+define entity. They can have different sizes and span many AZs.
+ECS however is region-bound.
 
-each machine has a two external dependencies
+All the machines subscribed are part of your pool of resources.
 
-- ECS Agent running (send commands from the ecs core to docker) run this docker image and stuff this run successfully, this not, etc etc. This is an open-source project (WAO). Distribuited system.
+** EC2 servers
+
+Is up to you to create and manage the cluster of ECS.
+Each machine has a two external dependencies:
+
+- ECS Agent running
 - Docker deamon running
 
-LINK: all things ditrubuited/2015/07/under the hood amazon ec2 service
-airb&b released one of these agent
+** ECS Agent
 
-any amazon AMI gets bundled with an ECS agent
-you can install the ecs agent on any other linux distributing (recent)
-so if you have data compliance and regulation, you can force the OS
+Send commands from the ecs core to docker.
+
+    This is an open-source project. ???
+
+    LINK: all things ditrubuited/2015/07/under the hood amazon ec2 service
+    airb&b released one of these agent
+
+    any amazon AMI gets bundled with an ECS agent
+    you can install the ecs agent on any other linux distributing (recent)
+    so if you have data compliance and regulation, you can force the OS
 
 ** TASK DEFINITION
 
@@ -104,3 +114,11 @@ $69.12.
 
 - [[https://aws.amazon.com/fargate/pricing/]]
 - [[https://www.ec2instances.info/?selected=m5.large]]
+
+* Limitations
+
+- Fargate only allows containers from ECR or Dockerhub (no other repositories)
+- Fargate only support awsvpc network mode
+- Fargate only support awslogs as log configurations
+- Fargate doesn't allow you to mount EBS. It has only 10GB of docker layer stoare and 4GB volume mount to share data with other containers
+- A task definition can contain up to 10 containers.

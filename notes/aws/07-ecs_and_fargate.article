@@ -1,5 +1,5 @@
 ECS and FARGATE
-|| Last update: 11 Jun 2018
+|| Last update: 11 Sep 2018
 
 * ECS
 
@@ -86,6 +86,7 @@ You can't use EFS or EBS with Fargate
     That being said, there is an open feature request for the support of EFS/EBS
     on Fargate.
 
+Fargate allow to use any [[https://aws.amazon.com/about-aws/whats-new/2018/09/aws-fargate-now-supports-private-registry-authentication/][private repo]].
 
 ** More info
 
@@ -117,8 +118,7 @@ $69.12.
 
 * Limitations
 
-- Fargate only allows containers from ECR or Dockerhub (no other repositories)
 - Fargate only support awsvpc network mode
 - Fargate only support awslogs as log configurations
-- Fargate doesn't allow you to mount EBS. It has only 10GB of docker layer stoare and 4GB volume mount to share data with other containers
+- Fargate doesn't allow you to mount EBS. It has only 10GB of docker layer storage and 4GB volume mount to share data with other containers
 - A task definition can contain up to 10 containers.

@@ -1,0 +1,61 @@
+Opentracing in Python
+
+* Intro
+
+- [[https://github.com/opentracing/opentracing-python]]
+- [[https://pypi.org/project/opentracing/]]
+
+version 2.0.0 released the 10 July 2018
+
+* Jaeger
+
+- [[https://github.com/jaegertracing/jaeger-client-python]]
+
+The python library is jaeger_client:
+
+    pipenv install --dev jaeger_client
+
+Settings looks like this:
+
+    import time
+    from jaeger_client import Config
+
+A little old
+
+- [[https://github.com/yurishkuro/opentracing-tutorial/tree/master/python]]
+
+** Issues
+
+still not supporting opentracing 2.0.0.
+in the library
+https://github.com/jaegertracing/jaeger-client-python/blob/master/setup.py
+
+        'opentracing>=1.2.2,<2',
+
+- [[https://github.com/jaegertracing/jaeger-client-python/issues/199]]
+
+Jaeger agent does not fit serverless FAAS (AWS lambda etc) #146
+
+- [[https://github.com/jaegertracing/jaeger/issues/146]]
+
+but in the library
+sending over http
+Support sending spans over HTTP #98
+
+- [[https://github.com/jaegertracing/jaeger-client-python/issues/98]]
+
+tornado is problematioc
+
+- [[https://github.com/jaegertracing/jaeger-client-python/issues/187]]
+
+found this problem here
+
+- [[https://github.com/jaegertracing/jaeger-client-python/issues/50][Tracer.close() is not fully synchronous #50]]
+
+* AWS x-ray
+
+- [[https://github.com/aws/aws-xray-sdk-python]]
+
+* Zipkin
+
+- [[https://github.com/Yelp/py_zipkin]]

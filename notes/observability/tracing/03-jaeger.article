@@ -153,7 +153,7 @@ The bottleneck is typically the storage, which is hard to auto-scale.
 
 * PRO and CON
 
-Jaeger is newer in respect of Zipking, but allow dynamic sampling and has a lower
+Jaeger is newer in respect of Zipkin, but allow dynamic sampling and has a lower
 footprint.
 
 * Roadmap

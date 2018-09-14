@@ -1,4 +1,4 @@
-ECS and FARGATE
+ECS and FARGATE for ECS
 || Last update: 11 Sep 2018
 
 * ECS
@@ -74,6 +74,50 @@ WORKFLOW
 
 
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html]]
+
+* Disk space on ecr
+
+TIL that the ECS service has parameters for automatically cleaning up unused
+Docker images and ECS tasks. Otherwise, your container hosts will eventually
+fill up disk space from downloading docker images.
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/automated_image_cleanup.html]]
+
+    "UserData": {
+      "Fn::Base64": {
+        "Fn::Join": [
+          "",
+          [
+            "#!/bin/bash -xe\n",
+            "echo 'ECS_CLUSTER=",
+            {
+              "Ref": "ECSCluster"
+            },
+            "' >> /etc/ecs/ecs.config\n",
+            "echo 'ECS_DISABLE_IMAGE_CLEANUP=False' >> /etc/ecs/ecs.config\n",
+            "echo 'ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=5m' >> /etc/ecs/ecs.config\n",
+            "yum install -y aws-cfn-bootstrap\n",
+            "yum install aws-cli -y\n",
+            "yum install git -y\n",
+            "yum install awslogs -y\n",
+            "/opt/aws/bin/cfn-signal -e $? ",
+            "         --stack ",
+            {
+              "Ref": "AWS::StackName"
+            },
+            "         --resource ECSAutoScalingGroup ",
+            "         --region ",
+            {
+              "Ref": "AWS::Region"
+            },
+            "\n",
+          ]
+        ]
+      }
+    },
+    "EbsOptimized": "true"
+    }
+    },
 
 * FARGATE for ECS
 

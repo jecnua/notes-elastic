@@ -7,6 +7,8 @@ Opentracing in Python
 
 version 2.0.0 released the 10 July 2018
 
+- [[https://medium.com/opentracing/announcing-python-opentracing-2-0-0-release-f4ee33de25ce]]
+
 * Jaeger
 
 - [[https://github.com/jaegertracing/jaeger-client-python]]
@@ -51,6 +53,41 @@ tornado is problematioc
 found this problem here
 
 - [[https://github.com/jaegertracing/jaeger-client-python/issues/50][Tracer.close() is not fully synchronous #50]]
+
+jaeger tracer close does not follow opentracing standard
+
+    AttributeError: 'Tracer' object has no attribute 'close'
+
+When using noop tracer
+
+  def test_tracing():
+      config = Config(
+          config={ # usually read from some yaml config
+              'sampler': {
+                  'type': 'const',
+                  'param': 1,
+              },
+              'local_agent': {
+                  'reporting_host': "x.x.x.x",
+                  'reporting_port': 5775,
+              },
+              'logging': True,
+          },
+          service_name='test-my-lambda-2',
+          validate=True,
+      )
+      # this call also sets opentracing.tracer
+      tracer = config.new_tracer()
+      # logger.error(type(tracer))
+      # tracer = Tracer()
+      with tracer.start_span('TestSpan') as span:
+          span.log_kv({'event': 'test message', 'life': 42})
+
+          with tracer.start_span('ChildSpan', child_of=span) as child_span:
+              span.log_kv({'event': 'down below'})
+
+      time.sleep(2)   # yield to IOLoop to flush the spans - https://github.com/jaegertracing/jaeger-client-python/issues/50
+      # tracer.close()  # flush any buffered spans - fails with noop
 
 * AWS x-ray
 

@@ -1,5 +1,5 @@
-Test kitchen
-Test kitchen + Serverspec + Docker
+Test kitchen: Test kitchen + Serverspec + Docker
+|| Last update: xx xxx xxxx
 
 * Intro
 
@@ -9,12 +9,12 @@ TDB
 
 Bash to generate a puppet module:
 
-.link https://gist.github.com/jecnua/57024265332c03e9edd70647473a793e bash gist
+- [[https://gist.github.com/jecnua/57024265332c03e9edd70647473a793e]] bash gist
 
 An updated version of the gists used can be found here:
-.link https://gist.github.com/jecnua/b3550ac1cab861bceb6f1b38644b9b2e kitchen.yml gist
-.link https://gist.github.com/jecnua/aefffebda8eeb8f9a541323bcdeb5815 Gemfile gist
-.link https://gist.github.com/jecnua/788748542498a3ebf11b3ad025ee56fa spec_helper.rb gist
+- [[https://gist.github.com/jecnua/b3550ac1cab861bceb6f1b38644b9b2e]] kitchen.yml gist
+- [[https://gist.github.com/jecnua/aefffebda8eeb8f9a541323bcdeb5815]] Gemfile gist
+- [[https://gist.github.com/jecnua/788748542498a3ebf11b3ad025ee56fa]] spec_helper.rb gist
 
 * Verifier: Serverspec
 
@@ -123,3 +123,7 @@ Now I need to pass more than one
             rspec -c -f d -I test test/integration/default/serverspec/*_spec.rb
 
 Done.
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=AXFjCmCISCc]] Test Driven Infrastructure with Docker, Test Kitchen and Serverspec (Feb 10, 2016)

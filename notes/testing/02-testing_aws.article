@@ -1,0 +1,105 @@
+Testing AWS
+|| Last update: 18 Sept 2018
+
+* Intro
+
+How do we test the infrastructure
+
+Testing based on CloudFormation
+
+Different phases
+
+* Phase 1: Static inspection
+
+- Static testing of the CF: Look at the CF to reusing templates, nested stacks
+- Are we statically put AMI in it or we use lambda to check if they exist
+- NO embed any credential in CF
+- Static test (using AG? you can statically test by looking at them and the workflow)
+
+** Phase 2: Static testing of the file
+
+- file validation
+- cirlural arguments
+
+** Phase 3: Integration test
+
+Run something like inspec. Test with rules and permissions.
+
+- DBs and instances are running
+- things are where they should be
+- sg are correct
+
+*** awsspec
+
+- [[https://github.com/k1LoW/awspec][awspec github]]
+
+Work only for AWS.
+
+*** test kitchen and inspec
+
+- [[https://www.inspec.io/]]
+- [[https://www.inspec.io/docs/reference/platforms/]]
+
+Test kitchen as a plugin to use terraform.
+Unfortunately test kitchen does not support multiple provisioners.
+So you can't use terraform AND puppet.
+
+*** Null resource
+
+Is a resource terraform run AFTER everything else.
+Can be used to trigger provisioners (or run inspect after).
+
+** Phase 4: Feature tests
+
+- it can autoscale up and down
+- logging CW or CloudTrail
+- check for the logs if there is anything in there
+
+** Phase 5: Integration tests
+
+- Trusted advisor
+
+there is also something like reflective tests
+or integration tests
+test switch
+
+* Tools
+
+Python a lot to test
+
+* Best practice
+
+aws cloudformation validation templates
+you can create lambda function that represent you test case
+look at the solution and take a look at the lambdas
+
+git secrets from aws labs
+
+aws saml cli on github
+
+aws config and inspector
+
+secret manager or paramete store
+
+what are the limitations of it?
+
+test kitchen checker and validators
+they are moving to SAML
+the lamdas each lambda call has a test
+
+more reflection tests
+->
+
+==
+
+sam cli
+
+->
+
+queue and control messages
+
+* Other options
+
+- [[https://github.com/gruntwork-io/terratest]]
+
+- [[https://aws.amazon.com/inspector/]]

@@ -1,0 +1,50 @@
+Apollo GraphQL monitoring
+|| Last update: 19 Sep 2018
+
+* Intro
+
+Some useful links here
+
+- [[https://github.com/chentsulin/awesome-graphql]]
+
+They are generally closing down on middleware too
+
+- [[https://github.com/apollographql/apollo-server/issues/1308][Bring back composable middlewares in apollo-server 2]]
+
+* Monitoring
+
+- [[https://www.apollographql.com/docs/apollo-server/features/metrics.html#Apollo-Engine]]
+
+Looks like metrics are only available when using Apollo Engine (paid).
+I cannot see a way to take them externally.
+
+If you use datadog you can however [[https://www.apollographql.com/docs/engine/integrations/datadog.html][integrate it]].
+
+With Apollo engine:
+
+- [[https://www.apollographql.com/docs/guides/monitoring.html]]
+
+This is the bast I found but is a small project. Too small.
+
+- [[https://github.com/Workpop/graphql-utils/tree/master/packages/graphql-metrics]]
+
+* Tracing
+
+As of today (19 Sep 2018) there is no way to have external tracing outside of
+using Apollo Server (paid).
+
+There is a PR to ask for possible extensions here:
+
+- [[https://github.com/apollographql/apollo-server/issues/657]]
+
+And one specifically on tracing here:
+
+- [[https://github.com/apollographql/apollo-tracing/issues/12]]
+
+This one opensource project is trying to add the capability to GraphQL:
+
+- [[https://github.com/DanielMSchmidt/apollo-opentracing]]
+
+They own implementation of tracing:
+
+- [[https://github.com/apollographql/apollo-tracing]]

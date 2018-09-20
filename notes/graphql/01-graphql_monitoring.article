@@ -45,6 +45,6 @@ This one opensource project is trying to add the capability to GraphQL:
 
 - [[https://github.com/DanielMSchmidt/apollo-opentracing]]
 
-They own implementation of tracing:
+Their own implementation of tracing:
 
 - [[https://github.com/apollographql/apollo-tracing]]

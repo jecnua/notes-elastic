@@ -18,6 +18,22 @@ Each machine has a two external dependencies:
 
 - ECS Agent running
 - Docker deamon running
+- A nanny proces
+
+    ssm get-parameters-by-path --region=eu-west-1 --path '/aws/service/ecs/optimized-ami/amazon-linux/'
+
+    ssm get-parameter --region=eu-west-1 --name /aws/service/ecs/optimized-ami/amazon-linux/recommended
+   {
+       "Parameter": {
+           "Name": "/aws/service/ecs/optimized-ami/amazon-linux/recommended",
+           "Type": "String",
+           "Value": "{\"schema_version\":1,\"image_name\":\"amzn-ami-2018.03.g-amazon-ecs-optimized\",\"image_id\":\"ami-05b65c0f6a75c1c64\",\"os\":\"Amazon Linux\",\"ecs_runtime_version\":\"Docker version 18.06.1-ce\",\"ecs_agent_version\":\"1.20.3\"}",
+           "Version": 10
+       }
+   }
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/retrieve-ecs-optimized_AMI.html]]
+
 
 ** ECS Agent
 
@@ -74,6 +90,13 @@ WORKFLOW
 
 
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html]]
+
+  $ aws ssm get-parameters \
+    --names /aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id \
+    --region us-east-1 \
+    --query "Parameters[0].Value"
+  "ami-0b9a214f40c38d5eb"
+
 
 * Disk space on ecr
 

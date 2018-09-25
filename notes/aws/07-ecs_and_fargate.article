@@ -1,5 +1,5 @@
 ECS and FARGATE for ECS
-|| Last update: 11 Sep 2018
+|| Last update: 24 Sep 2018
 
 * ECS
 
@@ -50,6 +50,10 @@ Send commands from the ecs core to docker.
 
 ** TASK DEFINITION
 
+You can generate it this way:
+
+    aws ecs register-task-definition --generate-cli-skeleton
+
 - description of your application in JSON format...
 - you can use a docker link (but not adviced)
 - an instantiation of these will be a running task
@@ -81,6 +85,12 @@ WORKFLOW
 - make sure that a cluster has enough resources
 - start a new task from the task definition
 
+** Load Balancing
+
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/dynamic-port-mapping-ecs/]]
+
+You can set up dynamic port mapping with A/NLB.
+
 ** Service discovery
 
     aws servicediscovery list-namespaces
@@ -97,8 +107,24 @@ WORKFLOW
     --query "Parameters[0].Value"
   "ami-0b9a214f40c38d5eb"
 
+** Service autoscaling
 
-* Disk space on ecr
+- [[https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-service-linked-roles.html]]
+
+You want to use AWSServiceRoleForApplicationAutoScaling_ECSService.
+
+*** Terraform
+
+- [[https://www.terraform.io/docs/providers/aws/r/appautoscaling_policy.html]]
+- [[https://www.terraform.io/docs/providers/aws/r/appautoscaling_target.html]]
+
+
+*** Cloudformation
+
+- [[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-applicationautoscaling-scalingpolicy.html]]
+- [[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-applicationautoscaling-scalabletarget.html]]
+
+** Disk space on ecr
 
 TIL that the ECS service has parameters for automatically cleaning up unused
 Docker images and ECS tasks. Otherwise, your container hosts will eventually

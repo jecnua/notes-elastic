@@ -3,10 +3,10 @@ Patterns
 
 * Intro
 
-Most of these notes were taken from a talk called: "Avoid cascading in highly distribuited systems" from Sheriff Jackson.
+Most of these notes were taken from a talk called: "Avoid cascading in highly distributed systems" from Sheriff Jackson.
 
-- https://twitter.com/sheriffjackson?lang=en
-- https://www.packtpub.com/application-development/building-microservices-go
+- [[https://twitter.com/sheriffjackson?lang=en]]
+- [[https://www.packtpub.com/application-development/building-microservices-go]]
 
     Quote: Partial failure by design
 
@@ -29,7 +29,7 @@ Which type of sending policy?
 - filo
 - etc
 
-Message queues add complexity and build on needed knoweledge on the system.
+Message queues add complexity and build on needed knowledge on the system.
 
 * Synch
 
@@ -57,7 +57,7 @@ you will just DDOS the system. Some options:
 - exponential backoff
 
 Constant retry and even exponential backoff are dangerous. You can
-incurr in the weave effect! All retry at the same time!
+incur in the weave effect! All retry at the same time!
 So you need to *randomise* the backoff.
 Add a random seed in the exponential backoff to avoid weave effect.
 
@@ -65,13 +65,13 @@ Do not DDOS. Do not retry forever.
 
 ** Circuit breaker
 
-Popolarised by Netflix with Hystrix but proposed in a good way in "release it".
+Popularised by Netflix with Hystrix but proposed in a good way in "release it".
 
 - Hystrics
 
 The circuit can be open or closed.
 
-When is *open*, the request fails immediatly!
+When is *open*, the request fails immediately!
 
     The system won't even try to make a call when the circuit is
     open.
@@ -134,6 +134,6 @@ So:
 -- circuit breakers
 - metrics
 
-* Resources
+* Re/Sources
 
-- Linkerd
+TBD

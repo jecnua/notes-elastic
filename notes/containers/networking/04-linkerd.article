@@ -1,0 +1,113 @@
+Linkerd
+|| Last update: 25 Sept 2018
+
+* Intro
+
+Linkerd one of the first (early 2016 - [[https://buoyant.io/2016/02/18/linkerd-twitter-style-operability-for-microservices/]]).
+
+Technology JVM released from twitter.
+Patched as a different thing and released as a sidecar.
+
+Using Java as a data plane comes with a lot of tradoff.
+
+looks like lighterwight of the istio model.
+
+you can use it with ingress or anyting else
+you can have part of your application using linkerd, some part not.
+
+you can remove and readd linkerd when you want, just reapply the yaml
+
+istio insted you need to configure istio proxy via ip in range.
+
+* Linkerd 2.0
+
+linkerd 2.0 procy is no longer on JVM but rewritten in rust.
+scalable and light.
+is a CNCF project.
+
+they want to make it more incremental, not everything in the service mesh.
+just use it where it makes sense to you.
+
+linkerd cli is written in go
+
+control plane is go
+data plane is rust
+
+    linkerd install
+
+will generate the yaml you can then use to generate the k8s entities.
+
+is read only and does not allow reading secrets.
+
+metrics is prometheus
+
+will install controller and prometheus
+
+you can do linkerd install in a single namespaces
+
+    linkerd install --linkerd-namespace foobar
+
+At the moment there is no automatic admission control. No automatic sidecar
+ingestion.
+
+In the same pod there are 4 containers with 4 different roles that takes
+different roles depending on the start parameter.
+
+- proxy-api
+- tap
+- public-api
+- destination
+
+jsonnet with libsonnet to do sidecar injection
+
+Used by Monzo.
+
+* Work
+
+you read the deployments, modify the yaml and release it again
+with kubectl apply
+
+linkerd use apply. that is a problem with horizontal pod autoscaling.
+
+* Monitoring
+
+It's using prometheus for Monitoring.
+They use the standard prometheus but their own version of grafana.
+It's considered a buffer prometheus.
+
+looks at deployments and pods only.
+
+on the dashboard there are link to grafana
+so they are not trying to replace anything
+
+they already pull the path
+
+aggregating by senders?
+aggregating on the receivers is still not implemented
+
+blow up cardinality of prometheus
+by sending a lot of garbage request
+beware it
+because cardinality when user driven
+can cause a ddos and blow up prometheus
+
+all the path are not saved on prometheus and are ephemereal!!!
+
+* Dashboard
+
+port forward is clean
+proxy inspect the http and modify the data to rewrite url and stuff
+
+when possible use port forward
+
+you can see what is meshed and all the Metrics
+p99
+
+and full details
+
+however it won't show you data on the unmeshed.
+
+* Re/Sources
+
+- VIDEO [[https://www.youtube.com/watch?v=1dXJ34-KLe8][https://www.youtube.com/watch?v=1dXJ34-KLe8]] - 21 Sep 2018
+- [[https://www.cncf.io/blog/2018/09/18/linkerd-2-0-in-general-availability/]] - 18 Sep 2018

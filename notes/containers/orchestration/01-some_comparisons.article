@@ -1,0 +1,56 @@
+Some comparisons
+|| Last update: 27 Sep 2018
+
+* No namspaces on ecs
+
+In ECS separation is both logical and phisical
+In k8s namespaces are logical separation into 'virtual clusters'
+
+* COnfig configmaps
+
+there is nothing like config-maps on ecs
+
+    Here it is worth noting the weakness of the ECS volumes feature compared to the numerous options in Kubernetes. In ECS you have to download any needed files to the ECS instance yourself if you want to make use of a docker volume mount with those files. These can be config files with options, templates needed by your containers, or secret credentials you have to inject during runtime. There are no options similar to what is available in Kubernetes, like a “Config Map” or “Secret” resource, which can be used as a volume mount later.
+
+possible solutions:
+
+- MOunt an efs? https://engineering.loyaltylion.com/how-to-use-amazon-efs-with-ec2-containers-8ad98c01769b
+
+* Ecs needs no master or control plane
+
+That's a big pro.
+
+* No sense to sidcar injection
+
+ECS doesn't not have this concept
+
+* No security divisions between namespaces
+
+or workload
+
+* no network ruling possible
+
+same reason
+
+* selection of nodes is limited in Ecs
+
+no concept of affinity, anti, tolerance, taints
+
+* both have the concept of deamon set now
+
+s
+
+* Deployments are much more flexyble in k8s
+
+* c
+
+no concept of
+
+- service
+- stateful Sept
+- persistent volume claim
+
+* Re/Sources
+
+- All ECS documentation
+- https://kublr.com/blog/comparing-aws-ecs-and-self-managed-kubernetes-ecs-tutorial/ - November 14, 2017

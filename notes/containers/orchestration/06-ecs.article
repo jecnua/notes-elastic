@@ -1,0 +1,106 @@
+ECS
+|| Last update: 28 Sep 2018
+
+* Intro
+
+NOTE: Most of these notes are taken from the AWS documentation on ecs.
+
+ECS is a container management service region-specific.
+
+* Cluster
+
+A cluster is a logical grouping of resources (tasks and services).
+If you run in ec2 lunch type, it will also include servers.
+A cluster _can_ contain both ec2 and fargate workload.
+
+Ec2 instances can only be part of one cluster and you should never move them
+between two cluster (always use new ones).
+
+** Ecs agent
+
+The ecs agent will use the role of the node to authenticate. It will register,
+deregister containers with the LBs.
+
+** DELETING: Clean up
+
+Load balancers need to be removed manually in a separated workflow in respect
+of the ECS cluster.
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CleaningUp.html]]
+
+NOTE: AWS advices to scale service tasks to 0 before deleting it.
+
+* Service
+
+You can define the number of tasks you want to run on the cluster in a service.
+A *service* will run and maintain a specified number of tasks simultaneously.
+
+A service can define two types of workload:
+
+- REPLICA
+- DEAMON
+
+** Deamon
+
+A *deamon* run a single instance of a task on every node of the cluster.
+Usually this is very useful to run agents and management deamons (collect metrics,
+clean up the node, watch for events and so on). This is similar to the concept
+of _deamon_set_ in k8s. For obvious reasons fargate do not support this type of
+workload.
+
+* Tasks
+
+A *task*definition* is in _json_ and containers up to _10_ containers.
+It defines lunch type, ports, drives and so on.
+
+A *task* is an instatiation of a task definition.
+
+** Launch types
+
+There are two types of launch type:
+
+- EC2: You create one or more asg and attach it to the cluster
+- Fargate: You just define the tasks but no cluster (costs much more)
+
+*NOTE*: Many task definition parameters are _not_valid_ in fargate.
+
+*** Fargate
+
+Some things to keep in consideration:
+
+- Will require the network mode to be AWSVPC: you have no control on the host it sort of make sense that they don't allow host or bridge
+- Will require to specify the the cpu and memory at task level while at container level is optional: in the end makes no sense since there is no cluster
+- Only supports AWSLOGS for log config: since you can't install any other log drivers
+- Doesn't allow EBS or EFS: since you can't install drivers or mount anything
+
+Fargate has only 10GB of docker layer storage and 4GB for volume mounts to be
+shared among containers.
+
+** Network mode
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html]]
+
+You can launch a task with different Network configurations.
+
+- awsvpc: Each task will have it's own ENI. (Beware on finishing the allocation space for ENI)
+
+*** AWSVPC
+
+When using _awsvpc_ you must specify one or more subnets and one or more sg to attach
+to the ENI.
+It *only*supports*A/NLB*. When creating a target group you need to use _ip_ as
+target type and not instance. This is because you are targeting the ENI and not
+the node. However you lose the ability of dynamic port mapping.
+
+* Schedule workload
+
+You can schedule based on resources, isolation and availability.
+
+* Supported container registry
+
+On fargate only ECR and dockerhub are supported. No other private container
+registry.
+
+* Re/Sources
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CleaningUp.html]]

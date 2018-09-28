@@ -1,0 +1,167 @@
+ECS: Best practices
+|| Last update: 28 Sep 2018
+
+* Close access to metadata
+
+this works only if we give iam role to every task
+
+* monitor all nodes via deamon
+
+we should get docker metrics and node metrics
+
+* all services should have defined limits
+
+ss
+
+* spot
+
+if you are running on spot you may have a deamon that listen to events of
+node being removed and cordon the node itself.
+
+* How many cluster
+
+- one
+- one per service
+- one per team
+
+the last two give:
+
+- no dependencies between teams
+- better budget control
+- reduce ecs problems blast radius
+
+* stop asg
+
+.image images/lifecycle_to_asg.png
+
+
+* Scaling
+
+You need to be aware that you may finish the ENI availability much before memory or CPU.
+Scale based on how many eni do you have.
+
+* what to looks for
+
+What should cover:
+
+- OS Hardening
+- Security
+- Network configuration
+- Log forwarding
+- Cron job to push metrics to cloudwatch
+- Run cAdvisor
+
+/var/log/cfn-*
+/var/log/ecs-*
+
+* Monitoring
+
+* cAdvisor
+
+- [[https://github.com/google/cadvisor]]
+
+OBJECTIVE: Get container metrics
+
+Can push to influxdb or elasticsearch (or prometheus)
+
+- [[https://github.com/google/cadvisor/blob/master/docs/storage/README.md]]
+
+
+Run it as a deamon on your cluster.
+
+run cAdviros as a deamon on every node
+
+- https://prometheus.io/docs/guides/cadvisor/
+
+without /sys won't work and without it you can't get the metrics of the system.
+so you need to mount the right / instead
+
+Instead of:
+
+    -v /sys:/sys:ro
+
+on a normal ubuntu system you should mount /sys while on ecs iam optimised
+you need to mount a different endpoint
+
+use:
+
+    -v /cgroup:/sys/fs/cgroup:ro
+
+Examplained in this two tickets:
+
+- [[https://github.com/google/cadvisor/issues/1515]] - Unable to start cadvisor when running on AWS Linux Optimized AMI, rootfs/sys/fs/cgroup/cpuset: no such file or directory
+- [[https://github.com/google/cadvisor/issues/1843]] - Fails startup on RHEL: Failed to start container manager: inotify_add_watch /sys/fs/cgroup/cpuacct,cpu: no such file or directory
+
+There are two subparent
+probably connected to This
+
+- [[https://github.com/google/cadvisor/issues/1900]] - Unable to find cpuset on AWS ECS
+
+Some start by /ecs dome by /docker
+
+* Node exporter
+
+OBJECTIVE: Get node metrics
+
+Promeheus is able to scrape the information from aws itself if it has the right roles
+
+node exporter is very wasy to set up and does not require any mount
+
+* Prometheus
+
+I can't find any way to do things like configmaps in ecs...
+And they don't want to implement it
+
+- [[https://github.com/prometheus/alertmanager/issues/504]]
+- [[https://github.com/prometheus/prometheus/issues/2357]]
+
+you can write to influxdb??
+
+https://www.influxdata.com/blog/influxdb-now-supports-prometheus-remote-read-write-natively/
+
+
+https://docs.docker.com/config/thirdparty/prometheus/
+
+interesting
+
+
+
+    docker run -p 9090:9090 --rm --entrypoint '/bin/wget https://raw.githubusercontent.com/prometheus/prometheus/master/documentation/examples/prometheus.yml -O /tmp/prometheus.yaml && /bin/prometheus --config.file=/tmp/prometheus.yml' prom/prometheus
+
+    docker run -p 9090:9090 --rm --entrypoint '/bin/wget https://raw.githubusercontent.com/prometheus/prometheus/master/documentation/examples/prometheus.yml -O /tmp/prometheus.yaml' prom/prometheus
+
+  docker run -p 9090:9090 \
+    --entrypoint '/prometheus/prometheus' \
+       prom/prometheus
+
+       docker run --rm -it -p 9090:9090 \
+         --entrypoint '/bin/wget "https://raw.githubusercontent.com/prometheus/prometheus/master/documentation/examples/prometheus.yml"' \
+            prom/prometheus
+
+
+-v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml
+
+docker run --rm -it --name prometheus -v /home/fabrizio/mygit/prom_ecs/prometheus.yml:/etc/prometheus/prometheus.yml -d -p 127.0.0.1:9090:9090 quay.io/prometheus/prometheus
+
+* Other possibilities
+
+- [[https://docs.docker.com/config/thirdparty/prometheus/]]
+
+I repeat, there is no way
+options are:
+1) efs (NO)
+2) create a new docker container with a fucking 'i read from the env and generate a yaml on the spot than run prometheus) version of prometheus (edited)
+3) curl + sed + HEREDOC + run entrypoint override
+as you can see
+I would like to beat to death the ecs developer at aws right now
+or my company that is too fearful to do things well
+same shit, different day
+
+an example
+
+* Re/Sources
+
+- [[https://github.com/google/cadvisor/issues/1515]] - Unable to start cadvisor when running on AWS Linux Optimized AMI, rootfs/sys/fs/cgroup/cpuset: no such file or directory
+- [[https://github.com/google/cadvisor/issues/1843]] - Fails startup on RHEL: Failed to start container manager: inotify_add_watch /sys/fs/cgroup/cpuacct,cpu: no such file or directory
+- [[https://github.com/google/cadvisor/issues/1850]] - Failed to start container manager: inotify_add_watch /sys/fs/cgroup/cpuset: no such file or directory
+- https://github.com/julianalves/prometheus-aws-ecs/blob/master/prometheus-ecs/

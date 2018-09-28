@@ -30,6 +30,14 @@ the last two give:
 - better budget control
 - reduce ecs problems blast radius
 
+** access to containers
+
+if you use bridge or host then your server sg will need to give access to the ports
+the taks needs. This means that you will need to open a lot of ports or use LBs.
+Wven in thatcase you need to allow the LB to connect.
+
+if you use awsvpc the you risk to finish the eni.
+
 * stop asg
 
 .image images/lifecycle_to_asg.png

@@ -13,13 +13,46 @@ A cluster is a logical grouping of resources (tasks and services).
 If you run in ec2 lunch type, it will also include servers.
 A cluster _can_ contain both ec2 and fargate workload.
 
-Ec2 instances can only be part of one cluster and you should never move them
+** ec2
+
+A server running a container agent and registered to an cluster is called
+_ecs_container_instance_.
+
+EC2 instances can only be part of one cluster and you should never move them
 between two cluster (always use new ones).
 
-** Ecs agent
+Container instance status are _active_, _inactive_ or _draining_.
+
+*** The draining status
+
+You can change the status of an instance to _draining_. When you do it, no new
+tasks are assinged to the node, running tasks are moved if possible.
+
+*** Ecs agent
+
+- [[https://github.com/aws/amazon-ecs-agent]]
 
 The ecs agent will use the role of the node to authenticate. It will register,
 deregister containers with the LBs.
+
+The agent is able to clean unused disk space of docker (by default every 3h).
+It checks/clean old/stopped containers.
+
+An agent status is _true_ or _false_.
+
+*** ECS optimised AMI
+
+On the _ecs-optimised_ami_ the agent is already installed.
+On it there are also installed docker and a _nanny_process_ called *ecs-init* to
+monitor the agent.
+
+- [[https://github.com/aws/amazon-ecs-init]]
+
+You can programmatically find the last optimised AMI via cli, sdk, CF or terraform.
+They save this info on parameter store and you can retrieve it anytime.
+
+The AMI ships with 30GB: 8GB are for root, _22GB_ for _docker_LVM_. You need to
+use *lvm* commands to check the space.
 
 ** DELETING: Clean up
 
@@ -54,6 +87,8 @@ A *task*definition* is in _json_ and containers up to _10_ containers.
 It defines lunch type, ports, drives and so on.
 
 A *task* is an instatiation of a task definition.
+
+You can't move a task to another cluster.
 
 ** Launch types
 
@@ -92,6 +127,15 @@ It *only*supports*A/NLB*. When creating a target group you need to use _ip_ as
 target type and not instance. This is because you are targeting the ENI and not
 the node. However you lose the ability of dynamic port mapping.
 
+*** Internet access
+
+If any of your container needs network access and is not running in mode awsvpc,
+your server will need a public ip or a NAT.
+
+If you need external access, you can map your network ports to a machine port
+via bridge or host. The server sg *must* allow inbound access to the port you
+want to expose.
+
 * Schedule workload
 
 You can schedule based on resources, isolation and availability.
@@ -103,4 +147,6 @@ registry.
 
 * Re/Sources
 
+- [[https://github.com/aws/amazon-ecs-agent]]
+- [[https://github.com/aws/amazon-ecs-init]]
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CleaningUp.html]]

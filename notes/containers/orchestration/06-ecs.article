@@ -13,7 +13,7 @@ A cluster is a logical grouping of resources (tasks and services).
 If you run in ec2 lunch type, it will also include servers.
 A cluster _can_ contain both ec2 and fargate workload.
 
-** ec2
+** EC2
 
 A server running a container agent and registered to an cluster is called
 _ecs_container_instance_.
@@ -25,15 +25,26 @@ Container instance status are _active_, _inactive_ or _draining_.
 
 *** The draining status
 
-You can change the status of an instance to _draining_. When you do it, no new
-tasks are assinged to the node, running tasks are moved if possible.
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container-instance-draining.html]]
 
-*** Ecs agent
+You can change the status of an instance to _draining_. When you do it, no new
+tasks are assinged to the node, running tasks are moved if possible and no task
+will be scheduled for replacement.
+
+If resources are available, replacement services tasks are started on other
+instances.
+
+This functionality enables you to remove a container instance from a cluster
+without impacting tasks.
+
+*** The ECS agent
 
 - [[https://github.com/aws/amazon-ecs-agent]]
 
 The ecs agent will use the role of the node to authenticate. It will register,
 deregister containers with the LBs.
+
+The config file is at _/etc/ecs/ecs.config_.
 
 The agent is able to clean unused disk space of docker (by default every 3h).
 It checks/clean old/stopped containers.
@@ -42,7 +53,9 @@ An agent status is _true_ or _false_.
 
 *** ECS optimised AMI
 
-On the _ecs-optimised_ami_ the agent is already installed.
+On the _ecs-optimised_ami_ the agent is already installed. You can hook yourself
+to the bootstrap process via _user_data_.
+
 On it there are also installed docker and a _nanny_process_ called *ecs-init* to
 monitor the agent.
 
@@ -53,6 +66,23 @@ They save this info on parameter store and you can retrieve it anytime.
 
 The AMI ships with 30GB: 8GB are for root, _22GB_ for _docker_LVM_. You need to
 use *lvm* commands to check the space.
+
+Docker data volume is mounted under _/dev/xvdcz_.
+
+To configure the docker deamon you need to use a _cloud-boothook_.
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/bootstrap_container_instance.html#bootstrap_docker_daemon]]
+
+Also look at _cloud_init_per_ tool.
+
+- [[https://helpmanual.io/help/cloud-init-per/]]
+
+You can use mime-multipart to join all them togheter.
+
+Containers instances can be set to send logs to cloudwatch logs. However this
+can be changed via _log_drivers_.
+
+If you are using another image you will need to install the cloudwatch log agent.
 
 ** DELETING: Clean up
 
@@ -149,4 +179,6 @@ registry.
 
 - [[https://github.com/aws/amazon-ecs-agent]]
 - [[https://github.com/aws/amazon-ecs-init]]
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container-instance-draining.html]]
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/bootstrap_container_instance.html#bootstrap_docker_daemon]]
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CleaningUp.html]]

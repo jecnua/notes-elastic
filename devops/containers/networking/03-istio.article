@@ -1,14 +1,10 @@
 Istio
-|| Last update: 26 Jan 2018
+|| Last update: 1 Oct 2018
 
 * Intro
 
 - [[https://istio.io][Istio website]]
 - [[https://github.com/istio/istio][Istio github]]
-
-*IMPORTANT*: *Istio*is*very*immature*.*Don't*use*it*in*any*MAJOR*environment*.
-
-*IMPORTANT*: The user contract won't stabilise until version 0.4.
 
 Istio is not a k8s technology and can work with other orchestrators.
 
@@ -381,12 +377,225 @@ _initialisers_ allow you to have *automatic*sidecar*injection* in all your pods.
 
     istioctl kube-inject -f
 
+* New notes from meetup 1 October 2018 - NOTES AFTER THIS POINTS NEED TO BE REVIEWED
+
+istio is a network sandbox
+will solve load balancing, observability, in service security
+
+every node have a persistent tcp connection with every other node
+envoy use ip tables to send traffic to itself via network namespace
+
+pod is the smalle security boundary
+so that there is a plaintext communication between envoy and the app is not a problme
+if the pod is compromised we consider the app compromised
+
+the mtls is guaranteed because both ssl ase singed from the same CA (citadel)
+the secure name is extracted from the cert
+policy decision from the guaranteed name
+- secure naming
+
+ingress and egress procy terminate ssl connection coming in or out
+
+
+in citadel is probably bets practice to generate a new cert inside the clusterrole
+id btter than using an external CA
+
+loocal loopback bypass
+can speak to iteself before for error leaking in the meshes
+
+mutating webhook
+
+proxy_init how the network namespace is configured
+
+initi containers
+NET_ADMIN
+likecly root for attack
+
+the init container just do the change then stop
+and then the normal contanier is leaved without the prividelge to do so
+proxy_init
+
+ssh is not managed by istio
+ipv6 is dropped or you can do what you want
+
+envoy have no prividelge to change the namespace
+
+istiocl proxy-xxx cluster xxx
+
+self signed CA is usually but but not in this case
+in an isolted system is superior then a external CA
+this is because even if you compromise the cluster CA
+you need to compromise the root of the host hosting it
+
+usually CA are managed very badly by a company
+
+istio is zero trust Deployments
+trust nothing, validate everything
+essence of secure naming system in istiocle
+
+end to end mapping of names ???
+istio generate this secure name
+
+istio citadel is a scratch container
+highest citadel is the best security up to know
+is impossible to attach with remote code execution
+because there  is nothing there at all
+
+istio citadel is run as root
+with sysdig you can see that is run a root
+
+citadel is watching the k8s api
+pulls any secret
+if not generate it's own CA
+creating it's own PK
+that takes a service acocunt????
+the security name is based on this???
+sensible of things are anrchitected.
+
+watch on service account
+spiffe foundament of the secure service
+and this is encoded in the TSL certificate
+spiffy baded on
+
+** spiffe
+
+set of opensource standarn
+trust domain and workload identifier
+
+istio does not use spiffe
+as spiffe is designed kno
+in the furutre istio will use xxx to identidy something unique
+on the service and encode that in the ssh cert
+
+spiffe verified identity protocol
+
+generate the spiffe name????? is this in the furutre
+
+issuing and rotating ssl is a pain
+close to admin role for citadel
+
+RBAC for service role is level 4?????
+you can have per service rbac
+
+envoy ocnfiguration is immutable
+and new request have a new config?????
+
+end user authentication
+allow to use them for delegate request
+
+in the future they can propagate credential in more than one op
+
+ingress allow a chockepoint
+require full reload to allow a cert to be loaded
+and this doesn't work with certificate manager
+
+egress you can avoid data exfiltration
+because you can apply policy
+on where the traffic goes
+does it do DNS resolution?????
+
+rate limiting too
+
+is better to use quickly over tls??????
+
+egress - virtual service
+
+tls 1.3 tried to fix it and fight with middleware
+but cloudflare will put it????
+
+mapping between dbs anme and ip is pushed down to layer 3
+
+** multi clyser
+
+NOW
+
+one istio control and one kuberntes
+and you need to vpn this togheter
+a little better with gpc
+becaus epods gets vpcip
+that is google magic
+and global ingresses
+
+one shared istio conrol plane
+BAD
+abandoned k8s federation
+you can't HA, latency problem (mixer)
+
+POSSIBLE FUTURE
+
+boundary should be the cluster
+layer 3 is one cluster
+that's your boundary
+
+so a lot of separate network
+no vpn togheter
+no clugging togheter
+tetrate wnats to use the ingress
+
+
+- serviceentry: what names exists or allowd to be used (usually you don't see it)
+you can't see them??? ioctal?  (layer 7) you need to touch this only when you want to
+route to something outsie the mesh
+- virtualservice: bind to gateway. - for a name, how do i rute to backends? (layer 7)
+- destinationrule: how do I talk to those backend
+- gateway: expose this VS to the outside world. ingress controller (open a port to the external world) if you see this host, do this
+
+service entry is internal, gateway is for external traffic
+
+gatweay object on the ingress controller
+and virtual service to connect to the inside service
+TETRATE
+service engine? to say where this name is (if exists) and where to point to (which othe ringress)
+and this will point it to the next hop
+
+you need to change the global name
+so is optin
+if global is in the cluster you are in
+.global will go locally
+through gthe hidden mesh name
+
+is optn in by Default
+you need to change the name
+.global
+
+gateway and virtual service
+
+the gateway is called mesh
+the one istio creates by himself
+
+dnat???
+
+istio ignores namespaces???
+
+istio is gonna do a dns resolution
+get the ip
+and put the name in the header
+then drop the ip
+
+istio knows about the name
+
+the dns resolution is failing
+revirews.global exists
+if the dns resoltuion works it's ok
+if a dns exists
+but it doesn't matter the ip
+
+coredns plugin to
+coredns takes plugin
+via grpc so you can put it sparately
+and it has hot reload
+it looks at the services and create some so at least it resolves
+
+sky dns doesn't work this ways
+
+istio through your ip away????
+
 * Changelog
 
 There is no changelog, this is the best we have:
 
-- [[https://github.com/istio/istio/wiki/v0.2.9]]
 - [[https://istio.io/about/notes/][Release notes]]
+- [[https://github.com/istio/istio/wiki/v0.2.9]]
 
 Notable changes follow.
 

@@ -1,41 +1,39 @@
 Istio
-|| Last update: 26 Jan 2018
+|| Last update: 2 Oct 2018
 
 * Intro
 
 - [[https://istio.io][Istio website]]
 - [[https://github.com/istio/istio][Istio github]]
 
-*IMPORTANT*: *Istio*is*very*immature*.*Don't*use*it*in*any*MAJOR*environment*.
-
-*IMPORTANT*: The user contract won't stabilise until version 0.4.
-
 Istio is not a k8s technology and can work with other orchestrators.
 
-The goal of a control plane is to set policy that will eventually be enacted by the data plane.
-Provides policy and configuration for all of the running data planes in the mesh.
-Does not touch any packets/requests in the system.
+Istio was announced in the May of 2017.
+
+* Data plane and control plane
+
+It has received a lot of attention, and other data planes have begun
+integrations as a replacement for Envoy (both Linkerd 1.x and NGINX have
+demonstrated Istio integration)
 
 - Data planes: Linkerd, NGINX, HAProxy, [[https://www.envoyproxy.io/][Envoy]], Traefik
 - Control planes: Istio, Nelson, SmartStack
 
+The goal of a control plane is to set policy that will eventually be enacted by the data plane. Provides policy and configuration for all of the running data planes in the mesh. Does not touch any packets/requests in the system.
+
+Default proxy of Istio is Envoy.
+
+    The network should be transparent to applications.
+    When network and application problems do occur it
+    should be easy to determine the source of the problem.
+    — Envoy
+
 Linkerd one of the first (early 2016 - [[https://buoyant.io/2016/02/18/linkerd-twitter-style-operability-for-microservices/]]).
 Envoy 6 months later ([[https://eng.lyft.com/announcing-envoy-c-l7-proxy-and-communication-bus-92520b6c8191]]) (but in prod in left since 2015).
 
-    The network should be transparent to applications. When network and application
-    problems do occur it should be easy to determine the source of the problem.
-    — Envoy
-
-Istio announced in May 2017. Default proxy of Istio is Envoy.
-Istio has garnered a lot of excitement, and other data planes have begun
-integrations as a replacement for Envoy (both Linkerd and NGINX have
-demonstrated Istio integration)
-
-Nelson and SmartStack help further illustrate the control plane vs. data plane
-divide. Nelson uses Envoy as its proxy and builds a robust service mesh control
-plane around the HashiCorp stack (i.e. Nomad, etc.). SmartStack was perhaps
-the first of the new wave of service meshes. SmartStack forms a control
-plane around HAProxy or NGINX
+Nelson and SmartStack help further illustrate the control plane vs. data plane divide.
+Nelson uses Envoy as its proxy and builds a robust service mesh control plane around the HashiCorp stack (i.e. Nomad, etc.).
+SmartStack was perhaps the first of the new wave of service meshes. SmartStack forms a control plane around HAProxy or NGINX
 
 * What is a service mesh
 

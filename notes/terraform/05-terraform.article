@@ -1,0 +1,23 @@
+Terraform
+|| Last update: 2 Oct 2018
+
+* Building the new version
+
+To build the new version
+
+    docker run \
+      --rm \
+      -v $(pwd):/go/src/github.com/hashicorp/terraform \
+      -w /go/src/github.com/hashicorp/terraform \
+      -e XC_OS=linux \
+      -e XC_ARCH=amd64 \
+      golang:latest \
+      bash -c "apt-get update && apt-get install -y zip && GO111MODULE=on make bin"
+
+but make needs to be changed
+
+    # bin generates the releaseable binaries for Terraform
+    bin:
+            @TF_RELEASE=1 sh -c "'$(CURDIR)/scripts/build.sh'"
+
+This is what you want the bin to look like before building.

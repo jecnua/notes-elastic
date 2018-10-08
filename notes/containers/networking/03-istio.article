@@ -6,9 +6,14 @@ Istio
 - [[https://istio.io][Istio website]]
 - [[https://github.com/istio/istio][Istio github]]
 
-Istio is not a k8s technology and can work with other orchestrators.
+Istio is a:
+
+- Network mesh
+- Cluster wide policy enforcer (for access control)
+- In depth telemetry exporter
 
 Istio was announced in the May of 2017.
+Istio is not a k8s technology and can work with other orchestrators.
 
 * Data plane and control plane
 
@@ -37,7 +42,7 @@ SmartStack was perhaps the first of the new wave of service meshes. SmartStack f
 
 * What is a service mesh
 
-- [[https://en.wikipedia.org/wiki/Mesh_networking]]
+- [[https://en.wikipedia.org/wiki/Mesh_networking][Wikipedia: Mesh networking]]
 - [[https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/]]
 
     A service mesh is a dedicated infrastructure layer for handling
@@ -47,44 +52,32 @@ SmartStack was perhaps the first of the new wave of service meshes. SmartStack f
     mesh is typically implemented as an array of lightweight network proxies
     that are deployed alongside application code, without the application
     needing to be aware.
-    - https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/
+    Source: https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/
 
 .image images/service_mesh_color.png
+.caption An example of mesh network communication via sidecar
 
-The control plane enables the proxies to implement things like access control
-and metrics collection, which requires cooperation:
+The control plane enables the proxies to implement among others access control and metrics collection.
 
-Two benefits of this approach are already evident to me. First, not having to
-write custom software to deal with what are ultimately commodity code for
-microservices architecture will allow for many smaller organisations to enjoy
-features previously only available to large enterprises, creating all sorts of
-interesting use cases. The second one is that this architecture might allow us
-to finally realise the dream of using the best tool/language for the job without
-worrying about the availability of libraries and patterns for every single
-platform.
+Using the Istio approach, having a sidecar in each pod (in the kubernetes case), will allow you to implement a high-level and customisable mesh network being completely language agnostic and being transparent to the user and to the developer.
 
 .image images/service_mesh_black.png
+
+The following is instead a visual of the communication proxies have with the control plane.
 
 .image images/service_mesh_generic.png
 
 * What is Istio
 
-Istio is a distribuited control plane to configure envoy system records for
-service mesh.
+Istio is a distribuited control plane to configure envoy system records to achieve a service mesh.
 
 .image images/istio_arch.svg _ 750
 .caption Source: [[https://istio.io/]]
 
 .image images/all_istio.png _ 750
-.caption Source: [[https://www.youtube.com/watch?v=IfPt3z6UAGw][JavaDay UA 2017: 8 Steps to Become Awesome with Kubernetes (Burr Sutter)]]
+.caption Source: [[https://www.youtube.com/watch?v=IfPt3z6UAGw][JavaDay UA 2017: 8 Steps to Become Awesome with Kubernetes (Burr Sutter)]] (this diagram is obsolete)
 
-Istio is a:
-
-- Network mesh
-- Cluster wide policy enforcer (for access control)
-- In depth telemetry exporter
-
-Is very useful to help connect _legacy_ and _distribuited_. It helps to separate:
+It helps to separate:
 
 - Run-time
 - Configuration
@@ -96,15 +89,15 @@ Like:
 - Firewall routes
 - Security context
 
-* Installing Istio
+From the business code itself.
+
+* Installing Istio (This section needs to be updated and may be obsolete)
 
 ** Requirements
 
-Requires kubernetes *1.7.4+*
+Requires kubernetes *1.7.4+* (this information may be obsolete)
 
-Istio now uses CRD (CustomResourceDefinitions) so it needs k8s 1.7.4+.
-
-You can install it manually but is not covered by this page.
+Istio uses a CRD (CustomResourceDefinitions) so it needs k8s 1.7.4+.
 
 ** Helm
 
@@ -147,7 +140,7 @@ In case you don't have the initialiser (alpha) enabled.
 
 * Structure
 
-The structure is very similar to kubernetes. It has a concept of control plane.
+There are two main concept to keep in mind. There is a control plane and a data plane.
 
 - envoy (data plane)
 - pilot

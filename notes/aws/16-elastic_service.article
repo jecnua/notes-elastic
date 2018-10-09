@@ -1,0 +1,27 @@
+Amazon Elasticsearch Service
+|| Last update: 9 Oct 2018
+
+* Intro
+
+It allows external (internet access and internal).
+If you want it internal you need to define security groups and subnets.
+
+* Terraform
+
+- [[https://www.terraform.io/docs/providers/aws/r/elasticsearch_domain.html]]
+
+Spinning 1 up takes ~10 minutes.
+
+* Access control
+
+- [[https://aws.amazon.com/blogs/security/how-to-control-access-to-your-amazon-elasticsearch-service-domain/]]
+- [[https://www.terraform.io/docs/providers/aws/r/elasticsearch_domain_policy.html]]
+
+* Server size
+
+- [[https://aws.amazon.com/elasticsearch-service/pricing/]]
+
+* Re/Sources
+
+- [[https://aws.amazon.com/blogs/security/how-to-control-access-to-your-amazon-elasticsearch-service-domain/]]
+- [[https://aws.amazon.com/elasticsearch-service/pricing/]]

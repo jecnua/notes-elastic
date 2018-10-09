@@ -1,4 +1,4 @@
-ECS: Best practices
+ECS: Best practices (this article needs to be cleaned)
 || Last update: 28 Sep 2018
 
 * Close access to metadata
@@ -7,11 +7,9 @@ this works only if we give iam role to every task
 
 * monitor all nodes via deamon
 
-we should get docker metrics and node metrics
+We should get docker metrics and node metrics
 
-* all services should have defined limits
-
-ss
+All services should have defined limits
 
 * spot
 

@@ -1,0 +1,39 @@
+Spot fleet
+|| Last update: 9 Oct 2018
+
+* Health checks
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-requests.html#spot-fleet-health-checks]]
+
+The health of a spot fleet node is checked every two minutes and is based
+on the aws system healthcheck (no LB). It's up to the user to check the status
+of it's node via [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html][api call]]
+and act accordingly.
+
+    aws ec2 describe-instance-status --instance-ids i-1234567890abcdef0
+
+The node will need the iam: ec2:DescribeInstanceStatus
+
+The node will be notified two minutes before removal.
+
+- [[https://aws.amazon.com/about-aws/whats-new/2017/02/new-amazon-ec2-spot-advisor-and-spot-fleets-now-support-health-checks/]]
+
+* Fault codes
+
+You should also monitor the possible fault codes your spot is running into
+while running/scaling.
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html]]
+
+* Scale to 0
+
+You can scale the spot fleet to 0 if needed while maintaining it active.
+
+- [[https://aws.amazon.com/about-aws/whats-new/2017/11/spot-fleet-can-now-auto-attach-instances-to-your-load-balancers-and-scale-down-to-0-target-capacity/]]
+
+* Re/Sources
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-requests.html#spot-fleet-health-checks]]
+- [[https://aws.amazon.com/about-aws/whats-new/2017/02/new-amazon-ec2-spot-advisor-and-spot-fleets-now-support-health-checks/]]
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html]]
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html]]

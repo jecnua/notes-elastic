@@ -1,5 +1,21 @@
 Cloudformation
-|| Last update: 4 Sep 2018
+|| Last update: 9 Oct 2018
+
+* Share modules
+
+The best practices to share modules is to pull them on s3 and allow people to
+import them. However, you need to be careful not to break compatibility with
+older versions and allow people to _lock_ to a specific version.
+
+Following the advices here, I decided to use two namespaces:
+
+- build number
+- latest
+
+on s3 and copy the templates every run.
+
+- [[https://aws.amazon.com/answers/devops/aws-cloudformation-validation-pipeline/]]
+- [[https://s3.amazonaws.com/solutions-reference/aws-cloudformation-validation-pipeline/latest/aws-cloudformation-validation-pipeline.pdf]]
 
 * Linting and Validation (to test)
 
@@ -9,13 +25,13 @@ Cloudformation
 * Tagging
 
 CF does not allow you to tag everything that the CLI does. Terraform does a much
-better job at that.
-To see the list of Resources you can tag on creation, you can go here:
+better job at that. To see the list of Resources you can tag on creation, you
+can go here:
 
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-resources]]
 
-You can fasten the process by adding tags when you apply create-stack so that it gets
-propagates to all of them.
+You can fasten the process by adding tags when you apply create-stack so that
+it gets propagates to all of them.
 
     create-stack
     --stack-name <value>
@@ -46,3 +62,5 @@ and I expect more.
 - [[https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-stack.html]]
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-resources]]
 - [[https://github.com/capitalone/cloud-custodian/issues/1994]]
+- [[https://aws.amazon.com/answers/devops/aws-cloudformation-validation-pipeline/]]
+- [[https://s3.amazonaws.com/solutions-reference/aws-cloudformation-validation-pipeline/latest/aws-cloudformation-validation-pipeline.pdf]]

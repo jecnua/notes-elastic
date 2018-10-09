@@ -1,7 +1,0 @@
-Kubernetes tools
-|| Last update: 28 Feb 2018
-
-* List
-
-- Kubectx: [[https://github.com/ahmetb/kubectx]]
-- Kube-shell: [[https://github.com/cloudnativelabs/kube-shell]]

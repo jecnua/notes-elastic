@@ -1,0 +1,13 @@
+Plugin systems
+|| Last update: 10 Oct 2018
+
+* Intro
+
+I like this topic. Some links
+
+- [[https://github.com/jaegertracing/jaeger/issues/422]]
+- [[https://github.com/census-instrumentation/opencensus-service/pull/70]]
+
+** The hashicorp approach
+
+- [[https://github.com/hashicorp/go-plugin#what-about-shared-libraries]]

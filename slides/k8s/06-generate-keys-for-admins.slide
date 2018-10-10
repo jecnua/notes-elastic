@@ -1,34 +1,53 @@
-Generate new key/cert for admins on k8s 1.7+
-|| Last update: 05 Jan 2018
+Generate credentials for kubectl
+|| Last update: 9 Oct 2018
 
 * Tested on
 
-- 1.7
-- 1.9.0
+- 1.7.x
+- 1.9.x
+- 1.12.x
 
-* Generate certs and key for a new user
+* Generate a new private key
+
+The first step is to generate a new RSA private key for your user:
 
     # As sudo on the controller box
     sudo su
 
-    USERNAME='jecnua'
-    GROUP='system:masters'
+    USERNAME=${1:-'user'}
+    GROUP=${2:-'system:masters'} # Admin!
 
-    cd /etc/kubernetes/pki
+    # Generate random key
+    openssl genrsa -out "$USERNAME.key" 2048
 
-    openssl genrsa -out $USERNAME.key 2048
+- [[https://www.openssl.org/docs/man1.0.2/apps/genrsa.html]]
+
+* Generate a certificate signing request
+
+Create a certificate signing request:
 
     openssl req -new \
-      -key $USERNAME.key \
-      -out $USERNAME.csr \
+      -key "$USERNAME.key" \
+      -out "$USERNAME.csr" \
       -subj "/CN=$USERNAME/O=$GROUP"
 
-    openssl x509 -req \
-      -in $USERNAME.csr \
-      -CA ca.crt -CAkey ca.key -CAcreateserial \
-      -out $USERNAME.crt -days 10000
+- [[https://www.openssl.org/docs/manmaster/man1/req.html]]
+- [[https://support.rackspace.com/how-to/generate-a-csr-with-openssl/]]
 
-* Write the base64 on file
+* Generate signed certificate
+
+Create a self signed certificate using existing CSR and private key:
+
+    openssl x509 -req \
+      -in "$USERNAME.csr" \
+      -CA /etc/kubernetes/pki/ca.crt \
+      -CAkey /etc/kubernetes/pki/ca.key \
+      -CAcreateserial \
+      -out "$USERNAME.crt" -days 10000
+
+* Write the base64 on a file for you to download
+
+For example on a simple txt file:
 
     touch /opt/$USERNAME.data
     echo "CA CRT:" > /opt/$USERNAME.data
@@ -41,13 +60,15 @@ Generate new key/cert for admins on k8s 1.7+
     base64 -w0 $USERNAME.key >> /opt/$USERNAME.data
     echo "" >> /opt/$USERNAME.data
 
-* On another server (like your laptop)
+* Configure the config file
+
+For example on file called _kube.conf_:
 
     apiVersion: v1
     clusters:
     - cluster:
-        certificate-authority-data: <here>
-        server: https://<your_ip>:6443
+        certificate-authority-data: <CA CRT base64 here>
+        server: https://<controller ip/dns>:6443
       name: kubernetes
     contexts:
     - context:
@@ -61,19 +82,26 @@ Generate new key/cert for admins on k8s 1.7+
     users:
     - name: jecnua
       user:
-        client-certificate-data: <here>
-        client-key-data: <here>
+        client-certificate-data: <USER CRT base64 here>
+        client-key-data: <USER KEY base64 here>
 
 * Then export and try to connect
 
-    export KUBECONFIG=test.conf
+    export KUBECONFIG=kube.conf
     kubectl get nodes
 
-* Or use the contexts
+* Working example
 
-    TBD
+You can find a script to do all of this for you and the terrform to spin a new
+test cluster here:
 
-* Yaml
+- [[https://github.com/jecnua/terraform-aws-kubernetes]]
+
+To be specific here:
+
+- [[https://github.com/jecnua/terraform-aws-kubernetes/tree/master/utilities]]
+
+* Use a different group (optional)
 
 In case you want to use another group:
 
@@ -90,7 +118,7 @@ In case you want to use another group:
       name: cluster-admin
       apiGroup: rbac.authorization.k8s.io
 
-* Links
+* Re/Sources
 
 - [[https://lukemarsden.github.io/docs/admin/authorization/][admin/authorization/]]
 - [[https://kubernetes.io/docs/admin/authentication/#x509-client-certs][authentication/#x509-client-certs]]

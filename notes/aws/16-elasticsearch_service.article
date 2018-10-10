@@ -17,6 +17,13 @@ Spinning 1 up takes ~10 minutes.
 - [[https://aws.amazon.com/blogs/security/how-to-control-access-to-your-amazon-elasticsearch-service-domain/]]
 - [[https://www.terraform.io/docs/providers/aws/r/elasticsearch_domain_policy.html]]
 
+    aws_elasticsearch_domain.es: InvalidTypeException: You can’t attach an
+    IP-based policy to a domain that has a VPC endpoint. Instead, use a
+    security group to control IP-based access.
+        status code: 409, request id: da98b8f0-cbd3-11e8-b8d1-015806106f26
+
+If you use a SG don't use the policy.
+
 * Server size
 
 - [[https://aws.amazon.com/elasticsearch-service/pricing/]]

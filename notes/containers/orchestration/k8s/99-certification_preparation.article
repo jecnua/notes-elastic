@@ -1,0 +1,208 @@
+Certified Kubernetes Administrator (CKA) cert preparation
+|| Last update: 10 Oct 2018
+
+* Intro
+
+- [[https://www.cncf.io/certification/cka/]]
+
+On that page, you can fin the following links:
+
+- [[https://www.cncf.io/certification/candidate-handbook]]
+- [[https://cncf.io/certification/cka-cirriculum]]
+- [[https://www.cncf.io/certification/tips]]
+- [[https://www.cncf.io/certification/cka/faq/]]
+- [[https://www.cncf.io/certification/agreement/]]
+
+* The exam
+
+- 3h/24 problems, different weight
+- 74% is the required score to pass
+
+The Official docs are only think you can use during the exam
+
+- [[https://kubernetes.io/]] -
+
+You will have access to one terminal window where you are switching between
+Kubernetes clusters using "kubectl config use-context".
+
+    The clusters are bootstrapped in such a way that the control plane services
+    are deployed as traditional systemd-managed services, with kubelet on all
+    nodes joining the cluster via TLS bootstrapping, with kubelet itself also
+    running as a systemd-managed service.
+    (Linux Foundation Customer Support — ckasupport@rt.linuxfoundation.org)
+
+The curriculum includes 12% on installation, configuration, and validation, and
+11% on cluster maintenance so do it the hard way.
+
+    CKA questions have the advantage that each question is an independent task that
+    does not affect other exam tasks, and you can go back and forward if you get
+    stuck or if you feel courageous enough to start with the high graded questions
+    at the end.
+    Source: https://medium.com/@walidshaari/kubernetes-certified-administrator-cka-43a25ca4c61c
+
+** Tips
+
+Get used to this tools:
+
+- openssl
+- cfssl
+- systemd
+- etcdctl
+- tmux
+- screen
+- vim/nano
+
+Recap:
+
+- Use the notepad in there (2)
+- Use tmux/screen (3)
+- Install kubectl autocomplete (3)
+- Get used to all the shortcuts for vim/nano (3)
+- There is no time to do all questions so skip them and don't look back (3)
+- Get used to the docs because is the only thing you can use (3)
+- Focus on multi nodes cluster not single (like minikube) (1)
+- Learn to use kubectl explain command eg. kubectl explain pod (3)
+- Use kubectl commands to solve the questions or „create” the yaml files (-o yaml) (1)
+- Do kubernetes the hard way & kubernetes from scratch (7) this is enough for the management and lifecycle stuff
+- make a kubectl alias as kc or k (1)
+- be sure to know how kubelet and etcd replication works (2)
+- ssl certs right on all nodes - Getting certs right throughout the entire cluster (3)
+- kubernetes.io task list (3)
+- get ssl cert right and systemd (3)
+
+** Self assessment
+
+- [[https://docs.google.com/spreadsheets/d/1kyPaDFQyHt8lm-rFEm2Xz89oqM3HI0A2wvzvvbGYB2c/edit#gid=0]]
+
+Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
+
+** Snippet
+
+    Note that not all questions carry equal weight.
+    nearly dozen problems are straight and super simple. So, have a strategy for
+    the exam. My strategy was to complete 10 easy questions in the first hour, 8
+    medium in the second hour and leave final hour for remaining 6 (tough)
+    questions.
+    Source: https://medium.com/@pmvk/tips-to-crack-certified-kubernetes-administrator-cka-exam-c949c7a9bea1
+
+    Use kubectl to create resources (such as deployment, service, cronjobs etc)
+    instead of creating them from manifest files. It saves lot of time. If you
+    need to make further changes, save the manifest file for the resource you
+    created using kubectl, modify accordingly and re-apply. Alternatively, you
+    can as well use kubectl edit <resource> to modify the resource spec.
+    Source: https://medium.com/@pmvk/tips-to-crack-certified-kubernetes-administrator-cka-exam-c949c7a9bea1
+
+    I depended on Kubeadm installations....DO NOT.....i repeat...DO NOT
+    practive on kubeadm installations only...
+    Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
+
+    I Did not practice topics beyond this course and depended on the practice
+    exam only.... make sure you do go to the official kubernetes documentation
+    and search every other object type and option not covered in this course
+    and try to practice it as well.
+    Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
+
+    I had basic understanding of Certificates and Keys....that was a huge
+    mistake when attempting this exam....
+    Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
+
+    Use the built-in notepad in the exam controls, will be very handy to manipulate text before using it in the terminal.
+    Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
+
+    Use VIM editor ....Use VIM editor.......USE VIM EDITOR... sorry for yelling that and  sorry Chad I know you like Nano :D  but it is essential for lots of time saving ... simple tricks like ":%s/foo/bar/" which would replace all entries of "foo" in the file with "bar" would allow you to easily and quickly reuse yaml files without wasting time, I probably did that 5 or 6 times during the exam... also when you copy a yaml and it has a huge chunk you want to get rid of "dG" deletes from the line your cursor is at till the end of the file ... trust me ...every tap on your keyboard will matter...
+    Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
+
+    If you do not know how Systemd works, DO NOT attempt the exam untile you are familiar with that
+    Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
+
+    When you are doing some cluster troubleshooting it may be useful to know "screen" command and how to work with it. It's handy when you need to quickly switch between cluster node sessions, because you have only one terminal window.
+    Source: https://linux.xvx.cz/2018/04/cka-kubernetes-certified-administrator.html
+
+    Absolute must is to enable bash completion on the "master station" where you will be running all the "kubectl" commands. This handy autocomplete will speed up your work significantly - you can enable it by running: "<(kubectl completion bash)" (https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+    Source: https://linux.xvx.cz/2018/04/cka-kubernetes-certified-administrator.html
+
+    Learn how to create and manage systemd services, since the exam environment is based on them:
+    Source: https://medium.com/akena-blog/k8s-admin-exam-tips-22961241ba7d
+
+    Learn to use kubectl explain command eg. kubectl explain pod
+    Source: https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/
+
+    Use kubectl commands to solve the questions or „create” the yaml files (-o yaml)
+    Source: https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/
+
+    Make sure you understand the components that makes up the K8s cluster, how do they interact and what each component is responsible of, in order to be able to fix the issues for the troubleshooting tasks.
+    Source: https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/
+
+    the 70% of the exam was made to use only kubectl command line and the 30% to debug and install kubernetes control plane components. For the debuging part, Kubernetes the Hard Way was a good advantage to accomplish theses problems.
+    Source: https://medium.com/@ikaboubi/my-feedback-about-cka-and-ckad-e82a35585fe9
+
+    For logging all you need to do is piping the log in a file.
+    Network policies in CKAD
+    kubernetes the hard way is enough for the management and lifecycle questions
+    Source: https://medium.com/@ikaboubi/my-feedback-about-cka-and-ckad-e82a35585fe9
+
+    Did Kubernetes the Hard Way on AWS with Terraform and Ansible. Ran into A LOT of problems, especially with certificates; that helped more than I thought it would.
+    Source: https://www.reddit.com/r/kubernetes/comments/95k033/passed_the_cka_after_failing_it_twice_amaa/
+
+    Getting certs right throughout the entire cluster turned out to be way more complicated than I thought it would be, largely because SSL errors don't tell you what went wrong (on purpose).
+    Source: https://www.reddit.com/r/kubernetes/comments/95k033/passed_the_cka_after_failing_it_twice_amaa/
+
+    Know your linux- specifically how the systemd service runs and operates, how to troubleshoot problems and basic commands.
+    Source: http://mobilise-cloud-services.blogspot.com/2018/08/kubernetes-administrator-certification.html
+
+* Kata
+
+Spin two nodes with the right ubuntu on it
+
+    install kubectl
+    install tmux
+    install kubectl bash autocomplete
+    install screen
+
+pipe all to file
+
+* Resources
+
+** Interactive
+
+- [[https://www.katacoda.com/courses/kubernetes]]
+- [[https://www.katacoda.com/courses/kubernetes/playground]]
+- [[https://labs.play-with-k8s.com/]]
+
+** Free
+
+- [[https://kubernetes.io/]] - Official docs (only think you can use during the exam)
+- [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
+- [[https://www.udemy.com/learn-devops-the-complete-kubernetes-course/]]
+- [[https://www.edx.org/course/introduction-to-kubernetes]]
+- [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]] - Free
+- [[https://kubernetes.io/docs/tasks/]]
+- [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
+- [[http://kubernetesbyexample.com/]]
+- [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
+- [[https://docs.google.com/spreadsheets/d/10NltoF_6y3mBwUzQ4bcQLQfCE1BWSgUDcJXy-Qp2JEU/edit#gid=0]]  LIST OF RESOURCES
+- [[https://github.com/kelseyhightower/kubernetes-the-hard-way]]
+
+** Paid
+
+- [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]] - Linux Academy Fee
+- [[https://training.linuxfoundation.org/linux-courses/system-administration-training/kubernetes-fundamentals]] - $299
+- [[https://www.pluralsight.com/courses/getting-started-kubernetes]] -
+- [[https://www.udemy.com/kubernetes-cka-on-cloud/]] - £99.99
+- [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video306747][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
+- [[https://training.linuxfoundation.org/sysadmin-day-2018/]]
+
+** Books
+
+- [[http://shop.oreilly.com/product/0636920043874.do]]
+
+* Re/Sources
+
+- [[https://medium.com/@pmvk/tips-to-crack-certified-kubernetes-administrator-cka-exam-c949c7a9bea1][Tips to crack Certified Kubernetes Administrator (CKA) Exam]] - 17 July 2018
+- [[https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips]]
+- [[https://linux.xvx.cz/2018/04/cka-kubernetes-certified-administrator.html]] - 19 April, 2018
+- [[https://medium.com/akena-blog/k8s-admin-exam-tips-22961241ba7d]] - 7 Mar 2018
+- [[https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/]] -
+- [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
+- [[https://medium.com/@ikaboubi/my-feedback-about-cka-and-ckad-e82a35585fe9]]
+- [[https://www.reddit.com/r/kubernetes/comments/95k033/passed_the_cka_after_failing_it_twice_amaa/]]

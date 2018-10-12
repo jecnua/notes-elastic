@@ -48,7 +48,7 @@ Get used to this tools:
 - cfssl
 - systemd
 - etcdctl
-- tmux
+- tmux: [[https://gist.github.com/MohamedAlaa/2961058#file-tmux-cheatsheet-markdown][tmux-cheatsheet-markdown]] [[https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/][a-quick-and-easy-guide-to-tmux]]
 - screen
 - vim/nano
 
@@ -163,34 +163,32 @@ pipe all to file
 
 * Resources
 
-** Interactive
+** Free
+
+- [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]]
+- [[https://kubernetes.io/]] - Official docs (only think you can use during the exam)
+- [[https://kubernetes.io/docs/tasks/]]
+- [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
+- [[https://www.udemy.com/learn-devops-the-complete-kubernetes-course/]]
+- [[https://www.edx.org/course/introduction-to-kubernetes]]
+- [[https://github.com/kelseyhightower/kubernetes-the-hard-way]]
+- [[http://kubernetesbyexample.com/]]
+- [[https://docs.google.com/spreadsheets/d/10NltoF_6y3mBwUzQ4bcQLQfCE1BWSgUDcJXy-Qp2JEU/edit#gid=0]]  LIST OF RESOURCES
+
+*** Interactive
 
 - [[https://www.katacoda.com/courses/kubernetes]]
 - [[https://www.katacoda.com/courses/kubernetes/playground]]
 - [[https://labs.play-with-k8s.com/]]
 
-** Free
-
-- [[https://kubernetes.io/]] - Official docs (only think you can use during the exam)
-- [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
-- [[https://www.udemy.com/learn-devops-the-complete-kubernetes-course/]]
-- [[https://www.edx.org/course/introduction-to-kubernetes]]
-- [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]] - Free
-- [[https://kubernetes.io/docs/tasks/]]
-- [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
-- [[http://kubernetesbyexample.com/]]
-- [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
-- [[https://docs.google.com/spreadsheets/d/10NltoF_6y3mBwUzQ4bcQLQfCE1BWSgUDcJXy-Qp2JEU/edit#gid=0]]  LIST OF RESOURCES
-- [[https://github.com/kelseyhightower/kubernetes-the-hard-way]]
-
 ** Paid
 
-- [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]] - Linux Academy Fee
+- [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]] - Linux Academy fee
 - [[https://training.linuxfoundation.org/linux-courses/system-administration-training/kubernetes-fundamentals]] - $299
-- [[https://www.pluralsight.com/courses/getting-started-kubernetes]] -
+- [[https://www.pluralsight.com/courses/getting-started-kubernetes]] - Pluralsight fee
 - [[https://www.udemy.com/kubernetes-cka-on-cloud/]] - £99.99
-- [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video306747][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
-- [[https://training.linuxfoundation.org/sysadmin-day-2018/]]
+- [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video306747][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]] - Safaribook fee
+- [[https://training.linuxfoundation.org/sysadmin-day-2018/]] - Some group discount
 
 ** Books
 

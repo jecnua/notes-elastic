@@ -1,6 +1,5 @@
-
 Certified Kubernetes Administrator (CKA) cert preparation
-|| Last update: 10 Oct 2018
+|| Last update: 16 Oct 2018
 
 * Intro
 
@@ -107,34 +106,56 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
     mistake when attempting this exam....
     Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
 
-    Use the built-in notepad in the exam controls, will be very handy to manipulate text before using it in the terminal.
+    Use the built-in notepad in the exam controls, will be very handy to
+    manipulate text before using it in the terminal.
     Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
 
-    Use VIM editor ....Use VIM editor.......USE VIM EDITOR... sorry for yelling that and  sorry Chad I know you like Nano :D  but it is essential for lots of time saving ... simple tricks like ":%s/foo/bar/" which would replace all entries of "foo" in the file with "bar" would allow you to easily and quickly reuse yaml files without wasting time, I probably did that 5 or 6 times during the exam... also when you copy a yaml and it has a huge chunk you want to get rid of "dG" deletes from the line your cursor is at till the end of the file ... trust me ...every tap on your keyboard will matter...
+    Use VIM editor ....Use VIM editor.......USE VIM EDITOR... sorry for yelling
+    that and  sorry Chad I know you like Nano :D  but it is essential for lots
+    of time saving ... simple tricks like ":%s/foo/bar/" which would replace all
+    entries of "foo" in the file with "bar" would allow you to easily and
+    quickly reuse yaml files without wasting time, I probably did that 5 or 6
+    times during the exam... also when you copy a yaml and it has a huge chunk
+    you want to get rid of "dG" deletes from the line your cursor is at till the
+    end of the file ... trust me ...every tap on your keyboard will matter...
     Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
 
-    If you do not know how Systemd works, DO NOT attempt the exam untile you are familiar with that
+    If you do not know how Systemd works, DO NOT attempt the exam untile you are
+    familiar with that
     Source: https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips
 
-    When you are doing some cluster troubleshooting it may be useful to know "screen" command and how to work with it. It's handy when you need to quickly switch between cluster node sessions, because you have only one terminal window.
+    When you are doing some cluster troubleshooting it may be useful to know
+    "screen" command and how to work with it. It's handy when you need to
+    quickly switch between cluster node sessions, because you have only one
+    terminal window.
     Source: https://linux.xvx.cz/2018/04/cka-kubernetes-certified-administrator.html
 
-    Absolute must is to enable bash completion on the "master station" where you will be running all the "kubectl" commands. This handy autocomplete will speed up your work significantly - you can enable it by running: "<(kubectl completion bash)" (https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+    Absolute must is to enable bash completion on the "master station" where
+    you will be running all the "kubectl" commands. This handy autocomplete will
+    speed up your work significantly - you can enable it by running: "<(kubectl
+     completion bash)" (https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
     Source: https://linux.xvx.cz/2018/04/cka-kubernetes-certified-administrator.html
 
-    Learn how to create and manage systemd services, since the exam environment is based on them:
+    Learn how to create and manage systemd services, since the exam environment
+     is based on them:
     Source: https://medium.com/akena-blog/k8s-admin-exam-tips-22961241ba7d
 
     Learn to use kubectl explain command eg. kubectl explain pod
     Source: https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/
 
-    Use kubectl commands to solve the questions or „create” the yaml files (-o yaml)
+    Use kubectl commands to solve the questions or „create” the yaml files
+    (-o yaml)
     Source: https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/
 
-    Make sure you understand the components that makes up the K8s cluster, how do they interact and what each component is responsible of, in order to be able to fix the issues for the troubleshooting tasks.
+    Make sure you understand the components that makes up the K8s cluster, how
+    do they interact and what each component is responsible of, in order to be
+    able to fix the issues for the troubleshooting tasks.
     Source: https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/
 
-    the 70% of the exam was made to use only kubectl command line and the 30% to debug and install kubernetes control plane components. For the debuging part, Kubernetes the Hard Way was a good advantage to accomplish theses problems.
+    the 70% of the exam was made to use only kubectl command line and the 30%
+    to debug and install kubernetes control plane components. For the debuging
+    part, Kubernetes the Hard Way was a good advantage to accomplish theses
+    problems.
     Source: https://medium.com/@ikaboubi/my-feedback-about-cka-and-ckad-e82a35585fe9
 
     For logging all you need to do is piping the log in a file.
@@ -142,13 +163,18 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
     kubernetes the hard way is enough for the management and lifecycle questions
     Source: https://medium.com/@ikaboubi/my-feedback-about-cka-and-ckad-e82a35585fe9
 
-    Did Kubernetes the Hard Way on AWS with Terraform and Ansible. Ran into A LOT of problems, especially with certificates; that helped more than I thought it would.
+    Did Kubernetes the Hard Way on AWS with Terraform and Ansible. Ran into A
+    LOT of problems, especially with certificates; that helped more than I
+    thought it would.
     Source: https://www.reddit.com/r/kubernetes/comments/95k033/passed_the_cka_after_failing_it_twice_amaa/
 
-    Getting certs right throughout the entire cluster turned out to be way more complicated than I thought it would be, largely because SSL errors don't tell you what went wrong (on purpose).
+    Getting certs right throughout the entire cluster turned out to be way more
+    complicated than I thought it would be, largely because SSL errors don't
+    tell you what went wrong (on purpose).
     Source: https://www.reddit.com/r/kubernetes/comments/95k033/passed_the_cka_after_failing_it_twice_amaa/
 
-    Know your linux- specifically how the systemd service runs and operates, how to troubleshoot problems and basic commands.
+    Know your linux- specifically how the systemd service runs and operates, how
+    to troubleshoot problems and basic commands.
     Source: http://mobilise-cloud-services.blogspot.com/2018/08/kubernetes-administrator-certification.html
 
 * Kata

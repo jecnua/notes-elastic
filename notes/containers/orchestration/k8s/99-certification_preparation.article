@@ -1,3 +1,4 @@
+
 Certified Kubernetes Administrator (CKA) cert preparation
 || Last update: 10 Oct 2018
 
@@ -55,7 +56,7 @@ Get used to this tools:
 Recap:
 
 - Use the notepad in there (2)
-- Use tmux/screen (3)
+- Use tmux or screen (3)
 - Install kubectl autocomplete (3)
 - Get used to all the shortcuts for vim/nano (3)
 - There is no time to do all questions so skip them and don't look back (3)

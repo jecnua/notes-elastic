@@ -158,7 +158,6 @@ Spin two nodes with the right ubuntu on it
     install kubectl
     install tmux
     install kubectl bash autocomplete
-    install screen
 
 pipe all to file
 

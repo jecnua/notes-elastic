@@ -48,8 +48,7 @@ Get used to this tools:
 - cfssl
 - systemd
 - etcdctl
-- tmux: [[https://gist.github.com/MohamedAlaa/2961058#file-tmux-cheatsheet-markdown][tmux-cheatsheet-markdown]] [[https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/][a-quick-and-easy-guide-to-tmux]]
-- screen
+- tmux/screen [[https://gist.github.com/MohamedAlaa/2961058#file-tmux-cheatsheet-markdown][tmux-cheatsheet-markdown]] [[https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/][a-quick-and-easy-guide-to-tmux]]
 - vim/nano
 
 Recap:

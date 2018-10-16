@@ -133,3 +133,18 @@
 - [notes/languages/02-python](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/languages/02-python.article)
 - [notes/languages/03-scala](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/languages/03-scala.article)
 - [notes/languages/01-nodejs](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/languages/01-nodejs.article)
+ 
+## Slides
+ 
+- [slides/others/statuspage-io](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/others/statuspage-io.slide)
+- [slides/others/beaker](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/others/beaker.slide)
+- [slides/others/elasticsearch](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/others/elasticsearch.slide)
+- [slides/k8s/00-local_k8s_env_simplified](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/00-local_k8s_env_simplified.slide)
+- [slides/k8s/07-istio](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/07-istio.slide)
+- [slides/k8s/00-basic_aws_ecs](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/00-basic_aws_ecs.slide)
+- [slides/k8s/06-generate-keys-for-admins](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/06-generate-keys-for-admins.slide)
+- [slides/k8s/03-intro_deployments_replicaset_pods_services](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/03-intro_deployments_replicaset_pods_services.slide)
+- [slides/k8s/03-intro_k8s_administration](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/03-intro_k8s_administration.slide)
+- [slides/k8s/99-recap](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/99-recap.slide)
+- [slides/k8s/00-local_k8s_env](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/00-local_k8s_env.slide)
+- [slides/k8s/03-TODO](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/03-TODO.slide)

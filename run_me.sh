@@ -3,6 +3,8 @@
 {
 echo "# Notes, slides and stuff"
 echo " "
+echo '[![Build Status](https://travis-ci.com/jecnua/notes-presentations.svg?branch=master)](https://travis-ci.com/jecnua/notes-presentations)'
+echo " "
 echo "## Articles"
 echo " "
 } > README.md

@@ -1,6 +1,12 @@
 CKA notes
 || Last update: 10 Oct 2018
 
+* To clarify
+
+- k8s ports
+- cgroup drivers
+- no need for cni package
+
 * Kubernetes course: CKA certified kubernetes administrator
 
 * Network
@@ -9,13 +15,20 @@ Kubernetes made some interesting choices on how networking should be implemented
 It defines the network model but leave it to third party plugins a way to
 implement it.
 
-- Each pod can communicate to each other pod on any host of the cluster, without a NAT
+Each pod can communicate to each other pod on any host of the cluster, without
+a NAT.
 
 ** CNI
 
 - [[https://github.com/containernetworking/cni]]
 
-    CNI (Container Network Interface), a Cloud Native Computing Foundation project, consists of a specification and libraries for writing plugins to configure network interfaces in Linux containers, along with a number of supported plugins. CNI concerns itself only with network connectivity of containers and removing allocated resources when the container is deleted. Because of this focus, CNI has a wide range of support and the specification is simple to implement.
+    CNI (Container Network Interface), a Cloud Native Computing Foundation
+    project, consists of a specification and libraries for writing plugins
+    to configure network interfaces in Linux containers, along with a number
+    of supported plugins. CNI concerns itself only with network connectivity of
+    containers and removing allocated resources when the container is deleted.
+    Because of this focus, CNI has a wide range of support and the specification
+    is simple to implement.
     Source: https://github.com/containernetworking/cni
 
 A CNI plugin is an *executable* invoked by the container management system. It's
@@ -29,8 +42,8 @@ You can choose the right plugin for your workload.
 
 ** CNI plugins
 
-- https://github.com/projectcalico/calico-cni
-- https://github.com/weaveworks/weave
+- [[https://github.com/projectcalico/calico-cni]]
+- [[https://github.com/weaveworks/weave]]
 
 * Excercise
 
@@ -38,3 +51,7 @@ You can choose the right plugin for your workload.
 - Create a cluster with calico
 - Create a pod with tempfs/hostPath/local/protected
 - kubectl describe/edit???
+
+* Re/Sources
+
+- [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]]

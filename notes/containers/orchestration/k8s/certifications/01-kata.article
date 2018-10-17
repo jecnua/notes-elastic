@@ -1,0 +1,16 @@
+Kata: Certified Kubernetes Administrator (CKA) cert preparation
+|| Last update: 17 Oct 2018
+
+* Kata
+
+  Spin two nodes with the right ubuntu on it
+
+      install kubectl
+      install tmux
+      install kubectl bash autocomplete
+
+pipe all to file
+
+
+install flannel
+install calico

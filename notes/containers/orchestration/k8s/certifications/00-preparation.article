@@ -1,5 +1,5 @@
 Certified Kubernetes Administrator (CKA) cert preparation
-|| Last update: 16 Oct 2018
+|| Last update: 17 Oct 2018
 
 * Intro
 
@@ -20,7 +20,7 @@ On that page, you can fin the following links:
 
 The Official docs are only think you can use during the exam
 
-- [[https://kubernetes.io/]] -
+- [[https://kubernetes.io/]]
 
 You will have access to one terminal window where you are switching between
 Kubernetes clusters using "kubectl config use-context".
@@ -175,43 +175,6 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
     Know your linux- specifically how the systemd service runs and operates, how
     to troubleshoot problems and basic commands.
     Source: http://mobilise-cloud-services.blogspot.com/2018/08/kubernetes-administrator-certification.html
-
-* Kata
-
-Spin two nodes with the right ubuntu on it
-
-    install kubectl
-    install tmux
-    install kubectl bash autocomplete
-
-pipe all to file
-
-prepare for test
-
-- how do you label a pod/node
-- how schedule a specific pod to a specific node
-- what are the component of the cluster and where they run
-- how does a piece of information get from the command line to the yaml to the container/app
-- how can you scale up and down a deployments
-- how do kubernetes manage self healing
-- how to evict a node from pod from an upgrade, how to put it back
-- can you backup and restore the node in the same way?
-- how to change how the use connect to the cluster
-- what is the default the security state of a pod networking
-- how can you apply a policy to pods
-- what is the process to create and replace tsl certificates for cluster component
-- where does the images come from and why?
-- what is a security context and how to use them
-- how to secure etcd
-- how do you create a new role and assign it to a user
-- how to allocate persistante storage - what are the 3 access mode
-- difference between claim and volume
-- what are the two types of lifecyle
-- how do you provide an application a persistante volume
-- which piece accept request in behalf of the cluster? which pieve direct it around
-- which orchestrate on the node? which name resolution?
-- how is name resolution handled inside a pod?
-- gce e2e test for
 
 * Resources
 

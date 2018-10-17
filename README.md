@@ -1,9 +1,9 @@
 # Notes, slides and stuff
-
+ 
 [![Build Status](https://travis-ci.com/jecnua/notes-presentations.svg?branch=master)](https://travis-ci.com/jecnua/notes-presentations)
-
+ 
 ## Articles
-
+ 
 - [notes/faas/frameworks/03-local_testing](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/03-local_testing.article)
 - [notes/faas/frameworks/05-paid](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/05-paid.article)
 - [notes/faas/frameworks/02-aws_sam](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/02-aws_sam.article)
@@ -49,8 +49,10 @@
 - [notes/containers/orchestration/k8s/13-tools](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/13-tools.article)
 - [notes/containers/orchestration/k8s/01d-kubernetes_settings](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/01d-kubernetes_settings.article)
 - [notes/containers/orchestration/k8s/01c-k8s_tooling](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/01c-k8s_tooling.article)
+- [notes/containers/orchestration/k8s/certifications/02-questions](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/certifications/02-questions.article)
 - [notes/containers/orchestration/k8s/certifications/01-cka](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/certifications/01-cka.article)
 - [notes/containers/orchestration/k8s/certifications/00-preparation](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/certifications/00-preparation.article)
+- [notes/containers/orchestration/k8s/certifications/01-kata](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/certifications/01-kata.article)
 - [notes/containers/orchestration/k8s/11-minikube](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/11-minikube.article)
 - [notes/containers/orchestration/k8s/09-services_and_ingress](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/09-services_and_ingress.article)
 - [notes/containers/orchestration/k8s/05-kubeadm](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/05-kubeadm.article)
@@ -135,9 +137,9 @@
 - [projects/k8s/k8s](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/k8s/k8s.article)
 - [projects/k8s/creating](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/k8s/creating.article)
 - [projects/weave/weave_cloud](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/projects/weave/weave_cloud.article)
-
+ 
 ## Slides
-
+ 
 - [slides/k8s/00-local_k8s_env_simplified](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/00-local_k8s_env_simplified.slide)
 - [slides/k8s/00-basic_aws_ecs](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/00-basic_aws_ecs.slide)
 - [slides/k8s/03-intro_deployments_replicaset_pods_services](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/slides/k8s/03-intro_deployments_replicaset_pods_services.slide)

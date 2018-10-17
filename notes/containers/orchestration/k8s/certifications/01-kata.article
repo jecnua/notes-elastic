@@ -3,14 +3,30 @@ Kata: Certified Kubernetes Administrator (CKA) cert preparation
 
 * Kata
 
-  Spin two nodes with the right ubuntu on it
+The environment is here:
+
+- [[https://github.com/jecnua/certified-kubernetes-administrator-cka-kata]]
+
+* Install kubernetes
+
+** Install kubernetes
+
+** Install etcd
+
+* Network via CNI
+
+** install flannel
+
+** install calico
+
+** install on loopback
+
+* Tools
+
+Spin two nodes with the right ubuntu on it
 
       install kubectl
       install tmux
       install kubectl bash autocomplete
 
 pipe all to file
-
-
-install flannel
-install calico

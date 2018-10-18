@@ -30,3 +30,32 @@ Spin two nodes with the right ubuntu on it
       install kubectl bash autocomplete
 
 pipe all to file
+
+* kubectl
+
+- Create a pod with tempfs/hostPath/local/protected
+- kubectl describe
+- kubectl edit???
+
+
+    $ kubectl describe po nginx
+    Name:               nginx-dbddb74b8-47p4z
+    Namespace:          default
+    Priority:           0
+    PriorityClassName:  <none>
+    Node:               ip-172-18-22-227.eu-west-1.compute.internal/172.18.22.227
+    Start Time:         Thu, 18 Oct 2018 12:59:02 +0100
+    Labels:             pod-template-hash=dbddb74b8
+                        run=nginx
+    [...]
+
+Or deployment:
+
+    $ kubectl describe deployment nginx
+    Name:                   nginx
+    Namespace:              default
+    CreationTimestamp:      Thu, 18 Oct 2018 12:59:02 +0100
+    Labels:                 run=nginx
+    Annotations:            deployment.kubernetes.io/revision: 1
+    Selector:               run=nginx
+    [...]

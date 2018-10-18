@@ -1,0 +1,33 @@
+Debugging
+|| Last update: 18 Oct 2018
+
+* HPA has no data
+
+╰─ kubectl get hpa nginx -o yaml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    autoscaling.alpha.kubernetes.io/conditions: '[{"type":"AbleToScale","status":"True","lastTransitionTime":"2018-10-18T12:10:26Z","reason":"SucceededGetScale","message":"the
+      HPA controller was able to get the target''s current scale"},{"type":"ScalingActive","status":"False","lastTransitionTime":"2018-10-18T12:10:41Z","reason":"FailedGetResourceMetric","message":"the
+      HPA was unable to compute the replica count: unable to get metrics for resource
+      cpu: unable to fetch metrics from resource metrics API: the server could not
+      find the requested resource (get pods.metrics.k8s.io)"}]'
+  creationTimestamp: 2018-10-18T12:10:11Z
+  name: nginx
+  namespace: default
+  resourceVersion: "1791"
+  selfLink: /apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers/nginx
+  uid: c3016e9e-d2ce-11e8-8805-061f918f8608
+spec:
+  maxReplicas: 10
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: nginx
+  targetCPUUtilizationPercentage: 10
+status:
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: 2018-10-18T12:10:26Z

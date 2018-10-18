@@ -180,6 +180,7 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 
 ** Free
 
+- [[https://github.com/kelseyhightower/oscon-2017-kubernetes-tutorial]] - Step by step tutorial
 - [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]]
 - [[https://kubernetes.io/]] - Official docs (only think you can use during the exam)
 - [[https://kubernetes.io/docs/tasks/]]
@@ -198,8 +199,9 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 
 ** Paid
 
-- DONE - GOOD - [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]] - Linux Academy fee
-- [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video306747][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]] - Safaribook fee
+- GOOD - MID/ADV - [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]] - Linux Academy fee
+- GOOD - INT - [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video306747][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]] - Safaribook fee
+- [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video309380][Kubernetes hands-on - Kelsey Hightower (Google) - Part 2]] - Safaribook fee
 - [[https://training.linuxfoundation.org/linux-courses/system-administration-training/kubernetes-fundamentals]] - $299
 - [[https://www.pluralsight.com/courses/getting-started-kubernetes]] - Pluralsight fee
 - [[https://www.udemy.com/kubernetes-cka-on-cloud/]] - £99.99

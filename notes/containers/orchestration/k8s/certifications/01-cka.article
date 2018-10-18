@@ -50,13 +50,7 @@ You can choose the right plugin for your workload.
 - [[https://github.com/projectcalico/calico-cni]]
 - [[https://github.com/weaveworks/weave]]
 
-* Excercise
-
-- Create a cluster with flannel
-- Create a cluster with calico
-- Create a pod with tempfs/hostPath/local/protected
-- kubectl describe/edit???
-
 * Re/Sources
 
 - [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]]
+- [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]

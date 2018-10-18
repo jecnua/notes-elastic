@@ -9,6 +9,11 @@ CKA notes
 
 * Kubernetes course: CKA certified kubernetes administrator
 
+* Intro
+
+.image images/k8s_high_level.png
+.caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
+
 * Network
 
 Kubernetes made some interesting choices on how networking should be implemented.

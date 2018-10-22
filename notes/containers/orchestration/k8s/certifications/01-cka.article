@@ -89,6 +89,12 @@ The eviction rate is *reduced* to the secondary node.
       This value is implicitly overridden to 0 if the cluster size is smaller
       than --large-cluster-size-threshold.
 
+If you want to go multi-az you can shift the workload to a new zone if the first
+one gets unhealthy. If the system sees ALL nodes as unhealthy it will
+_stop_all_evictions.
+
+From 1.8+ the node controller can *taint* node to respect their status.
+
 - [[https://kubernetes.io/docs/concepts/architecture/nodes/]]
 
 *** (BETA) Cloud controller manager

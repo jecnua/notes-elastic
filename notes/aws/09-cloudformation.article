@@ -1,5 +1,11 @@
 Cloudformation
-|| Last update: 9 Oct 2018
+|| Last update: 22 Oct 2018
+
+* Intro
+
+Update reference archs:
+
+- ECS [[https://github.com/aws-samples/ecs-refarch-cloudformation/]]
 
 * Share modules
 

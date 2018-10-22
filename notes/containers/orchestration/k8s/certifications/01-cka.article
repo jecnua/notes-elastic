@@ -51,14 +51,56 @@ Nodes will require three services:
 - kube-proxy
 - (beta) cloud controller manager
 
+*** Node health
+
+*kube-controller-manager* assign CIDR blocks to a new node, keep track of the
+nodes health and check with the cloud provider is the node is still there.
+
+After 40s it will go in condition unknown if the healthbeat fails. After 5m it
+will evict pods. It will check the status every few seconds. There is a flag
+called:
+
+    --node-monitor-period duration     Default: 5s
+    The period for syncing NodeStatus in NodeController.
+    Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
+
+It will also check what percentage of nodes in that zone is unhealty.
+There is an unhealthy zone threshold and there are rules for each AZ.
+
+    --unhealthy-zone-threshold float32     Default: 0.55
+      Fraction of Nodes in a zone which needs to be not Ready (minimum 3)
+      for zone to be treated as unhealthy.
+
+The eviction rate is parametric. 0.1 per second means that no more than one pod
+per node every 10s.
+
+    --node-eviction-rate float32     Default: 0.1
+      Number of nodes per second on which pods are deleted in case of node
+      failure when a zone is healthy (see --unhealthy-zone-threshold for
+      definition of healthy/unhealthy). Zone refers to entire cluster in
+      non-multizone clusters.
+
+The eviction rate is *reduced* to the secondary node.
+
+    --secondary-node-eviction-rate float32     Default: 0.01
+      Number of nodes per second on which pods are deleted in case of node failure
+      when a zone is unhealthy (see --unhealthy-zone-threshold for definition of
+      healthy/unhealthy). Zone refers to entire cluster in non-multizone clusters.
+      This value is implicitly overridden to 0 if the cluster size is smaller
+      than --large-cluster-size-threshold.
+
+- [[https://kubernetes.io/docs/concepts/architecture/nodes/]]
+
 *** (BETA) Cloud controller manager
+
+NEEDS MORE RESOURCES
 
 - [[https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/]]
 
 Deamon that manages cloud related resources in a control loop.
 It can implement:
 
-- Node controller: Updated the nodes status by coordinating with the cloud API
+- Node controller: Updated the nodes status by coordinating with the cloud API.
 - Service controller: Listen to service create, udpate and delete and responsible for LoadBalancer types
 - Route controller: Responsible for setting up network routes (only on gce)
 - Persistent volume labels controller: Sets zone and region labels on PersistenVolumes

@@ -7,7 +7,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - What do you need to specify when you install flannel on a k8s cluster? How?
 - In what format kubectl speaks to the k8s api?
 - how do namespace impact service dns resolution?
-
+- what flags controls the node health and eviction rate?
 
 - How do you label a pod/node
 - how schedule a specific pod to a specific node

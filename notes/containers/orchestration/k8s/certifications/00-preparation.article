@@ -180,7 +180,8 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 
 ** Free
 
-- [[https://kubernetes.io/]] - Official docs (only think you can use during the exam)
+- [[https://kubernetes.io/]] - Official docs (the only resource you can use during the exam)
+- [[https://kubernetes.io/docs/concepts/]] - Explains to you all the k8s concepts
 - [[https://kubernetes.io/docs/tasks/]]
 - [[https://github.com/kelseyhightower/oscon-2017-kubernetes-tutorial]] - Step by step tutorial
 - [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]]

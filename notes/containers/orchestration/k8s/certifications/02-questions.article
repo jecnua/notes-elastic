@@ -3,9 +3,13 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 
 * To prepare for the test
 
-- can the kublet run when the node use swap?
-- what do you need to specify when you install flannel on a k8s cluster? How?
-- how do you label a pod/node
+- Can the kublet run when the node use swap?
+- What do you need to specify when you install flannel on a k8s cluster? How?
+- In what format kubectl speaks to the k8s api?
+- how do namespace impact service dns resolution?
+
+
+- How do you label a pod/node
 - how schedule a specific pod to a specific node
 - what are the component of the cluster and where they run
 - how does a piece of information get from the command line to the yaml to the container/app

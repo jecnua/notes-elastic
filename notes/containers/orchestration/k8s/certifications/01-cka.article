@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 10 Oct 2018
+|| Last update: 22 Oct 2018
 
 * To clarify
 
@@ -14,7 +14,9 @@ CKA notes
 .image images/k8s_high_level.png
 .caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
 
-* Nodes memory
+* The physical cluster
+
+** Nodes memory
 
 Kubernetes controller and node servers are expected to have *swap*disabled*.
 This is the recommended deployment. If swap is not disabled, kubelet service
@@ -40,7 +42,35 @@ You could disable it by passing --fail-swap-on=false but is not adviced.
 - [[https://kubernetes.io/docs/setup/independent/]]
 - [[https://github.com/kubernetes/kubernetes/issues/53533]]
 
-* Network
+** Nodes components
+
+Nodes will require three services:
+
+- a container runtime
+- the kubelet
+- kube-proxy
+- (beta) cloud controller manager
+
+*** (BETA) Cloud controller manager
+
+- [[https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/]]
+
+Deamon that manages cloud related resources in a control loop.
+It can implement:
+
+- Node controller: Updated the nodes status by coordinating with the cloud API
+- Service controller: Listen to service create, udpate and delete and responsible for LoadBalancer types
+- Route controller: Responsible for setting up network routes (only on gce)
+- Persistent volume labels controller: Sets zone and region labels on PersistenVolumes
+
+To run this beta functionality you will however need to:
+
+- NOT specify the --cloud-provider flag in kube-apiserver and kube-controller-manaher
+- Run kubelet with the flag --cloud-provider=external
+- The kube-apiserver should not run the PersistentVolumeLabel admission controller
+- Set the correct InitializerConfiguration to label persistent volumes
+
+** Network
 
 Kubernetes made some interesting choices on how networking should be implemented.
 It defines the network model but leaves it to third party plugins a way to
@@ -87,7 +117,7 @@ You can define this CIDR with:
 
 - [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]
 
-* The cluster
+* Kubernetes nuts and bolts
 
 ** Communication
 

@@ -14,10 +14,36 @@ CKA notes
 .image images/k8s_high_level.png
 .caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
 
+* Nodes memory
+
+Kubernetes controller and node servers are expected to have *swap*disabled*.
+This is the recommended deployment. If swap is not disabled, kubelet service
+will not start on the masters and nodes.
+
+Kubernetes requires the swap to be off! To disable it on a node you can do:
+
+    # As root
+    swapoff -a
+
+and then remove it from the _/etc/fstab_ file.
+
+You could disable it by passing --fail-swap-on=false but is not adviced.
+
+    The kubelet now fails if swap is enabled on a node. To override the default
+    and run with /proc/swaps on, set --fail-swap-on=false. The experimental
+    flag --experimental-fail-swap-on is deprecated in this release, and will be
+    removed in a future release.
+    Source: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.8.md#before-upgrading
+
+- [[https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/]]
+- [[https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.8.md#before-upgrading]]
+- [[https://kubernetes.io/docs/setup/independent/]]
+- [[https://github.com/kubernetes/kubernetes/issues/53533]]
+
 * Network
 
 Kubernetes made some interesting choices on how networking should be implemented.
-It defines the network model but leave it to third party plugins a way to
+It defines the network model but leaves it to third party plugins a way to
 implement it.
 
 Each pod can communicate to each other pod on any host of the cluster, without
@@ -49,6 +75,23 @@ You can choose the right plugin for your workload.
 
 - [[https://github.com/projectcalico/calico-cni]]
 - [[https://github.com/weaveworks/weave]]
+
+*** Flannel
+
+When you configure flannel you will need to pass the CIDR block your k8s cluster
+will need to use and assign it to the nodes.
+
+You can define this CIDR with:
+
+    --pod-network-cidr=10.244.0.0/16
+
+- [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]
+
+* The cluster
+
+** Primitives and objects
+
+Kubernetes objects are _persistent_entities_ in the k8s system. 
 
 * Re/Sources
 

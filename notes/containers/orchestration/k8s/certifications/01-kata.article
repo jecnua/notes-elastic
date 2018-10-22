@@ -9,6 +9,8 @@ The environment is here:
 
 * Install kubernetes
 
+** Ensure swap is off
+
 ** Install kubernetes
 
 ** Install etcd
@@ -16,6 +18,8 @@ The environment is here:
 * Network via CNI
 
 ** install flannel
+
+*** Specify CIDR and set up iptables
 
 ** install calico
 

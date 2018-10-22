@@ -163,6 +163,8 @@ You can define this CIDR with:
 
     --pod-network-cidr=10.244.0.0/16
 
+Flannel makes use of an overlay network, usually Virtual Extensible LAN (VXLAN).
+
 - [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]
 
 * Kubernetes nuts and bolts
@@ -190,7 +192,7 @@ The _metadata_ is what uniquely identify a resource. All objects have unique:
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/]]
 
-* Kinds
+* Workloads and Objects
 
 ** Namespace
 
@@ -217,6 +219,11 @@ to specify it.
     <service>.<namespace>
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/]]
+
+** Services
+
+Services points to deployments and exposes particular ports to other/external
+services. This all happens via *kube-proxy*.
 
 ** Config map
 

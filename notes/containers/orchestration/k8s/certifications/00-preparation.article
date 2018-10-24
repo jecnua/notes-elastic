@@ -180,14 +180,13 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 
 ** Free
 
+- ? - INT - [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]] -> [[https://www.edx.org/course/introduction-to-kubernetes]]
 - [[https://kubernetes.io/]] - Official docs (the only resource you can use during the exam)
 - [[https://kubernetes.io/docs/concepts/]] - Explains to you all the k8s concepts
 - [[https://kubernetes.io/docs/tasks/]]
 - [[https://github.com/kelseyhightower/oscon-2017-kubernetes-tutorial]] - Step by step tutorial
-- [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]]
 - [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
 - [[https://www.udemy.com/learn-devops-the-complete-kubernetes-course/]]
-- [[https://www.edx.org/course/introduction-to-kubernetes]]
 - [[https://github.com/kelseyhightower/kubernetes-the-hard-way]]
 - [[http://kubernetesbyexample.com/]]
 - [[https://docs.google.com/spreadsheets/d/10NltoF_6y3mBwUzQ4bcQLQfCE1BWSgUDcJXy-Qp2JEU/edit#gid=0]]  LIST OF RESOURCES

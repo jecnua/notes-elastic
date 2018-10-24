@@ -16,6 +16,20 @@ CKA notes
 
 * The physical cluster
 
+.image images/arch.png
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
+
+At high level there are masters and nodes.
+
+        For fault tolerance purposes, there can be more than one master node in
+        the cluster. If we have more than one master node, they would be in a HA
+        (High Availability) mode, and only one of them will be the leader,
+        performing all the operations. The rest of the master nodes would be
+        followers.
+        Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018
+
+All master nodes connect to etcd.
+
 ** Nodes memory
 
 Kubernetes controller and node servers are expected to have *swap*disabled*.
@@ -214,12 +228,12 @@ nested object fields:
 
 k8s reacts to the _difference_ between state and status.
 
-** Control plane
+* Control plane
 
 The kuberneyes control plane consists of a collection of processes running on
 the cluster.
 
-*** Kubernetes controller
+** Kubernetes controller (master node)
 
 The kubernetes controller is a collection of 3 processes designed to run on a
 single node in your cluster. They are:
@@ -228,16 +242,40 @@ single node in your cluster. They are:
 - kube-controller-manager: [[https://kubernetes.io/docs/admin/kube-controller-manager/]]
 - kube-scheduler: [[https://kubernetes.io/docs/admin/kube-scheduler/]]
 
-Each individual _non-master_ node runs two processes:
+Administrative tasks are made by communicating with the api-server. Commands are
+send in *JSON* via *REST* and the api validates and process the requests. The result
+is saved on etcd.
 
-- kubelet [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the controller node
-- kube-proxy [[https://kubernetes.io/docs/admin/kube-proxy/]] : A network proxy which reflects the kubernetes networking services on each node 
+The scheduler schedule work to different nodes. It takes this decisions using a
+whole lot of metrics it gets from the nodes plus the user requirements.
+It schedules the work in terms of Pods and Services.
+
+The controller-manager mages different non-terminating control loops. Each of this
+manage a specific object and watch their current state though the API server.
+If the state differs from the desired one it will take actions to change it.
 
 The control plane maintains a record of all k8s objects and run a continous
 control loop to manage the object state.
 
 It will react to changes in the system and make sure the desired state match the
 expected one.
+
+** Kubernetes worker node
+
+.image images/worker.png
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
+
+Each individual _non-master_ node runs two processes:
+
+- kubelet [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the controller node
+- kube-proxy [[https://kubernetes.io/docs/admin/kube-proxy/]] : A network proxy which reflects the kubernetes networking services on each node 
+
+It will also need a container runtime like:
+
+- [[http://cri-o.io/][cri-o]].
+- [[https://containerd.io/][containerd]]
+- [[https://coreos.com/rkt/][rkt]]
+- [[https://linuxcontainers.org/lxd/][lxd]]
 
 ** Metadata
 

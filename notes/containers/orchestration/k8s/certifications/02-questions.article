@@ -9,6 +9,9 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - how do namespace impact service dns resolution?
 - what flags controls the node health and eviction rate?
 
+- How can you attach metadata to an object?
+- Do you know how to do it in one way or another?
+
 - How do you label a pod/node
 - how schedule a specific pod to a specific node
 - what are the component of the cluster and where they run

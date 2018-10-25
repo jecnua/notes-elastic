@@ -63,3 +63,5 @@ Or deployment:
     Annotations:            deployment.kubernetes.io/revision: 1
     Selector:               run=nginx
     [...]
+
+** run some nodes with docker some with cri-o

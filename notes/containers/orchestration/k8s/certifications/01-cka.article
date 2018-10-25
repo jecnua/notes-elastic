@@ -6,6 +6,10 @@ CKA notes
 - k8s ports
 - cgroup drivers
 - no need for cni package
+- https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/
+- CRI https://github.com/kubernetes/community/blob/master/contributors/devel/container-runtime-interface.md
+- cri-o
+- vx-lan
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -308,6 +312,78 @@ and can include characters not permitted by labels.
 Labels are key -value pairs attached to objects.
 They are used to specify identifying attributed that can be used to select a
 workload.
+
+* kubelet
+
+The kubelet is an agent and runs as a deamon on every node (master and nodes).
+It will communicate with the master node and runs containers as stated on the
+saved state. It will also make sure all containers are healthy at all times.
+
+The kubelet connects to the containers via the Container Runtime Interface (CRI)
+
+** Container Runtime Interface (CRI)
+
+- [[https://github.com/kubernetes/community/blob/master/contributors/devel/container-runtime-interface.md]]
+
+.image images/cri.png
+.caption Source: [[https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/]]
+
+    Abstracting the runtime interface
+    One of the innovations taking advantage of this standardization
+    is in the area of Kubernetes orchestration. As a big supporter
+    of the Kubernetes effort, CoreOS submitted a bunch
+    of patches to Kubernetes to add support for communicating
+    and running containers via rkt in addition to the upstream
+    docker engine. Google and upstream Kubernetes saw that
+    adding these patches and possibly adding new container
+    runtime interfaces in the future was going to complicate the
+    Kubernetes code too much. The upstream Kubernetes team
+    decided to implement an API protocol specification called the
+    Container Runtime Interface (CRI). Then they would rework
+    Kubernetes to call into CRI rather than to the Docker engine,
+    so anyone who wants to build a container runtime interface
+    could just implement the server side of the CRI and they
+    could support Kubernetes. Upstream Kubernetes created a
+    large test suite for CRI developers to test against to prove
+    they could service Kubernetes. There is an ongoing effort to
+    remove all of Docker-engine calls from Kubernetes and put
+    them behind a shim called the docker-shim.
+    Source: open-source-yearbook-2017
+
+    kubelet (grpc client) connects to the CRI shim (grpc server) to perform
+    container and image operations.
+    Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
+
+CRI implements two services:
+
+- ImageService: responsible for image related operations
+- RuntimeService: responsible for pod and container-related operations
+
+k8s can use different container runtimes without need to recompile as far as the
+runtime implement the CRI interface.
+
+Some of this implementations are:
+
+- dockershim: it interfaces with docker and docker will use containerd in the backend
+- cri-containerd: k8s interfaces directly with containerd
+- cri-o
+
+.image images/cri-containerd.png
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
+
+*** CRI-O
+
+- [[http://cri-o.io/]]
+- [[https://github.com/kubernetes-sigs/cri-o]]
+
+.image images/cri-o-arch.png 500 _
+.caption Source: [[http://cri-o.io/]]
+
+CRI-O works with any Open Container Initiative (OCI) compatible runtime (any one
+that is compliant can be plugged in). It supports:
+
+- runC
+- ClearContainers
 
 * Workloads and Objects
 

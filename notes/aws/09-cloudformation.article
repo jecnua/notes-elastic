@@ -28,7 +28,7 @@ on s3 and copy the templates every run.
 - aws cloudformation validate-template
 - [[https://github.com/awslabs/cfn-python-lint]]
 
-* Tagging
+* ISSUE: Tagging
 
 CF does not allow you to tag everything that the CLI does. Terraform does a much
 better job at that. To see the list of Resources you can tag on creation, you
@@ -62,6 +62,12 @@ Some resources are not even in the list. You can't tag things like:
 and I expect more.
 
 - [[https://github.com/capitalone/cloud-custodian/issues/1994]]
+
+* ISSUE: You can't activate es logs via CF
+
+Only gui, sdk and cli.
+
+- https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-advanced-options
 
 * Re/Sources
 

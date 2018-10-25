@@ -12,6 +12,11 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - How can you attach metadata to an object?
 - Do you know how to do it in one way or another?
 
+- what is CRI?
+- How many shim there are?
+- how do they work?
+- how do I check which shim I am using?
+
 - Can you enum the process running on a non-master node?
 - Can you enum the one running on the master?
 - How does kubernetes interface with the container runtime?

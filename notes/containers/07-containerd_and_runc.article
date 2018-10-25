@@ -8,18 +8,17 @@ Containerd and runC
 - [[https://containerd.io/]]
 - [[https://github.com/containerd/containerd]]
 
-Docker [[https://www.cncf.io/announcement/2017/03/29/containerd-joins-cloud-native-computing-foundation/][donated]]
-ContainerD to CNCF in March 2017.
+Containerd is an OCI compliant container runtime. It executes containers and
+manages images on a node. Started by docker as a project to move the container
+supervision out of the docker engine, was donated to the CNCF in March of
+2017. Docker itself is build on top of containerd (it has a smaller scope than
+docker itself).
 
-Docker runtime to control runC.
-Is a project to move the container supervision out of the docker engine.
-Docker 1.11 is the first release using this deamon.
+Docker 1.11 was the first release using this deamon.
 
-.image images/containerd_workflow.png _ 600
 
-Engine restart/update without restarting the containers.
-Id a deamon providing a grpc api.
-Manage all the life of an OCI bundle.
+Id a deamon providing a grpc api able to restart/update without restarting the
+containers. Manage all the life of an OCI bundle.
 
 * runC
 

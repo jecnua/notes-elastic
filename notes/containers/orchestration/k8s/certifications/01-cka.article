@@ -15,12 +15,12 @@ CKA notes
 
 * Intro
 
-.image images/k8s_high_level.png
+.image images/k8s_high_level.png _ 800
 .caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
 
 * The physical cluster
 
-.image images/arch.png
+.image images/arch.png _ 800
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
 At high level there are masters and nodes.
@@ -266,7 +266,7 @@ expected one.
 
 ** Kubernetes worker node
 
-.image images/worker.png
+.image images/worker.png  _ 800
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
 Each individual _non-master_ node runs two processes:
@@ -325,7 +325,7 @@ The kubelet connects to the containers via the Container Runtime Interface (CRI)
 
 - [[https://github.com/kubernetes/community/blob/master/contributors/devel/container-runtime-interface.md]]
 
-.image images/cri.png
+.image images/cri.png  _ 800
 .caption Source: [[https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/]]
 
 Kubernetes 1.5 introduced an internal plugin API named Container Runtime
@@ -367,12 +367,10 @@ CRI implements two services:
 
 Some of this implementations are:
 
-- dockershim: it interfaces with docker and docker will use containerd in the backend
-- cri-containerd: k8s interfaces directly with containerd (obsolete)
+- OBSOLETE - [[https://github.com/kubernetes/kubernetes/tree/master/pkg/kubelet/dockershim][dockershim]]: it interfaces with docker and docker will use containerd in the backend
+- OBSOLETE - [[https://github.com/containerd/cri][cri-containerd]]: k8s interfaces directly with containerd (obsolete)
+- contained 1.2
 - cri-o
-
-.image images/cri-containerd.png
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
 For more information about containerd look at the note page about it.
 
@@ -380,10 +378,24 @@ For more information about containerd look at the note page about it.
 
 - [[https://github.com/containerd/cri]]
 
+.image images/cri-containerd.png _ 800
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
+
 Since by default containerd (< 1.2) do not support CRI, engineers worked on
 creating a CRI interface for containerd.
 This project allowed a kubernetes cluster to use containerd as an underlying
 runtime without using docker.
+
+.image images/cri-containerd-deep.png _ 800
+.caption Source: [[https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/]]
+
+cri-containerd is an implementation f CRI for containerd. It operates on the same
+node as the kubelet and the container runtime. This process handles all the
+requests from the kubelet and uses contained to manage the container lifecycle
+in the backend.
+
+Compared with the old docker CRI implementation it eliminates an extra hop in the
+stack.
 
 *** ContainerD plugin
 
@@ -397,7 +409,7 @@ implements the CNI interface it's even better.
 - [[http://cri-o.io/]]
 - [[https://github.com/kubernetes-sigs/cri-o]]
 
-.image images/cri-o-arch.png 500 _
+.image images/cri-o-arch.png _ 800
 .caption Source: [[http://cri-o.io/]]
 
 CRI-O works with any Open Container Initiative (OCI) compatible runtime (any one

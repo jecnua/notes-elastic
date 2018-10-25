@@ -15,7 +15,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - what is CRI?
 - How many shim there are?
 - how do they work?
-- how do I check which shim I am using?
+- how do I check which shim I am using (if I am using one)?
 
 - Can you enum the process running on a non-master node?
 - Can you enum the one running on the master?

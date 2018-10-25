@@ -16,7 +16,6 @@ docker itself).
 
 Docker 1.11 was the first release using this deamon.
 
-
 Id a deamon providing a grpc api able to restart/update without restarting the
 containers. Manage all the life of an OCI bundle.
 

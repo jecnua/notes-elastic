@@ -328,6 +328,12 @@ The kubelet connects to the containers via the Container Runtime Interface (CRI)
 .image images/cri.png
 .caption Source: [[https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/]]
 
+Kubernetes 1.5 introduced an internal plugin API named Container Runtime
+Interface (CRI) to provide easy access to different container runtimes. CRI
+enables Kubernetes to use a variety of container runtimes without the need to
+recompile. In theory, Kubernetes could use any container runtime that implements
+CRI to manage pods, containers and container images.
+
     Abstracting the runtime interface
     One of the innovations taking advantage of this standardization
     is in the area of Kubernetes orchestration. As a big supporter
@@ -359,19 +365,32 @@ CRI implements two services:
 - ImageService: responsible for image related operations
 - RuntimeService: responsible for pod and container-related operations
 
-k8s can use different container runtimes without need to recompile as far as the
-runtime implement the CRI interface.
-
 Some of this implementations are:
 
 - dockershim: it interfaces with docker and docker will use containerd in the backend
-- cri-containerd: k8s interfaces directly with containerd
+- cri-containerd: k8s interfaces directly with containerd (obsolete)
 - cri-o
 
 .image images/cri-containerd.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
 For more information about containerd look at the note page about it.
+
+*** cri-containerd (obsolete)
+
+- [[https://github.com/containerd/cri]]
+
+Since by default containerd (< 1.2) do not support CRI, engineers worked on
+creating a CRI interface for containerd.
+This project allowed a kubernetes cluster to use containerd as an underlying
+runtime without using docker.
+
+*** ContainerD plugin
+
+- [[https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/]]
+
+While cri-containerd as a step forward from dockershim, now that containerd
+implements the CNI interface it's even better.
 
 *** CRI-O
 

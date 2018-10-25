@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 22 Oct 2018
+|| Last update: 25 Oct 2018
 
 * To clarify
 
@@ -277,7 +277,7 @@ Each individual _non-master_ node runs two processes:
 It will also need a container runtime like:
 
 - [[http://cri-o.io/][cri-o]].
-- [[https://containerd.io/][containerd]]
+- [[https://containerd.io/][containerd]] (more notes on another page)
 - [[https://coreos.com/rkt/][rkt]]
 - [[https://linuxcontainers.org/lxd/][lxd]]
 
@@ -370,6 +370,8 @@ Some of this implementations are:
 
 .image images/cri-containerd.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
+
+For more information about containerd look at the note page about it.
 
 *** CRI-O
 

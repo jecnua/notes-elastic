@@ -1,0 +1,47 @@
+Containerd and runC
+|| Last update: 25 Oct 2018
+
+* containerd
+
+.image images/containerd.png
+
+- [[https://containerd.io/]]
+- [[https://github.com/containerd/containerd]]
+
+Docker [[https://www.cncf.io/announcement/2017/03/29/containerd-joins-cloud-native-computing-foundation/][donated]]
+ContainerD to CNCF in March 2017.
+
+Docker runtime to control runC.
+Is a project to move the container supervision out of the docker engine.
+Docker 1.11 is the first release using this deamon.
+
+.image images/containerd_workflow.png _ 600
+
+Engine restart/update without restarting the containers.
+Id a deamon providing a grpc api.
+Manage all the life of an OCI bundle.
+
+* runC
+
+.image images/hamster.png _ 300
+
+- [[https://runc.io/]]
+- [[https://github.com/opencontainers/runc]]
+
+Defined as a *lightweight*portable*container*runtime* is a sandboxing environment capable of abstracting the specifics of the underlying hosts.
+Has been released the _22_June_2015_ as a standalone component.
+Build on *libcontainer*, it's using technology created in the last 5 years (really??? check???) like:
+
+- control groups
+- linux namespaces and user namespaces
+- seccomp
+- capabilities
+- apparmor
+- selinux
+- capability_drop
+- pivot_root
+- uig/gid drop
+
+runC doesn't create a deamon, so it integrates well with systemd.
+It has no dependency on Docker!
+Donated to OCP.

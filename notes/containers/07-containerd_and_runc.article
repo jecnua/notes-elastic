@@ -7,6 +7,7 @@ Containerd and runC
 
 - [[https://containerd.io/]]
 - [[https://github.com/containerd/containerd]]
+- [[https://github.com/containerd/containerd/releases]]
 
 Containerd is an OCI compliant container runtime. It executes containers and
 manages images on a node. Started by docker as a project to move the container
@@ -18,6 +19,9 @@ Docker 1.11 was the first release using this deamon.
 
 Id a deamon providing a grpc api able to restart/update without restarting the
 containers. Manage all the life of an OCI bundle.
+
+- From 1.1 Containerd natively supports CRI. It can be used directly by Kubernetes.
+- Containerd has good performance in terms of pod startup latency and system resource utilization.
 
 * runC
 

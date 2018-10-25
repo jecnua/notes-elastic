@@ -17,6 +17,10 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - how do they work?
 - how do I check which shim I am using (if I am using one)?
 
+- what are the kubelet steps of communication with the container runtime?
+
+- how do you use crictl and why?
+
 - Can you enum the process running on a non-master node?
 - Can you enum the one running on the master?
 - How does kubernetes interface with the container runtime?

@@ -369,40 +369,102 @@ Some of this implementations are:
 
 - OBSOLETE - [[https://github.com/kubernetes/kubernetes/tree/master/pkg/kubelet/dockershim][dockershim]]: it interfaces with docker and docker will use containerd in the backend
 - OBSOLETE - [[https://github.com/containerd/cri][cri-containerd]]: k8s interfaces directly with containerd (obsolete)
+- docker
 - contained 1.2
 - cri-o
 
 For more information about containerd look at the note page about it.
 
-*** cri-containerd (obsolete)
+*** crictl
+
+- [[https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md]]
+
+Crictl is a CLI for all CRI container runtimes helpful for application and system
+troubleshooting. The objective is to make it easy to use for debug and
+development scenarios. It replaces the docker cli for debugging purposes.
+
+For any CRI-compatible container runtime crictl is the reccomended tool.
+crictl works consistently across all CRI-compatible container runtimes!
+
+The scope of crictl is limited to troubleshooting.
+
+A containerd namespace mechanism is employed to guarantee that Kubelet and
+Docker Engine won’t see or have access to containers and images created
+by each other. This makes sure they won’t interfere with each other.
+Doker ps can't see k8s pods and k8s can't see docker pods.
+
+*** cri-containerd (end of life)
 
 - [[https://github.com/containerd/cri]]
 
 .image images/cri-containerd.png _ 800
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
-Since by default containerd (< 1.2) do not support CRI, engineers worked on
-creating a CRI interface for containerd.
-This project allowed a kubernetes cluster to use containerd as an underlying
-runtime without using docker.
+Since by default containerd (< 1.2) did not support CRI, engineers worked on
+creating a CRI interface for containerd. This project allowed a kubernetes
+cluster to use containerd as an underlying runtime without using docker.
 
 .image images/cri-containerd-deep.png _ 800
 .caption Source: [[https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/]]
 
-cri-containerd is an implementation f CRI for containerd. It operates on the same
-node as the kubelet and the container runtime. This process handles all the
+cri-containerd is an implementation of CRI for containerd. It operates on the same
+node as the kubelet and the container runtime. This process (deamon) handles all the
 requests from the kubelet and uses contained to manage the container lifecycle
 in the backend.
 
 Compared with the old docker CRI implementation it eliminates an extra hop in the
-stack.
+stack. cri-containerd manages the pod networking via CNI.
 
-*** ContainerD plugin
+    Let’s use an example to demonstrate how cri-containerd works for the case
+    when Kubelet creates a single-container pod:
+    1.Kubelet calls cri-containerd, via the CRI runtime service API, to create
+    a pod;
+    2.cri-containerd uses containerd to create and start a special pause container
+    (the sandbox container) and put that container inside the pod’s cgroups and
+    namespace (steps omitted for brevity);
+    3.cri-containerd configures the pod’s network namespace using CNI;
+    4.Kubelet subsequently calls cri-containerd, via the CRI image service API,
+    to pull the application container image;
+    5.cri-containerd further uses containerd to pull the image if the image is
+    not present on the node;
+    6.Kubelet then calls cri-containerd, via the CRI runtime service API, to
+    create and start the application container inside the pod using the pulled
+    container image;
+    7.cri-containerd finally calls containerd to create the application container,
+    put it inside the pod’s cgroups and namespace, then to start the pod’s new
+    application container. After these steps, a pod and its corresponding
+    application container is created and running.
+    Source: https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/
 
-- [[https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/]]
+However, cri-containerd and containerd 1.0 were still 2 different daemons which
+interacted via grpc. The extra daemon in the loop made it more complex for users
+to understand and deploy, and introduced unnecessary communication overhead.
+
+Works with containerd 1.0.
+
+*** ContainerD plugin (containerd 1.1+)
+
+- [[https://github.com/containerd/cri/blob/release/1.11/docs/config.md]]
 
 While cri-containerd as a step forward from dockershim, now that containerd
 implements the CNI interface it's even better.
+
+.image images/containerd-plug.png _ 800
+
+    In containerd 1.1, the cri-containerd daemon is now refactored to be a containerd
+    CRI plugin. The CRI plugin is built into containerd 1.1, and enabled by default.
+    Unlike cri-containerd, the CRI plugin interacts with containerd through direct
+    function calls. This new architecture makes the integration more stable and
+    efficient, and eliminates another grpc hop in the stack. Users can now use
+    Kubernetes with containerd 1.1 directly
+    Source: https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/
+
+The CRI GRPC interface listens on the same socket as the containerd GRPC
+interface and runs in the same process.
+
+You can configure to use [[https://katacontainers.io/][kata containers]].
+
+Works with containerd 1.1 and kubernetes 1.10+.
 
 *** CRI-O
 
@@ -455,7 +517,9 @@ services. This all happens via *kube-proxy*.
 
 Decouples the configuration from the app
 
-* Re/Sources (not already referenced)
+* Re/Sources (not already referenced directly)
 
 - [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]]
 - [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
+- [[https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/]] - May 2018
+- [[https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/]] - Nov 2017

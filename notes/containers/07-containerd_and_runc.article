@@ -1,15 +1,22 @@
-Containerd and runC
+Container runtimes
 || Last update: 25 Oct 2018
 
 * Intro
 
-Docker engine is build on top of containerd and runC. The engine creates the
-image indirectly via conteinerd via runC. runC uses libcontainer and passes it
-back to containerd.
+There are a lot of container runtimes available in the open source ecosystem.
+Some of them are based on top of runC and but implement image management and
+APIs on top.
 
-containerd -> runc -> libcontainer
+lxc and runC are very low level while things that wrap them like cri-o or
+containerD are more complex.
 
-* containerd
+For example the docker engine is build on top of containerD and runC.
+The engine creates the image indirectly via conteinerd via runC. runC uses
+libcontainer and passes it back to containerD.
+
+containerD -> runc -> libcontainer
+
+* containerD
 
 .image images/containerd.png
 
@@ -17,21 +24,31 @@ containerd -> runc -> libcontainer
 - [[https://github.com/containerd/containerd]]
 - [[https://github.com/containerd/containerd/releases]]
 
-Containerd is an OCI compliant *container*runtime* (implemented as a lightweight
+containerD is an [[https://github.com/opencontainers/runtime-spec][OCI]]
+compliant *container*runtime* (implemented as a lightweight
 *deamon*). It executes containers and manages images on a node. Among the tasks:
 
-- Image transfer/storage
+- Image transfer/storage & registry interactions (OCI)
 - Container execution/supervision
 - Management of network interfaces
-- Local storage
+- Local storage & Snapshot drivers (overlay, btrfs)
 
-Executes containers using the OCI runc executor. Containerd manages state/metadata,
-image & registry interactions, snapshot drivers (overlay, btrfs).
+Executes containers using the OCI runC executor.
 
 .image images/containerd-int.png _ 600
 
-It has a metrics API & Prometheus support. Pluggable runtime support (for example
-used by VMWare). Namespace support for administrative/soft multi-tenancy).
+It's API is gRPC-based and exposed over a local UNIX soket.
+
+    # On ubuntu 18.04
+    /var/run/docker/containerd/docker-containerd.sock
+
+It also has a metrics API & *Prometheus* support.
+Pluggable runtime support (for example used by VMWare).
+Namespace support for administrative/soft multi-tenancy).
+Images, filesystem and runtime are decoupled for pluggability and reuse.
+
+.image images/containerd-architecture.png _ 600
+.caption Source: [[https://github.com/containerd/containerd]]
 
   # On linux with no docker-managed container running
   $ ps aux | grep docker
@@ -42,7 +59,7 @@ Handles the container lifecycle and exposes a gRPC API able to restart/update
 without restarting the containers. Manage all the life of an OCI bundle.
 It has a simple ctr client for handling commands.
 
-containerd calls containerd-shim which uses runc to run the container.
+containerD calls containerd-shim which uses runc to run the container.
 
 At the moment it's used by:
 
@@ -57,9 +74,13 @@ CloudFoundry with the project Garden-runC is working on it.
 ** containerd-shim
 
 A shim process for holding parent ownership of a contained process to allow
-deamon, containerd and runC to exit restart without impact for the container.
+runC to exit restart without impact for the containers. Manages headless
+containers.
 
-You can check how it works with:
+A shim is a small library that transparently: intercept API calls, changes the
+argument passed and handles the operation itself or redirect.
+
+You can check how it works on Linux with:
 
     $ docker run -d nginx
     $ ps aux | grep docker
@@ -74,18 +95,26 @@ You can check how it works with:
 This will allow to have deamonless containers and for example to upgrade/restart
 the engine without breaking the running containers.
 
+** ctr
+
+containerD have a CLI to be interacted with for debugging purposes called crt.
+On Ubuntu 18.04 is called _docker-containerd-ctr_.
+
 ** containerd history
 
 Started by docker as a project to move the container
 supervision out of the docker engine, was donated to the CNCF in March of
-2017. Docker itself is build on top of containerd (it has a smaller scope than
+2017. Docker itself is build on top of containerD (it has a smaller scope than
 docker itself).
+
+It's basically a deamon born from extracting the container execution subset of
+the docker engine.
 
 Docker 1.11 was the first release using this deamon (based on their core
 container runtime).
 
-From 1.1 Containerd natively supports CRI. It can be used directly by Kubernetes.
-Containerd has good performance in terms of pod startup latency and system
+From 1.1 containerD natively supports CRI. It can be used directly by Kubernetes.
+containerD has good performance in terms of pod startup latency and system
 resource utilization.
 
 * runC
@@ -102,30 +131,32 @@ It's an implementation of the OCI runtime specification.
 .image images/runc-all.png _ 600
 .caption Source: [[https://binarymist.io/blog/2018/03/31/docker-security/]]
 
-Scope of runC is limited:
+The scope of runC is limited:
 
 - No networking
 - No Image handling/resolution
 - No storage support
 
-runC doesn't create a deamon, so it integrates well with systemd or containerd.
+runC doesn't create a deamon, so it integrates well with systemd or containerD.
 However the wrapping code must handle any broader node and cluster level
-container management.
+container management if you are using an orchestrator.
 
 .image images/runc-low.png _ 500
-.caption Source: http://harmonycloud.cn/chengxuyuannengliangzhanshenrulijiedockerrongqiyinqingrunczhixingkuangjia/
+.caption Source: [[http://harmonycloud.cn/chengxuyuannengliangzhanshenrulijiedockerrongqiyinqingrunczhixingkuangjia/]]
 
 ** runC history
 
 Has been released the _22_June_2015_ as a standalone component.
+Docker defines this the container runtime as it is the tool that _runs_ the
+container. OCI specifications cover only this.
 
 * libcontainer
 
 Is the OS level interface for containers and provides interface to many kernel
 functionalities:
 
-- Linux Kernel Namespaces
-- Cgroups
+- [[https://en.wikipedia.org/wiki/Linux_namespaces][Linux Kernel Namespaces]]
+- [[https://en.wikipedia.org/wiki/Cgroups][Cgroups]]
 - Linux Security Modules
 - Capabilities
 - Seccomp
@@ -133,3 +164,6 @@ functionalities:
 * Re/Source
 
 - [[https://binarymist.io/blog/2018/03/31/docker-security/]]
+- [[https://www.ianlewis.org/en/container-runtimes-part-1-introduction-container-r]]
+- [[https://www.slideshare.net/Docker/assessing-container-runtime-performance-with-bucketbench-by-phil-estes-ibm]] - Sep 20, 2017
+- [[https://www.slideshare.net/StrikrHQ/containerd]] - Jul 29, 2017

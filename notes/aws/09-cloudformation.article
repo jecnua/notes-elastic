@@ -1,5 +1,5 @@
 Cloudformation
-|| Last update: 22 Oct 2018
+|| Last update: 26 Oct 2018
 
 * Intro
 
@@ -23,10 +23,21 @@ on s3 and copy the templates every run.
 - [[https://aws.amazon.com/answers/devops/aws-cloudformation-validation-pipeline/]]
 - [[https://s3.amazonaws.com/solutions-reference/aws-cloudformation-validation-pipeline/latest/aws-cloudformation-validation-pipeline.pdf]]
 
-* Linting and Validation (to test)
+* Linting and Validation
 
-- aws cloudformation validate-template
+    aws cloudformation validate-template
+
+Very limited.
+
+** cfn-python-lint
+
 - [[https://github.com/awslabs/cfn-python-lint]]
+
+Created by AWS, this linter is much more useful than the standard cli validate.
+It's able to tell you if you are passing the right value (int or string) and
+if you have unused variables. Very useful. It accept wildcard:
+
+    cfn-lint cloud_formation/*.yml
 
 * ISSUE: Tagging
 

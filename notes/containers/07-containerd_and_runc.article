@@ -1,6 +1,14 @@
 Containerd and runC
 || Last update: 25 Oct 2018
 
+* Intro
+
+Docker engine is build on top of containerd and runC. The engine creates the
+image indirectly via conteinerd via runC. runC uses libcontainer and passes it
+back to containerd.
+
+containerd -> runc -> libcontainer
+
 * containerd
 
 .image images/containerd.png
@@ -9,19 +17,76 @@ Containerd and runC
 - [[https://github.com/containerd/containerd]]
 - [[https://github.com/containerd/containerd/releases]]
 
-Containerd is an OCI compliant container runtime. It executes containers and
-manages images on a node. Started by docker as a project to move the container
+Containerd is an OCI compliant *container*runtime* (implemented as a lightweight
+*deamon*). It executes containers and manages images on a node. Among the tasks:
+
+- Image transfer/storage
+- Container execution/supervision
+- Management of network interfaces
+- Local storage
+
+Executes containers using the OCI runc executor. Containerd manages state/metadata,
+image & registry interactions, snapshot drivers (overlay, btrfs).
+
+.image images/containerd-int.png _ 600
+
+It has a metrics API & Prometheus support. Pluggable runtime support (for example
+used by VMWare). Namespace support for administrative/soft multi-tenancy).
+
+  # On linux with no docker-managed container running
+  $ ps aux | grep docker
+  /usr/bin/dockerd -H fd://
+  docker-containerd --config /var/run/docker/containerd/containerd.toml
+
+Handles the container lifecycle and exposes a gRPC API able to restart/update
+without restarting the containers. Manage all the life of an OCI bundle.
+It has a simple ctr client for handling commands.
+
+containerd calls containerd-shim which uses runc to run the container.
+
+At the moment it's used by:
+
+- Docker (moby)
+- Kubernetes (cri-containerd)
+- SwarmKit
+- LinuxKit
+- BuildKit
+
+CloudFoundry with the project Garden-runC is working on it.
+
+** containerd-shim
+
+A shim process for holding parent ownership of a contained process to allow
+deamon, containerd and runC to exit restart without impact for the container.
+
+You can check how it works with:
+
+    $ docker run -d nginx
+    $ ps aux | grep docker
+    /usr/bin/dockerd -H fd://
+    docker-containerd --config /var/run/docker/containerd/containerd.toml
+    docker-containerd-shim -namespace moby
+      -workdir /var/lib/docker/containerd/daemon/io.containerd.runtime.v1.linux/moby/xxx
+      -address /var/run/docker/containerd/docker-containerd.sock
+      -containerd-binary /usr/bin/docker-containerd
+      -runtime-root /var/run/docker/runtime-runc
+
+This will allow to have deamonless containers and for example to upgrade/restart
+the engine without breaking the running containers.
+
+** containerd history
+
+Started by docker as a project to move the container
 supervision out of the docker engine, was donated to the CNCF in March of
 2017. Docker itself is build on top of containerd (it has a smaller scope than
 docker itself).
 
-Docker 1.11 was the first release using this deamon.
+Docker 1.11 was the first release using this deamon (based on their core
+container runtime).
 
-Id a deamon providing a grpc api able to restart/update without restarting the
-containers. Manage all the life of an OCI bundle.
-
-- From 1.1 Containerd natively supports CRI. It can be used directly by Kubernetes.
-- Containerd has good performance in terms of pod startup latency and system resource utilization.
+From 1.1 Containerd natively supports CRI. It can be used directly by Kubernetes.
+Containerd has good performance in terms of pod startup latency and system
+resource utilization.
 
 * runC
 
@@ -30,20 +95,41 @@ containers. Manage all the life of an OCI bundle.
 - [[https://runc.io/]]
 - [[https://github.com/opencontainers/runc]]
 
-Defined as a *lightweight*portable*container*runtime* is a sandboxing environment capable of abstracting the specifics of the underlying hosts.
+It's a small standalone command line tool (container runtime) built on and
+wrapping around *libcontainer*.
+It's an implementation of the OCI runtime specification.
+
+.image images/runc-all.png _ 600
+.caption Source: [[https://binarymist.io/blog/2018/03/31/docker-security/]]
+
+Scope of runC is limited:
+
+- No networking
+- No Image handling/resolution
+- No storage support
+
+runC doesn't create a deamon, so it integrates well with systemd or containerd.
+However the wrapping code must handle any broader node and cluster level
+container management.
+
+.image images/runc-low.png _ 500
+.caption Source: http://harmonycloud.cn/chengxuyuannengliangzhanshenrulijiedockerrongqiyinqingrunczhixingkuangjia/
+
+** runC history
+
 Has been released the _22_June_2015_ as a standalone component.
-Build on *libcontainer*, it's using technology created in the last 5 years (really??? check???) like:
 
-- control groups
-- linux namespaces and user namespaces
-- seccomp
-- capabilities
-- apparmor
-- selinux
-- capability_drop
-- pivot_root
-- uig/gid drop
+* libcontainer
 
-runC doesn't create a deamon, so it integrates well with systemd.
-It has no dependency on Docker!
-Donated to OCP.
+Is the OS level interface for containers and provides interface to many kernel
+functionalities:
+
+- Linux Kernel Namespaces
+- Cgroups
+- Linux Security Modules
+- Capabilities
+- Seccomp
+
+* Re/Source
+
+- [[https://binarymist.io/blog/2018/03/31/docker-security/]]

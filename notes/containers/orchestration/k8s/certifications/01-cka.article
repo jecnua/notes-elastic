@@ -373,6 +373,9 @@ Some of this implementations are:
 - contained 1.2
 - cri-o
 
+.image images/multi-cri.png  _ 800
+.caption Source: http://blog.realjf.com/archives/210
+
 For more information about containerd look at the note page about it.
 
 *** crictl

@@ -65,3 +65,12 @@ Or deployment:
     [...]
 
 ** run some nodes with docker some with cri-o
+
+* Network challanges
+
+Check that:
+
+- A unique IP is assigned to each Pod
+- Containers in a Pod can communicate to each other
+- The Pod is able to communicate with other Pods in the cluster
+- The application deployed inside a Pod is accessible

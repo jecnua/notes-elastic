@@ -145,8 +145,9 @@ Kubernetes made some interesting choices on how networking should be implemented
 It defines the network model but leaves it to third party plugins a way to
 implement it.
 
-Each pod can communicate to each other pod on any host of the cluster, without
-a NAT.
+k8s specify that there shouldn't be any Network Address Translation (NAT) while
+doing the Pod-to-Pod communication across hosts. To do so or you make toutable pods
+and nodes like on google and amazon or you use a _Software_Defined_Networking_.
 A CNI plugin is an *executable* invoked by the container management system.
 
 - [[https://github.com/containernetworking/cni]]
@@ -168,8 +169,15 @@ It's responsible for:
 
 Some of the plugins that implement this functionalities are:
 
+- [[https://coreos.com/flannel/docs/latest/]]
 - [[https://github.com/projectcalico/calico-cni]]
 - [[https://github.com/weaveworks/weave]]
+
+    The container runtime offloads the IP assignment to CNI, which connects to
+    the underlying configured plugin, like Bridge or MACvlan, to get the IP
+    address. Once the IP address is given by the respective plugin, CNI forwards
+    it back to the requested container runtime.
+    Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
 
 *** Flannel
 
@@ -508,12 +516,25 @@ to specify it.
 
 ** Services
 
-Services points to deployments and exposes particular ports to other/external
-services. This all happens via *kube-proxy*.
+Instead of accessing the pods directly, a construct called _service_ is used.
+A service groups pods using labels as selectors and loadbalance access to them.
+
+*kube-proxy* is a *network*proxy* which runs on every worker node and listens
+on the API for each service endpoint change. For each service it sets up a route
+so that it can reach to it.
 
 ** Config map
 
 Decouples the configuration from the app
+
+* ETCD
+
+etcd is a key-value store based on the Raft Consensus Algorithm. There are two
+roles: master and follower. At any given time one of the nodes will be the
+master while the others are followers.
+
+In k8s etcd store the cluster state but also configuration details like
+ConfigMaps and Secrets.
 
 * Re/Sources (not already referenced directly)
 

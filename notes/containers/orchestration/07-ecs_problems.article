@@ -1,0 +1,41 @@
+ECS problems
+|| Last update: 28 Sep 2018
+
+
+* Issue with cluster stabilising (~3h stabilizing)
+
+    We have one stack stuck in UPDATE_ROLLBACK_IN_PROGRESS. The deployment of a
+    new task/service failed and we CANCELLED the update. The stack went into
+    UPDATE_ROLLBACK_IN_PROGRESS and never moved on.
+    [...]
+    We can't delete it it's just there. Please advice.
+
+Reply:
+
+    CloudFormation tries to ensure that all resources that it provisions are in
+    a usable state to ensure there are no issues down the line. This is
+    particularly important for eventually consistent resources. It seems that
+    ECS service was waiting for getting the service stabilized, it waited for
+    the default timeout of 3 hours (180 minutes) and finally moved to
+    UPDATE_ROLLBACK_FAILED state. Now, since the stack is in
+    UPDATE_ROLLBACK_FAILED state, you can go ahead and delete the stack.
+
+Ways around it?
+
+    Alternatively, you may choose to  skip the resource which is blocking the
+    rollback and continue the update rollback to get the stack into an
+    'UPDATE_ROLLBACK_COMPLETE' state from the UPDATE_ROLLBACK_FAILED' state.
+    You can read more about it in the following link:
+    [-] http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html
+    You could also attempt to continue the rollback using the
+    'continue-update-rollback' CLI command as shown in the document given below:
+    [-] https://docs.aws.amazon.com/cli/latest/reference/cloudformation/continue-update-rollback.html
+
+Basically:
+
+    I do understand that it is a great inconvenience if the ECS service fails
+    to get stabilized, it takes about 3 hours of time until you get a chance to
+    make any further modifications on the stack. We already have a feature
+    request for avoiding this situation as many customers raised this concern
+    and Cloudformation service team is working on this issue. I have added +1
+    on the internal ticket mentioning this case ID so that it can get more wait.

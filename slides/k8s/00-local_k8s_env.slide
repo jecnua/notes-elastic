@@ -1,5 +1,5 @@
 Local k8s environment (minikube)
-Fabrizio Sabatini || Last update: 19 Jun 2018
+Fabrizio Sabatini || Last update: 29 Oct 2018
 
 * Disclaimer
 
@@ -35,7 +35,7 @@ Linux:
 
 .link https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#hyperkit-driver minikube/hyperkit-driver
 
-* Install engine dependencies for xhyve (deprecated)
+* (MAC ONLY) Install engine dependencies for xhyve (deprecated)
 
     brew install \
       docker-machine-driver-xhyve --HEAD xhyve
@@ -57,7 +57,7 @@ Linux:
 
 .link https://github.com/kubernetes/minikube/blob/master/docs/drivers.md github.com minikube/drivers
 
-* Minikube
+* Minikube (example)
 
 [[https://github.com/kubernetes/minikube][kubernetes/minikube]]
 
@@ -81,12 +81,37 @@ Start a new machine:
     kubectl config use-context minikube # switch context to minikube
     minikube status
 
-* Use rocket engine (optional)
+* Minikube on ubuntu
 
-    minikube start \
-        --network-plugin=cni \
-        --container-runtime=rkt \
-        --iso-url=http://storage.googleapis.com/minikube/iso/buildroot/minikube-v0.0.6.iso
+Clean any old running cluster:
+
+    # NOTE: Check what you are going to destroy first :)
+    minikube stop
+    minikube delete
+
+Set the machine:
+
+    # To opt-out from sending anonymised crash report
+    minikube config set WantReportErrorPrompt false
+    minikube config set vm-driver kvm2
+    minikube config set efk true
+    minikube config set heapster true
+
+Start a new machine:
+
+    # Start a cluster with cri-o
+    minikube start --network-plugin=cni --container-runtime=cri-o
+    minikube status
+    kubectl config use-context minikube # switch context to minikube
+
+* Use alternative runtimes
+
+[[https://github.com/kubernetes/minikube/blob/master/docs/alternative_runtimes.md][Supported]] are:
+
+- CRI-O
+- rkt
+- containerd
+- docker
 
 * Stop and delete minikube
 
@@ -116,8 +141,3 @@ More info:
 * Mount and access dirs [v0.18.0+]
 
 - [[https://github.com/kubernetes/minikube/blob/v0.18.0/README.md#persistent-volumes][persistent-volumes]]
-
-* Slides latest updates
-
-- 27 Dec 2017: Updated to work on 0.25 and setting hyperkit as new default
-- [...]

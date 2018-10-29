@@ -12,6 +12,10 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - How can you attach metadata to an object?
 - Do you know how to do it in one way or another?
 
+- how do you query the API http endpoint?
+- how many http api groups does the HTTP endpoint have?
+- can yopu use kubectl proxy?
+
 - what is CRI?
 - How many shim there are?
 - how do they work?

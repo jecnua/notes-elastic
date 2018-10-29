@@ -74,3 +74,5 @@ Check that:
 - Containers in a Pod can communicate to each other
 - The Pod is able to communicate with other Pods in the cluster
 - The application deployed inside a Pod is accessible
+
+* Others

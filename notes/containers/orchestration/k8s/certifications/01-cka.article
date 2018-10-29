@@ -4,6 +4,7 @@ CKA notes
 * To clarify
 
 - k8s ports
+- k8s HA
 - cgroup drivers
 - no need for cni package
 - https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/
@@ -20,10 +21,8 @@ CKA notes
 
 * The physical cluster
 
-.image images/arch.png _ 800
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
-
-At high level there are masters and nodes.
+At high level there are two types of servers: _masters_ and _nodes_. In HA there
+can be more than one master node but only one of them leader.
 
         For fault tolerance purposes, there can be more than one master node in
         the cluster. If we have more than one master node, they would be in a HA
@@ -32,22 +31,23 @@ At high level there are masters and nodes.
         followers.
         Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018
 
-All master nodes connect to etcd.
+The master node hosts the *control*plane*.
+All master nodes connect to *etcd*.
 
 ** Nodes memory
 
-Kubernetes controller and node servers are expected to have *swap*disabled*.
+Kubernetes master and node servers are expected to have *swap*disabled*.
 This is the recommended deployment. If swap is not disabled, kubelet service
-will not start on the masters and nodes.
+will not start unless a specific flag is passed at startup time.
 
-Kubernetes requires the swap to be off! To disable it on a node you can do:
+To disable swap on a node:
 
     # As root
     swapoff -a
 
 and then remove it from the _/etc/fstab_ file.
 
-You could disable it by passing --fail-swap-on=false but is not adviced.
+You could disable it by passing _--fail-swap-on=false_ but is not advised.
 
     The kubelet now fails if swap is enabled on a node. To override the default
     and run with /proc/swaps on, set --fail-swap-on=false. The experimental
@@ -64,19 +64,22 @@ You could disable it by passing --fail-swap-on=false but is not adviced.
 
 Nodes will require three services:
 
-- a container runtime
-- the kubelet
+- A container runtime
+- kubelet
 - kube-proxy
+
+A forth one is optional and only for cloud environments:
+
 - (beta) cloud controller manager
 
 *** Node health
 
-*kube-controller-manager* assign CIDR blocks to a new node, keep track of the
+*kube-controller-manager* assigns CIDR blocks to a new node, keep track of the
 nodes health and check with the cloud provider is the node is still there.
 
-After 40s it will go in condition unknown if the healthbeat fails. After 5m it
-will evict pods. It will check the status every few seconds. There is a flag
-called:
+After _40s_ it will go in condition *unknown* if the heartbeat fails. After _5m_
+it will start to evict pods. It will check the status every few seconds. There
+is a flag called:
 
     --node-monitor-period duration     Default: 5s
     The period for syncing NodeStatus in NodeController.
@@ -109,7 +112,7 @@ The eviction rate is *reduced* to the secondary node.
 
 If you want to go multi-az you can shift the workload to a new zone if the first
 one gets unhealthy. If the system sees ALL nodes as unhealthy it will
-_stop_all_evictions.
+_stop_all_evictions_.
 
 From 1.8+ the node controller can *taint* node to respect their status.
 
@@ -136,7 +139,7 @@ To run this beta functionality you will however need to:
 - The kube-apiserver should not run the PersistentVolumeLabel admission controller
 - Set the correct InitializerConfiguration to label persistent volumes
 
-** Network
+** Network and CNI
 
 Kubernetes made some interesting choices on how networking should be implemented.
 It defines the network model but leaves it to third party plugins a way to
@@ -144,8 +147,7 @@ implement it.
 
 Each pod can communicate to each other pod on any host of the cluster, without
 a NAT.
-
-** CNI
+A CNI plugin is an *executable* invoked by the container management system.
 
 - [[https://github.com/containernetworking/cni]]
 
@@ -158,16 +160,13 @@ a NAT.
     is simple to implement.
     Source: https://github.com/containernetworking/cni
 
-A CNI plugin is an *executable* invoked by the container management system. It's
-responsible for:
+It's responsible for:
 
-- Inserting the network interface (one end of a vETH pair) in the container network namespace
+- Inserting the network interface (one end of a [[http://man7.org/linux/man-pages/man4/veth.4.html][vETH pair]]) in the container network namespace
 - Making changes to the host: like attaching the other end of the vETH pair to the bridge network
 - Assign the IP, put up the routes and apply IPAM rules depending on your topology
 
-You can choose the right plugin for your workload.
-
-** CNI plugins
+Some of the plugins that implement this functionalities are:
 
 - [[https://github.com/projectcalico/calico-cni]]
 - [[https://github.com/weaveworks/weave]]
@@ -181,28 +180,21 @@ You can define this CIDR with:
 
     --pod-network-cidr=10.244.0.0/16
 
-Flannel makes use of an overlay network, usually Virtual Extensible LAN (VXLAN).
+Flannel makes use of an overlay network, usually
+[[https://en.wikipedia.org/wiki/Virtual_Extensible_LAN][Virtual Extensible LAN (VXLAN)]].
 
 - [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]
 
-* Kubernetes nuts and bolts
-
-** Communication
-
-When you use kubectl, the command converts the information from yaml to json
-when making the API request.
-
-** Objects
+* Kubernetes objects
 
 When you work with k8s you use the api objects to describe the desired
 cluster's state.
 You can interact with the api via kubectl or the api directly from
 inside/outside k8s.
 
+Objects are abstractions that represents the state of your system.
 Once an object is set, the control plane works to make sure the actual state
 will match the desired state.
-
-objects are abstractions that represents the state of your system.
 
 - [[https://kubernetes.io/docs/concepts/abstractions/overview/]]
 
@@ -223,24 +215,27 @@ functionalities and convenient features. Among them:
 - DaemonSet [[https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/]]
 - Job [[https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/]]
 
-Kubernetes objects are _persistent_entities_ in the k8s system. They represent
-the state of the cluster. Any of them have at least the two following
-nested object fields:
+Kubernetes objects are _persistent_entities_ in the k8s system.
+Any of them have at least the two following nested object fields:
 
 - object *spec*: This is your configuration defining the *desired* state. We provide it to k8s.
 - object *status*: This section is added by kubernetes. It is supplied and updated by the control plane and represent the *actual* state.
 
 k8s reacts to the _difference_ between state and status.
 
-* Control plane
+** Communication
+
+When you use kubectl, the command converts the information from yaml to json
+when making the API request.
+
+* Kubernetes master node and Control plane
+
+.image images/arch.png _ 800
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
 The kuberneyes control plane consists of a collection of processes running on
-the cluster.
-
-** Kubernetes controller (master node)
-
-The kubernetes controller is a collection of 3 processes designed to run on a
-single node in your cluster. They are:
+the cluster. It's a collection of *three*processes* designed to run on a single node
+in your cluster. They are:
 
 - kube-apiserver: [[https://kubernetes.io/docs/admin/kube-apiserver/]]
 - kube-controller-manager: [[https://kubernetes.io/docs/admin/kube-controller-manager/]]
@@ -264,26 +259,26 @@ control loop to manage the object state.
 It will react to changes in the system and make sure the desired state match the
 expected one.
 
-** Kubernetes worker node
+* Kubernetes worker node
 
 .image images/worker.png  _ 800
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
 Each individual _non-master_ node runs two processes:
 
-- kubelet [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the controller node
-- kube-proxy [[https://kubernetes.io/docs/admin/kube-proxy/]] : A network proxy which reflects the kubernetes networking services on each node 
+- kubelet: [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the controller node
+- kube-proxy: [[https://kubernetes.io/docs/admin/kube-proxy/]] : A network proxy which reflects the kubernetes networking services on each node 
 
 It will also need a container runtime like:
 
-- [[http://cri-o.io/][cri-o]].
+- [[http://cri-o.io/][cri-o]]
 - [[https://containerd.io/][containerd]] (more notes on another page)
 - [[https://coreos.com/rkt/][rkt]]
 - [[https://linuxcontainers.org/lxd/][lxd]]
 
 ** Metadata
 
-The _metadata_ is what uniquely identify a resource. All objects have unique:
+The *metadata* is what _uniquely_ identify a resource. All objects have unique:
 
 - name: client, max 253 char, alphanumeric lower case, you can use - and .
 - UID: generated by the control plane, spatially and temporary unique
@@ -292,7 +287,7 @@ The _metadata_ is what uniquely identify a resource. All objects have unique:
 
 You can use either labels or annotation to attach metadata to k8s objects.
 
-- *annotations* are not used to indentify or select objects
+- *annotations* are *not* used to indentify or select objects
 - *labels* can be used to select objects and to find collections of object that satisfy certain condition
 
 They are both key value maps.
@@ -309,17 +304,17 @@ and can include characters not permitted by labels.
 
 *** Labels and selectors
 
-Labels are key -value pairs attached to objects.
+Labels are key-value pairs attached to objects.
 They are used to specify identifying attributed that can be used to select a
 workload.
 
 * kubelet
 
-The kubelet is an agent and runs as a deamon on every node (master and nodes).
+The kubelet is an *agent* and runs as a *deamon* on every server (master and nodes).
 It will communicate with the master node and runs containers as stated on the
 saved state. It will also make sure all containers are healthy at all times.
 
-The kubelet connects to the containers via the Container Runtime Interface (CRI)
+The kubelet interfaces with the containers via the Container Runtime Interface (CRI).
 
 ** Container Runtime Interface (CRI)
 
@@ -327,6 +322,9 @@ The kubelet connects to the containers via the Container Runtime Interface (CRI)
 
 .image images/cri.png  _ 800
 .caption Source: [[https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/]]
+
+*NOTE*: This image is not totally correct. You need a CRI shim only if your container
+runtime is not CRI compatible.
 
 Kubernetes 1.5 introduced an internal plugin API named Container Runtime
 Interface (CRI) to provide easy access to different container runtimes. CRI
@@ -351,9 +349,7 @@ CRI to manage pods, containers and container images.
     could just implement the server side of the CRI and they
     could support Kubernetes. Upstream Kubernetes created a
     large test suite for CRI developers to test against to prove
-    they could service Kubernetes. There is an ongoing effort to
-    remove all of Docker-engine calls from Kubernetes and put
-    them behind a shim called the docker-shim.
+    they could service Kubernetes.
     Source: open-source-yearbook-2017
 
     kubelet (grpc client) connects to the CRI shim (grpc server) to perform
@@ -369,12 +365,11 @@ Some of this implementations are:
 
 - OBSOLETE - [[https://github.com/kubernetes/kubernetes/tree/master/pkg/kubelet/dockershim][dockershim]]: it interfaces with docker and docker will use containerd in the backend
 - OBSOLETE - [[https://github.com/containerd/cri][cri-containerd]]: k8s interfaces directly with containerd (obsolete)
-- docker
-- contained 1.2
+- contained 1.1
 - cri-o
 
 .image images/multi-cri.png  _ 800
-.caption Source: http://blog.realjf.com/archives/210
+.caption Source: [[http://blog.realjf.com/archives/210]]
 
 For more information about containerd look at the note page about it.
 

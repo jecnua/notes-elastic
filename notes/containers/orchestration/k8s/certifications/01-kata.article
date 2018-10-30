@@ -76,3 +76,5 @@ Check that:
 - The application deployed inside a Pod is accessible
 
 * Others
+
+Query the API

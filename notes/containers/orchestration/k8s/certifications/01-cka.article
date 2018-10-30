@@ -193,49 +193,6 @@ Flannel makes use of an overlay network, usually
 
 - [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]
 
-* Kubernetes objects
-
-When you work with k8s you use the api objects to describe the desired
-cluster's state.
-You can interact with the api via kubectl or the api directly from
-inside/outside k8s.
-
-Objects are abstractions that represents the state of your system.
-Once an object is set, the control plane works to make sure the actual state
-will match the desired state.
-
-- [[https://kubernetes.io/docs/concepts/abstractions/overview/]]
-
-There are some _basic_ k8s objects like:
-
-- Pod [[https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/]]
-- Service [[https://kubernetes.io/docs/concepts/services-networking/service/]]
-- Volume [[https://kubernetes.io/docs/concepts/storage/volumes/]]
-- Namespace [[https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/]]
-
-And _high-level_abstraction_ called *controllers*.
-Controllers are build upon the basic objects and provide additional
-functionalities and convenient features. Among them:
-
-- ReplicaSet [[https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/]]
-- Deployment [[https://kubernetes.io/docs/concepts/workloads/controllers/deployment/]]
-- StatefulSet [[https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/]]
-- DaemonSet [[https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/]]
-- Job [[https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/]]
-
-Kubernetes objects are _persistent_entities_ in the k8s system.
-Any of them have at least the two following nested object fields:
-
-- object *spec*: This is your configuration defining the *desired* state. We provide it to k8s.
-- object *status*: This section is added by kubernetes. It is supplied and updated by the control plane and represent the *actual* state.
-
-k8s reacts to the _difference_ between state and status.
-
-** Communication
-
-When you use kubectl, the command converts the information from yaml to json
-when making the API request.
-
 * Kubernetes master node and Control plane
 
 .image images/arch.png _ 800
@@ -508,7 +465,64 @@ that is compliant can be plugged in). It supports:
 - runC
 - ClearContainers
 
-* Workloads and Objects
+* Kubernetes objects
+
+Kubernetes has a rich _object_model_. These objects represents different
+_persistent_entities_ in the cluster.
+When you work with k8s you use these api objects to describe the desired
+cluster's state.
+You can interact with the api via kubectl or the api directly from
+inside/outside k8s.
+
+Objects are abstractions that represents the state of your system.
+Once an object is set, the control plane works to make sure the actual state
+will match the desired state.
+
+- [[https://kubernetes.io/docs/concepts/abstractions/overview/]]
+
+There are some _basic_ k8s objects like:
+
+- Pod [[https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/]]
+- Service [[https://kubernetes.io/docs/concepts/services-networking/service/]]
+- Volume [[https://kubernetes.io/docs/concepts/storage/volumes/]]
+- Namespace [[https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/]]
+
+And _high-level_abstraction_ called *controllers*.
+Controllers are build upon the basic objects and provide additional
+functionalities and convenient features. Among them:
+
+- ReplicaSet [[https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/]]
+- Deployment [[https://kubernetes.io/docs/concepts/workloads/controllers/deployment/]]
+- StatefulSet [[https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/]]
+- DaemonSet [[https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/]]
+- Job [[https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/]]
+
+** spec and status
+
+Inside an object we declare our intent in the spec field. The actual state is
+instead recorded by k8s control plane in the status field.
+The two nested object fields are:
+
+- object *spec*: This is your configuration defining the *desired* state. We provide it to k8s.
+- object *status*: Supplied and updated by the control plane and represent the *actual* state.
+
+k8s reacts to the _difference_ between state and status and tries to match them.
+
+To create an object we provide the spec field to k8s API server together with
+the apiVersion, kind and metadata.
+
+The apiVersion specify the API endpoint we want to connect to. With the kind we
+specify the object type. With the metadata we attach basic information to objects
+like the name.
+
+Once the object is created the control plane adds the status.
+
+** Communication
+
+We need to provide the spec field in json format.
+
+When you use kubectl, the command converts the information from yaml to json
+when making the API request.
 
 ** Namespace
 

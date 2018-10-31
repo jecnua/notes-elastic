@@ -25,6 +25,11 @@ The environment is here:
 
 ** install on loopback
 
+* Auth
+
+** Try to authenticate with static token file and static passweord filter
+** test connection with a new client certificate
+
 * Tools
 
 Spin two nodes with the right ubuntu on it

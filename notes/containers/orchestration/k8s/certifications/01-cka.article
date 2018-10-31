@@ -707,6 +707,44 @@ so that it can reach to it.
 
 Decouples the configuration from the app
 
+* Authentication, Authorization and Admission Control
+
+Each request goes through the following three stages:
+
+- Authentication: Logs in as a user
+- Authorization: Authorizes the API request added by the logged in user
+- Admission control: Some additional module that can modify or reject the request based on additional checks.
+
+** Authentication
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies]]
+
+While there is no _user_ object, k8s have two kind of user:
+
+- Normal User: Managed outside of kubernetes via independent services (like certificates)
+- Service Accounts: In-cluster processes communicate with the API. They are usually created via API. They are tied to a Namespace and mount credentials as secrets.
+
+In some cases also anonymous requests are allowed.
+
+K8s have different authenticator modules. You can enable multiple and the first
+one to successfully authenticate the request short circuit the others.
+
+The most commonly used are probably:
+
+- Client certificates
+- Service account tokens: Uses signed bearer token to verify the requests.
+- OpenID account tokens: Allow to connect to OAuth 2 providers
+
+    Client Certificates
+    To enable client certificate authentication, we need to reference a file
+    containing one or more certificate authorities by passing the
+    --client-ca-file=SOMEFILE option to the API server. The certificate
+    authorities mentioned in the file would validate the client certificates
+    presented to the API server.
+
+Service account token get attached to Pods using the ServiceAccount Admission
+Controller, which allows in-cluster processes to talk to the API server.
+
 * ETCD
 
 etcd is a key-value store based on the Raft Consensus Algorithm. There are two

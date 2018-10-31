@@ -289,7 +289,7 @@ Tools can retrieve this metadata to do anything they need/want.
 The metadata in an annotation can be small or large, structured or unstructured,
 and can include characters not permitted by labels.
 
-** Labels and selectors
+** Labels
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/]]
 
@@ -322,10 +322,47 @@ objects. Allow cross-cutting operations (more flexyble than the hierarchical one
 
 Internally ks8 index and reverse-index labels for efficient queries and watches.
 
+** Label selectors
+
+- [[https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors]]
+
+Label selectors allow to indentify a set of objects. It is considered the core
+grouping primitive of k8s.
+
 There are two types of _selectors_:
 
-- Equality-based: Allow filtering of objects based on Labels keys and values. =, ==, or !=
-- Set-based: Allow filtering of objects based on a set of values. in, notin, and exist
+- Equality-based: Allow filtering of objects based on labels keys and values. Three kinds of operators are supported: =, ==, or !=
+- Set-based: Allow filtering of objects based on a set of values. Three kinds of operators are supported: in, notin, and exist(only the key identifier)
+
+    In the case of multiple requirements, all must be satisfied so the comma
+    separator acts as a logical AND (&&) operator.
+    Source: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+
+Example Equality-based:
+
+    environment=production,tier!=frontend
+
+Example Set-based:
+
+    environment in (production, qa)
+    tier notin (frontend, backend)
+    partition
+    !partition
+    partition in (customerA, customerB),environment!=qa
+
+Very important:
+
+    Note: the label selectors of two controllers must not overlap within a
+    namespace, otherwise they will fight with each other.
+    Source: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+
+*Set*operators*are*more*expressive* and allow the *OR* operator.
+
+    $ kubectl get pods -l environment=production,tier=frontend
+    $ kubectl get pods -l 'environment in (production),tier in (frontend)'
+
+Set operators are supported by the newer resources but not old ones like
+ReplicationController.
 
 * kubelet
 

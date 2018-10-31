@@ -649,6 +649,15 @@ specified number of replicas for a Pod is running at any given point in time.
     to set up replication.
     Source: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/
 
+RC only supports equality-based selectors.
+
+** ReplicaSets
+
+Is the next generation ReplicationController. Support both Equality-based and
+Set-based selectors.
+While they could be used independently, they are mostly used by Deployments to
+orchestrate the Pod management. 
+
 ** Services
 
 Instead of accessing the pods directly, a construct called _service_ is used.

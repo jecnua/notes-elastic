@@ -595,18 +595,21 @@ We need to provide the spec field in json format.
 When you use kubectl, the command converts the information from yaml to json
 when making the API request.
 
-** Namespace
+** Namespaces
+
+- [[https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/]]
+- [[https://kubernetes.io/docs/concepts/policy/resource-quotas/]]
 
 Namespaces can be seen as virtual clusters. Provides a scope for names (names of
 resources need to be unique within a namespace but not across) and allow
-to divide the cluster in subsets of resources (*resource*quotas*). All objects
-in the same namespace shares the access control policies.
+to divide the cluster in subsets of resources (*resource*quotas*) (within the namespace).
+All objects in the same namespace shares the access control policies.
 
 By default you have three namespaces:
 
 - default: Is a catch-all namespace for all objects that do not specify one.
 - kube-system: Reserved to objects created by the kubernetes system.
-- kube-public: Readable by all users even the non-authenticated.
+- kube-public: Readable by all users even the non-authenticated. Usually used for special purposes like bootstrapping a cluster.
 
 The namespace is also part of the DNS name that will be created with a service.
 When you try to do a dns resolution of a service with just the name, it will
@@ -657,6 +660,21 @@ Is the next generation ReplicationController. Support both Equality-based and
 Set-based selectors.
 While they could be used independently, they are mostly used by Deployments to
 orchestrate the Pod management.
+
+** Deployments
+
+Deployments provide declarative updates to Pods and ReplicaSets. The
+DeploymentController is part of the master node's controller manager.
+It manages pods via ReplicaSets.
+
+Modifying the Pod template will trigger a *Deployment*rollout*. Operations like
+scaling the deployment do not trigger this event.
+
+.image images/deployments.png
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
+
+Deployments keep a recording of these events and if something goes wrong you
+can always revert it.
 
 ** Services
 

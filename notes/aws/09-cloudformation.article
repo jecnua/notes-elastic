@@ -33,11 +33,23 @@ Very limited.
 
 - [[https://github.com/awslabs/cfn-python-lint]]
 
-Created by AWS, this linter is much more useful than the standard cli validate.
-It's able to tell you if you are passing the right value (int or string) and
-if you have unused variables. Very useful. It accept wildcard:
+Created by AWS, this linter is much more useful than the standard cli validate
+command.
+The tool is able to tell you if you are passing the right value (int or string)
+and if you have unused variables/condition. Very useful. It accept wildcard:
 
     cfn-lint cloud_formation/*.yml
+
+Example of using it with drone:
+
+    lint-cf:
+      image: python:3.7.1-alpine3.8
+      pull: true
+      commands:
+      - pip install cfn-lint
+      - cfn-lint cloud_formation/*.yml
+      when:
+        event: push
 
 * ISSUE: Tagging
 

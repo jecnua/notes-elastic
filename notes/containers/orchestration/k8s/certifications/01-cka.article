@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 25 Oct 2018
+|| Last update: 31 Oct 2018
 
 * To clarify
 
@@ -656,7 +656,7 @@ RC only supports equality-based selectors.
 Is the next generation ReplicationController. Support both Equality-based and
 Set-based selectors.
 While they could be used independently, they are mostly used by Deployments to
-orchestrate the Pod management. 
+orchestrate the Pod management.
 
 ** Services
 

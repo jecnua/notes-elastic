@@ -745,6 +745,33 @@ The most commonly used are probably:
 Service account token get attached to Pods using the ServiceAccount Admission
 Controller, which allows in-cluster processes to talk to the API server.
 
+** Authorization
+
+All API requests needs to be authorized. TO do so the request is validated by
+multiple authorization modules. It the evalation is successfull the request
+will be allowed. If not will be denied. All the authorizer will be run and as
+soon as one fails the request return immediately as failed.
+To authorized the call all need to pass.
+
+Among the modules, the most common will be:
+
+- Role-Based Access Control (RBAC) Authorizer
+
+With RBAC we can regulate access to resources based on the role of users. When
+a role is created, access to a resource can be restricted to operations (verbs).
+There are two kinds of role:
+
+- Role: Grant access to specific namespace
+- ClusterRole: Grant permission cluster wide
+
+Once the role is created it can be binded. There are two types of binding.
+
+- RoleBinding: Bind user at the same namespace of the Role.
+- ClusterRoleBinding: Grant access to resources in ALL namespaces
+
+This authorizer is enabled by passing --authorization-mode=RBAC to the api
+server.
+
 * ETCD
 
 etcd is a key-value store based on the Raft Consensus Algorithm. There are two

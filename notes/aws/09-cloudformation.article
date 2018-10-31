@@ -25,9 +25,11 @@ on s3 and copy the templates every run.
 
 * Linting and Validation
 
+** validate-template
+
     aws cloudformation validate-template
 
-Very limited.
+Very limited. You need to be online and
 
 ** cfn-python-lint
 

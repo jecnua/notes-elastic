@@ -550,6 +550,23 @@ to specify it.
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/]]
 
+** Pods
+
+.image images/pod.png
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
+
+Unit of deployment representing a single instance of an application. Is a logical
+collection of one or more containers. They share:
+
+- Same host
+- Same natwork namespace
+- Mount the same external storage (volumes)
+
+Pods are *ephemeral*. They are not able to self-heal. It is up to the Controllers
+to handle pod replication and fault tolerance.
+
+You can attach the POD specification to another object using the Pod Template.
+
 ** Services
 
 Instead of accessing the pods directly, a construct called _service_ is used.

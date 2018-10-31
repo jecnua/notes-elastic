@@ -82,3 +82,4 @@ Query the API
 * Objects
 
 - create a pod manually without IDE
+- check how the status of a deployment change when you scale

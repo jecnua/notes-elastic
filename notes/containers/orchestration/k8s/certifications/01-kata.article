@@ -83,3 +83,6 @@ Query the API
 
 - create a pod manually without IDE
 - check how the status of a deployment change when you scale
+- use label to select using equelity-based selectors
+- use label to select using set-based selectors
+- filter a kubectl call using labels

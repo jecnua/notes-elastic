@@ -41,6 +41,17 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - what is the difference?
 - How does authorization works?
 - what is the difference with authorization
+- what is the correct order of stages that need to be followed to access the Kubernetes API?
+- Name two types of authorizers
+- what do you use to enforce resource quota?
+
+- WHat are services?
+- how do they work?
+- what mechanism of service discovery does k8s implements?
+- in what for is the dns name?
+- How many type of services there are?
+
+- what kubectl flags shows you only the onjects with a specific label?
 
 - how schedule a specific pod to a specific node
 - what are the component of the cluster and where they run

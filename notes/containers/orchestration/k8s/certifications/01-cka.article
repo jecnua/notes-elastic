@@ -11,6 +11,7 @@ CKA notes
 - CRI https://github.com/kubernetes/community/blob/master/contributors/devel/container-runtime-interface.md
 - cri-o
 - vx-lan
+- externalIP
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -294,6 +295,10 @@ You can use either labels or annotation to attach metadata to k8s objects.
 - *labels* can be used to select objects and to find collections of object that satisfy certain condition
 
 They are both key value maps.
+
+To show all the pods with a specific label run:
+
+    kubectl get pods -L labelnameone,labelnametwo,etc
 
 ** Annotations
 
@@ -696,12 +701,53 @@ can always revert it.
 
 ** Services
 
-Instead of accessing the pods directly, a construct called _service_ is used.
-A service groups pods using labels as selectors and loadbalance access to them.
+- [[https://kubernetes.io/docs/concepts/services-networking/service/]]
+
+.image images/services.png _ 800
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
+
+Pods are ephemeral and resources like IP addresses allocated to it cannot be
+static.
+
+To solve this problem, instead of accessing the pods directly a construct called
+_service_ is used.
+A service groups pods using Labels and Selectors and loadbalance access to them.
+You can define the port the service is going to listen to and the _targetPort_
+(the port the container is listening to). A tuple of Pods IP addresses along with
+the targetPort is referred to a *Service*endpoint*.
+
+An IP is attached to the service in a different CIDR of the Pods and it's called
+ClusterIP.
 
 *kube-proxy* is a *network*proxy* which runs on every worker node and listens
-on the API for each service endpoint change. For each service it sets up a route
-so that it can reach to it.
+on the API for each service endpoint change. For each service it sets up an
+iptable rule to capture the traffic for it's ClusterIP and forwards it to one
+of the _sendpoints_.
+
+Some of the service type are:
+
+- ClusterIP (default): Access allowed only from inside the cluster
+- NodePort: Will open the same port (30000 - 32767) on every node and accept traffic from there
+- LoadBalancer: Only works on a cloud env and will create a lb on the cloud provider, open a random port on every node and accept traffic there
+- ExternalIP: NOT MANAGED BY KUBERNETES (???)
+- ExternalName: Is a special type of service that has no selector and define no endpoint. It returns a CNAME of an external service.
+
+NodePort created a ClusterIP anyway.
+LoadBalancer will create a ClusterIP AND open a random node port to attach to the LB.
+
+*** Service discovery
+
+k8s supports two methods of discovering a service:
+
+- Environment variable: As soon as the pods start, env variable withh all the existing services are added.
+- DNS (reccomended): The add-on will create a DNS record for each Service
+
+The DNS name is in the form of:
+
+    <servicename>.<namespace>.svc.cluster.local
+
+In the same namespace services can be referred by the service name only. If you
+are on a different namespace you need to define the namespace too.
 
 ** Config map
 
@@ -744,6 +790,8 @@ The most commonly used are probably:
 
 Service account token get attached to Pods using the ServiceAccount Admission
 Controller, which allows in-cluster processes to talk to the API server.
+
+Admission controllers can be used to enforce resource quotas.
 
 ** Authorization
 

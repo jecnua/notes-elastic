@@ -1,13 +1,17 @@
 Testing AWS
-|| Last update: 18 Sept 2018
+|| Last update: 2 Nov 2018
+
+* terraform
+
+Without Sentinel, what type of audit terraform knows?
+
+The only one it knows is terraform config.
+it sees all changes as drift
+you can only express what you want, no negatives (no ssh port open to the world)
 
 * Intro
 
-How do we test the infrastructure
-
-Testing based on CloudFormation
-
-Different phases
+Testing can be divided in different phases.
 
 * Phase 1: Static inspection
 
@@ -37,9 +41,6 @@ Work only for AWS.
 
 *** test kitchen and inspec
 
-- [[https://www.inspec.io/]]
-- [[https://www.inspec.io/docs/reference/platforms/]]
-
 Test kitchen as a plugin to use terraform.
 Unfortunately test kitchen does not support multiple provisioners.
 So you can't use terraform AND puppet.
@@ -63,9 +64,61 @@ there is also something like reflective tests
 or integration tests
 test switch
 
-* Tools
+* Inspec
 
-Python a lot to test
+- [[https://www.inspec.io/]]
+- [[https://www.inspec.io/docs/reference/platforms/]]
+- [[https://github.com/inspec/inspec]]
+
+Install inspect with:
+
+    gem install inspec
+
+You can open the inspec shell:
+
+    inspec shell -t aws://<region>
+
+The install iggy:
+
+it's a plugin for inspect and you have inspect terraform and look at the state file
+and extract out what is there to test.
+only has knoweledge of what terraform knows plus some negative tests
+and you will have a good coverage.
+
+- [[https://github.com/inspec/inspec-iggy]]
+- [[https://www.youtube.com/watch?v=4AJ8MS4BaQ0][Generating InSpec coverage from Terraform with InSpec-Iggy]]
+
+    inspec plugin install inspec-iggy
+
+Create a test dir (will be empty):
+
+    inspec terraform generate
+
+Generate real test
+
+  insp  ec terraform generate --name test --tfstate terraform.tfstate
+
+how to do a specific test?
+
+  describe aws_security_group('sg-xxx') do
+    it { should allow_in ipv4_range: '1.0.0.0/32' }
+  end
+
+ruby code
+
+  control 'ssss' do
+    aws_security_groups.group_ids.each do |group_id| # global search
+      describe aws_security_group(group_id) do
+        it { should_not allow_in(port: 22, ipv4_range: '0.0.0.0/0') }
+      end
+    end
+  end
+
+control block is only for nice formatting
+
+if you want to call that from outside, use _exec_:
+
+  inspec exec -t aws:// name_of_file.rb
 
 * Best practice
 
@@ -103,3 +156,7 @@ queue and control messages
 - [[https://github.com/gruntwork-io/terratest]]
 
 - [[https://aws.amazon.com/inspector/]]
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=MT6sR8jsZt0][ChefConf 108 Session: Seems Legit - Testing Cloud Provisioning with InSpec]] - 28 Jun 2018

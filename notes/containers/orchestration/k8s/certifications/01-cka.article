@@ -300,6 +300,10 @@ To show all the pods with a specific label run:
 
     kubectl get pods -L labelnameone,labelnametwo,etc
 
+You can also use it as a selector:
+
+    kubectl get pods -l labelnameone==thisvalue
+
 ** Annotations
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/]]
@@ -663,6 +667,25 @@ Pods are *ephemeral*. They are not able to self-heal. It is up to the Controller
 to handle pod replication and fault tolerance.
 
 You can attach the POD specification to another object using the Pod Template.
+
+*** Probes
+
+There are two types of probes:
+
+- Liveness
+- Readiness
+
+The *liveness*probe* checks on the application health. If the health check fails
+k8s will restart the pod.
+It is defined by:
+
+- Liveness command: a command which return value will define the health
+- Liveness HTTP request: and http request (you can define custom headers)
+- TCP liveness probe
+
+Readiness probe is a check to define when a pod can start accepting requests.
+A Pod that do not report ready status will not receive traffic from Kubernetes
+Services.
 
 ** ReplicationControllers (OBSOLETE)
 

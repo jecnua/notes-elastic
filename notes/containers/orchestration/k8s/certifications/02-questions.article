@@ -52,6 +52,11 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - How many type of services there are?
 
 - what kubectl flags shows you only the onjects with a specific label?
+- how to use it as a selector?
+
+- what types of probes do a pod expose?
+- create a service of type ClusterIP
+- create a service of type nodePort
 
 - how schedule a specific pod to a specific node
 - what are the component of the cluster and where they run

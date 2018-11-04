@@ -91,3 +91,18 @@ Query the API
 - use label to select using equelity-based selectors
 - use label to select using set-based selectors
 - filter a kubectl call using labels
+
+* Deployment
+
+- create a deployment with 3 nginx alpine pods
+
+* Services
+
+- create a cluster ip service
+- check the dns resolution
+- create a nodePort service
+- check that nginx is running
+
+* probes
+
+- make and example with liveness probe: command, http request

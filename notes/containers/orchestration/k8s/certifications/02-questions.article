@@ -51,6 +51,9 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - in what for is the dns name?
 - How many type of services there are?
 
+- what types of PV there are?
+- what is the difference between PV and PVC?
+
 - what kubectl flags shows you only the onjects with a specific label?
 - how to use it as a selector?
 

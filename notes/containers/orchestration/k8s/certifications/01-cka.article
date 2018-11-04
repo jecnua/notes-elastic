@@ -772,6 +772,54 @@ The DNS name is in the form of:
 In the same namespace services can be referred by the service name only. If you
 are on a different namespace you need to define the namespace too.
 
+** Volume
+
+A volume can be seen as a directory backed by a storage medium defined by the
+_Volume_type_. A volume is attached to a pod and is shared by all the
+containers in the pod. It has the same lifespan of the pod and outlives the
+containers (survives containers restart).
+
+Some of the volume types are:
+
+- emptyDir (default): local to the pod/node. if the pod dies it's lost
+- hostPath: mount a dir on the node
+- gcePersistentDisk
+- awsElasticBlockStore
+- nfs
+- iscsi
+- secret
+- persistentVolumeClaim
+
+*** PersistentVolume
+
+PV api provides a way for user or administrator to manage and consume storage.
+To manage the volume it uses the PersistenVolume API.
+To consume it uses the PersistentVolumeClaim API.
+
+A PV is a network attached storage provisioned beforehand by an admin or user and
+defined as a pool to k8s.
+PV _can_ be dynamically provisioned based on the storage class resource. A
+storage class contains pre-defined provisioner and parameters to create a
+persistent volume. Using PersistentVolumeClaims, a user sends the request for
+dynamic PV creation, which gets wired to the StorageClass resource.
+
+.image images/pvc.png _ 600
+.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
+
+    A PersistentVolumeClaim (PVC) is a request for storage by a user. Users request
+    for PersistentVolume resources based on size, access modes, etc. Once a suitable
+    PersistentVolume is found, it is bound to a PersistentVolumeClaim.
+    Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
+
+*** CSI
+
+CSI was created to standardize the Volume interface; a volume plugin built using
+a standardized CSI would work on different container orchestrators.
+
+Kubernetes 1.9 added alpha support for CSI
+With CSI, third-party storage providers can develop solutions without the need
+to add them into the core Kubernetes codebase.
+
 ** Config map
 
 Decouples the configuration from the app

@@ -106,3 +106,8 @@ Query the API
 * probes
 
 - make and example with liveness probe: command, http request
+
+* Volumes
+
+- create a PV
+- create a pvc

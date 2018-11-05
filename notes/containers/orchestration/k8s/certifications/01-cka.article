@@ -308,11 +308,15 @@ You can also use it as a selector:
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/]]
 
-Annotations are used to attach *non-identifying*metadata* to object.
-Tools can retrieve this metadata to do anything they need/want.
+Annotations are used to attach arbitrary *non-identifying*metadata* to object
+in a key-value format. Tools can retrieve this metadata to implement additional
+functionality.
 
 The metadata in an annotation can be small or large, structured or unstructured,
 and can include characters not permitted by labels.
+
+An example of an annotation is a 'description' or git commit. Contents of the
+annotation field is displayed when running the _describe_ command.
 
 ** Labels
 
@@ -793,8 +797,10 @@ It allows *inbound* connection to reach the cluster _service_ and is implemented
 via a Layer 7 HTTP load balancer called *ingress*controller*.
 With ingress you don't connect directly to a Service. When you reach it, the
 request is forwarded to the respective service.
+You could manage the external access with services (NodePort, LoadBalancer, etc)
+but the Ingress is an abstraction/alternative for this process.
 
-It will also add:
+Some of the functionality the Ingress add there are:
 
 - TLS
 - Name-based virtual hosting: Uses domain name to route the traffic

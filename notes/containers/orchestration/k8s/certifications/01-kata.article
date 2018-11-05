@@ -129,3 +129,7 @@ use busybox and command
 
 - create a PV
 - create a pvc
+
+* Ingress
+
+- create an ingress controller and try name-based and route-based paths

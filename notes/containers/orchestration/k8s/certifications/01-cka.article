@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 31 Oct 2018
+|| Last update: 5 Nov 2018
 
 * To clarify
 
@@ -726,7 +726,7 @@ can always revert it.
 
 - [[https://kubernetes.io/docs/concepts/services-networking/service/]]
 
-.image images/services.png _ 800
+.image images/services.png _ 600
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
 Pods are ephemeral and resources like IP addresses allocated to it cannot be
@@ -775,6 +775,36 @@ The DNS name is in the form of:
 
 In the same namespace services can be referred by the service name only. If you
 are on a different namespace you need to define the namespace too.
+
+** Ingress
+
+- [[https://kubernetes.io/docs/concepts/services-networking/ingress/]]
+
+    "An Ingress is a collection of rules that allow inbound connections to reach
+    the cluster Services."
+    Source: https://kubernetes.io
+
+.image images/ingress.png
+.caption Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
+
+While _services_ manage the routing to access the pods, the *Ingress* allows you
+to decouple routing rules to access the service from the application.
+It allows *inbound* connection to reach the cluster _service_ and is implemented
+via a Layer 7 HTTP load balancer called *ingress*controller*.
+With ingress you don't connect directly to a Service. When you reach it, the
+request is forwarded to the respective service.
+
+It will also add:
+
+- TLS
+- Name-based virtual hosting: Uses domain name to route the traffic
+- Path-based routing: Fan out ingress rule
+- Custom rules
+
+An ingress controller is an application that watches the API for changes in the
+Ingress resources and updates the layer 7 load balancer. An example of
+implementation is the
+[[https://github.com/kubernetes/ingress-nginx/blob/master/README.md][nginx ingress controller]]
 
 ** Volume
 

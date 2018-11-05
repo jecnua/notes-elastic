@@ -1,5 +1,5 @@
 Local k8s environment (minikube)
-Fabrizio Sabatini || Last update: 29 Oct 2018
+Fabrizio Sabatini || Last update: 5 Nov 2018
 
 * Disclaimer
 
@@ -137,6 +137,12 @@ Access it:
 More info:
 
     minikube dashboard
+
+* Ingress
+
+To enable the ingress:
+
+    minikube addons enable ingress
 
 * Mount and access dirs [v0.18.0+]
 

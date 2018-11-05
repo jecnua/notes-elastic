@@ -51,6 +51,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - in what for is the dns name?
 - How many type of services there are?
 - why using a name when defining the ports?
+- can service without ClusterIP be created?
 
 - what types of PV there are?
 - what is the difference between PV and PVC?

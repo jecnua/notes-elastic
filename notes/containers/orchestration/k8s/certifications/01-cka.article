@@ -713,18 +713,38 @@ orchestrate the Pod management.
 
 ** Deployments
 
-Deployments provide declarative updates to Pods and ReplicaSets. The
-DeploymentController is part of the master node's controller manager.
-It manages pods via ReplicaSets.
+Deployments provide declarative updates to Pods and ReplicaSets (it manages Pods
+via ReplicaSets). The DeploymentController is part of the master node's
+controller manager.
 
-Modifying the Pod template will trigger a *Deployment*rollout*. Operations like
-scaling the deployment do not trigger this event.
+Modifying the Pod template will trigger a *Deployment*rollout* while operations
+like scaling the deployment do not trigger this type of event.
 
 .image images/deployments.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
 Deployments keep a recording of these events and if something goes wrong you
-can always revert it.
+can always revert it via a *rollback* operation.
+
+Other advanced functionality of the deployments are:
+
+- Autoscaling
+- Proportional scaling
+- Pausing and resuming
+
+** Job & CronJob
+
+- [[https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/]]
+
+A job creates one or more Pods to perform a task. If a pod fails it will be
+restarted. Once the task is over all the pods are terminated. Is a one-job
+functionality.
+
+- [[https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/]]
+- [[https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/]]
+
+A cron job is similar with the difference that the JOb will run always at a
+specific time.
 
 ** Services
 

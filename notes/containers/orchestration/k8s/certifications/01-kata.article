@@ -134,3 +134,13 @@ use busybox and command
 * Ingress
 
 - create an ingress controller and try name-based and route-based paths
+
+* Deployments
+
+- create a deployment
+- do a change
+- rollaback the deployment
+
+* Job
+
+- Create a job

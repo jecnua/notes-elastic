@@ -89,4 +89,5 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - how is name resolution handled inside a pod?
 - gce e2e test for
 
-- what are jobs?
+- what is a job?
+- what is a cronjob?

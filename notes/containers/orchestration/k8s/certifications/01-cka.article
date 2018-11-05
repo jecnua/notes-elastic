@@ -655,6 +655,13 @@ to specify it.
 
 - [[https://kubernetes.io/docs/concepts/policy/resource-quotas/]]
 
+To limit the amount of resources an user can use in a namespace, Administrators
+can create ResourceQuota objects. They allow you to manage:
+
+- Compute Resource Quota: Limit the total sum of resources (CPU, memory, etc)
+- Storage Resource Quota: Limit the total sum of storage resources that can be requested
+- Object Count Quota: Restrict number of object of a specific type
+
 ** Pods
 
 .image images/pod.png

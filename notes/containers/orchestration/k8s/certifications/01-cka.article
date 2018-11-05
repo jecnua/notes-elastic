@@ -125,7 +125,7 @@ NEEDS MORE RESOURCES
 
 - [[https://kubernetes.io/docs/tasks/administer-cluster/running-cloud-controller/]]
 
-Deamon that manages cloud related resources in a control loop.
+Daemon that manages cloud related resources in a control loop.
 It can implement:
 
 - Node controller: Updated the nodes status by coordinating with the cloud API.
@@ -235,6 +235,9 @@ The HTTP API space of k8s can be divided into three independent groups:
 - Core group (/api/v1): basic objects
 - Named group: Objects in the /apis/$NAME/$VERSION format
 - System wide: Like /healthz, /logs, /metrics, etz
+
+The apiVersion field in the object's configuration file deifine the API
+endpoint to connect the API server.
 
 When "kubectl proxy" is configures, you can send requests to localhost on the
 proxy port.
@@ -395,7 +398,7 @@ ReplicationController.
 
 * kubelet
 
-The kubelet is an *agent* and runs as a *deamon* on every server (master and
+The kubelet is an *agent* and runs as a *Daemon* on every server (master and
 nodes).
 It will communicate with the master node and runs containers as stated on the
 saved state. It will also make sure all containers are healthy at all times.
@@ -493,7 +496,7 @@ cluster to use containerd as an underlying runtime without using docker.
 .caption Source: [[https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/]]
 
 cri-containerd is an implementation of CRI for containerd. It operates on the same
-node as the kubelet and the container runtime. This process (deamon) handles all the
+node as the kubelet and the container runtime. This process (Daemon) handles all the
 requests from the kubelet and uses contained to manage the container lifecycle
 in the backend.
 
@@ -696,7 +699,7 @@ It is defined by:
 
 Readiness probe is a check to define when a pod can start accepting requests.
 A Pod that do not report ready status will not receive traffic from Kubernetes
-Services.
+Services.https://multithreaded.stitchfix.com/blog/2016/03/16/engineers-shouldnt-write-etl/
 
 ** ReplicationControllers (OBSOLETE)
 
@@ -717,6 +720,17 @@ Is the next generation ReplicationController. Support both Equality-based and
 Set-based selectors.
 While they could be used independently, they are mostly used by Deployments to
 orchestrate the Pod management.
+
+** DaemonSets
+
+Will run a pod (and only one) at all times on each node of the cluster.
+
+** StatefulSets
+
+Is used to manage applications that requires an identity like name, network,
+strict ordering, etc.
+The StatefulSet controller provides identity and guaranteed ordering of
+deployment and scaling to Pods.
 
 ** Deployments
 
@@ -753,7 +767,7 @@ functionality.
 A cron job is similar with the difference that the JOb will run always at a
 specific time.
 
-** Services
+** Service
 
 - [[https://kubernetes.io/docs/concepts/services-networking/service/]]
 
@@ -774,7 +788,8 @@ An IP is attached to the service in a different CIDR of the Pods and it's called
 ClusterIP.
 
 *kube-proxy* is a *network*proxy* which runs on every worker node and listens
-on the API for each service endpoint change. For each service it sets up an
+on the API server (only - no scheduler or controller manager) for each service
+endpoint change. For each service it sets up an
 iptable rule to capture the traffic for it's ClusterIP and forwards it to one
 of the _sendpoints_.
 
@@ -792,6 +807,9 @@ LoadBalancer will create a ClusterIP AND open a random node port to attach to th
 NOTE: Giving the _port_ a name is very useful because it decouples pod and service
 definition. You will be able to change the port you are listening to in the pod
 without changing the service if you keep the same name!
+
+We can have a service for which Kubernetes does not provide a ClusterIP.
+[][https://kubernetes.io/docs/concepts/services-networking/service/#headless-services]]
 
 *** Service discovery
 
@@ -857,7 +875,7 @@ Some of the volume types are:
 - secret
 - persistentVolumeClaim
 
-*** PersistentVolume
+*** PersistentVolume & PersistentVolumeClaim
 
 PV api provides a way for user or administrator to manage and consume storage.
 To manage the volume it uses the PersistenVolume API.
@@ -877,6 +895,9 @@ dynamic PV creation, which gets wired to the StorageClass resource.
     for PersistentVolume resources based on size, access modes, etc. Once a suitable
     PersistentVolume is found, it is bound to a PersistentVolumeClaim.
     Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
+
+While creating a PersistentVolumeClaim, a user can specify the size and access
+mode.
 
 *** CSI
 

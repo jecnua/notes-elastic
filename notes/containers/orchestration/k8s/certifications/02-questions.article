@@ -91,3 +91,8 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 
 - what is a job?
 - what is a cronjob?
+
+- What do resource quotas allow you to manage?
+
+- create a deamonset
+- create a statefulset

@@ -145,3 +145,7 @@ use busybox and command
 
 - Create a job
 - create a cronjob
+
+* Quotas
+
+- Add quotas on a namespace and test it out

@@ -50,6 +50,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - what mechanism of service discovery does k8s implements?
 - in what for is the dns name?
 - How many type of services there are?
+- why using a name when defining the ports?
 
 - what types of PV there are?
 - what is the difference between PV and PVC?
@@ -60,6 +61,9 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - what types of probes do a pod expose?
 - create a service of type ClusterIP
 - create a service of type nodePort
+
+- what are configmaps?
+- what can you create them from?
 
 - how schedule a specific pod to a specific node
 - what are the component of the cluster and where they run

@@ -758,6 +758,10 @@ Some of the service type are:
 NodePort created a ClusterIP anyway.
 LoadBalancer will create a ClusterIP AND open a random node port to attach to the LB.
 
+NOTE: Giving the _port_ a name is very useful because it decouples pod and service
+definition. You will be able to change the port you are listening to in the pod
+without changing the service if you keep the same name!
+
 *** Service discovery
 
 k8s supports two methods of discovering a service:
@@ -822,7 +826,50 @@ to add them into the core Kubernetes codebase.
 
 ** Config map
 
-Decouples the configuration from the app
+-[[https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/]]
+
+Decouples the configuration details from the container image. It can be consumed
+by a Pod or a controller.
+
+Can be created from:
+
+- literal values
+- files
+
+    kubectl create configmap my-config --from-literal=key1=value1 --from-literal=key2=value2
+
+with 'file' here we are referring to the object yaml.
+
+This information can be accessed in two ways.
+From:
+
+- environment
+- volume: the config map can be mounted as volume and for each  key we will have a file
+
+** Secrets
+
+- [[https://kubernetes.io/docs/concepts/configuration/secret/]]
+
+    With Secrets, we can share sensitive information like passwords, tokens, or
+    keys in the form of key-value pairs, similar to ConfigMaps; thus, we can
+    control how the information in a Secret is used, reducing the risk for
+    accidental exposures. In Deployments or other system components, the Secret
+    object is referenced, without exposing its content.
+    It is important to keep in mind that the Secret data is stored as plain
+    text inside etcd. Administrators must limit the access to the API server
+    and etcd.
+    Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
+
+From literal:
+
+    kubectl create secret generic my-password --from-literal=password=mysqlpassword
+
+By default it will be of type opaque (in base64) if you try to read it with
+describe. however to be read just run base64 --decode.
+
+NOTE: base64 encoding does not do any encryption!
+
+You can create a secret form file just base64 it before.
 
 * Authentication, Authorization and Admission Control
 

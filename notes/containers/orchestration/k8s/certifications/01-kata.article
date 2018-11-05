@@ -3,6 +3,8 @@ Kata: Certified Kubernetes Administrator (CKA) cert preparation
 
 * Kata
 
+    watch kubectl get deploy,rs,pods,svc,endpoints,configmaps,secrets
+
 The environment is here:
 
 - [[https://github.com/jecnua/certified-kubernetes-administrator-cka-kata]]
@@ -106,6 +108,22 @@ Query the API
 * probes
 
 - make and example with liveness probe: command, http request
+
+* configmaps
+
+- create configmaps from literals (run then yaml)
+- create configmaps from file
+- access via env
+- access via volume
+
+use busybox and command
+
+* secret
+
+- create a secret
+- access it
+
+use busybox and command
 
 * Volumes
 

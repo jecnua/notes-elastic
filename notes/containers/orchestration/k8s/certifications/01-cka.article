@@ -418,8 +418,9 @@ ReplicationController.
 
 - [[https://kubernetes.io/docs/concepts/architecture/master-node-communication/]]
 
-The only service supposed to be _exposed_ to traffic is the api-server. Usually
-the API server listens on port 443 for HTTPS traffic. A form of AUTH should be
+Communication from the cluster to the master is SSL encrypted.
+The only service _exposed_ to external traffic is the api-server.
+The API server listens on port 443 for HTTPS traffic. A form of AUTH should be
 enabled.
 
     Nodes should be provisioned with the public root certificate for the cluster
@@ -435,6 +436,8 @@ enabled.
     endpoint on the apiserver.
     Source: https://kubernetes.io/docs/concepts/architecture/master-node-communication/
 
+Master to nodes is much less secure. There are two main types: apiserver to kubelet
+and apiserver to nodes/pods/services.
 For the cases when the apiserver needs to communicate with the cluster (kubelet)
 like:
 
@@ -442,7 +445,12 @@ like:
 - Attaching to running pods
 - Providing the port-forwarding
 
-They are made to the kubelet HTTPS endpoint!
+It is not secure. The certificate is not verified by default and is vulnerable to
+man in the middle attach. Don't run them on public network. Possible solutions are:
+use the flag --kubelet-certificate-authority or do an ssh tunnel.
+
+Communiactions to  nodes/pods/services are totally unsafe because they are plain
+http (neither authenticated or encrypted). Possible solution ssh tunneling.
 
 * The kubelet
 

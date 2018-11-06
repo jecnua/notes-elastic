@@ -22,6 +22,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - how do I check which shim I am using (if I am using one)?
 
 - what are the kubelet steps of communication with the container runtime?
+- do the kubelet listens or polls?
 
 - how do you use crictl and why?
 

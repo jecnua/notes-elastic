@@ -17,7 +17,7 @@ CKA notes
 
 * Intro
 
-.image images/k8s_high_level.png _ 800
+.image images/k8s_high_level.png _ 700
 .caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
 
 * The physical cluster
@@ -200,24 +200,41 @@ Flannel makes use of an overlay network, usually
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
 The kuberneyes control plane consists of a collection of processes running on
-the cluster. It's a collection of *three*processes* designed to run on a single node
-in your cluster. They are:
+the cluster (daemon). It's a collection of *three*processes* designed to run on
+a single node in your cluster. They are:
 
 - kube-apiserver: [[https://kubernetes.io/docs/admin/kube-apiserver/]]
 - kube-controller-manager: [[https://kubernetes.io/docs/admin/kube-controller-manager/]]
 - kube-scheduler: [[https://kubernetes.io/docs/admin/kube-scheduler/]]
 
-Administrative tasks are made by communicating with the api-server. Commands are
-send in *JSON* via *REST* and the api validates and process the requests. The result
-is saved on etcd.
+Administrative tasks are made by communicating with the *api-server*. Commands
+are send in *JSON* via *REST* and the api validates and process the requests.
+The result is saved on etcd. the api-server scale horizontally depending on the
+traffic.
 
-The scheduler schedule work to different nodes. It takes this decisions using a
-whole lot of metrics it gets from the nodes plus the user requirements.
-It schedules the work in terms of Pods and Services.
+The *scheduler* schedule work to different nodes. It takes this decisions using
+a whole lot of metrics it gets from the nodes plus the user requirements.
+It schedules the work in terms of Pods and Services. It listens to the api-server
+for the creation of new pods.
 
-The controller-manager mages different non-terminating control loops. Each of this
-manage a specific object and watch their current state though the API server.
-If the state differs from the desired one it will take actions to change it.
+The *controller-manager* manages different non-terminating control loops.
+Can be seen as a set of different master processes with the intent of matching
+the desired state and actual state.
+Each of this manage a specific object and watch their current state though the
+API server. If the state differs from the desired one it will take actions to
+change it.
+
+It can be present in one of this two flavours:
+
+- cloud-controller-manager (cloud env)
+- kube-controller-manager (phisical)
+
+Different controllers depending on the tasks:
+
+- node controller
+- replication controller
+- route controller
+- volume controller
 
 The control plane maintains a record of all k8s objects and run a continous
 control loop to manage the object state.
@@ -255,6 +272,7 @@ proxy port.
 .image images/worker.png  _ 800
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
+We can see three major components.
 Each individual _non-master_ node runs two processes:
 
 - kubelet: [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the controller node
@@ -396,12 +414,56 @@ Very important:
 Set operators are supported by the newer resources but not old ones like
 ReplicationController.
 
-* kubelet
+* Cluster to/from Master communication
 
-The kubelet is an *agent* and runs as a *Daemon* on every server (master and
-nodes).
+- [[https://kubernetes.io/docs/concepts/architecture/master-node-communication/]]
+
+The only service supposed to be _exposed_ to traffic is the api-server. Usually
+the API server listens on port 443 for HTTPS traffic. A form of AUTH should be
+enabled.
+
+    Nodes should be provisioned with the public root certificate for the cluster
+    such that they can connect securely to the apiserver along with valid client
+    credentials. For example, on a default GKE deployment, the client credentials
+    provided to the kubelet are in the form of a client certificate.
+    [...]
+    Pods that wish to connect to the apiserver can do so securely by leveraging
+    a service account so that Kubernetes will automatically inject the public
+    root certificate and a valid bearer token into the pod when it is
+    instantiated. The kubernetes service (in all namespaces) is configured with
+    a virtual IP address that is redirected (via kube-proxy) to the HTTPS
+    endpoint on the apiserver.
+    Source: https://kubernetes.io/docs/concepts/architecture/master-node-communication/
+
+For the cases when the apiserver needs to communicate with the cluster (kubelet)
+like:
+
+- Getting Logs
+- Attaching to running pods
+- Providing the port-forwarding
+
+They are made to the kubelet HTTPS endpoint!
+
+* The kubelet
+
+- [[https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/]]
+
+The kubelet is a node *agent* and runs as a *Daemon* on every server (master and
+nodes). It thinks and works in term of _PodSpec_.
 It will communicate with the master node and runs containers as stated on the
-saved state. It will also make sure all containers are healthy at all times.
+desired state. It will also make sure all containers are healthy at all times.
+EXTREMELY configurable via flags, allows you to pass _feature_flags_
+to allow ALPHA and BETA functionalities.
+
+The kubelet by default serve on port 10255.
+
+              TO CHECK
+              When the kubelet starts, it will seek out the master node and try to listen (???).
+              Reports success or failure to the master (???)
+              TO CHECK
+
+NOTE: The kubelet could also access PodSpec via FIle (path), HTTP endpoint and
+HTTP server. However they are rarely used.
 
 The kubelet interfaces with the containers via the Container Runtime Interface
 (CRI).

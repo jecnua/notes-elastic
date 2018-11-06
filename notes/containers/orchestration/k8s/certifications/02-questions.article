@@ -34,6 +34,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - what types of selectors do you have
 - what operators each selectors allow?
 - what do containers in a pod share?
+- what does the restart value mean in the get pod command?
 
 - How do deployment works?
 - What triggers a rollout? What doesn'?

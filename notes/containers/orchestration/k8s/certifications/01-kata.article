@@ -95,6 +95,8 @@ Query the API
 - filter a kubectl call using labels
 - add annotations
 
+- create a pod with request and limit. make the pod allocate more and more memory until it's killed
+
 * Deployment
 
 - create a deployment with 3 nginx alpine pods

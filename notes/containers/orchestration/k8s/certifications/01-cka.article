@@ -662,6 +662,10 @@ functionalities and convenient features. Among them:
 - DaemonSet [[https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/]]
 - Job [[https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/]]
 
+ReplicaSet add to the Pod the _scaling_ and _healing_ concept.
+Deployments add _versioning_ and _rollbacks_.
+Services adds a static (non-ephemereal) IP and networking.
+
 ** spec and status
 
 Inside an object we declare our intent in the spec field. The actual state is
@@ -732,17 +736,33 @@ can create ResourceQuota objects. They allow you to manage:
 .image images/pod.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
-Unit of deployment representing a single instance of an application. Is a logical
-collection of one or more containers. They share:
+Unit of deployment. Is a logical collection of one or more containers. They
+share:
 
-- Same host
-- Same natwork namespace
-- Mount the same external storage (volumes)
+- Host (same node)
+- Network namespace
+- Mounts (they mount the same external storage (volumes))
 
-Pods are *ephemeral*. They are not able to self-heal. It is up to the Controllers
+Pods are *ephemeral*. They are not able to self-heal. It's up to _controllers_
 to handle pod replication and fault tolerance.
 
 You can attach the POD specification to another object using the Pod Template.
+
+NOTE: The number of the *restarts* value is the number of container restarts not
+pod restarts.
+
+Pods allow to put resource limits.
+
+- [[https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/]]
+
+There are two:
+
+- resources.requests: What you ask for.
+- resources.limits: Your limit.
+
+They both allow _cpu_ and _memory_ field. cpu is defined in _m_. 1000m is a vCPU.
+So basically 250m is 1/4 of CPU and so on. memory is in Mi (megabytes). 64Mi means
+64 megabytes.
 
 *** Probes
 

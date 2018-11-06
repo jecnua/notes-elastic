@@ -133,7 +133,7 @@ It can implement:
 - Route controller: Responsible for setting up network routes (only on gce)
 - Persistent volume labels controller: Sets zone and region labels on PersistenVolumes
 
-To run this beta functionality you will however need to:
+To run this beta functionality you will need to:
 
 - NOT specify the --cloud-provider flag in kube-apiserver and kube-controller-manaher
 - Run kubelet with the flag --cloud-provider=external
@@ -292,6 +292,9 @@ It will also need a container runtime like:
 - [[https://github.com/kubernetes/community/blob/master/contributors/design-proposals/architecture/identifiers.md]]
 
 The *metadata* is what _uniquely_ identify a resource. All objects have unique:
+
+- UID: System generated
+- Name: Client-given
 
     UID: A non-empty, opaque, system-generated value guaranteed to be unique in
     time and space; intended to distinguish between historical occurrences of
@@ -727,6 +730,8 @@ If you want to cross namespace you will need
 to specify it.
 
     <service>.<namespace>
+
+Few things like nodes and persistenVolumes do not live in namespaces.
 
 *** Resource quotas
 

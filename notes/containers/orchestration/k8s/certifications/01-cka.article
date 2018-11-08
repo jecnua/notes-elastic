@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 5 Nov 2018
+|| Last update: 8 Nov 2018
 
 * To clarify
 
@@ -12,6 +12,10 @@ CKA notes
 - cri-o
 - vx-lan
 - externalIP
+- env from
+- headless service
+- how can the pod see in the env pod name and other info
+- downward api
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -797,6 +801,15 @@ Readiness probe is a check to define when a pod can start accepting requests.
 A Pod that do not report ready status will not receive traffic from Kubernetes
 Services.https://multithreaded.stitchfix.com/blog/2016/03/16/engineers-shouldnt-write-etl/
 
+** Downward API
+
+Is a type of volume.
+
+There are two files mounted on the pod:
+
+- /etc/podinfo/labels
+- /etc/podinfo/annotations
+
 ** ReplicationControllers (OBSOLETE)
 
 - [[https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/]]
@@ -972,8 +985,8 @@ for the pod lifecyle.
 
 Some of the volume types are:
 
-- emptyDir (default): local to the pod. if the pod dies it's lost. survive container restart.
-- hostPath: mount a dir on the node
+- emptyDir (default): non-persistant: local to the pod. if the pod dies it's lost. survive container restart.
+- hostPath: mount a dir on the node. is uncommon because pods should be independed from the node: usecase cAdvisor or similar daemon
 - nfs
 - iscsi
 - persistentVolumeClaim
@@ -997,9 +1010,14 @@ PV api provides a way for user or administrator to manage and consume storage.
 To manage the volume it uses the PersistenVolume API.
 To consume it uses the PersistentVolumeClaim API.
 
-A PV is a network attached storage provisioned beforehand by an admin or user and
-defined as a pool to k8s.
-PV _can_ be dynamically provisioned based on the storage class resource. A
+There are two types of provisioning:
+
+- Static: preallocated by the admin
+- Dynamic: via storage class
+
+A PV is a network attached storage provisioned beforehand by an admin or user
+and defined as a pool to k8s.
+PV _can_ be dynamically provisioned based on the *storage*class* resource. A
 storage class contains pre-defined provisioner and parameters to create a
 persistent volume. Using PersistentVolumeClaims, a user sends the request for
 dynamic PV creation, which gets wired to the StorageClass resource.

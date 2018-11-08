@@ -95,13 +95,18 @@ Query the API
 - filter a kubectl call using labels
 - add annotations
 - kill the container not the pod
+- set env variable for a pod
 
 * Volumes 1
 
 - create and emptydir volume
 - create a pod with two containers writing on the same volume
+- create configmap and secret from file and literal
+- mount a config map in pod as dir
+- mount a secret in pod as dir
+- mount secret as env
+- mount config as env
 
-- create a pod with request and limit. make the pod allocate more and more memory until it's killed
 
 * Deployment
 
@@ -137,10 +142,17 @@ use busybox and command
 
 use busybox and command
 
+* Limits
+
+- create a pod with request and limit. make the pod allocate more and more memory until it's killed
+
 * Volumes 2
 
 - create a PV
 - create a pvc
+- create a storage class?
+- provision a volume automatically
+- create an ebs and attach it to a pod
 
 * Ingress
 

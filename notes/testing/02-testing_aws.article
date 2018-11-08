@@ -70,22 +70,83 @@ test switch
 - [[https://www.inspec.io/docs/reference/platforms/]]
 - [[https://github.com/inspec/inspec]]
 
+InSpec is an open-source testing framework that enables you to specify
+compliance, security, and other policy requirements.
+
 Install inspect with:
 
     gem install inspec
 
+- [[https://www.inspec.io/docs/reference/cli/]]
+
+You usually build profiles in inspec:
+
+- [[https://www.inspec.io/docs/reference/profiles/]]
+- [[https://github.com/inspec/inspec/blob/master/docs/profiles.md]]
+
+** Inspec on AWS
+
+- [[https://www.inspec.io/docs/reference/platforms/]]
+- [[https://www.inspec.io/docs/reference/resources/#aws-resources]]
+- [[https://www.youtube.com/watch?v=jKq2B6JIAuE]]
+
+Form version 2.0 AWS is supported.
+However the provided deps are very limited. For example no A/NLB, autoscaling
+groups and so on.
+
+You can pass the credentials via ENV variable OR profile.
+
 You can open the inspec shell:
 
+    # aws:// targets aws
+    inspec shell -t aws://
+
+Specify a region:
+
     inspec shell -t aws://<region>
+    inspec shell -t aws://eu-west-1
 
-The install iggy:
+how to do a specific test?
 
-it's a plugin for inspect and you have inspect terraform and look at the state file
+    # if you have the id
+    describe aws_security_group('sg-xxx') do
+      it { should allow_in ipv4_range: '1.0.0.0/32' }
+    end
+
+ruby code
+
+    control 'ssss' do
+      aws_security_groups.group_ids.each do |group_id| # global search
+        describe aws_security_group(group_id) do
+          it { should_not allow_in(port: 22, ipv4_range: '0.0.0.0/0') }
+        end
+      end
+    end
+
+control block is only for nice formatting
+
+if you want to call that from outside, use _exec_:
+
+    inspec exec -t aws://eu-west-1 name_of_file.rb
+
+NOTE: It fails silently if you don't have the credentials. no erros, just says to
+you 0 tests run
+
+For example you could first get all the elb sg id nd then all the sg. if the one
+open to the planet is NOT on a elb is bag.
+
+.image images/inspec.png
+.caption Source: [[https://www.slideshare.net/nathenharvey/testing-terraform-102777946]]
+
+** Iggy
+
+- [[https://github.com/inspec/inspec-iggy]]
+
+It's a plugin for inspect and you have inspect terraform and look at the state file
 and extract out what is there to test.
 only has knoweledge of what terraform knows plus some negative tests
 and you will have a good coverage.
 
-- [[https://github.com/inspec/inspec-iggy]]
 - [[https://www.youtube.com/watch?v=4AJ8MS4BaQ0][Generating InSpec coverage from Terraform with InSpec-Iggy]]
 
     inspec plugin install inspec-iggy
@@ -98,27 +159,41 @@ Generate real test
 
   insp  ec terraform generate --name test --tfstate terraform.tfstate
 
-how to do a specific test?
+** Limitations
 
-  describe aws_security_group('sg-xxx') do
-    it { should allow_in ipv4_range: '1.0.0.0/32' }
-  end
+- Limited support for tags https://github.com/inspec/inspec/issues/3139
+- No support for A/NLB, ASG, SPOT, etc
+- Not good for blanket testing (it will always loop)
 
-ruby code
+Also the available tool of pre-existing controllers is not much:
 
-  control 'ssss' do
-    aws_security_groups.group_ids.each do |group_id| # global search
-      describe aws_security_group(group_id) do
-        it { should_not allow_in(port: 22, ipv4_range: '0.0.0.0/0') }
-      end
-    end
-  end
+- [[https://supermarket.chef.io/tools?utf8=%E2%9C%93&q=aws&platforms%5B%5D=]]
 
-control block is only for nice formatting
+Not... much...
 
-if you want to call that from outside, use _exec_:
+     $ inspec supermarket profiles | grep aws
+     * InSpec AEM AWS shinesolutions/inspec-aem-aws
 
-  inspec exec -t aws:// name_of_file.rb
+If you have to do the same loop twice:
+
+        Profile Summary: 0 successful controls, 1 control failure, 0 controls skipped
+        Test Summary: 449 successful, 129 failures, 0 skipped
+        inspec exec -t aws://eu-west-1 scan_sg.rb  8.51s user 0.99s system 8% cpu 1:52.53 total
+
+It doesn't cache the calls:
+
+        Profile Summary: 0 successful controls, 2 control failures, 0 controls skipped
+        Test Summary: 790 successful, 366 failures, 0 skipped
+        inspec exec -t aws://eu-west-1 scan_sg.rb  24.50s user 1.69s system 11% cpu 3:47.85 total
+
+
+** Server audit
+
+It is very strong there:
+
+- [[https://aws.amazon.com/about-aws/whats-new/2018/03/aws-systems-manager-adds-support-for-inspec-by-chef/]]
+- [[https://aws.amazon.com/blogs/mt/using-aws-systems-manager-to-run-compliance-scans-using-inspec-by-chef/]]
+- [[https://docs.aws.amazon.com/systems-manager/latest/userguide/integration-chef-inspec.html]]
 
 * Best practice
 

@@ -100,6 +100,8 @@ Query the API
 * Deployment
 
 - create a deployment with 3 nginx alpine pods
+- scale the deployment using nano
+- scale the deployment using the cli
 
 * Services
 
@@ -152,3 +154,6 @@ use busybox and command
 * Quotas
 
 - Add quotas on a namespace and test it out
+
+
+set kube editor at nano

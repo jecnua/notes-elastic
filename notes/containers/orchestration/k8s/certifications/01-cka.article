@@ -337,7 +337,8 @@ in a key-value format. Tools can retrieve this metadata to implement additional
 functionality.
 
 The metadata in an annotation can be small or large, structured or unstructured,
-and can include characters not permitted by labels.
+and can include characters not permitted by labels. They can be larger than
+labels.
 
 An example of an annotation is a 'description' or git commit. Contents of the
 annotation field is displayed when running the _describe_ command.
@@ -874,10 +875,11 @@ static.
 
 To solve this problem, instead of accessing the pods directly a construct called
 _service_ is used.
-A service groups pods using Labels and Selectors and loadbalance access to them.
+A service groups pods using Labels and Selectors and load-balance traffic access
+to them. The service lifespan is decoupled from the pods. Coupling is loose.
 You can define the port the service is going to listen to and the _targetPort_
-(the port the container is listening to). A tuple of Pods IP addresses along with
-the targetPort is referred to a *Service*endpoint*.
+(the port the container is listening to). A tuple of Pods IP addresses along
+with the targetPort is referred to a *Service*endpoint*.
 
 An IP is attached to the service in a different CIDR of the Pods and it's called
 ClusterIP.
@@ -904,7 +906,7 @@ definition. You will be able to change the port you are listening to in the pod
 without changing the service if you keep the same name!
 
 We can have a service for which Kubernetes does not provide a ClusterIP.
-[][https://kubernetes.io/docs/concepts/services-networking/service/#headless-services]]
+[[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services]]
 
 *** Service discovery
 

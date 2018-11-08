@@ -94,6 +94,12 @@ Query the API
 - use label to select using set-based selectors
 - filter a kubectl call using labels
 - add annotations
+- kill the container not the pod
+
+* Volumes 1
+
+- create and emptydir volume
+- create a pod with two containers writing on the same volume
 
 - create a pod with request and limit. make the pod allocate more and more memory until it's killed
 
@@ -131,7 +137,7 @@ use busybox and command
 
 use busybox and command
 
-* Volumes
+* Volumes 2
 
 - create a PV
 - create a pvc

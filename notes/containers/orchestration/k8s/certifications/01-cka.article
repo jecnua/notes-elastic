@@ -961,16 +961,35 @@ _Volume_type_. A volume is attached to a pod and is shared by all the
 containers in the pod. It has the same lifespan of the pod and outlives the
 containers (survives containers restart).
 
+They address the problem of:
+
+- Permanence: Storage that lasts longer than lifetime
+- Shared state: Multiple pod share state/files
+
+Volumes in general survive single container restarts but if you want also to
+survive a pod restart, you need to use a persistenVolumes that is decoupled
+for the pod lifecyle.
+
 Some of the volume types are:
 
-- emptyDir (default): local to the pod/node. if the pod dies it's lost
+- emptyDir (default): local to the pod. if the pod dies it's lost. survive container restart.
 - hostPath: mount a dir on the node
-- gcePersistentDisk
-- awsElasticBlockStore
 - nfs
 - iscsi
-- secret
 - persistentVolumeClaim
+- configmap
+- gitRepo
+- secret
+
+Some cloud version:
+
+- gcePersistentDisk (gcp)
+- awsElasticBlockStore (aws)
+- azureDisk (azure)
+- azureFIle (azure)
+
+Each volume needs to be explicitly mounted and defined in the pod. It will
+appear as a directory or file on the filesystem.
 
 *** PersistentVolume & PersistentVolumeClaim
 

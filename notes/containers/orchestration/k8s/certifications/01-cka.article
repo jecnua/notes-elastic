@@ -803,7 +803,12 @@ Services.https://multithreaded.stitchfix.com/blog/2016/03/16/engineers-shouldnt-
 
 ** Downward API
 
+- [[https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/]]
+
 Is a type of volume.
+
+You can define them and each path you define in the volume will be mapped in
+/etc/podinfo/<parh> inside the container.
 
 There are two files mounted on the pod:
 
@@ -823,12 +828,18 @@ specified number of replicas for a Pod is running at any given point in time.
 
 RC only supports equality-based selectors.
 
-** ReplicaSets
+** ReplicaSet
+
+- [[https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/]]
 
 Is the next generation ReplicationController. Support both Equality-based and
 Set-based selectors.
 While they could be used independently, they are mostly used by Deployments to
 orchestrate the Pod management.
+
+NOTE: If you change the pod definition of a ReplicaSet nothing will happen. Only
+when one of the Pod dies the new one (and only this new one) will be the new
+version.
 
 ** DaemonSets
 

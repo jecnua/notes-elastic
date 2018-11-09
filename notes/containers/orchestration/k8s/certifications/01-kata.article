@@ -106,7 +106,7 @@ Query the API
 - mount a secret in pod as dir
 - mount secret as env
 - mount config as env
-
+- use downward api
 
 * Deployment
 

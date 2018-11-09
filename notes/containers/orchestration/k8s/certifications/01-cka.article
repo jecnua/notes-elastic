@@ -865,6 +865,8 @@ deployment and scaling to Pods.
 
 ** Deployments
 
+- [[https://kubernetes.io/docs/concepts/workloads/controllers/deployment/]]
+
 Deployments provide declarative updates to Pods and ReplicaSets (it manages Pods
 via ReplicaSets). The DeploymentController is part of the master node's
 controller manager.
@@ -888,6 +890,9 @@ NOTE: If you tell a new deployment to point with labels to an existing rs and
 pods it will take control of the rs and will be able to manage it (scaling).
 When you change the pod definition a new rs will be created with the correct
 naming convention this time.
+
+In API version apps/v1, a Deployment’s label selector is immutable after
+it gets created.
 
 ** Job & CronJob
 

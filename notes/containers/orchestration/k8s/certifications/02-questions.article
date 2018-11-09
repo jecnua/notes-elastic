@@ -100,5 +100,4 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 
 - What do resource quotas allow you to manage?
 
-- create a deamonset
-- create a statefulset
+- what are the lifecycle events?

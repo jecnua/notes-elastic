@@ -173,5 +173,11 @@ use busybox and command
 
 - Add quotas on a namespace and test it out
 
-
 set kube editor at nano
+
+* Manage lifecyle events
+
+- create a pod that can react to poststart and prestop
+
+- create a deamonset
+- create a statefulset

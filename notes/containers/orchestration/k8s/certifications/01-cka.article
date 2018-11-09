@@ -884,6 +884,10 @@ Other advanced functionality of the deployments are:
 - Proportional scaling
 - Pausing and resuming
 
+NOTE: If you tell a new deployment to point with labels to an existing rs and
+pods it will take control of the rs and will be able to manage it (scaling).
+If you do an upgrade, the new rs will have the correct naming convention.
+
 ** Job & CronJob
 
 - [[https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/]]

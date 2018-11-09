@@ -807,13 +807,24 @@ Services.https://multithreaded.stitchfix.com/blog/2016/03/16/engineers-shouldnt-
 
 Is a type of volume.
 
-You can define them and each path you define in the volume will be mapped in
-/etc/podinfo/<parh> inside the container.
+This allows you to have all the labels and annotations (?? more ??) accessible
+inside the pod. To do so you need to define them and each path you define in the
+volume will be mapped in /etc/podinfo/<parh> inside the container.
+
+all the element and annotation of the pod will have to me mounted in a file
+called "path"
 
 There are two files mounted on the pod:
 
 - /etc/podinfo/labels
 - /etc/podinfo/annotations
+
+There will be lines inside each file and each line will be a label/annotation.
+
+This is implemented via symlink. if you ls /etc/podinfo you can see them. the
+files are actually symlink to some files with a generated name. k8s update this
+file and change the symlink to update the file informations. this allow to
+refresh on the fly.
 
 ** ReplicationControllers (OBSOLETE)
 

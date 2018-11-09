@@ -886,7 +886,8 @@ Other advanced functionality of the deployments are:
 
 NOTE: If you tell a new deployment to point with labels to an existing rs and
 pods it will take control of the rs and will be able to manage it (scaling).
-If you do an upgrade, the new rs will have the correct naming convention.
+When you change the pod definition a new rs will be created with the correct
+naming convention this time.
 
 ** Job & CronJob
 

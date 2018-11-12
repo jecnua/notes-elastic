@@ -108,3 +108,4 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - how to show labels of a node?
 - how does nodeSelector work? problems?
 - how can you steer a pod towards or away from another pod?
+- what happens to pod already on a node when you taint them?

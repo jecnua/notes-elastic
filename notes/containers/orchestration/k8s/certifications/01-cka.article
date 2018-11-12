@@ -793,12 +793,22 @@ Plus the nodes will need to have ALL the labels in the pod selectors.
 *** Affinity and Anti-Affinity (BETA)
 
 - [[https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity]]
+- [[https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/]]
 
 Node Affinity/Anti-affinity: Steer the affinity towards a node. Is *soft* so it
 will if it can. For anti-affinity for nodes you need to use *taints*.
-To be surer a certain pod don't go to certain nodes you need to use tainte.
+To be surer a certain pod don't go to certain nodes you need to use taint.
 With taints you mark a node and only pods that have that tolerance can be
 assigned there.
+
+NOTE: The node controller will add specific taint when some conditions occur
+on nodes like:
+
+- memory-pressure
+- disk-pressure
+- out-of-disk
+
+When a node is tainted it won't remove the ones already running on that node.
 
 Pod Affinity/Anti-affinity: Steer towards/away from another pod.
 

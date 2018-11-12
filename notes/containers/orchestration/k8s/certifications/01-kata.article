@@ -186,7 +186,11 @@ set kube editor at nano
 
 - Create lyfecicle hook in a pod.
 
-* Pod node selector
+* Pod node selector, affinity and anti-affinity
 
 - label a node
 - use node selector
+- assign a pod to a nodes
+- taint a node
+- add a tolerance to the pod
+- assign pod to node

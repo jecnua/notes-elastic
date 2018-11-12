@@ -781,6 +781,27 @@ They both allow _cpu_ and _memory_ field. cpu is defined in _m_. 1000m is a vCPU
 So basically 250m is 1/4 of CPU and so on. memory is in Mi (megabytes). 64Mi means
 64 megabytes.
 
+** Scheduler manipulation via selectors and affinity
+
+*** Node selector
+
+nodeSelector work by attaching labels to nodes and then using selectors in the
+pod definition. However this choice is binding. If no nodes is available with
+that specific flag, the workload won't be allocated.
+Plus the nodes will need to have ALL the labels in the pod selectors.
+
+*** Affinity and Anti-Affinity (BETA)
+
+- [[https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity]]
+
+Node Affinity/Anti-affinity: Steer the affinity towards a node. Is *soft* so it
+will if it can. For anti-affinity for nodes you need to use *taints*.
+To be surer a certain pod don't go to certain nodes you need to use tainte.
+With taints you mark a node and only pods that have that tolerance can be
+assigned there.
+
+Pod Affinity/Anti-affinity: Steer towards/away from another pod.
+
 *** Probes
 
 There are two types of probes:
@@ -1132,8 +1153,8 @@ Each request goes through the following three stages:
 
 - [[https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/]]
 
-Pod can be aware on which steps they are of they lifecycle. There are two
-lifecyle hooks:
+Containers in a pod can be aware on which steps they are of they lifecycle.
+There are two lifecyle hooks:
 
 - PostStart
 - PreStop

@@ -185,3 +185,8 @@ set kube editor at nano
 * Lifecycle hook
 
 - Create lyfecicle hook in a pod.
+
+* Pod node selector
+
+- label a node
+- use node selector

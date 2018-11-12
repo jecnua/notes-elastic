@@ -104,3 +104,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - What do resource quotas allow you to manage?
 
 - what are the lifecycle events?
+
+- how to show labels of a node?
+- how does nodeSelector work? problems?
+- how can you steer a pod towards or away from another pod?

@@ -781,6 +781,22 @@ They both allow _cpu_ and _memory_ field. cpu is defined in _m_. 1000m is a vCPU
 So basically 250m is 1/4 of CPU and so on. memory is in Mi (megabytes). 64Mi means
 64 megabytes.
 
+The possible status phase of a pod are:
+
+- Pending
+- Running
+- Succeeded
+- Failed
+- Unknown
+
+Reastart policies are:
+
+- Always
+- On-failure
+- Never
+
+It's valid for all containers in a pod.
+
 ** Scheduler manipulation via selectors and affinity
 
 *** Node selector
@@ -827,9 +843,21 @@ It is defined by:
 - Liveness HTTP request: and http request (you can define custom headers)
 - TCP liveness probe
 
+If it returns failure, the control plane will kill the container and the restart
+policy will be applied. If this probe does not exists, the default value will be
+succeess.
+
+The usecase if kill and restart a container if the check fails.
+
 Readiness probe is a check to define when a pod can start accepting requests.
 A Pod that do not report ready status will not receive traffic from Kubernetes
-Services.https://multithreaded.stitchfix.com/blog/2016/03/16/engineers-shouldnt-write-etl/
+Services.
+
+If the readiness probe fails, the pod will be removed from the services to receive
+traffic. Default is failure.
+
+Readiness is used to create containers that taken themselves down. Send traffic
+only if this succeed.
 
 ** Downward API
 
@@ -1183,7 +1211,23 @@ They can be used by registering *hook*handlers*. They are:
 Hook delivery is *at*least*once* so you need to manage idempotency inside the
 function.
 
-** Authentication
+** Init containers
+
+- [[https://kubernetes.io/docs/concepts/workloads/pods/init-containers/]]
+
+Run before the app containers starts.
+Always run-to-completion
+Run serially and only when the one before them returns successfully (if not it
+will continuously restart the pod until it succeed)
+
+It is defined in the pod spec.
+
+They have a different namespace/isolation form the app containers. Among the usages:
+
+- include utilities or setup
+- block or delay the start of an app container
+
+* Authentication
 
 - [[https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies]]
 
@@ -1215,7 +1259,7 @@ Controller, which allows in-cluster processes to talk to the API server.
 
 Admission controllers can be used to enforce resource quotas.
 
-** Authorization
+* Authorization
 
 All API requests needs to be authorized. TO do so the request is validated by
 multiple authorization modules. It the evalation is successfull the request

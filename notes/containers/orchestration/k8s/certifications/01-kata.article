@@ -185,6 +185,8 @@ set kube editor at nano
 * Lifecycle hook
 
 - Create lyfecicle hook in a pod.
+- use postStart to change the index file
+- use init container to do the same
 
 * Pod node selector, affinity and anti-affinity
 
@@ -194,3 +196,9 @@ set kube editor at nano
 - taint a node
 - add a tolerance to the pod
 - assign pod to node
+
+* Probes
+
+add a readiness probe
+make it fail to see it removed from the service
+then set to true again

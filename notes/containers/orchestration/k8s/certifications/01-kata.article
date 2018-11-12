@@ -181,3 +181,7 @@ set kube editor at nano
 
 - create a deamonset
 - create a statefulset
+
+* Lifecycle hook
+
+- Create lyfecicle hook in a pod.

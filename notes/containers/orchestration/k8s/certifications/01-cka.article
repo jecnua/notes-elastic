@@ -1128,6 +1128,30 @@ Each request goes through the following three stages:
 - Authorization: Authorizes the API request added by the logged in user
 - Admission control: Some additional module that can modify or reject the request based on additional checks.
 
+** Lyfecycle hook
+
+- [[https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/]]
+
+Pod can be aware on which steps they are of they lifecycle. There are two
+lifecyle hooks:
+
+- PostStart
+- PreStop
+
+PostStart: Immediately after the container is created. No guaranteed it will be
+run BEFORE the entrypoint. No parameters can be passed.
+
+PreStop: Run immediately before the container terminates. Is *BLOCKING*. No
+parameters can be passed.
+
+They can be used by registering *hook*handlers*. They are:
+
+- Exec
+- HTTP
+
+Hook delivery is *at*least*once* so you need to manage idempotency inside the
+function.
+
 ** Authentication
 
 - [[https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies]]

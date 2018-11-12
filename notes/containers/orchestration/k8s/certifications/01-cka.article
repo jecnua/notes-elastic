@@ -26,8 +26,8 @@ CKA notes
 
 * The physical cluster
 
-At high level there are two types of servers: _masters_ and _nodes_. In HA there
-can be more than one master node but only one of them leader.
+At high level there are two types of roles: _masters_ and _nodes_. In HA there
+can be more than one master node but only one of them can be a _leader_.
 
         For fault tolerance purposes, there can be more than one master node in
         the cluster. If we have more than one master node, they would be in a HA
@@ -52,12 +52,11 @@ To disable swap on a node:
 
 and then remove it from the _/etc/fstab_ file.
 
-You could disable it by passing _--fail-swap-on=false_ but is not advised.
+You could disable this check by passing _--fail-swap-on=false_ but it's not
+advised.
 
     The kubelet now fails if swap is enabled on a node. To override the default
-    and run with /proc/swaps on, set --fail-swap-on=false. The experimental
-    flag --experimental-fail-swap-on is deprecated in this release, and will be
-    removed in a future release.
+    and run with /proc/swaps on, set --fail-swap-on=false.
     Source: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.8.md#before-upgrading
 
 - [[https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/]]

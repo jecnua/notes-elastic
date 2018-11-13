@@ -949,7 +949,14 @@ new spec! they need to die first.
 
 - [[https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/]]
 
-It's an object that select a ReplicSet.
+It's an object that select a ReplicSet. It can point to RC, RS or deployments.
+It can scale on two policies:
+
+- CPU Utilization
+- Custom-metrics
+
+To prevent trashing you can set a downscale delay and a upscale delay.
+Define intervals between successive operations of the same kind.
 
 ** DaemonSets
 

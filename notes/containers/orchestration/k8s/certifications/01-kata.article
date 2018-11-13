@@ -163,6 +163,9 @@ use busybox and command
 - create a deployment
 - do a change
 - rollaback the deployment
+- delete the deployment without affection the rs
+- delete the rs without affecting the pods
+- delete the pods
 
 * Job
 

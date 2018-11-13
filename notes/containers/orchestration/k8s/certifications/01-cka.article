@@ -931,6 +931,26 @@ NOTE: If you change the pod definition of a ReplicaSet nothing will happen. Only
 when one of the Pod dies the new one (and only this new one) will be the new
 version.
 
+The RS add the concept of _number_of_replicas_ and _self_healing_ to pods.
+Encapsulate a pod template definition inside their definition.
+You can also think it gives you scaling but you need to change the number manually.
+
+The RS selctors allows to match pods that the RS will work it. It allows loose
+coupling between the two.
+
+You can delete a rs without affecting the pod by using the command:
+
+    kubectl delete --cascade=false
+
+When you adopt pre-existing pods with a new rs, this won't be updated to the
+new spec! they need to die first.
+
+*** Horizontal pod autoscaler
+
+- [[https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/]]
+
+It's an object that select a ReplicSet.
+
 ** DaemonSets
 
 Will run a pod (and only one) at all times on each node of the cluster.
@@ -972,6 +992,8 @@ naming convention this time.
 
 In API version apps/v1, a Deployment’s label selector is immutable after
 it gets created.
+
+Versioning and rollback.
 
 ** Job & CronJob
 

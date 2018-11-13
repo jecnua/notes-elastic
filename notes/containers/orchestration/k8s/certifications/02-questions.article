@@ -97,6 +97,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 
 - what is the downward api?
 - what appens if you change the pod definition of a replicaset?
+- can you delete a replicaset without affecting the pod? how?
 
 - what is a job?
 - what is a cronjob?

@@ -16,6 +16,8 @@ CKA notes
 - headless service
 - how can the pod see in the env pod name and other info
 - downward api
+- pod presets
+- pod priority class
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -797,6 +799,17 @@ Reastart policies are:
 
 It's valid for all containers in a pod.
 
+** Priority
+
+Will impact the:
+
+- Scheduling order
+- Preemption: allows graceful termination period
+
+Also pod distruption budget.
+
+You need to create a priority object and add the class in the pod definition.
+
 ** Scheduler manipulation via selectors and affinity
 
 *** Node selector
@@ -830,14 +843,15 @@ Pod Affinity/Anti-affinity: Steer towards/away from another pod.
 
 *** Probes
 
+- [[https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes]]
+
 There are two types of probes:
 
 - Liveness
 - Readiness
 
 The *liveness*probe* checks on the application health. If the health check fails
-k8s will restart the pod.
-It is defined by:
+k8s will restart the container. It is defined by:
 
 - Liveness command: a command which return value will define the health
 - Liveness HTTP request: and http request (you can define custom headers)
@@ -845,7 +859,7 @@ It is defined by:
 
 If it returns failure, the control plane will kill the container and the restart
 policy will be applied. If this probe does not exists, the default value will be
-succeess.
+success.
 
 The usecase if kill and restart a container if the check fails.
 
@@ -854,10 +868,17 @@ A Pod that do not report ready status will not receive traffic from Kubernetes
 Services.
 
 If the readiness probe fails, the pod will be removed from the services to receive
-traffic. Default is failure.
+traffic. Default is failure unless is not provided (if it's not provided it's
+success).
 
 Readiness is used to create containers that taken themselves down. Send traffic
 only if this succeed.
+
+Google in their example have two endpoint in the container:
+
+    /started
+    /healthz
+
 
 ** Downward API
 

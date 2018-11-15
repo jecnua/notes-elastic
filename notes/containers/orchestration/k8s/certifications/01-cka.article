@@ -18,6 +18,8 @@ CKA notes
 - downward api
 - pod presets
 - pod priority class
+- Proportional scaling? for deployments?
+- batch jobs???
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -963,6 +965,7 @@ Define intervals between successive operations of the same kind.
 ** DaemonSets
 
 Will run a pod (and only one) at all times on each node of the cluster.
+You can however user label selector to restrict which nodes it will run on.
 
 ** StatefulSets
 
@@ -970,6 +973,18 @@ Is used to manage applications that requires an identity like name, network,
 strict ordering, etc.
 The StatefulSet controller provides identity and guaranteed ordering of
 deployment and scaling to Pods.
+
+These pods are not interchangeable. They have an _indentifier_ that maintains
+across any rescheduling.
+
+Ordered deployment, scaling, deletion, upgrade and termination. They are useful
+with apps that needs persistent storage. Stable unique network identifier.
+Storage MUST be persistant.
+
+Deleting a statefuset won't delete the volume.
+
+NUmbers from 0 to n-1 so they require a headless service.
+They will be deleted from n-1 to 0.
 
 ** Deployments
 
@@ -979,25 +994,31 @@ Deployments provide declarative updates to Pods and ReplicaSets (it manages Pods
 via ReplicaSets). The DeploymentController is part of the master node's
 controller manager.
 
-Modifying the Pod template will trigger a *Deployment*rollout* while operations
+Modifying the "Pod template" will trigger a *Deployment*rollout* while operations
 like scaling the deployment do not trigger this type of event.
 
 .image images/deployments.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
 Changes like these will create a new revision of the deployment and they will
-allow you to revert it via a *rollback* operation.
+allow you to revert it via a *rollback* operation. However when you roll back
+is the pod template part that is rolled back, not the other options like
+the number of pods.
+
+    kubectl rollout undo deployment <name>
+    #or
+    kubectl rollout undo deployment <name> --to-revision=2
 
 Other advanced functionality of the deployments are:
 
 - Autoscaling
 - Proportional scaling
-- Pausing and resuming (for example to fix bugs)
-- versioning
-- instant rollback
-- rolling deployments
-- blue-green
-- canary
+- Pausing and resuming (for example to fix bugs): When a deployment is paused changes to the pod spec do not cause a new deployment change
+- Versioning
+- Rollback
+- Rolling deployments
+- Blue-green
+- Canary
 
 NOTE: If you tell a new deployment to point with labels to an existing rs and
 pods it will take control of the rs and will be able to manage it (scaling).
@@ -1013,6 +1034,8 @@ You can pass:
 
 to create an history of all the commands you run on the cluster.
 
+    kubectl rollout history deployment <name>
+
 NOTE: BEWARE. You don't want the same pod to be managed by two deployments and
 there is no k8s check to tell you that you are doing it.
 
@@ -1026,7 +1049,7 @@ Other optnions:
 - progressDeadlineSeconds how long to wait before it is considered fails
 - minReadySeconds hoe many seconds to wait running with no container crasdhing to condier it Ready
 - rollbackTo
-- revisionHistoryLimit
+- revisionHistoryLimit (default to 10)
 - paused
 
 ** Job & CronJob
@@ -1037,11 +1060,26 @@ A job creates one or more Pods to perform a task. If a pod fails it will be
 restarted. Once the task is over all the pods are terminated. Is a one-job
 functionality.
 
+There are three types of jobs:
+
+- Non-parallel jobs: force one pod to run successfully
+- Parallel jobs with fixed competition count: job completes when x amount of pods complete successsfully.
+- Parallel jobs with work queue: required coordination
+
+After completition the state is set to terminated the pods are not delete
+(but not shown in get pods either). To show them you need to do:
+
+    kubectl show pods -a
+    # or
+    kubectl get pods --show-all
+
+You can set a deadline with the flag activeDeadlineSeconds field.
+
 - [[https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/]]
 - [[https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/]]
 
-A cron job is similar with the difference that the JOb will run always at a
-specific time.
+A cron job is similar with the difference that the Job will run always at a
+specific time. Is at least once.
 
 ** Service
 

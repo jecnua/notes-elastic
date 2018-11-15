@@ -918,6 +918,8 @@ specified number of replicas for a Pod is running at any given point in time.
 
 RC only supports equality-based selectors.
 
+It also had some functionality to do rolling upgrades.
+
 ** ReplicaSet
 
 - [[https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/]]
@@ -983,14 +985,19 @@ like scaling the deployment do not trigger this type of event.
 .image images/deployments.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
-Deployments keep a recording of these events and if something goes wrong you
-can always revert it via a *rollback* operation.
+Changes like these will create a new revision of the deployment and they will
+allow you to revert it via a *rollback* operation.
 
 Other advanced functionality of the deployments are:
 
 - Autoscaling
 - Proportional scaling
-- Pausing and resuming
+- Pausing and resuming (for example to fix bugs)
+- versioning
+- instant rollback
+- rolling deployments
+- blue-green
+- canary
 
 NOTE: If you tell a new deployment to point with labels to an existing rs and
 pods it will take control of the rs and will be able to manage it (scaling).
@@ -1000,7 +1007,27 @@ naming convention this time.
 In API version apps/v1, a Deployment’s label selector is immutable after
 it gets created.
 
-Versioning and rollback.
+You can pass:
+
+    -- record
+
+to create an history of all the commands you run on the cluster.
+
+NOTE: BEWARE. You don't want the same pod to be managed by two deployments and
+there is no k8s check to tell you that you are doing it.
+
+Strategy for updates:
+
+- Recreate: All pods will be killed before creating the new ones
+- RollingUpdate: (default) You can set _maxUnavailable_ and _maxSurge_
+
+Other optnions:
+
+- progressDeadlineSeconds how long to wait before it is considered fails
+- minReadySeconds hoe many seconds to wait running with no container crasdhing to condier it Ready
+- rollbackTo
+- revisionHistoryLimit
+- paused
 
 ** Job & CronJob
 

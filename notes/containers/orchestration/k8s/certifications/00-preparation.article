@@ -1,5 +1,5 @@
 Certified Kubernetes Administrator (CKA) cert preparation
-|| Last update: 5 Nov 2018
+|| Last update: 22 Nov 2018
 
 * Intro
 
@@ -198,9 +198,9 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 
 ** Paid
 
-- GOOD - MID/ADV - [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]] - Linux Academy fee
-- GOOD - INT - [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video306747][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]] - Safaribook fee
-- X - X - [[https://www.udemy.com/kubernetes-cka-on-cloud/]] £100 or on safari [[https://www.safaribooksonline.com/videos/kubernetes-on-the/9781789531565]] safari fee
+- MID/ADV - [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]] - Linux Academy fee
+- INT - [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video306747][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]] - Safaribook fee
+- INT/MID - [[https://www.udemy.com/kubernetes-cka-on-cloud/]] £100 or on safari [[https://www.safaribooksonline.com/videos/kubernetes-on-the/9781789531565]] safari fee
 - [[https://www.safaribooksonline.com/videos/oscon-2017/9781491976227/9781491976227-video309380][Kubernetes hands-on - Kelsey Hightower (Google) - Part 2]] - Safaribook fee
 - [[https://www.pluralsight.com/courses/getting-started-kubernetes]] - Pluralsight fee (or 10 days trial)
 - [[https://training.linuxfoundation.org/linux-courses/system-administration-training/kubernetes-fundamentals]] - $299
@@ -208,7 +208,9 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 
 ** Books
 
-- [[http://shop.oreilly.com/product/0636920043874.do][Kubernetes: Up and Running]]
+- [[https://www.safaribooksonline.com/library/view/cloud-native-devops/9781492040750/][Cloud Native DevOps with Kubernetes]] - February 2019
+- [[https://www.safaribooksonline.com/library/view/managing-kubernetes/9781492033905/][Managing Kubernetes]] - November 2018
+- [[http://shop.oreilly.com/product/0636920043874.do][Kubernetes: Up and Running]]-  September 2017
 
 * Re/Sources
 

@@ -4,7 +4,7 @@ NodeJS
 * Facts
 
 Node.js is an event-driven, non-blocking, single-threaded JavaScript runtime environment.
-Created in [[https://www.youtube.com/watch?v=EeYvFl7li9E][2009 by Ryan Dahl]] on top of 
+Created in [[https://www.youtube.com/watch?v=EeYvFl7li9E][2009 by Ryan Dahl]] on top of
 Googlev8 to run javascript server side.
 The backend of nodejs is written in C.
 
@@ -12,39 +12,39 @@ The backend of nodejs is written in C.
 
 Node.js' concurrency model for handling I/O operations is based on callback functions.
 
-        Node.js is an event-based platform. This means that everything that happens 
-        in Node is the reaction to an event. A transaction passing through Node 
+        Node.js is an event-based platform. This means that everything that happens
+        in Node is the reaction to an event. A transaction passing through Node
         traverses a cascade of callbacks.
         Source: https://medium.com/the-node-js-collection/what-you-should-know-to-really-understand-the-node-js-event-loop-and-its-metrics-c4907b19da4c
 
-In Node's architecture, this event-driven model is provided by a mechanism called the 
+In Node's architecture, this event-driven model is provided by a mechanism called the
 event loop. The event loop is what allows Node.js to handle high throughput I/O operations and it's
 implemented by a multi-platform C library called [[https://github.com/libuv/libuv][libuv]].
 
-Hundreds of connections will only mean hundreds of socket or state objects, 
+Hundreds of connections will only mean hundreds of socket or state objects,
 and not hundreds of processes or threads as used in other programming languages.
 
-        Nginx, similar to Node.js, is single-threaded but event-driven and also 
-        uses an event loop to handle multiple requests in a single thread. Its 
-        event loop is used to handle requests for slow I/O operations without 
+        Nginx, similar to Node.js, is single-threaded but event-driven and also
+        uses an event loop to handle multiple requests in a single thread. Its
+        event loop is used to handle requests for slow I/O operations without
         blocking the main thread of execution.
 
-NodeJS will use it's thread pool (libuv managed) only when it has no other choices. 
+NodeJS will use it's thread pool (libuv managed) only when it has no other choices.
 As much as possible it will use the kernel asynch events.
 [[http://man7.org/linux/man-pages/man7/aio.7.html][Not all I/O tasks will be managed by the thread pool]].
-If possible the system will use asynch interface in the kernel instead.     
+If possible the system will use asynch interface in the kernel instead.
 UV_THREADPOOL_SIZE default is 4.
 
 * The Event Loop
 
 - [[https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/]]
 
-Ut is a semi-infinite loop that performs polling and blocking calls to the 
-system kernel until one of the operations is completed. The kernel will notify 
+Ut is a semi-infinite loop that performs polling and blocking calls to the
+system kernel until one of the operations is completed. The kernel will notify
 Node.js when an operation is completed so that its corresponding callback
 function may be added to Node's poll queue for eventual execution.
 
-        When one of these operations completes, the kernel tells Node.js so 
+        When one of these operations completes, the kernel tells Node.js so
         that the appropriate callback may be added to the poll queue to eventually
         be executed.
 
@@ -68,7 +68,7 @@ For each run:
 - Set Immediate - setImmediate() callbacks
 - Close - on(close) callbacks
 
-The queue is FIFO. It will execute all the callbacks ready or 
+The queue is FIFO. It will execute all the callbacks ready or
 until the max number is reached.
 
 * Deep dive into the system
@@ -116,11 +116,11 @@ use *uv* thread pool to manage it for you
 
 * What is the event loop
 
-    A semi-finite loop, polling and blocking on the 
+    A semi-finite loop, polling and blocking on the
     O/S until some in a set of fd are ready.
-    - Sam Roberts, IBMs 
+    - Sam Roberts, IBMs
 
-It exits when it no longer has any events to wait for, at which point 
+It exits when it no longer has any events to wait for, at which point
 the loop must complete.
 
 node exists when there is nothing to wait for in the epoll loop.
@@ -189,6 +189,37 @@ Should finish soon. Not hunders of millisends, if it is you may have blocking ca
 * Performances
 
 NodeJS scales well because it uses LOW resources per connections thanks to this method.
+
+* Private repo
+
+https://medium.com/engenharia-noalvo/ways-to-have-your-private-npm-registry-and-a-final-diy-solution-eed001a88e74
+
+- Nexus 3 https://help.sonatype.com/repomanager3/node-packaged-modules-and-npm-registries
+- Verdaccio: no scale. no HA.
+- Sinopia (abandoned)
+- https://github.com/cnpm/cnpmjs.org: chinese? Simple File Store Service?
+- https://github.com/jdxcode/npm-register
+
+** Verdaccio
+
+verdaccio/sinopia is not yet cluster ready https://github.com/verdaccio/verdaccio/issues/103
+High availability using ECS cluster https://github.com/verdaccio/verdaccio/issues/1089
+https://github.com/helm/charts/blob/master/stable/verdaccio/templates/deployment.yaml
+
+https://survivejs.com/blog/verdaccio-interview/
+SurviveJS
+Verdaccio - A lightweight npm proxy registry - Interview with Juan Picado
+If you develop JavaScript applications, you most likely use npm, the most famous package manager av…
+Scale: Verdaccio v2 is file system based and that’s a problem if you want to scale, since Javascript is single thread and Node.js only uses one core for each process, a file system does not allow to scale properly. In v3, we are shipping the possibility to replace the default storage with a custom one, either in the cloud (Firebase, Google Cloud or Amazon S3) or any NoSQL database like CouchDB or MongoDB.
+https://github.com/verdaccio/verdaccio/issues/475
+GitHub
+Create storage plugin for CouchDB · Issue #475 · verdaccio/verdaccio
+https://www.npmjs.com/package/nano Exist an old implementation here: https://github.com/verdaccio/verdaccio/tree/storage_pluggable Example: https://github.com/verdaccio/verdaccio-memory https://git...
+
+https://github.com/Remitly/verdaccio-s3-storage
+https://github.com/asynchrony/docker-verdaccio-s3
+
+https://github.com/Remitly/verdaccio-s3-storage/issues/6
 
 * Re/Sources
 

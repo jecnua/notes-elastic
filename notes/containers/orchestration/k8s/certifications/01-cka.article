@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 8 Nov 2018
+|| Last update: 22 Nov 2018
 
 * To clarify
 
@@ -20,6 +20,8 @@ CKA notes
 - pod priority class
 - Proportional scaling? for deployments?
 - batch jobs???
+- are pod ip in statefulset static?
+- Search for QUESTION
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -1097,24 +1099,42 @@ A service groups pods using Labels and Selectors and load-balance traffic access
 to them. The service lifespan is decoupled from the pods. Coupling is loose.
 You can define the port the service is going to listen to and the _targetPort_
 (the port the container is listening to). A tuple of Pods IP addresses along
-with the targetPort is referred to a *Service*endpoint*.
+with the targetPort is referred to a service *endpoint*.
+
+    $ kubectl get endpoints --all-namespaces
+    NAMESPACE     NAME                      ENDPOINTS             AGE
+    default       kubernetes                192.168.39.107:8443   26s
+    kube-system   default-http-backend      172.17.0.4:8080       16s
+    kube-system   kube-controller-manager   <none>                24s
+    kube-system   kube-dns                  <none>                18s
+    kube-system   kube-scheduler            <none>                24s
+    kube-system   kubernetes-dashboard      172.17.0.3:9090       16s
+
+Each service is associated with a endpoint object. It is a dynamic list of all
+the pods that are selected by a service label selector at any point in time.
 
 An IP is attached to the service in a different CIDR of the Pods and it's called
 ClusterIP.
 
-*kube-proxy* is a *network*proxy* which runs on every worker node and listens
+QUESTION: How do you choose this two CIDR sets?
+
+kube-proxy is a network proxy which runs on every worker node and listens
 on the API server (only - no scheduler or controller manager) for each service
 endpoint change. For each service it sets up an
 iptable rule to capture the traffic for it's ClusterIP and forwards it to one
-of the _sendpoints_.
+of the _endpoints_.
 
 Some of the service type are:
 
-- ClusterIP (default): Access allowed only from inside the cluster
-- NodePort: Will open the same port (30000 - 32767) on every node and accept traffic from there
-- LoadBalancer: Only works on a cloud env and will create a lb on the cloud provider, open a random port on every node and accept traffic there
+- ClusterIP: (default) Static lifetime IP only accessible from within the cluster
+- NodePort: The service is exposed on each node on a static port in the range 30000-32767
+- LoadBalancer: Only works in a cloud env and will create a lb on the cloud provider, open a random port on every node and accept traffic
+- ExternalName: Map service to an external endpoint residing outside the cluster. Has no selector and define no endpoint. It returns a CNAME of an external service.
 - ExternalIP: NOT MANAGED BY KUBERNETES (???)
-- ExternalName: Is a special type of service that has no selector and define no endpoint. It returns a CNAME of an external service.
+
+ClusterIP is a way to associate a *Virtual*IP* (VIP) to a service. The kube-proxy
+will manage the traffic. They represent a standard stable network overview of
+the system.
 
 NodePort created a ClusterIP anyway.
 LoadBalancer will create a ClusterIP AND open a random node port to attach to the LB.
@@ -1123,8 +1143,8 @@ NOTE: Giving the _port_ a name is very useful because it decouples pod and servi
 definition. You will be able to change the port you are listening to in the pod
 without changing the service if you keep the same name!
 
-We can have a service for which Kubernetes does not provide a ClusterIP.
-[[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services]]
+We can have a service for which Kubernetes does not provide a ClusterIP and we
+call it [[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services][headless]].
 
 *** Service discovery
 

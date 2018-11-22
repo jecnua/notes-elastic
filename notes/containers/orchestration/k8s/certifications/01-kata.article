@@ -1,5 +1,5 @@
 Kata: Certified Kubernetes Administrator (CKA) cert preparation
-|| Last update: 5 Nov 2018
+|| Last update: 22 Nov 2018
 
 * Kata
 
@@ -121,6 +121,7 @@ Query the API
 - create a nodePort service
 - check that nginx is running
 - create an headless service
+- create a service with no selectors
 
 * probes
 

@@ -1,5 +1,5 @@
 Questions: Certified Kubernetes Administrator (CKA) cert preparation
-|| Last update: 5 Nov 2018
+|| Last update: 22 Nov 2018
 
 * To prepare for the test
 
@@ -54,6 +54,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - How many type of services there are?
 - why using a name when defining the ports?
 - can service without ClusterIP be created?
+- can you create a service with no selectors? what happens?
 
 - what types of PV there are?
 - what is the difference between PV and PVC?

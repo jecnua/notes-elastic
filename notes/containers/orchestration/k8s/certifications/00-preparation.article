@@ -208,9 +208,11 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 
 ** Books
 
+From newest to oldest:
+
 - [[https://www.safaribooksonline.com/library/view/cloud-native-devops/9781492040750/][Cloud Native DevOps with Kubernetes]] - February 2019
 - [[https://www.safaribooksonline.com/library/view/managing-kubernetes/9781492033905/][Managing Kubernetes]] - November 2018
-- [[http://shop.oreilly.com/product/0636920043874.do][Kubernetes: Up and Running]]-  September 2017
+- [[http://shop.oreilly.com/product/0636920043874.do][Kubernetes: Up and Running]] - September 2017
 
 * Re/Sources
 
@@ -218,7 +220,7 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 - [[https://linuxacademy.com/community/posts/show/topic/25094-cka-exam-experience-and-some-useful-tips]]
 - [[https://linux.xvx.cz/2018/04/cka-kubernetes-certified-administrator.html]] - 19 April, 2018
 - [[https://medium.com/akena-blog/k8s-admin-exam-tips-22961241ba7d]] - 7 Mar 2018
-- [[https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/]] -
+- [[https://www.componentsoft.io/blog/the-kubernetes-cka-exam-11-tips-for-better-chances/]]
 - [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 - [[https://medium.com/@ikaboubi/my-feedback-about-cka-and-ckad-e82a35585fe9]]
 - [[https://www.reddit.com/r/kubernetes/comments/95k033/passed_the_cka_after_failing_it_twice_amaa/]]

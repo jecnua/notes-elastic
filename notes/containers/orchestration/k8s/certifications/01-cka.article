@@ -1182,8 +1182,40 @@ The DNS name is in the form of:
 
 In the same namespace services can be referred by the service name only. If you
 are on a different namespace you need to define the namespace too.
+For headless services, a DNS resolution will resolve all the pods ip (endpoint).
 
-The DNS add-on also support SRV queries.
+You can define the hostname and subdomain of your service in the Pod
+definition. [[https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/]]
+
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: busybox2
+      labels:
+        name: busybox
+    spec:
+      hostname: busybox-2
+      subdomain: default-subdomain
+      containers:
+      - image: busybox
+        command:
+          - sleep
+          - "3600"
+        name: busybox
+
+The pod DNS policy (how the pod access the world) can be:
+
+- Default: Inherit the node settings
+- ClusterFirst: If the dns does not conform to the cluster domain suffix, it will be resolved with the upstream name server inherited from the node
+- ClusterFirstWithHostNet: (only with host network = true) App can see the NIC of the host machine
+- None: Ignore DNS setting of the kubernetes env
+
+The DNS add-on also support SRV queries. A DNS SRV will be created for all
+named ports of a service.
+
+    <portname>.<portprotocol>.<servicename>.<namespace>.svc.cluster.local
+
+Given port name, the port number is returned.
 
 ** Ingress
 

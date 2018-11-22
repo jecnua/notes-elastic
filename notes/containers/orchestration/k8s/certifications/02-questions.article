@@ -47,7 +47,7 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - Name two types of authorizers
 - what do you use to enforce resource quota?
 
-- WHat are services?
+- What are services?
 - how do they work?
 - what mechanism of service discovery does k8s implements?
 - in what for is the dns name?
@@ -55,6 +55,9 @@ Questions: Certified Kubernetes Administrator (CKA) cert preparation
 - why using a name when defining the ports?
 - can service without ClusterIP be created?
 - can you create a service with no selectors? what happens?
+- Can you expose multiple ports? what do you need to do in this case?
+- Can you use SRV?
+- what are ther limitation of using env variable for services?
 
 - what types of PV there are?
 - what is the difference between PV and PVC?

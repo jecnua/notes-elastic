@@ -122,6 +122,8 @@ Query the API
 - check that nginx is running
 - create an headless service
 - create a service with no selectors
+- expose multiple ports
+- Test SRV DNS
 
 * probes
 

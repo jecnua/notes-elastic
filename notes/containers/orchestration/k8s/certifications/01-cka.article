@@ -21,6 +21,7 @@ CKA notes
 - Proportional scaling? for deployments?
 - batch jobs???
 - are pod ip in statefulset static?
+- proxy-mode
 - Search for QUESTION
 
 * Kubernetes course: CKA certified kubernetes administrator
@@ -245,7 +246,14 @@ Different controllers depending on the tasks:
 - route controller
 - volume controller
 
-The control plane maintains a record of all k8s objects and run a continous
+Different controllers runs inside a cloud controller:
+
+- node controller
+- route controller
+- service controller
+- volume controller
+
+The control plane maintains a record of all k8s objects and run a continuous
 control loop to manage the object state.
 
 It will react to changes in the system and make sure the desired state match the
@@ -1130,11 +1138,16 @@ Some of the service type are:
 - NodePort: The service is exposed on each node on a static port in the range 30000-32767
 - LoadBalancer: Only works in a cloud env and will create a lb on the cloud provider, open a random port on every node and accept traffic
 - ExternalName: Map service to an external endpoint residing outside the cluster. Has no selector and define no endpoint. It returns a CNAME of an external service.
-- ExternalIP: NOT MANAGED BY KUBERNETES (???)
 
 ClusterIP is a way to associate a *Virtual*IP* (VIP) to a service. The kube-proxy
 will manage the traffic. They represent a standard stable network overview of
 the system.
+
+- [[https://kubernetes.io/docs/tutorials/stateless-application/expose-external-ip-address/]]
+
+You can define externalIPs in the spec of any type of service. If incoming network
+traffic has this IP has the destination and arrives to one of the service ports
+then it will be routed to one of the service endpoint.
 
 NodePort created a ClusterIP anyway.
 LoadBalancer will create a ClusterIP AND open a random node port to attach to the LB.
@@ -1146,12 +1159,22 @@ without changing the service if you keep the same name!
 We can have a service for which Kubernetes does not provide a ClusterIP and we
 call it [[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services][headless]].
 
+A service can expose multiple ports, but in this case they need to be named.
+
+*** Kube proxy
+
+- [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
+
+proxy-mode userspace
+proxy-mode iptables (default)
+proxy-mode ipvs added (added in 1.8.0)
+
 *** Service discovery
 
 k8s supports two methods of discovering a service:
 
-- Environment variable: As soon as the pods start, env variable withh all the existing services are added.
-- DNS (reccomended): The add-on will create a DNS record for each Service
+- DNS (recommended): The DNS add-on will create a DNS record for each Service
+- Environment variable: As soon as the pods start, env variable with all the existing services are added. They are *not*updated* after pod creation.
 
 The DNS name is in the form of:
 
@@ -1159,6 +1182,8 @@ The DNS name is in the form of:
 
 In the same namespace services can be referred by the service name only. If you
 are on a different namespace you need to define the namespace too.
+
+The DNS add-on also support SRV queries.
 
 ** Ingress
 

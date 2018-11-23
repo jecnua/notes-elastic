@@ -470,8 +470,12 @@ It is not secure. The certificate is not verified by default and is vulnerable t
 man in the middle attach. Don't run them on public network. Possible solutions are:
 use the flag --kubelet-certificate-authority or do an ssh tunnel.
 
-Communiactions to  nodes/pods/services are totally unsafe because they are plain
+Communications to  nodes/pods/services are totally unsafe because they are plain
 http (neither authenticated or encrypted). Possible solution ssh tunneling.
+
+** Certificates in kubernetes
+
+TBD
 
 * The kubelet
 

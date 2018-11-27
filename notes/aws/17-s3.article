@@ -1,0 +1,23 @@
+s3
+|| Last update: 27 Nov 2018
+
+* Storage classes
+
+- Standard – Designed for frequently accessed data.
+- Standard-IA – Designed for long-lived, infrequently accessed data.
+- One Zone-IA – Designed for long-lived, infrequently accessed, non-critical data.
+- Glacier – Designed for long-lived, infrequent accessed, archived critical data.
+- Reduced Redundancy (deprecated/not recommended): Use One Zone-IA instead
+- Intelligent-Tiering
+
+** Intelligent-Tiering
+
+- [[https://aws.amazon.com/blogs/aws/new-automatic-cost-optimization-for-amazon-s3-via-intelligent-tiering/]]
+
+    This storage class incorporates two access tiers: frequent access and
+    infrequent access. Both access tiers offer the same low latency as the
+    Standard storage class.
+    [...]
+    moves objects that have not been accessed for 30 consecutive days to the
+    infrequent access tier. If the data is accessed later, it is automatically
+    moved back to the frequent access tier.

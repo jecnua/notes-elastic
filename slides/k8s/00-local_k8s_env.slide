@@ -1,5 +1,5 @@
 Local k8s environment (minikube)
-Fabrizio Sabatini || Last update: 5 Nov 2018
+Fabrizio Sabatini || Last update: 27 Nov 2018
 
 * Disclaimer
 
@@ -103,6 +103,12 @@ Start a new machine:
     minikube start --network-plugin=cni --container-runtime=cri-o
     minikube status
     kubectl config use-context minikube # switch context to minikube
+
+* (Optional: ONLY KVM)
+
+- https://virt-manager.org/download/
+
+You can install _virt-manager_ to have a GUI for all libvirt managed vms.
 
 * Use alternative runtimes
 

@@ -199,12 +199,17 @@ set kube editor at nano
 - label a node
 - use node selector
 - assign a pod to a nodes
-- taint a node
-- add a tolerance to the pod
-- assign pod to node
+
+* Taints
+
+Crate, list, add, tolerate, remove.
 
 * Probes
 
 add a readiness probe
 make it fail to see it removed from the service
 then set to true again
+
+* Certs
+
+- Change certificate for a kubelet (like if it expired)

@@ -475,7 +475,75 @@ http (neither authenticated or encrypted). Possible solution ssh tunneling.
 
 ** Certificates in kubernetes
 
-TBD
+- [[https://www.youtube.com/watch?v=gXz4cq3PKdg][Certifik8s: All You Need to Know About Certificates in Kubernetes [I] - Alexander Brand, Apprenda]]
+
+Certificates allow party in a conversation to authenticate each other.
+For example use a third party both can trust (CA). CA issue cert for all these
+party.
+
+API server is the only component that talks to ETCD.
+
+All interaction with it needs to be secure.
+
+1) We need to create a cluster certificate authority. It needs to be the
+*trusted*root* throughout the cluster. All the cert in the cluster need to be
+signed by this CA. This way went the receive a cert than can check it's signed
+by the CA and trust it.
+
+NOTE: For HA (multiple API server) you want to be sure the IPs of the LB and the
+DNS is part of the certificate Subject Alternative Name (SAN) field. Otherwise
+They are going to complain. Each master has it's own cert.
+
+2) First thing to secure is the API server. We need to protect the https. Flag
+are --tsl-cert-file and --tls-private-key-file.
+
+3) Kubelet api (internal private api) needs to be secured. Kubelet exposes an
+HTTPDS api. Consumed by API server to get logs, metrics, exec, etc.
+Is also protected by authentication and authorization. Also client (the api
+server) needs to have a client cert.
+
+X.509 Client Cert Authentication
+
+Is the strategy for authenticating requests that present a client certificate.
+Used by k8s components but also end users. Any request that present a clietn
+certificate signed by the Cluster CA is authenticated. User is obtained from
+*Common*Name*(CN)* field. Groups are obtained from *Organization*field*.
+User information and group memebership!
+
+Each component will have a different cert because they will have a different
+access to the cluster. So they have their own identify. Only kubelet have an
+organization and the hostname is part of the certificate.
+You want to make sure that each node (kubelet) in the cluster have it's own
+identity. This different treatment will allow you to user specific things like
+*Node*authorizationzer* and *Node*Restriction*Admission*Plugin*. Limit access to
+the cluster from the kubelet. Without, the kubelet would be able to change any
+resource of the cluster via API. So basically limits the read/write access to the
+resources that are related to the node itself and pods bound to the node.
+
+- Controller manager, common name: system:kube-controller-manager
+- Scheduler, common name: system:kube-scheduler
+- Kube Proxy, common name: system:kube-proxy
+- Kubelet, common name: system:node:${hostname}, Organization: system:nodes
+
+Options:
+
+- Manually create it
+- There is a certificate generation API
+
+kubelet need a client cert to speak with the API and a cert for it's own api.
+The kubelet CAN request a certificate as it starts up. This is build on top of
+the Certficate API and bootstrap token authenticator.
+
+- [[https://github.com/apprenda/kismatic]] To look at
+
+*** certificates.k8s.io
+
+The API is certificates.k8s.io/v1beta1. Clients create a ccertifiate signing
+requesr and send it to the API. The requesting user is stored in the CSR.
+They remain pending until approved by the admin. Cert is issued once the CSR
+is approved.
+
+The controller manager signs the cert so it needs access to the CA private key.
 
 * The kubelet
 

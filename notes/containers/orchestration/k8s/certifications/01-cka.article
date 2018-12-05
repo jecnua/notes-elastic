@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 22 Nov 2018
+|| Last update: 5 Dec 2018
 
 * To clarify
 
@@ -30,6 +30,13 @@ CKA notes
 
 .image images/k8s_high_level.png _ 700
 .caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
+
+Kubernetes is all about decoupling services. Based on 15 years of experience at
+google building Borg. Communication from outside or internal services is API
+driven. All configuration is saved in JSON format but often users write it in
+YAML. k8s will transform it in json before sending it to the API.
+
+- [[https://ai.google/research/pubs/pub43438][Borg paper]]
 
 * The physical cluster
 
@@ -259,10 +266,13 @@ control loop to manage the object state.
 It will react to changes in the system and make sure the desired state match the
 expected one.
 
-** apiserver
+** kube-apiserver
 
-The apiserver is the entrypoint to all k8s commands. As long as you have access
-to the node and the right credentials, you can query the api.
+- [[https://kubernetes.io/docs/admin/kube-apiserver/]]
+
+Kubernetes exposes an API via the kube-apiserver.
+The apiserver is the entrypoint to all k8s interactions. As long as you have
+access to the node and the right credentials, you can query the api.
 
 The HTTP API space of k8s can be divided into three independent groups:
 
@@ -292,8 +302,8 @@ proxy port.
 We can see three major components.
 Each individual _non-master_ node runs two processes:
 
-- kubelet: [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the controller node
-- kube-proxy: [[https://kubernetes.io/docs/admin/kube-proxy/]] : A network proxy which reflects the kubernetes networking services on each node 
+- kubelet: [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the api, run containers, manage resouces and watches over status.
+- kube-proxy: [[https://kubernetes.io/docs/admin/kube-proxy/]] : A network proxy which reflects the kubernetes networking services on each node by managing network rules 
 
 It will also need a container runtime like:
 
@@ -351,7 +361,7 @@ You can also use it as a selector:
 
 Annotations are used to attach arbitrary *non-identifying*metadata* to object
 in a key-value format. Tools can retrieve this metadata to implement additional
-functionality.
+functionality. They cannot be used by kubernetes commands.
 
 The metadata in an annotation can be small or large, structured or unstructured,
 and can include characters not permitted by labels. They can be larger than
@@ -845,8 +855,9 @@ Unit of deployment. Is a logical collection of one or more containers. They
 share:
 
 - Host (same node)
-- Network namespace
-- Mounts (they mount the same external storage (volumes))
+- Network namespace (IP address and ports)
+- Mounts (they mount the same external storage - volumes)
+- Namespace
 
 Pods are *ephemeral*. They are not able to self-heal. It's up to _controllers_
 to handle pod replication and fault tolerance.
@@ -909,7 +920,10 @@ Plus the nodes will need to have ALL the labels in the pod selectors.
 
 - [[https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/]]
 
-    $ kubectl explain pods.spec.tolerationsk
+Nodes can have taints to discourage Pods assignment on that specific node.
+They only way for a pod to the scheduled there is with tolerations.
+
+    $ kubectl explain pods.spec.tolerations
 
 if the key is correct and exists but different taint, no effect
 if you use exists you don't need a value

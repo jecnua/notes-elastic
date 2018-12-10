@@ -1,0 +1,20 @@
+Postgress
+|| Last update: 10 Dec 2018
+
+* Password
+
+- [[https://stackoverflow.com/questions/6405127/how-do-i-specify-a-password-to-psql-non-interactively]]
+
+Two ways: creating a ~/.pgpass or via ENV.
+
+** pgpass
+
+pgpass file:
+
+    hostname:port:database:username:password
+
+** env
+
+Via env:
+
+    PGPASSWORD=pass1234 psql -U MyUsername myDatabaseName

@@ -1,17 +1,35 @@
-Lambda
-|| Last update: 07 Aug 2018
+AWS Lambda
+|| Last update: 10 Dec 2018
+
+* Triggering
+
+- [[https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html]]
+
+You can now trigger a lambda from an ALB.
+
+    You can register your Lambda functions as targets and configure a listener
+    rule to forward requests to the target group for your Lambda function. When
+    the load balancer forwards the request to a target group with a Lambda
+    function as a target, it invokes your Lambda function and passes the content
+    of the request to the Lambda function, in JSON format.
+    Source: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html
 
 * Logging
 
-    Whenever you write to the stdout from your Lambda function, it ends up in the function’s Log Group in CloudWatch Logs.
-    To ship your logs from CloudWatch Logs to ELK you can subscribe the Log Group to a cloudwatch-logs-to-elk function that
-    is responsible for shipping the logs. it’s better to setup a rule in CloudWatch Events to invoke a subscribe-log-group
+    Whenever you write to the stdout from your Lambda function, it ends up in
+    the function’s Log Group in CloudWatch Logs.
+    To ship your logs from CloudWatch Logs to ELK you can subscribe the Log
+    Group to a cloudwatch-logs-to-elk function that
+    is responsible for shipping the logs. it’s better to setup a rule in
+    CloudWatch Events to invoke a subscribe-log-group
     Lambda function to set up the subscription for new Log Groups.
     2 things to keep in mind:
-    lots services create logs in CloudWatch Logs, so you’d want to filter Log Groups by name, Lambda function logs have the
-    prefix /aws/lambda/ don’t subscribe the Log Group for the cloudwatch-logs-to-elk function (or whatever you decide to
-    call it), otherwise you create an infinite loop for the cloudwatch-logs-to-elk function where its own logs will trigger
-    itself and produce more logs and so on
+    lots services create logs in CloudWatch Logs, so you’d want to filter Log
+    Groups by name, Lambda function logs have the
+    prefix /aws/lambda/ don’t subscribe the Log Group for the cloudwatch-logs-to-elk
+    function (or whatever you decide to
+    call it), otherwise you create an infinite loop for the cloudwatch-logs-to-elk
+    function where its own logs will trigger itself and produce more logs and so on
     - https://theburningmonk.com/2017/03/yubls-road-to-serverless-architecture-part-3/
 
 More:

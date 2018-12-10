@@ -1,6 +1,14 @@
 AWS Lambda
 || Last update: 10 Dec 2018
 
+* Runtimes
+
+- [[https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html]]
+- [[https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html]]
+- [[https://aws.amazon.com/lambda/partners/]]
+
+You can use one of the supported languages or build your own runtime.
+
 * Triggering
 
 - [[https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html]]
@@ -44,7 +52,7 @@ More:
 
 * Metrics
 
-- https://www.datadoghq.com/blog/monitoring-lambda-functions-datadog/
+- [[https://www.datadoghq.com/blog/monitoring-lambda-functions-datadog/]]
 
 Of course, you can employ both approaches in your architecture and use the appropriate one for each situation:
 
@@ -53,15 +61,14 @@ for other functions (cron jobs, kinesis processors, etc.) where invocation durat
 
 * Tracing
 
-- https://github.com/serverless/serverless/issues/3495
+- [[https://github.com/serverless/serverless/issues/3495]]
 
 Additionally, you might wish to pass along other useful contextual information (such as payment ID, tournament ID, etc.) about the request to downstream services. Otherwise they would only appear in log messages from services where they originated from.
 
 - x-ray
 - tracing for telling startup time
 
-turns it on by default
-and you can wrap certain calls
+turns it on by default and you can wrap certain calls
 
 * External advices
 
@@ -93,9 +100,9 @@ In lambda you don't know it failed you need to know when you fail - wait timeout
 
 * Synch or asynch
 
-Some types of lambda are synch and some are asynch. If you want use functionality of the asynch version (like dead letter queue)
-for the synch you can change one in another.
-In python you can do it this way:
+Some types of lambda are synch and some are asynch. If you want use functionality
+of the asynch version (like dead letter queue) for the synch you can change one
+in another. In python you can do it this way:
 
 At the start of the lambda:
 

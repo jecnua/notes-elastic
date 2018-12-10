@@ -38,6 +38,9 @@ YAML. k8s will transform it in json before sending it to the API.
 
 - [[https://ai.google/research/pubs/pub43438][Borg paper]]
 
+Orchestration is managed by controllers (a series of watch-loops). All of them
+interrogates the API server for a particular object state and act accordingly.
+
 * The physical cluster
 
 At high level there are two types of roles: _masters_ and _nodes_. In HA there
@@ -199,6 +202,8 @@ Some of the plugins that implement this functionalities are:
 
 *** Flannel
 
+- [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]
+
 When you configure flannel you will need to pass the CIDR block your k8s cluster
 will need to use and assign it to the nodes.
 
@@ -209,7 +214,7 @@ You can define this CIDR with:
 Flannel makes use of an overlay network, usually
 [[https://en.wikipedia.org/wiki/Virtual_Extensible_LAN][Virtual Extensible LAN (VXLAN)]].
 
-- [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]
+Flannel however is not able to enforce network policies like Calico and Weave Net.
 
 * Kubernetes master node and Control plane
 
@@ -846,7 +851,7 @@ can create ResourceQuota objects. They allow you to manage:
 - Storage Resource Quota: Limit the total sum of storage resources that can be requested
 - Object Count Quota: Restrict number of object of a specific type
 
-** Pods
+** Pod
 
 .image images/pod.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
@@ -858,6 +863,7 @@ share:
 - Network namespace (IP address and ports)
 - Mounts (they mount the same external storage - volumes)
 - Namespace
+- PID namespace??
 
 Pods are *ephemeral*. They are not able to self-heal. It's up to _controllers_
 to handle pod replication and fault tolerance.

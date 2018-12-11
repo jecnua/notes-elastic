@@ -1,9 +1,9 @@
-Kubeadm
-|| Last update: 8 Jul 2017 || kubeadm 1.7
+Kubeadm (OBSOLETE)
+|| Last update: 11 Dec 2018 || kubeadm 1.13.0
 
 * Intro
 
-(added in k8s 1.4.0)
+My project at [[https://github.com/jecnua/terraform-aws-kubernetes]]
 
 * Why?
 
@@ -12,13 +12,13 @@ and actually UNDERSTANDING how it works.
 
 * How does kubeadm works?
 
-Kubeadm will deploy:
 
+Kubeadm will deploy:
 - kube-apiserver
 - kube-controller-manager
 - kube-scheduler
 
-It also creates etcd.
+It also by default run etcd in a container on the crontoller node
 
 .image images/kubernetes-arch.png _ 400
 .caption Source: [[https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master][https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master]]

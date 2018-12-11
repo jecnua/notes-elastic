@@ -1,12 +1,12 @@
-Create a cluster
-|| Last update: 28 Dec 2016
+Create a cluster (OBSOLETE)
+|| Last update: 11 Dec 2018
 
 * Intro
 
 - kube-up
 - kube-aws
 - kops
-- kubeadm (chosen)
+- kubeadm (chosen) - My project: [[https://github.com/jecnua/terraform-aws-kubernetes]]
 
 ** kube-up
 

@@ -5,6 +5,14 @@ Kubeadm (OBSOLETE)
 
 My project at [[https://github.com/jecnua/terraform-aws-kubernetes]]
 
+BEWARE: Is better to install kubelet of the same version of k8s you want to
+install with kubeadm or you could have this error:
+
+    │error execution phase preflight: [preflight] Some fatal errors occurred:
+    │ [ERROR KubeletVersion]: the kubelet version is higher than the control plane version. This is
+    │ not a supported version skew and may lead to a malfunctional cluster. Kubelet version: "1.13.0" Cont
+    │rol plane version: "1.12.3"
+
 * Why?
 
 It will decouple me from using salt/ansible to configure the system
@@ -12,8 +20,8 @@ and actually UNDERSTANDING how it works.
 
 * How does kubeadm works?
 
-
 Kubeadm will deploy:
+
 - kube-apiserver
 - kube-controller-manager
 - kube-scheduler

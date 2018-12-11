@@ -200,6 +200,10 @@ Some of the plugins that implement this functionalities are:
     it back to the requested container runtime.
     Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
 
+There can only be one pod network per cluser, but the
+[[https://github.com/Huawei-PaaS/CNI-Genie][CNI Genie]] project is trying to
+remove this limitation.
+
 *** Flannel
 
 - [[https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/]]

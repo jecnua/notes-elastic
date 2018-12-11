@@ -166,6 +166,22 @@ If you need external access, you can map your network ports to a machine port
 via bridge or host. The server sg *must* allow inbound access to the port you
 want to expose.
 
+** Namespaces
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#other_container_definition_params]]
+
+Two docker flags can be spacified to share namespaces:
+
+- pidMode: ontainers to share their process ID (PID) namespace with other containers in the task, or with the host
+- ipcMode: containers to share their inter-process communication (IPC) namespace with the other containers in the task, or with the host
+
+    Sharing the PID namespace enables for example monitoring applications
+    deployed as containers to access information about other applications
+    running in the same task or host.
+    The IPC namespace allows containers to communicate directly through
+    shared-memory with other containers running in the same task or host.
+    Source: https://aws.amazon.com/about-aws/whats-new/2018/10/amazon-ecs-now-allows-two-additional-docker-flags-/
+
 * Schedule workload
 
 You can schedule based on resources, isolation and availability.

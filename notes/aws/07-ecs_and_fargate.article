@@ -113,11 +113,17 @@ You can set up dynamic port mapping with A/NLB.
 
 You want to use AWSServiceRoleForApplicationAutoScaling_ECSService.
 
+** Secrets
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data.html]]
+
+AWS added the functionality to pas secrets stored on SSM. However this functionality
+is not working at the moment on CF.
+
 *** Terraform
 
 - [[https://www.terraform.io/docs/providers/aws/r/appautoscaling_policy.html]]
 - [[https://www.terraform.io/docs/providers/aws/r/appautoscaling_target.html]]
-
 
 *** Cloudformation
 

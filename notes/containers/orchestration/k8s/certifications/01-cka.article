@@ -313,10 +313,11 @@ It will also need a container runtime like:
 
 *** Kube proxy
 
-- [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
 - [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/]]
+- [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
 
-kube-proxy is a network proxy which listens on the _apiserver_ and reflects the
+kube-proxy is a network proxy in charge of managing the network connectivity.
+Listens on the _apiserver_ and reflects the
 kubernetes networking services on each node by managing network rules.
 
     This reflects services as defined in the Kubernetes API on each node and can
@@ -324,9 +325,8 @@ kubernetes networking services on each node by managing network rules.
     SCTP forwarding across a set of backends.
     Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
 
-It is in charge of managing the network connectivity. For each service it sets up
-an *iptable* rule to capture the traffic for it's ClusterIP and forwards it to
-one of the _endpoints_.
+It support three proxy modes - userspace, iptables and (alpha)
+[[http://www.linuxvirtualserver.org/software/ipvs.html][ipvs]].
 
     --proxy-mode ProxyMode
     Which proxy mode to use: 'userspace' (older) or 'iptables' (faster) or 'ipvs'
@@ -336,8 +336,10 @@ one of the _endpoints_.
     proxy.
     Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
 
-It has an userspace mode in which uses port to proxy traffic and an alpha feature
-for *[[http://www.linuxvirtualserver.org/software/ipvs.html][ipvs]]*.
+By default for each service it sets up *iptable* rules to capture the traffic
+for it's ClusterIP and forwards it to one of the _endpoints_.
+
+About IPVS:
 
     IPVS (IP Virtual Server) implements transport-layer load balancing inside
     the Linux kernel, so called Layer-4 switching. IPVS running on a host acts

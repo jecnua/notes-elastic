@@ -21,7 +21,6 @@ CKA notes
 - Proportional scaling? for deployments?
 - batch jobs???
 - are pod ip in statefulset static?
-- proxy-mode
 - Search for QUESTION
 
 * Kubernetes course: CKA certified kubernetes administrator
@@ -80,14 +79,6 @@ advised.
 - [[https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.8.md#before-upgrading]]
 - [[https://kubernetes.io/docs/setup/independent/]]
 - [[https://github.com/kubernetes/kubernetes/issues/53533]]
-
-** Nodes components
-
-Nodes will require three services:
-
-- A container runtime
-- kubelet
-- kube-proxy
 
 *** Node health
 
@@ -215,8 +206,16 @@ are send in *JSON* via *REST* and the api validates and process the requests.
 The result is saved on *ETCD*. The apiserver scale horizontally depending on the
 traffic. It is the only component speaking with ETCD.
 
-The *scheduler* schedule work to nodes. It takes these decisions using
-a whole lot of metrics it gets from the nodes plus the user requirements (like nodeSelector).
+The *scheduler* schedule a Pod to nodes. It takes these decisions using
+a whole lot of metrics it gets from the nodes plus the user requirements (like
+nodeSelector). It will also check restrictions like if Volumes needs to be
+mounted and where. Examples:
+
+- Quota restrictions
+- taints and tolerations
+- labels
+- volume needs
+
 It schedules the work in terms of Pods and Services. It listens to the apiserver
 for the creation of new pods.
 
@@ -230,15 +229,15 @@ change it. It can be present in one of this two flavours:
 - kube-controller-manager (phisical)
 - cloud-controller-manager (cloud env)
 
-It runs different controllers depending on the tasks:
+There are several controller in use like:
 
-- node controller
-- route controller
-- replication controller
-- service controller
-- volume controller
+- endpoints
+- namespace
+- replication
 
-** (BETA) Cloud controller manager
+and more.
+
+** (BETA in v1.13) Cloud controller manager
 
 It is optional and only for cloud environments:
 
@@ -262,6 +261,8 @@ To run this beta functionality you will need to:
 - Run kubelet with the flag *--cloud-provider=external*
 - The kube-apiserver *should*not* run the PersistentVolumeLabel admission controller
 - Set the correct *InitializerConfiguration* to label persistent volumes
+
+TODO: check --cloud-provider-external in the kubelet
 
 ** kube-apiserver
 
@@ -290,16 +291,18 @@ proxy port.
     authentication details, and then, access resources.
     Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
 
-* Kubernetes worker node
+* Kubernetes worker node components
 
 .image images/worker.png  _ 800
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
-We can see three major components.
-Each individual _non-master_ node runs two processes:
+It has three major components. It runs two processes:
 
-- kubelet: [[https://kubernetes.io/docs/admin/kubelet/]] : Communicates with the api, run containers, manage resouces and watches over status.
-- kube-proxy: [[https://kubernetes.io/docs/admin/kube-proxy/]] : A network proxy which reflects the kubernetes networking services on each node by managing network rules 
+- [[https://kubernetes.io/docs/admin/kubelet/][kubelet]]
+- [[https://kubernetes.io/docs/admin/kube-proxy/][kube-proxy]]
+
+The kubelet communicates with the api, run containers, manage resources and
+watches over status.
 
 It will also need a container runtime like:
 
@@ -307,6 +310,41 @@ It will also need a container runtime like:
 - [[https://containerd.io/][containerd]] (more notes on another page)
 - [[https://coreos.com/rkt/][rkt]]
 - [[https://linuxcontainers.org/lxd/][lxd]]
+
+*** Kube proxy
+
+- [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
+- [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/]]
+
+kube-proxy is a network proxy which listens on the _apiserver_ and reflects the
+kubernetes networking services on each node by managing network rules.
+
+    This reflects services as defined in the Kubernetes API on each node and can
+    do simple TCP, UDP, and SCTP stream forwarding or round robin TCP, UDP, and
+    SCTP forwarding across a set of backends.
+    Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
+
+It is in charge of managing the network connectivity. For each service it sets up
+an *iptable* rule to capture the traffic for it's ClusterIP and forwards it to
+one of the _endpoints_.
+
+    --proxy-mode ProxyMode
+    Which proxy mode to use: 'userspace' (older) or 'iptables' (faster) or 'ipvs'
+    (experimental). If blank, use the best-available proxy (currently iptables).
+    If the iptables proxy is selected, regardless of how, but the system's kernel
+    or iptables versions are insufficient, this always falls back to the userspace
+    proxy.
+    Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
+
+It has an userspace mode in which uses port to proxy traffic and an alpha feature
+for *[[http://www.linuxvirtualserver.org/software/ipvs.html][ipvs]]*.
+
+    IPVS (IP Virtual Server) implements transport-layer load balancing inside
+    the Linux kernel, so called Layer-4 switching. IPVS running on a host acts
+    as a load balancer at the front of a cluster of real servers, it can direct
+    requests for TCP/UDP based services to the real servers, and makes services
+    of the real servers to appear as a virtual service on a single IP address.
+    Source: http://www.linuxvirtualserver.org/software/ipvs.html
 
 * Metadata
 
@@ -486,8 +524,6 @@ http (neither authenticated or encrypted). Possible solution ssh tunneling.
 Certificates allow party in a conversation to authenticate each other.
 For example use a third party both can trust (CA). CA issue cert for all these
 party.
-
-API server is the only component that talks to ETCD.
 
 All interaction with it needs to be secure.
 
@@ -1224,12 +1260,6 @@ ClusterIP.
 
 QUESTION: How do you choose this two CIDR sets?
 
-kube-proxy is a network proxy which runs on every worker node and listens
-on the API server (only - no scheduler or controller manager) for each service
-endpoint change. For each service it sets up an
-iptable rule to capture the traffic for it's ClusterIP and forwards it to one
-of the _endpoints_.
-
 Some of the service type are:
 
 - ClusterIP: (default) Static lifetime IP only accessible from within the cluster
@@ -1258,14 +1288,6 @@ We can have a service for which Kubernetes does not provide a ClusterIP and we
 call it [[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services][headless]].
 
 A service can expose multiple ports, but in this case they need to be named.
-
-*** Kube proxy
-
-- [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
-
-proxy-mode userspace
-proxy-mode iptables (default)
-proxy-mode ipvs added (added in 1.8.0)
 
 *** Service discovery
 
@@ -1578,11 +1600,16 @@ server.
 
 * ETCD
 
-etcd is a key-value store based on the Raft Consensus Algorithm. There are two
-roles: master and follower. At any given time one of the nodes will be the
-master while the others are followers.
+ETCD is a key-value store based on the Raft Consensus Algorithm. Nodes in the
+cluster can have one of two roles: master or follower.
+At any given time one of the nodes will be the master while the others are
+followers.
 
-In k8s etcd store the cluster state but also configuration details like
+ETCD is implemented as a b+tree key-value store. You don't find and replace an
+entry, instead you always append new data to the end. Old data is marked for
+removal and will be garbage colleted (compaction process) later.
+
+In k8s ETCD store the cluster state but also configuration details like
 ConfigMaps and Secrets.
 
 * Re/Sources (not already referenced directly)

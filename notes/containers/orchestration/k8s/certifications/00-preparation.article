@@ -1,5 +1,5 @@
 Certified Kubernetes Administrator (CKA) cert preparation
-|| Last update: 22 Nov 2018
+|| Last update: 20 Dec 2018
 
 * Intro
 
@@ -54,7 +54,7 @@ Get used to this tools:
 Recap:
 
 - Use the notepad in there (2)
-- Use tmux or screen (3)
+- Use tmux or screen (4)
 - Install kubectl autocomplete (3)
 - Get used to all the shortcuts for vim/nano (3)
 - There is no time to do all questions so skip them and don't look back (3)
@@ -63,11 +63,13 @@ Recap:
 - Learn to use kubectl explain command eg. kubectl explain pod (3)
 - Use kubectl commands to solve the questions or „create” the yaml files (-o yaml) (1)
 - Do kubernetes the hard way & kubernetes from scratch (7) this is enough for the management and lifecycle stuff
-- make a kubectl alias as kc or k (1)
+- make a kubectl alias as kc or k (2)
 - be sure to know how kubelet and etcd replication works (2)
 - ssl certs right on all nodes - Getting certs right throughout the entire cluster (3)
-- kubernetes.io task list (3)
-- get ssl cert right and systemd (3)
+- kubernetes.io task list (4)
+- get ssl cert right and systemd (4)
+- systemd in general (2)
+- alias kubectl to k, and kg and kc for kubectl get and kubectl apply -f
 
 ** Self assessment
 
@@ -176,19 +178,32 @@ Source: [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
     to troubleshoot problems and basic commands.
     Source: http://mobilise-cloud-services.blogspot.com/2018/08/kubernetes-administrator-certification.html
 
+    Basics of systemd, like starting, restarting and enabling the service. And
+    how to read the systemd service file.
+    [...]
+    You don’t need to remember the location of systemd service files, the trick
+    I use to find the location of service file is just try to see the status of
+    service by running systemctl status <service name> and in there you will see
+    the location to service file that is loaded.
+    Source: https://suraj.io/post/road-to-cka/
+
 * Resources
 
 ** Free
 
 - GOOD - INT - [[https://training.linuxfoundation.org/training/introduction-to-kubernetes/]] -> [[https://www.edx.org/course/introduction-to-kubernetes]]
-- [[https://kubernetes.io/docs/tasks/]]
 - [[https://eu.udacity.com/course/scalable-microservices-with-kubernetes--ud615]]
 - [[https://kubernetes.io/]] - Official docs (the only resource you can use during the exam)
 - [[https://kubernetes.io/docs/concepts/]] - Explains to you all the k8s concepts
 - [[https://github.com/kelseyhightower/oscon-2017-kubernetes-tutorial]] - Step by step tutorial
 - [[https://github.com/kelseyhightower/kubernetes-the-hard-way]]
-- [[http://kubernetesbyexample.com/]]
-- [[https://docs.google.com/spreadsheets/d/10NltoF_6y3mBwUzQ4bcQLQfCE1BWSgUDcJXy-Qp2JEU/edit#gid=0]]  LIST OF RESOURCES
+- [[http://kubernetesbyexample.com/]] from the OpenShift team
+- [[https://docs.google.com/spreadsheets/d/10NltoF_6y3mBwUzQ4bcQLQfCE1BWSgUDcJXy-Qp2JEU/edit#gid=0]] - LIST OF RESOURCES (need to check still)
+
+*** Excercises
+
+- [[https://kubernetes.io/docs/tasks/]]
+- [[https://docs.google.com/document/d/1N4fusJG9drQx7J3HIfNsy59dVJh9kwVQ6OtDDVLc36Q/edit]]
 
 *** Interactive
 
@@ -224,3 +239,4 @@ From newest to oldest:
 - [[https://vsupalov.com/unofficial-kubernetes-self-assessment/]]
 - [[https://medium.com/@ikaboubi/my-feedback-about-cka-and-ckad-e82a35585fe9]]
 - [[https://www.reddit.com/r/kubernetes/comments/95k033/passed_the_cka_after_failing_it_twice_amaa/]]
+- [[https://medium.com/@walidshaari/kubernetes-certified-administrator-cka-43a25ca4c61c]]

@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 18 Dec 2018
+|| Last update: 20 Dec 2018
 
 * To clarify
 
@@ -542,7 +542,7 @@ They are going to complain. Each master has it's own cert.
 are --tsl-cert-file and --tls-private-key-file.
 
 3) Kubelet api (internal private api) needs to be secured. Kubelet exposes an
-HTTPDS api. Consumed by API server to get logs, metrics, exec, etc.
+HTTPs api. Consumed by API server to get logs, metrics, exec, etc.
 Is also protected by authentication and authorization. Also client (the api
 server) needs to have a client cert.
 
@@ -595,7 +595,7 @@ The controller manager signs the cert so it needs access to the CA private key.
 
 - [[https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/]]
 
-The kubelet is a node *agent* and runs as a *Daemon* on every server (master and
+The kubelet is a node *agent* and runs as a *daemon* on every server (master and
 nodes). It thinks and works in term of _PodSpec_.
 It will communicate with the master node and runs containers as stated on the
 desired state. It will also make sure all containers are healthy at all times.
@@ -604,13 +604,20 @@ to allow ALPHA and BETA functionalities.
 
 The kubelet by default serve on port 10255.
 
-              TO CHECK
-              When the kubelet starts, it will seek out the master node and try to listen (???).
-              Reports success or failure to the master (???)
-              TO CHECK
+    TO CHECK
+    When the kubelet starts, it will seek out the master node and try to listen (???).
+    Reports success or failure to the master (???)
+    TO CHECK
+
+    TO CHECK
+    It accepts API calls for specifications? is it called or polls?
+    TO CHECK
 
 NOTE: The kubelet could also access PodSpec via FIle (path), HTTP endpoint and
 HTTP server. However they are rarely used.
+
+If a Pod needs access to storage, configmaps or secrets, is the kubelet that makes
+it happen.
 
 The kubelet interfaces with the containers via the Container Runtime Interface
 (CRI).
@@ -873,12 +880,31 @@ Few things like nodes and persistenVolumes do not live in namespaces.
 
 - [[https://kubernetes.io/docs/concepts/policy/resource-quotas/]]
 
+    A resource quota, defined by a ResourceQuota object, provides constraints
+    that limit aggregate resource consumption per namespace. It can limit the
+    quantity of objects that can be created in a namespace by type, as well as
+    the total amount of compute resources that may be consumed by resources in
+    that project.
+    Source: https://kubernetes.io/docs/concepts/policy/resource-quotas/
+
 To limit the amount of resources an user can use in a namespace, Administrators
 can create ResourceQuota objects. They allow you to manage:
 
-- Compute Resource Quota: Limit the total sum of resources (CPU, memory, etc)
-- Storage Resource Quota: Limit the total sum of storage resources that can be requested
+- Compute Resource Quota: Limit the total sum of resources (CPU and memory)
+- Storage Resource Quota: Limit the total sum of storage (total storage, pvc, ephemeral-storage) resources that can be requested
 - Object Count Quota: Restrict number of object of a specific type
+
+It allows you to set soft and hard limits.
+
+There is a beta feature (v1.12) field in the quota spec of a pod that allow
+a pod to run in a specific priority class by setting the appropriate
+priorityClassName ([[https://kubernetes.io/docs/concepts/policy/resource-quotas/#resource-quota-per-priorityclass]]).
+
+    If quota is enabled in a namespace for compute resources like cpu and memory,
+    users must specify requests or limits for those values; otherwise, the quota
+    system may reject pod creation. Hint: Use the LimitRanger admission controller
+    to force defaults for pods that make no compute resource requirements.
+    Source: https://kubernetes.io/docs/concepts/policy/resource-quotas/
 
 ** Pod
 
@@ -891,29 +917,17 @@ share:
 - Host (same node)
 - Network namespace (IP address and ports)
 - Mounts (they mount the same external storage - volumes)
-- Namespace
-- PID namespace??
+- PID namespace (only if set and not by default)
 
 Pods are *ephemeral*. They are not able to self-heal. It's up to _controllers_
-to handle pod replication and fault tolerance.
-
-You can attach the POD specification to another object using the Pod Template.
+to handle pod replication and fault tolerance. You can attach the POD
+specification to another object using the Pod Template. Containers inside a Pod
+are started in *parallel* and there is no way to know which one will start first.
+For containers to communicate inside a pod they can use or IPC or a shared
+filesystem.
 
 NOTE: The number of the *restarts* value is the number of container restarts not
 pod restarts.
-
-Pods allow to put resource limits.
-
-- [[https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/]]
-
-There are two:
-
-- resources.requests: What you ask for.
-- resources.limits: Your limit.
-
-They both allow _cpu_ and _memory_ field. cpu is defined in _m_. 1000m is a vCPU.
-So basically 250m is 1/4 of CPU and so on. memory is in Mi (megabytes). 64Mi means
-64 megabytes.
 
 The possible status phase of a pod are:
 
@@ -931,18 +945,76 @@ Reastart policies are:
 
 It's valid for all containers in a pod.
 
-** Priority
+*** Resource management for containers in a Pod
 
-Will impact the:
+- [[https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/]]
+- [[https://github.com/kubernetes/community/blob/master/contributors/design-proposals/node/resource-qos.md]]
+
+Pods allow to put resource limits. There are two options:
+
+- resources.requests: What you ask for.
+- resources.limits: Your limit.
+
+Each of them have three _resource_type_:
+
+- cpu
+- memory
+- ephemeral-storage (beta in v1.13)
+
+CPU is specified in units of cores, and memory is specified in units of bytes.
+CPU uses _m_. 1000m is a vCPU. So basically 250m is 1/4 of CPU and so on.
+Memory/ephemeral-storage is in bytes. 64Mi means 64 megabytes.
+
+These resources can be put only at container level and not Pod level. The POD
+resource requirements are the sum of all the resources how it's containers.
+
+    If a Container exceeds its memory limit, it might be terminated. If it is
+    restartable, the kubelet will restart it, as with any other type of runtime
+    failure.
+    If a Container exceeds its memory request, it is likely that its Pod will
+    be evicted whenever the node runs out of memory.
+    A Container might or might not be allowed to exceed its CPU limit for
+    extended periods of time. However, it will not be killed for excessive CPU
+    usage.
+    [...]
+    For container-level isolation, if a Container’s writable layer and logs
+    usage exceeds its storage limit, the Pod will be evicted. For pod-level
+    isolation, if the sum of the local ephemeral storage usage from all
+    containers and also the Pod’s emptyDir volumes exceeds the limit, the Pod
+    will be evicted.
+    Source: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+
+*** Priority class
+
+- [[https://kubernetes.io/docs/concepts/policy/resource-quotas/#resource-quota-per-priorityclass]]
+
+The PriorityClass will impact the:
 
 - Scheduling order
 - Preemption: allows graceful termination period
+- Pod distruption budget.
 
-Also pod distruption budget.
+You can also set Quotas and assign it to a priority class via a ScopeSelector.
+
+    apiVersion: v1
+    kind: List
+    items:
+    - apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: pods-high
+      spec:
+        hard:
+          cpu: "1000"
+          memory: 200Gi
+          pods: "10"
+        scopeSelector:
+          matchExpressions:
+          - operator : In
+            scopeName: PriorityClass
+            values: ["high"]
 
 You need to create a priority object and add the class in the pod definition.
-
-** Scheduler manipulation via selectors and affinity
 
 *** Node selector
 

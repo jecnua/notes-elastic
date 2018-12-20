@@ -128,12 +128,20 @@ From 1.8+ the node controller can *taint* node to respect their status.
 
 ** Network and CNI
 
+- [[https://kubernetes.io/docs/concepts/cluster-administration/networking/]]
+
 Kubernetes made some interesting choices on how networking should be implemented.
 It defines the network model but leaves it to third party plugins a way to
 implement it.
 
+There are three networking problem to think about:
+
+- Container to container (in a Pod) communication (solved by sharing network namespace)
+- Pod to Pod communication (left to the CNI plugin to implement)
+- External world to Pod communication (solved by services)
+
 k8s specify that there shouldn't be any Network Address Translation (NAT) while
-doing the Pod-to-Pod communication across hosts. To do so or you make toutable pods
+doing the Pod-to-Pod communication across hosts. To do so or you make routable pods
 and nodes like on google and amazon or you use a _Software_Defined_Networking_.
 A CNI plugin is an *executable* invoked by the container management system.
 
@@ -237,6 +245,10 @@ There are several controller in use like:
 
 and more.
 
+** Controllers (specifics)
+
+- [[https://github.com/kubernetes/sample-controller/blob/master/docs/controller-client-go.md]]
+
 ** (BETA in v1.13) Cloud controller manager
 
 It is optional and only for cloud environments:
@@ -268,17 +280,30 @@ TODO: check --cloud-provider-external in the kubelet
 
 - [[https://kubernetes.io/docs/admin/kube-apiserver/]]
 
-Kubernetes exposes an API via the kube-apiserver.
-The apiserver is the entrypoint to all k8s interactions. As long as you have
+Kubernetes exposes an API via the kube-apiserver (entrypoint to all k8s
+interactions). As long as you have
 access to the node and the right credentials, you can query the api. The
 HTTP API space of k8s can be divided into three independent groups:
 
-- Core group (/api/v1): basic objects
+- Core group (/api/v1): basic objects. This is mostly due to historical reasons
 - Named group: Objects in the /apis/$NAME/$VERSION format
 - System wide: Like /healthz, /logs, /metrics, etz
 
+The apiserver if asked _/apis_ will return the API groups. API groups can have
+multiple versions and dollow a domina name format. Some names are reserved like:
+
+- single-word domains
+- empty group
+- any name ending in .k8s.io
+
 The apiVersion field in the object's configuration file define the API
 endpoint to connect the API server.
+
+Kubernetes uses the _resourceVersion_ value to find if there are updates to
+implement. It uses what is called _optimistic_concurrency_. When a object needs
+to be modified, if the _resourceVersion_ is changed then a 409 confict is returned.
+This field is implemented by the _modifiedIndex_ parameter in etcd, and is unique
+to namespace, kind and server.
 
 When "kubectl proxy" is configures, you can send requests to localhost on the
 proxy port.
@@ -405,6 +430,12 @@ labels.
 
 An example of an annotation is a 'description' or git commit. Contents of the
 annotation field is displayed when running the _describe_ command.
+
+It can be implemented with kubectl:
+
+    kubectl annotate pods --all env="dev" -n dev
+    kubectl annotate --overwrite pods env="dev" -n dev
+    kubectl annotate pods test env- -n dev # remove it
 
 ** Labels
 
@@ -842,10 +873,16 @@ Once the object is created the control plane adds the status.
 
 ** Communication
 
-We need to provide the spec field in json format.
+All communications with the api-servers are in json. When you use kubectl, the
+command-line converts the information from yaml to json when making the API
+request.
 
-When you use kubectl, the command converts the information from yaml to json
-when making the API request.
+Kubectl calls curl on your behalf. You can see what the kubectl cli transform
+the call into by passing a verbosity to the call.
+
+    kubectl --v=10 get pods
+
+The verbosity goes from 0 (default) to 9.
 
 ** Namespaces
 
@@ -911,20 +948,26 @@ priorityClassName ([[https://kubernetes.io/docs/concepts/policy/resource-quotas/
 .image images/pod.png
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
-Unit of deployment. Is a logical collection of one or more containers. They
-share:
+Unit of deployment and logical collection of one or more containers. All
+containers in a pod are deployed in parallel on the same node and share:
 
-- Host (same node)
 - Network namespace (IP address and ports)
 - Mounts (they mount the same external storage - volumes)
+- IPC namespace (inter process communication)
 - PID namespace (only if set and not by default)
 
-Pods are *ephemeral*. They are not able to self-heal. It's up to _controllers_
+Pods are *ephemeral* as they are not able to self-heal. It's up to _controllers_
 to handle pod replication and fault tolerance. You can attach the POD
 specification to another object using the Pod Template. Containers inside a Pod
 are started in *parallel* and there is no way to know which one will start first.
-For containers to communicate inside a pod they can use or IPC or a shared
-filesystem.
+
+When a Pod is created, a special _pause_ container (the sandbox container) is
+created first and all the containers inside the pod are attached to his network
+namespace. The pause container is used to get an IP (and network namespace) and
+is also useful not to lose all this if the container needs to be restarted.
+
+For containers to communicate inside a pod they can use the loopback interface,
+IPC or a shared filesystem.
 
 NOTE: The number of the *restarts* value is the number of container restarts not
 pod restarts.
@@ -1098,7 +1141,6 @@ Google in their example have two endpoint in the container:
 
     /started
     /healthz
-
 
 ** Downward API
 
@@ -1572,6 +1614,22 @@ Each request goes through the following three stages:
 - Authentication: Logs in as a user
 - Authorization: Authorizes the API request added by the logged in user
 - Admission control: Some additional module that can modify or reject the request based on additional checks.
+
+** Checking access
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access]]
+
+There are way to check a user authorization.
+
+    kubectl auth can-i create pod
+    kubectl auth can-i create pod --as jecnua
+    kubectl auth can-i create pod --as jecnua --namespace dev
+
+This can be done through three apis:
+
+- SelfSubjectAccessReview
+- LocalSubjectAccessReview
+- SelfSubjectRulesReview
 
 ** Lyfecycle hook
 

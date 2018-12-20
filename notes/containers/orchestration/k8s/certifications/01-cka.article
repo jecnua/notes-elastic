@@ -299,6 +299,13 @@ multiple versions and dollow a domina name format. Some names are reserved like:
 The apiVersion field in the object's configuration file define the API
 endpoint to connect the API server.
 
+The v1 API group is a collection of groups (there are eight at the moment).
+Among them:
+
+- v1
+- storage.k8s.io/v1
+- rbac.authorization.k8s.io/v1
+
 Kubernetes uses the _resourceVersion_ value to find if there are updates to
 implement. It uses what is called _optimistic_concurrency_. When a object needs
 to be modified, if the _resourceVersion_ is changed then a 409 confict is returned.
@@ -884,13 +891,28 @@ the call into by passing a verbosity to the call.
 
 The verbosity goes from 0 (default) to 9.
 
+If you want to use curl directly without kubectl, you will need to pass:
+
+- ca (cluster)
+
+and:
+
+- client key (user)/client certificate (user)
+- username/password [or] token (mutually exclusive)
+
+otherwise only insecure calls can be made.
+
+All of these can be set with:
+
+    kubectl config set-credentials
+
 ** Namespaces
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/]]
 - [[https://kubernetes.io/docs/tasks/administer-cluster/namespaces/]]
 
-Namespaces can be seen as _virtual_clusters_. They Provide a scope for names
-(names of resources need to be unique within a namespace but not across) and allow
+Namespaces can be seen as _virtual_clusters_. They provide a scope for names:
+names of resources need to be unique within a namespace but not across and allow
 to divide the cluster in subsets of resources (*resource*quotas*) (within the namespace).
 All objects in the same namespace shares the access control policies.
 
@@ -898,7 +920,7 @@ By default you have three initial namespaces:
 
 - default: Is a catch-all namespace for all objects that do not specify one.
 - kube-system: Reserved to objects created by the kubernetes system.
-- kube-public: Readable by all users even the non-authenticated. Usually used for special purposes like bootstrapping a cluster.
+- kube-public: Readable by all users even the non-authenticated. Usually used for special purposes like bootstrapping a cluster or general information.
 
 The namespace is also part of the DNS name that will be created with a service.
 When you try to do a dns resolution of a service with just the name, it will
@@ -1186,8 +1208,8 @@ It also had some functionality to do rolling upgrades.
 
 - [[https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/]]
 
-Is the next generation ReplicationController. Support both Equality-based and
-Set-based selectors.
+Is the next generation ReplicationController, which differ only in selector
+support (supports both Equality-based and Set-based selectors).
 While they could be used independently, they are mostly used by Deployments to
 orchestrate the Pod management.
 
@@ -1209,11 +1231,19 @@ You can delete a rs without affecting the pod by using the command:
 When you adopt pre-existing pods with a new rs, this won't be updated to the
 new spec! they need to die first.
 
-*** Horizontal pod autoscaler
+*** Horizontal Pod Autoscaler (HPA)
 
 - [[https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/]]
 
-It's an object that select a ReplicSet. It can point to RC, RS or deployments.
+HPA can scale Deployments, ReplicSets or ReplicationControllers by default at
+50% CPU usage.
+
+- Kubelet checks every 30s
+- Heapster retrieve every minute
+- HPA checks heapster every 30s
+- After any action HPA waits 180s before any further action
+
+The autoscaler do not collect the metrics, just act on them.
 It can scale on two policies:
 
 - CPU Utilization
@@ -1222,6 +1252,22 @@ It can scale on two policies:
 To prevent trashing you can set a downscale delay and a upscale delay.
 Define intervals between successive operations of the same kind.
 
+*** Vertical Pod Autoscaler
+
+- [[https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler]]
+
+** Cluster Autoscaler (CA)
+
+- [[https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler]]
+
+This component add or removes nodes from the cluster. The decisions are based
+on:
+
+- inability to deploy a Pod (scale up)
+- having nodes with low utilization for 10m (scale down)
+
+Commands are in the form of _cluster-autoscaler-_.
+
 ** DaemonSets
 
 Will run a pod (and only one) at all times on each node of the cluster.
@@ -1229,22 +1275,30 @@ You can however user label selector to restrict which nodes it will run on.
 
 ** StatefulSets
 
-Is used to manage applications that requires an identity like name, network,
-strict ordering, etc.
 The StatefulSet controller provides identity and guaranteed ordering of
 deployment and scaling to Pods.
+Is used to manage applications that requires an identity like name, network,
+strict ordering, etc.
 
-These pods are not interchangeable. They have an _indentifier_ that maintains
-across any rescheduling.
+To track pods as unique, they get an identity via an ordinal (number), stable
+storage and stable network identity. The identity remains with the node no matter
+where the pod is running. These pods are not interchangeable.
+
+They have an _identifier_ that maintains across any rescheduling.
+The scheme is sequential starting with 0.
+Numbers from 0 to n-1 so they require a headless service.
+They will be deleted from n-1 to 0.
+
+- foo-0
+- foo-1
+- foo-2
 
 Ordered deployment, scaling, deletion, upgrade and termination. They are useful
-with apps that needs persistent storage. Stable unique network identifier.
-Storage MUST be persistant.
+with apps that needs persistent storage. A following Pod will not launch until
+the current one is in ready state. They are NOT deployed in parallel.
 
+Storage MUST be persistent.
 Deleting a statefuset won't delete the volume.
-
-NUmbers from 0 to n-1 so they require a headless service.
-They will be deleted from n-1 to 0.
 
 ** Deployments
 

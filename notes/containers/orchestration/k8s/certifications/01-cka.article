@@ -1370,6 +1370,7 @@ Other optnions:
 
 - [[https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/]]
 
+Part of the batch API group.
 A job creates one or more Pods to perform a task. If a pod fails it will be
 restarted. Once the task is over all the pods are terminated. Is a one-job
 functionality.
@@ -1380,7 +1381,7 @@ There are three types of jobs:
 - Parallel jobs with fixed competition count: job completes when x amount of pods complete successsfully.
 - Parallel jobs with work queue: required coordination
 
-After completition the state is set to terminated the pods are not delete
+After completion the state is set to terminated the pods are not delete
 (but not shown in get pods either). To show them you need to do:
 
     kubectl show pods -a
@@ -1393,7 +1394,18 @@ You can set a deadline with the flag activeDeadlineSeconds field.
 - [[https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/]]
 
 A cron job is similar with the difference that the Job will run always at a
-specific time. Is at least once.
+specific time. Since there could be reason why a pod could not be run when needed
+or run twice, Jobs should be idempotent (at least once).
+
+There is one option:
+
+    .spec.concurrencyPolicy
+
+that defines how to handle existing jobs. There are three options:
+
+- Allow (default): another concurrent job can be run
+- Forbid: the current job continues and the new one will be skipped
+- Replace: cancels current job and start a new one in it's place
 
 ** Service
 

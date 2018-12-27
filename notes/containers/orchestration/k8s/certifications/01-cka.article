@@ -219,9 +219,9 @@ nodeSelector). It will also check restrictions like if Volumes needs to be
 mounted and where. Examples:
 
 - Quota restrictions
-- taints and tolerations
-- labels
-- volume needs
+- Taints and tolerations
+- Labels
+- Volume needs
 
 It schedules the work in terms of Pods and Services. It listens to the apiserver
 for the creation of new pods.
@@ -264,7 +264,7 @@ implement:
 - Node controller: Updated the nodes status by coordinating with the cloud API.
 - Service controller: Listen to service create, udpate and delete and responsible for LoadBalancer types
 - Route controller: Responsible for setting up network routes (only on gce)
-- Persistent volume labels controller: Sets zone and region labels on PersistenVolumes
+- Persistent volume labels controller: Sets zone and region labels on PersistentVolumes
 
 To run this beta functionality you will need to:
 
@@ -462,7 +462,7 @@ They *do*not*provide*uniqueness* to objects. Each key needs to be unique for a
 given object! Non-identifying information should be recorded using _annotations_.
 
 Labels are generally used to map organizational/logic structures onto the system
-objects. Allow cross-cutting operations (more flexyble than the hierarchical one).
+objects. Allow cross-cutting operations (more flexible than the hierarchical one).
 
     Valid label keys have two segments: an optional prefix and name, separated by a
     slash (/). The name segment is required and must be 63 characters or less.
@@ -475,6 +475,18 @@ objects. Allow cross-cutting operations (more flexyble than the hierarchical one
     Source: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 
 Internally ks8 index and reverse-index labels for efficient queries and watches.
+
+You can add a label to any object via the cli by using the *kubectl*label* command:
+
+    kubectl label deployment <deployment_name> <key>=<value>
+    # example
+    kubectl label deployment nginx owner=jecnua
+
+If a label is already present with that name you can use the *--override* flag
+to change it.
+You can see in the cli all the labels of an _Object_ by passing *--show-labels*:
+
+    kubectl get deployments,rs,pod --all-namespaces --show-labels
 
 ** Label selectors
 
@@ -1434,18 +1446,22 @@ This can be managed directly by changing the field or using:
     # and
     kubectl rollout resume deployment <deployment_name>
 
-*** Change cause history (DO NOT USE)
+*** Change cause history
 
-You could use _--record_ to record the reason for change of a deployment.
+You could (BUT DO NOT) use _--record_ to record the reason for change of a deployment.
 However, the flag is not supported everywhere (in run but not in create) and
 is generally a bad idea. [[https://github.com/kubernetes/kubernetes/issues/40422]]
 If you want to show a message in rollout history, you can change the metadata.annotation:
 
     kubernetes.io/change-cause: <your comment>
 
-This is what --annotate does.
+That is what --record does.
 
     kubectl rollout history deployment <deployment_name>
+
+You can always do the change and then:
+
+    kubectl annotate deployments <deployment_name> kubernetes.io/change-cause='<Your description'
 
 ** Job & CronJob
 

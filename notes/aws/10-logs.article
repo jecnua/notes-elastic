@@ -21,7 +21,7 @@ https://stackoverflow.com/questions/46459341/stream-aws-cloudwatch-log-group-to-
         if [[ "$LOG_GROUP_NAME" == 'EOF' ]]
         then
             echo "LAST LINE"
-            exit 
+            exit
         fi
         echo "Adding subscription filter for $LOG_GROUP_NAME"
         FILTERED=$(echo "$LOG_GROUP_NAME" | sed 's/\/aws\/.*\/\(.*\)-\w+/\1/' | sed 's/-/_/g')
@@ -70,7 +70,8 @@ custom processing, sub second response time, complete control over streams and
 processing workflow
 
 Kinesis firehose:
-load massive volumes of streaming data into s3, redishift, es and splunk
+
+- load massive volumes of streaming data into s3, redishift, es and splunk
 - 0 administration
 - data latency under 60s
 - direct to data store integration
@@ -155,14 +156,14 @@ lambda + kinesis
 
 bhe aware of
 
-        All our lambdas were triggered by Kinesis streams and in 1–2% 
-        of cases we observed the same KinesisRecord being processed 
-        twice. What was weird, however, that time passing between first 
-        and second invocation of a lambda with the same entry data was 
-        exactly 10 minutes. We performed an investigation and ruled out 
+        All our lambdas were triggered by Kinesis streams and in 1–2%
+        of cases we observed the same KinesisRecord being processed
+        twice. What was weird, however, that time passing between first
+        and second invocation of a lambda with the same entry data was
+        exactly 10 minutes. We performed an investigation and ruled out
         a bug in our business logic and couldn’t find anything that would
-        explain this behavior. It was so startling for us that it took 
-        us some time to even attempt to google it — and there it was: 
+        explain this behavior. It was so startling for us that it took
+        us some time to even attempt to google it — and there it was:
         https://stackoverflow.com/questions/43786225/s3-lambda-trigger-double-invocation-after-exactly-10-minutes.
 
 Source: [[https://medium.com/@martatatiana/aws-lambdas-triggered-by-kinesis-streams-in-java-a-few-lessons-d1cffe5ea683]]
@@ -174,21 +175,21 @@ Lambda real-time event sources follows different patterns:
 
 - s3/sns have asynch invocation (asynch push model)
 - iot/alexa have synch invocation (sych push model)
-- DynamoDB/kinesis have synch invocation (stream pull model) 
+- DynamoDB/kinesis have synch invocation (stream pull model)
 
-If you use lambda, best practise is to write the function to be 
+If you use lambda, best practise is to write the function to be
 stateless and initiate aws clients and database clients OUTSIDE
 the scope of the function handler to take advantage of connection reuse.
 
-IMP: No control over the number of processors per queue. 
+IMP: No control over the number of processors per queue.
 [[https://docs.aws.amazon.com/lambda/latest/dg/scaling.html][You get one Lambda processor per Kinesis shard]].
 
 
         Poll-based event sources that are stream-based:
-        For Lambda functions that process Kinesis or DynamoDB streams 
-        the number of shards is the unit of concurrency. If your stream 
-        has 100 active shards, there will be at most 100 Lambda function 
-        invocations running concurrently. This is because Lambda processes 
+        For Lambda functions that process Kinesis or DynamoDB streams
+        the number of shards is the unit of concurrency. If your stream
+        has 100 active shards, there will be at most 100 Lambda function
+        invocations running concurrently. This is because Lambda processes
         each shard’s events in sequence.
         Source: https://docs.aws.amazon.com/lambda/latest/dg/scaling.html
 
@@ -221,16 +222,18 @@ A wrong package blocks the lambda:
 watch to monitor:
 
 Kinesis:
+
 - getrecords (throughput)
 - putrecord (bytes, latency, records etc)
 - getrecords,iteratorgaemilliseconds: how old your last processed records where
 
 Lambda:
+
 - Invocation count
 - duration
 - errorcount
 - throttlecount
-- iteratorage: time elapsed for batch 
+- iteratorage: time elapsed for batch
 
 ** Attach cloudwatch logs to kinesis
 

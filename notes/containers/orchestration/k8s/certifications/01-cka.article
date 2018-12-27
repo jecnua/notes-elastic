@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 20 Dec 2018
+|| Last update: 27 Dec 2018
 
 * To clarify
 
@@ -1015,10 +1015,11 @@ It's valid for all containers in a pod.
 - [[https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/]]
 - [[https://github.com/kubernetes/community/blob/master/contributors/design-proposals/node/resource-qos.md]]
 
-Pods allow to put resource limits. There are two options:
+The framework allows you to define the _requirements_ and the _limits_ for each
+container inside a Pod. There are two options you can set inside the Pod spec:
 
-- resources.requests: What you ask for.
-- resources.limits: Your limit.
+- resources.requests: How much does the container need to be allocated
+- resources.limits: The upper limit on how much you are allowed to consume
 
 Each of them have three _resource_type_:
 
@@ -1026,12 +1027,19 @@ Each of them have three _resource_type_:
 - memory
 - ephemeral-storage (beta in v1.13)
 
-CPU is specified in units of cores, and memory is specified in units of bytes.
-CPU uses _m_. 1000m is a vCPU. So basically 250m is 1/4 of CPU and so on.
-Memory/ephemeral-storage is in bytes. 64Mi means 64 megabytes.
+CPU is specified in units of cores while memory is specified in units of bytes.
+For CPU the setting 1000m is a vCPU, 250m is 1/4 of CPU and so on.
+Memory/ephemeral-storage is measured in _bytes_. 64Mi means 64 megabytes.
 
-These resources can be put only at container level and not Pod level. The POD
-resource requirements are the sum of all the resources how it's containers.
+    You can express memory as a plain integer or as a fixed-point integer using
+    one of these suffixes: E, P, T, G, M, K. You can also use the power-of-two
+    equivalents: Ei, Pi, Ti, Gi, Mi, Ki.
+    Source: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+
+These resources settings are only at container level and not Pod level. The POD
+resource requirements are the sum of all the resources of its containers.
+
+*NOTE*: A container *will*not* be killed for *excessive*CPU*usage*.
 
     If a Container exceeds its memory limit, it might be terminated. If it is
     restartable, the kubelet will restart it, as with any other type of runtime
@@ -1048,6 +1056,54 @@ resource requirements are the sum of all the resources how it's containers.
     containers and also the Pod’s emptyDir volumes exceeds the limit, the Pod
     will be evicted.
     Source: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+
+If something happens and the container needs to be stopped, info will be written
+here: [CHECK THIS]
+
+    terminationMessagePath       <string>
+      Optional: Path at which the file to which the container's termination
+      message will be written is mounted into the container's filesystem. Message
+      written is intended to be brief final status, such as an assertion failure
+      message. Will be truncated by the node if greater than 4096 bytes. The
+      total message length across all containers will be limited to 12kb.
+      Defaults to /dev/termination-log. Cannot be updated.
+
+    terminationMessagePolicy     <string>
+      Indicate how the termination message should be populated. File will use the
+      contents of terminationMessagePath to populate the container status message
+      on both success and failure. FallbackToLogsOnError will use the last chunk
+      of container log output if the termination message file is empty and the
+      container exited with an error. The log output is limited to 2048 bytes or
+      80 lines, whichever is smaller. Defaults to File. Cannot be updated.
+
+*** LimitRange
+
+- [[https://kubernetes.io/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/]]
+
+You can set a default for this values at namespace level with a type of object
+called *LimitRange*.
+
+It will allow you to define the default _requests_ and _limits_ for each
+container running in a defined namespace.
+
+    apiVersion: v1
+    kind: LimitRange
+    metadata:
+      name: mem-limit-range
+    spec:
+      limits:
+      - default:
+          memory: 512Mi
+        defaultRequest:
+          memory: 256Mi
+        type: Container
+
+You can interact with it normally via kubectl.
+
+        kubectl get limitranges -n <your_namespace>
+
+NOTE: These settings will not appear in the Deployment or ReplicaSet definition,
+only in the Pod spec.
 
 *** Priority class
 
@@ -1809,6 +1865,56 @@ removal and will be garbage colleted (compaction process) later.
 
 In k8s ETCD store the cluster state but also configuration details like
 ConfigMaps and Secrets.
+
+* Kubectl command-line quick tricks
+
+    kubectl create deployment <name> --image <image_name> --dry-run
+    #
+    kubectl get deployment <name> --export -o yaml # export will remove the unique parameters
+
+* Node maintenance
+
+In order to work on a node to do maintainance, you need to move away all the
+workload running at the moment on that node and make sure no new Pod is
+allocated on it. This process is in two steps.
+
+First you *cordon* the node. Cordoning a node will stop pods from being
+scheduled on it. Before:
+
+    $ kubectl describe nodes | grep -i taint
+    Taints:             node-role.kubernetes.io/master:NoSchedule
+    Taints:             <none>
+
+Now cordon it:
+
+    $ kubectl cordon ip-10-0-11-215.eu-west-1.compute.internal
+    node/ip-10-0-11-215.eu-west-1.compute.internal cordoned
+
+And you can see a new taint is now associated with the node:
+
+    $ kubectl describe nodes | grep -i taint
+    Taints:             node-role.kubernetes.io/master:NoSchedule
+    Taints:             node.kubernetes.io/unschedulable:NoSchedule
+
+Now you can *drain* it. Draining a node will first cordon it, but I put it in
+two different steps so to be clear.
+
+*NOTE*1*: As of v1.13 deamonset still can't be drained. If you run the simple
+drain command you will receive an error and a new flag needs to be passed.
+
+    $ kubectl drain --ignore-daemonsets ip-10-0-11-215.eu-west-1.compute.internal
+    node/ip-10-0-11-215.eu-west-1.compute.internal already cordoned
+    [...]
+
+*NOTE*2*: Drain will also fail if you have pods with local storage. You need to
+pass a new flag to force through.
+
+    $ kubectl drain --ignore-daemonsets --delete-local-data ip-10-0-11-215.eu-west-1.compute.internal
+
+Is very important to know that the _drain_ command will move all the Pods away
+EVEN if there is no node able to recieve it (they will stay pending). Make sure
+you have enough capacity to host all the Pods on the node you want to work on
+before draining it.
 
 * Re/Sources (not already referenced directly)
 

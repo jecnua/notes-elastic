@@ -1,5 +1,5 @@
 Certified Kubernetes Administrator (CKA) cert preparation
-|| Last update: 20 Dec 2018
+|| Last update: 27 Dec 2018
 
 * Intro
 
@@ -50,6 +50,11 @@ Get used to this tools:
 - etcdctl
 - tmux/screen [[https://gist.github.com/MohamedAlaa/2961058#file-tmux-cheatsheet-markdown][tmux-cheatsheet-markdown]] [[https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/][a-quick-and-easy-guide-to-tmux]]
 - vim/nano
+
+And these:
+
+    kubectl get deployment <name> --export -o yaml # export will remove the unique parameters
+    kubectl create deployment <name> --image <image_name> --dry-run
 
 Recap:
 

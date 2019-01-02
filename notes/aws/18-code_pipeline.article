@@ -1,0 +1,165 @@
+CodePipeline
+|| Last update: 01 Jan 2019
+
+* Intro
+
+CodePipeline is defined as a _continuous_delivery_ service. It allows you to
+manage the workflow from code commit to release. Allows deployments and manual
+approval gates.
+
+After releasing to lower environment it can to integration testing, load test
+and the sort. It can deploy to EC2 via *AWS*Code*deploy*.
+
+It supports:
+
+- EC2
+- Beanstalk
+- OpsWorks
+- ECS
+
+To communicate between stages, input and output artifacts are saved on s3.
+You choose an s3 bucket when you create the pipeline. This method looks similar
+to councourse.
+
+As far as I can see CodePipeline is just a way to pipe togheter:
+
+- CodeCommit
+- CodeBuild
+- CodeDeploy
+
+Since the actions are forced to a subset, what I can see people doing is just
+running all CodeBuild steps with their own docker image.
+
+* Pipelines
+
+A pipeline is a workflow construct that describe how your software goes
+through the process.
+
+When you create the first pipeline an s3 bucket is created in the same region
+with a random suffix. This will store all the artifacts from all the Pipelines
+(all of them have a different prefix in s3).
+
+If you have _cross_region_ stages, then you need a bucket in each region.
+
+You can have multiple sources. If ANY of them changes, all the sources are run
+through the pipeline.
+
+A pipeline is made from:
+
+- Stages
+- Actions
+- Transitions
+
+* Actions
+
+- [[https://docs.aws.amazon.com/codepipeline/latest/userguide/actions.html]]
+
+AWS CodePipeline provides support for six types of actions:
+
+- Source
+- Build
+- Test
+- Deploy
+- Approval
+- Invoke (only lambda)
+
+Each stage have a unique name and at least one action. The action is _somethings_
+that interact with the input artifacts. A stage can work on only one revision
+at a time.
+
+All actions need to be completed *successfully* before moving to the
+next one (before the stage is considered successful).
+Actions can happen in sequence or in parallel.
+
+Every action has a *type*, and it can have one or both of the following:
+
+- input artifact
+- output artifact
+
+Artifacts have unique names.
+
+If one action fails you have a _failure_. This will stop the pipeline and it
+won't restart for that revision until explicitaly asked.
+
+Unfortunately actions are FORCED to be a specific subset, but you can use
+containers via CodeBuild and Lambda via the *invoke* actions.
+
+
+
+- [[https://docs.aws.amazon.com/codepipeline/latest/userguide/actions-create-custom-action.html]]
+
+** Revisions
+
+Since only one revision can go at one time, they are batched. If a newer revision
+is successful all the way through, the old one (batched) is discarded.
+
+* Transitions
+
+Stages are connected via transitions. A transitions is the act of moving and
+artifact from one stage to another.
+You can disable transitions to avoid that every revision (commit) will go all
+the way to the end of the pipeline.
+
+** Gates
+
+An approval action can be set to prevent the pipeline from transitioning.
+This is useful if you don't want to have continuous deployment.
+
+* Stages
+
+The workflow is divided in stages. You can configure multiple parallel actions
+in the same stage.
+You can label stages for accounting and human readability.
+
+Pipelined can be started by cloudwatch.
+
+Pipelines *MUST* have at least two stages. The second stage must be either a
+build or deployment stage. You *NEED* to choose a provider.
+
+You can have has many stages as you want (two or more).
+
+However while the stages are flexyble, actions are not. You can only choose
+from a limited amount of options that AWS give you (no concept of docker steps).
+
+** Source action
+
+Predefined action provider:
+
+- AWS S3: A versioned bucket. It detects events on the bucket to trigger.
+- AWS Code Commit
+- AWS ECR
+- GitHub (but not github enterprise): Via oAuth and webhook
+
+** Build Actions
+
+Predefined action provider:
+
+- AWS CodeBuild
+- Jenkins
+- SolanoCI
+
+** Test Action
+
+Predefined action provider:
+
+- AWS CodeBuild
+- AWS Device Farm
+- BlazeMeter
+[...]
+
+** Deploy Actions
+
+Predefined action provider:
+
+- AWS CloudFormation
+- AWS CodeDeploy
+- AWS ECS
+- AWS ECS blue/green (via CodeDeploy)
+- AWS Beanstalk
+- AWS OpsWorks Stack
+- AWS Service Catalog
+- Alexa Skills Kit
+
+You can use CF to apply stacks or change set as part of a pipeline execution.
+If you use ECS, CodePipeline can use ECS as a provider and do blue green releases
+on the cluster.

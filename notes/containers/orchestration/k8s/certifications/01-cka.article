@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 27 Dec 2018
+|| Last update: 2 Jan 2019
 
 * To clarify
 
@@ -446,9 +446,10 @@ It can be implemented with kubectl:
 ** Labels
 
 - [[https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/]]
+- [[https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/]]
 
-Labels are key-value pairs that can be attached to any _Object_. They are defined
-under the metadata field.
+Labels are key-value pairs, defined
+under the metadata field, that can be attached to any _Object_.
 
     Labels are intended to be used to specify identifying attributes of objects
     that are meaningful and relevant to users.
@@ -457,12 +458,16 @@ under the metadata field.
     and/or structured, data.
     Source: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 
-They can be used to organize and select a subset of objects.
-They *do*not*provide*uniqueness* to objects. Each key needs to be unique for a
+They *do*not*provide*uniqueness* to objects. Each key needs to be unique for any
 given object! Non-identifying information should be recorded using _annotations_.
 
 Labels are generally used to map organizational/logic structures onto the system
-objects. Allow cross-cutting operations (more flexible than the hierarchical one).
+objects.
+They can be used to organize and select a subset of objects (for example to do
+bulk operations) and allow cross-cutting operations (more flexible than the
+hierarchical structure).
+
+They can have a prefix structured as a DNS subdomain:
 
     Valid label keys have two segments: an optional prefix and name, separated by a
     slash (/). The name segment is required and must be 63 characters or less.
@@ -474,19 +479,48 @@ objects. Allow cross-cutting operations (more flexible than the hierarchical one
     Valid label values must be 63 characters or less.
     Source: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 
-Internally ks8 index and reverse-index labels for efficient queries and watches.
+Internally ks8 *index* and *reverse-index* labels for efficient queries and
+_watches_.
 
-You can add a label to any object via the cli by using the *kubectl*label* command:
+You can add a label to any object via the cli by using the *kubectl*label*
+command:
 
-    kubectl label deployment <deployment_name> <key>=<value>
+    kubectl label <object> <object_name> <key>=<value>
     # example
-    kubectl label deployment nginx owner=jecnua
+    kubectl label deployment nginx app=test
 
 If a label is already present with that name you can use the *--override* flag
 to change it.
 You can see in the cli all the labels of an _Object_ by passing *--show-labels*:
 
     kubectl get deployments,rs,pod --all-namespaces --show-labels
+
+You can show the of a label in the kubectl response by passing the *-L* flag.
+
+    $ kubectl get pods -L app
+    NAME                     READY   STATUS    RESTARTS   AGE   APP
+    nginx-7f6cdb7fd7-bqvfv   1/1     Running   0          25m   nginx
+    nginx-7f6cdb7fd7-c8696   1/1     Running   0          28m   test
+
+Finally you can select a subset of element by using it as a selector with *-l*.
+
+    kubectl get deploy,rs,po -l app=nginx
+
+Selecting via labels allow you to use two type of selections:
+
+- Equality based: The supported operators are =, ==, !=
+- Set bases: The supported operators here are in , notin and exists
+
+There is also a limited support for selection via field called *field*selector*:
+
+    kubectl get pod --field-selector metadata.name=a-pod
+    kubectl get pod --field-selector spec.name=an-example
+    kubectl get pod --field-selector metadata.namespace=default
+
+There are a set of recommended labels that k8s advices at
+[[https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/]].
+
+Exercises: [[https://github.com/jecnua/certified-kubernetes-administrator-cka-kata/tree/master/01-labels]]
 
 ** Label selectors
 
@@ -869,7 +903,7 @@ ReplicaSet add to the Pod the _scaling_ and _healing_ concept.
 Deployments add _versioning_ and _rollbacks_.
 Services adds a static (non-ephemereal) IP and networking.
 
-** spec and status
+** Spec and Status
 
 Inside an object we declare our intent in the spec field. The actual state is
 instead recorded by k8s control plane in the status field.
@@ -1287,19 +1321,29 @@ NOTE: If you change the pod definition of a ReplicaSet nothing will happen. Only
 when one of the Pod dies the new one (and only this new one) will be the new
 version.
 
-The RS add the concept of _number_of_replicas_ and _self_healing_ to pods.
+The ReplicaSet add the concept of _number_of_replicas_ and _self_healing_ to pods.
 Encapsulate a pod template definition inside their definition.
 You can also think it gives you scaling but you need to change the number manually.
 
-The RS selctors allows to match pods that the RS will work it. It allows loose
+The ReplicaSet selectors allows to match pods that the ReplicaSet will work it. It allows loose
 coupling between the two.
 
-You can delete a rs without affecting the pod by using the command:
+You can delete a ReplicaSet without affecting the pod by using the command:
 
     kubectl delete --cascade=false
 
-When you adopt pre-existing pods with a new rs, this won't be updated to the
-new spec! they need to die first.
+When you adopt pre-existing pods with a new ReplicaSet, this won't be updated to the
+new spec! They need to be terminated first.
+
+Changing the label used as a selector from a ReplicaSet of a Pod will remove the Pod
+from the control of the controller. Let's say for example that a Pod is not working
+and you want to keep it alive for debugging but still restore service, you can
+change the label used by the ReplicaSet so that a new one will be create while keeping
+the original alive.
+
+    kubectl label pod <pod_id> <selector_key>=<random_value> --overwrite
+    # example
+    kubectl label pod nginx-7f6cdb7fd7-c8696 app=debug-mode --overwrite
 
 *** Horizontal Pod Autoscaler (HPA)
 
@@ -1340,8 +1384,27 @@ Commands are in the form of _cluster-autoscaler-_.
 
 ** DaemonSets
 
+- [[https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/]]
+- [[https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/]]
+
 Will run a pod (and only one) at all times on each node of the cluster.
-You can however user label selector to restrict which nodes it will run on.
+From v1.12 the scheduler handles DaemonSets deployments so you can use label
+selector to restrict which nodes it will run on.
+When a node needs to be remove from the cluster the controller will cleanup
+after the DeamonSet.
+
+Like Deployments they have a concept of history and deployment strategy.
+Rollout works in the same way.
+
+The only difference is the type of strategy you can choose. Valid values of
+daemonset.spec.updateStrategy are:
+
+- OnDelete (default): Will wait for the original pod to die before applying the change
+- RollingUpdate: Same as Deployments
+
+Another difference is that the only option of
+_.spec.updateStrategy.rollingUpdate_ available is maxUnavailable (default 1).
+They won't allow you to run a new one before deleting the old one.
 
 ** StatefulSets
 
@@ -1397,13 +1460,10 @@ the number of pods.
 Other advanced functionality of the deployments are:
 
 - Autoscaling (via HPA)
-- Pausing and resuming (for example to fix bugs)
+- Pausing/resuming (for example to fix bugs)
+- Rolling deployments with proportional scaling (via maxSurge/maxUnavailable)
 - Versioning
 - Rollback
-- Rolling deployments
-- Proportional scaling (? CHECK)
-- Blue-green (how? CHECK)
-- Canary (how? CHECK)
 
 NOTE: If you tell a new deployment to point with labels to an existing rs and
 pods it will take control of the rs and will be able to manage it (scaling).
@@ -1940,8 +2000,8 @@ scheduled on it. Before:
 
 Now cordon it:
 
-    $ kubectl cordon ip-10-0-11-215.eu-west-1.compute.internal
-    node/ip-10-0-11-215.eu-west-1.compute.internal cordoned
+    $ kubectl cordon ip-x-x-x-x.eu-west-1.compute.internal
+    node/ip-x-x-x-x.eu-west-1.compute.internal cordoned
 
 And you can see a new taint is now associated with the node:
 
@@ -1955,14 +2015,14 @@ two different steps so to be clear.
 *NOTE*1*: As of v1.13 deamonset still can't be drained. If you run the simple
 drain command you will receive an error and a new flag needs to be passed.
 
-    $ kubectl drain --ignore-daemonsets ip-10-0-11-215.eu-west-1.compute.internal
-    node/ip-10-0-11-215.eu-west-1.compute.internal already cordoned
+    $ kubectl drain --ignore-daemonsets ip-x-x-x-x.eu-west-1.compute.internal
+    node/ip-x-x-x-x.eu-west-1.compute.internal already cordoned
     [...]
 
 *NOTE*2*: Drain will also fail if you have pods with local storage. You need to
 pass a new flag to force through.
 
-    $ kubectl drain --ignore-daemonsets --delete-local-data ip-10-0-11-215.eu-west-1.compute.internal
+    $ kubectl drain --ignore-daemonsets --delete-local-data ip-x-x-x-x.eu-west-1.compute.internal
 
 Is very important to know that the _drain_ command will move all the Pods away
 EVEN if there is no node able to recieve it (they will stay pending). Make sure

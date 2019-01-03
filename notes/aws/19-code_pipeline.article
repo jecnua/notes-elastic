@@ -1,0 +1,316 @@
+AWS CodePipeline
+|| Last update: 02 Jan 2019
+
+* Intro
+
+CodePipeline is defined as a _continuous_delivery_ service. It allows you to
+manage the workflow from code commit to release. Allows deployments and manual
+approval gates.
+
+After releasing to lower environment it can to integration testing, load test
+and the sort. It can deploy to EC2 via *AWS*Code*deploy*.
+
+It supports:
+
+- EC2
+- Beanstalk
+- OpsWorks
+- ECS
+
+To communicate between stages, input and output artifacts are saved on s3.
+You choose an s3 bucket when you create the pipeline. This method looks similar
+to councourse.
+
+As far as I can see CodePipeline is just a way to pipe togheter:
+
+- CodeCommit
+- CodeBuild
+- CodeDeploy
+
+Since the actions are forced to a subset, what I can see people doing is just
+running all CodeBuild steps with their own docker image.
+
+* Pipelines
+
+A pipeline is a workflow construct that describe how your software goes
+through the process.
+
+When you create the first pipeline an s3 bucket is created in the same region
+with a random suffix. This will store all the artifacts from all the Pipelines
+(all of them have a different prefix in s3).
+
+If you have _cross_region_ stages, then you need a bucket in each region.
+
+You can have multiple sources. If ANY of them changes, all the sources are run
+through the pipeline.
+
+A pipeline is made from:
+
+- Stages
+- Actions
+- Transitions
+
+* Actions
+
+- [[https://docs.aws.amazon.com/codepipeline/latest/userguide/actions.html]]
+
+An *action* is a part of a sequence in a _Stage_. The action task is performed
+on the input artifact of that stage. They occur in a specific order, in sequence
+or in parallel.
+
+AWS CodePipeline provides support for six types of actions:
+
+- Source
+- Build
+- Test
+- Deploy
+- Approval
+- Invoke (only lambda)
+
+Each stage have a unique name and at least one action. The action is _somethings_
+that interact with the input artifacts. A stage can work on only one revision
+at a time.
+
+All actions need to be completed *successfully* before moving to the
+next one (before the stage is considered successful).
+Actions can happen in sequence or in parallel.
+
+Every action has a *type*, and it can have one or both of the following:
+
+- input artifact
+- output artifact
+
+Artifacts have unique names.
+
+If one action fails you have a _failure_. This will stop the pipeline and it
+won't restart for that revision until explicitaly asked.
+
+Unfortunately actions are FORCED to be a specific subset, but you can use
+containers via CodeBuild and Lambda via the *invoke* actions.
+
+You can retry single action without the whole pipeline if you want.
+
+** Revisions
+
+Since only one revision can go at one time, they are batched. If a newer revision
+is successful all the way through, the old one (batched) is discarded.
+
+** Custom action
+
+- [[https://docs.aws.amazon.com/codepipeline/latest/userguide/actions-create-custom-action.html]]
+
+You can create custom actions via CLI/CF.
+You can reuse between pipelines and use version identifiers to differentiate
+them.
+
+Custom action are basically webhook for people to poll on. You will need to
+create a job worker somewhere that accept requests, execute the job and return
+the result.
+The job need to be located that can read CodePipeline public endpoint.
+
+You Job Worker needs to be able to poll for jobs from CodePipeline. When the
+pipeline have a custom action it will create a _job_request_. The worker detects
+the request and perform a task. Then a result needs to be sent back to
+CodePipeline.
+
+There are two options in the setting of a custom action:
+
+- entityUrlTemplate: Static link that provides info about THAT specific build
+- executionUrlTemplate: Dynamic link pointing to current or latest run
+
+** Job worker
+
+The job worker wil have to poll CodePipeline. Three strategies to authorize:
+
+- EC2 with IAM role
+- Identity federation in aws
+- IAM User
+
+These are the steps:
+
+- Job agent poll for jobs
+- Return jobs details
+- Acknowledge job
+- Build process runs
+- Send job result
+
+CodePipeline queues a job when you reach a custom action. When you poll and
+acknowledge a job, the system will reply to you if you can have it or
+someone already asked for it.
+
+You will need access to s3 bucket to pull and push artifacts.
+To read/write on s3 you need an s3 client using signature version 4 signing
+(Sig v4) required for SSE-KMS.
+Currently only [[https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingKMSEncryption.html][SSE-KMS]]
+is supported for encryption.
+
+** Invoke action
+
+Invoking a Lambda is adviced to do tasks like:
+
+- Applying CF stacks
+- Switching DNS during a blue/green
+- Backup EBS before destructive actions
+- Test if the release worked successfully (like a smoke test)
+
+and so on...
+
+* Transitions
+
+Stages are connected via transitions and defines the act of moving and
+artifact from one stage to another.
+You can disable transitions to avoid that every revision (commit) will go all
+the way to the end of the pipeline.
+
+They can be enabled or disabled: when you re-enable it, the latest revision runs
+through the remaining stages of the pipeline unless *30*days* have passed.
+
+Use-cases? For example disable releases in the weekend even if someone pushes code
+by error.
+
+* Stages
+
+The workflow is divided in stages. You can configure multiple parallel actions
+in the same stage.
+You can label stages for accounting and human readability.
+
+Pipelined can be started by cloudwatch.
+
+Pipelines *MUST* have at least two stages. You *NEED* to choose a provider.
+
+You can have has many stages as you want (two or more).
+
+However while the stages are flexible, actions are not. You can only choose
+from a limited amount of options that AWS give you (no concept of docker steps).
+
+** Source action
+
+Predefined action provider:
+
+- AWS S3: A versioned bucket. It detects events on the bucket to trigger.
+- AWS Code Commit
+- AWS ECR
+- GitHub (but not github enterprise): Via oAuth and webhook
+
+** Build Actions
+
+Predefined action provider:
+
+- AWS CodeBuild
+- Jenkins
+- SolanoCI
+
+** Test Action
+
+Predefined action provider:
+
+- AWS CodeBuild
+- AWS Device Farm
+- BlazeMeter
+[...]
+
+** Deploy Actions
+
+Predefined action provider:
+
+- AWS CloudFormation
+- AWS CodeDeploy
+- AWS ECS
+- AWS ECS blue/green (via CodeDeploy)
+- AWS Beanstalk
+- AWS OpsWorks Stack
+- AWS Service Catalog
+- Alexa Skills Kit
+
+You can use CF to apply stacks or change set as part of a pipeline execution.
+If you use ECS, CodePipeline can use ECS as a provider and do blue green releases
+on the cluster.
+
+** Gates
+
+An approval action can be set to prevent the pipeline from transitioning.
+This is useful if you don't want to have continuous deployment.
+
+You can add three options when requesting an approval:
+
+- Publish approval notifications to SNS topic
+- Specify URL for review
+- Enter comments for approvers
+
+You can approve vai GUI, CLI or SDK.
+
+NOTE: You can't put an Approval action on the Source stage.
+
+** Cross-region
+
+You cannot create cross-region actions for these action types:
+
+- Source
+- Third-party
+- Custom
+
+You will need to create an artifact bucket in each region.
+
+You will need to pass to the pipeline a list of all the buckets and region
+you will have actions (you will pass entries in the artifactStores array).
+
+When a pipeline includes a cross-region action, it will replicate the source
+artifacts from the pipeline region to that region.
+
+* Workflow
+
+** Detection method
+
+There are two supported way to start a pipeline upon a change:
+
+- Events (recommended): CW Events or webhooks
+- Polling
+
+NOTE: Using events allow higher limits. Compared to polling you can have more
+pipelines using events.
+
+The detection method changes depending on the source type:
+
+- AWS CodeCommit: Event or polling
+- AWS S3: Event or polling
+- GitHub: Webhook or polling
+- ECR: Event or polling
+
+You can start a pipeline manually or automatically.
+Automatically is via events from the providers (like a new ECR image version).
+All three supported sources allow polling of the resource to check for changes
+but it is not adviced.
+
+If you create a new pipeline with TF, you need to crate the CW Event yourself
+to notify when a new xyz if triggered. There are steps in the docs on how to do
+it.
+
+The events need the permission _codepipeline:StartPipelineExecution_ in their
+assumed IAM role.
+
+NOTE: When you do this you need to set the source action option
+_PollForSourceChange_ as false (to disable polling).
+
+S3 is a little more tricky since you need to use CloudTrail to trigger the event.
+Cloudtrail will store all the events happening on the bucket you need and you
+can filter the events you need and send them to CWEvents.
+
+** Polling
+
+As said before, you can avoid all this and just poll the resource for changes.
+This is not the advised method but works.
+
+* Infrastructure as code
+
+You cannot use the CLI to create pipeline that include _partner_ actions. Only
+the GUI.
+
+Honestly the CLI is a single command with a parameter that takes a json where
+all the configs are...
+
+Another limitation is that source actions CANNOT use and S3 bucket from
+another account.
+
+One think to be careful about is that since polling was the first and original
+method for CodePipeline is also by default set to True. This means that every
+time you create a  pipeline with events you need to specify the flag as false.

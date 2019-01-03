@@ -1,0 +1,162 @@
+AWS CodePipeline
+|| Last update: 02 Jan 2019
+
+* Intro
+
+Is a build service that scales automatically and pre-package some common
+building env like maven, gradle and so on.
+
+Is fully managed and you pay by the minute.
+
+The components of the system are:
+
+- Build input artifacts
+- Build spec
+- build project
+- Build output artifact
+
+* Build project
+
+The build project defines where to get the source code, build env to use,
+commands (build spec) and where to store the output.
+Is a combination of OS, runtimes and tools.
+
+* Build environment
+
+It is expressed as a docker image. You define them in the environment part
+of the build spec.
+
+    "environment": {
+     "type": "LINUX_CONTAINER",
+     "image": "aws/codebuild/java:openjdk-8",
+     "computeType": "BUILD_GENERAL1_SMALL"
+     }
+
+At the moment only LINUX_CONTAINER are supported.
+
+* Build spec
+
+Build spec are in YAML and define the operations you want to run in the environment
+and in which orders. At the root of the yaml we have _phases_ and _artifacts_.
+
+    version: 0.2
+    phases:
+     install:
+     commands:
+     - echo Nothing to do in the install phase...
+     pre_build:
+     commands:
+     - echo Nothing to do in the pre_build phase...
+     build:
+     commands:
+     - echo Build started on `date`
+     - mvn install
+     post_build:
+     commands:
+     - echo Build completed on `date`
+    artifacts:
+     files:
+     - target/messageUtil-1.0.jar
+
+Phases are install, pre_build, build, and post_build. You do not have to define
+phases you don't want to use.
+
+NOTE: You cannot change the spelling of these build phase names, and you cannot
+create more build phase names.
+
+You can use code build to lunch CF if you want.
+
+There needs to be a buildpec.yml file in the root dir of your project to run
+this service, how can you then have multiple different images running different
+thing in the same project.
+
+    Buildspec name - optional
+    By default, CodeBuild looks for a file named buildspec.yml in the source
+    code root directory. If your buildspc file uses a different name or location,
+    enter its path from the source root here (for example, buildspec-two.yml or
+    configuration/buildspec.yml).
+    Source: Docs
+
+I wonder if you can "insert" build command in a way that you don't need to put
+the file inside the project.
+
+What amazon says in [[https://aws.amazon.com/blogs/devops/create-multiple-builds-from-the-same-source-using-different-aws-codebuild-build-specification-files/][this blog]]
+it 'put more files in the repo'...
+
+** Docker in docker
+
+- [[https://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker-custom-image.html]]
+
+To build docker in docker add this:
+
+    phases:
+      install:
+        commands:
+          - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
+          - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+
+** Sintax
+
+It can load in the env parameter from parameter store automatically by setting
+the keys in _parameter-store_.
+
+    version: 0.2
+    run-as: Linux-user-name
+    env:
+     variables:
+       key: "value"
+       key: "value"
+     parameter-store:
+       key: "value"
+       key: "value"
+
+You can run each phase as a specific user:
+
+    phases:
+     install:
+       run-as: Linux-user-name
+       commands:
+       - command
+
+NOTE: If run-as is not specified, it will run the commands as root.
+
+    install:
+     commands:
+     - command
+     finally:
+     - command
+     - command
+
+Finally is an optional block that allows you to execute commands after all the
+_commands_ section. They will run even if the command fails.
+
+If you want to interact with the docker daemon you need to run the container
+as privileged.
+
+** Sources
+
+Supported sources are:
+
+- None
+- S3
+- AWS CodeCommit
+- Github
+- Bitbucket
+- Github enterprise
+
+You can also now use [[https://docs.aws.amazon.com/codebuild/latest/userguide/sample-multi-in-out.html][multiple input]]
+Sources and multiple output.
+
+* Usage via CLI
+
+    aws codebuild create-project --generate-cli-skeleton
+
+Will generate the schelethon in JSON.
+
+    aws codebuild create-project --cli-input-json file://create-project.json
+
+TO apply.
+
+* Debug
+
+You can debug a buildconfig with this https://github.com/aws/aws-codebuild-docker-images/blob/master/local_builds/codebuild_build.sh

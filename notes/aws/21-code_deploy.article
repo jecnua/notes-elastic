@@ -1,5 +1,5 @@
 AWS CodeDeploy
-|| Last update: 02 Jan 2019
+|| Last update: 4 Jan 2019
 
 * Intro
 
@@ -10,103 +10,64 @@ Automates app deployment on:
 - ECS services
 
 It is a generic tool that can manage not only apps, but also packages and config.
-
 Does it live in the same space as OpsWork?
 
-* Sources
+CodeDeploy can integrate with external services like ansible, chef, bitbucket
+and more.
 
 Supported sources:
 
 - S3
-- Github
-- Bitbucket
+- Github (only for EC2/On-prem)
+- Bitbucket (only for EC2/On-prem)
+
+I am going to focus on ECS and Lambda mostly.
 
 * Deployment options
 
-You can have in-place or blue/green.
+CodeDeploy provides two deployment type options:
 
-All deployments on EC2/Premises will require installing an agent on the node
-that communicates with the system.
-
-** In-place
-
-With in place the old revision is stopped, the new one installed and configured
-and the new one started and validated.
-During these actions you can use the LB and deregister the servers while this
-happens.
-
-NOTE: Lambda and ECS cannot use this type
+- In-place: Only for EC2/On-prem
+- Blue/green: ECS and Lambda only option, also available EC2/On-prem
 
 ** Blue/Green
 
-All lambda and ecs releases are of this type.
+All lambda and ECS releases are of this type.
+It depends on the target.
 
-It depends on the target:
+You need load balancers to shift the traffic from one asg to another. With ASG
+After the instances in the new deployment are registered on the load balancers
+the old ones are deregistered.
 
-*** EC2
+All three types of LB can be used.
+
+** Deployment for EC2
 
 A new set of instances in a deployment group is created, traffic is shifted
 from the old one to the new one after the system is validated. The old ones
 can be destroyed or kept.
 
-*** Lambda
+*** In place for EC2/On-prem
 
-All AWS Lambda compute platform deployments are blue/green deployments.
+NOTE: Only mechanism working for On-prem. Lambda and ECS cannot use this type.
 
-    Traffic is shifted from your current serverless
-    environment to one with your updated Lambda function versions. You can specify Lambda functions
-    that perform validation tests and choose the way in which the traffic shift occurs.
-    Source: Docs
+All deployments on EC2/On-prem will require installing an agent on the nodes
+you want to deploy on.
+During these actions you can use the LB and deregister the servers.
+During the deployment, the load balancer with prevent any traffic from reaching
+the servers. this means downtime. The steps are:
 
-For Lambda it will update the version. Traffic can be shifted in one of these
-patterns.
+- deregistered
+- stopped and updated
+- tested
+- registered
 
-    - Canary: Traffic is shifted in two increments. You can choose from predefined canary options that
-    specify the percentage of traffic shifted to your updated Lambda function version in the first
-    increment and the interval, in minutes, before the remaining traffic is shifted in the second increment.
-    - Linear: Traffic is shifted in equal increments with an equal number of minutes between each
-    increment. You can choose from predefined linear options that specify the percentage of traffic shifted
-    in each increment and the number of minutes between each increment.
-    - All-at-once: All traffic is shifted from the original Lambda function to the updated Lambda function
-    version all at once.
-    Source: Docs
+*** Blue/Green for EC2/On-prem
 
-*** ECS
+NOTE: Only works with EC2 and not On-prem.
 
-ECS will do blue green by installing a new version of the app as a new
-replacement task set. Then will re-route the traffic from the original
-application or task set to the new one.the original is terminated after a
-successful deployment.
-optional trigger, alarm, and rollback settings.
-
-While testing a test listener can be used to validate the new one.
-
-The LB traffic will be moved from the old one to the new one.
-
-All the traffic is moved at once.
-
-* Internals of In place
-
-You need an application specification file (AppSpec file) in your project.
-It will define the actions to execute. You bundle this file with the deployable
-in a zip and push to s3. This is called _application_revision_.
-
-If using EC2 you need to pass a set of nodes to codedeploy,
-AWS CodeDeploy calls a set of Amazon EC2 instances a deployment group.
-A deployment group contains individually tagged Amazon EC2 instances, Amazon EC2 instances in
-Amazon EC2 Auto Scaling groups, or both.
-
-The agent will then pull everything from s3 after having spoken with the
-CodeDeploy and release.
-
-* Internals of blue/green
-
-- AWS Lambda: Traffic is shifted from one version of a Lambda function to a new version of the same
-Lamdba function.
-- Amazon ECS: Traffic is shifted from a task set in your Amazon ECS service to an updated, replacement
-task set in the same Amazon ECS service.
-- EC2/On-Premises: Traffic is shifted from one set of instances in the original environment to a
-replacement set of instances.
+The instances in a deployment group are replaces with a different set of
+instances.
 
 Remember you must identify servers by tags or ASG. They need to have the agent
 installed and the correct role.
@@ -116,8 +77,155 @@ installed and the correct role.
     this option, AWS CodeDeploy uses the Amazon EC2 Auto Scaling group you specify as a template
     for the replacement environment, including the same number of running instances and many other
     configuration options.
+
     Choose instances manually: You can specify the instances to be counted as your replacement using
     Amazon EC2 instance tags, Amazon EC2 Auto Scaling group names, or both. If you choose this
     option, you do not need to specify the instances for the replacement environment until you create a
     deployment.
     Source: Docs
+
+You will need to create a *deployment*group* to use this functionality, and you
+can choose how your environment is specified.
+
+If you allow CodeDeploy to do everything, and if you are using an ASG, the system
+will copy the ASG (config, number of running instances and so on).
+Otherwise you can choose the instances manually to use for the new release manually and
+then tell the system to use them.
+
+Also you will need to specify:
+
+- LB used to route the traffic from one asg to another.
+- If you want the traffic to be rerouted automatically or if you want to do it manually.
+- The rate the traffic is routed
+- If the OLD instances needs to be kept or removed.
+
+** Integrations with ASG
+
+Is better to associate an ASG with only one Deployment Group (but there is no
+way to stop you from doing so).
+
+** Gotchas
+
+- The execution order of custom lifecycle hook events cannot be predetermined
+- Scale-up events during a deployment results in a mixed environment (is better to disable some events before a release)
+-
+
+* Deployment for  Lambda
+
+*All* AWS Lambda compute platform deployments are *blue/green* deployments.
+
+** Traffic shift options
+
+    Traffic is shifted from your current serverless
+    environment to one with your updated Lambda function versions. You can specify Lambda functions
+    that perform validation tests and choose the way in which the traffic shift occurs.
+    Source: Docs
+
+For Lambda it will update the version. Traffic can be shifted in one of these
+patterns.
+
+- Canary
+- Linear
+- All-at-once
+
+With Canary traffic is shifted in two increments. You can choose from predefined canary options that
+specify the percentage of traffic shifted to your updated Lambda function version in the first
+increment and the interval, in minutes, before the remaining traffic is shifted in the second increment.
+
+With linear traffic is shifted in equal increments with an equal number of minutes between each
+increment. You can choose from predefined linear options that specify the percentage of traffic shifted
+in each increment and the number of minutes between each increment.
+
+In all at once all traffic is shifted from the original Lambda function to the
+updated Lambda function version all at once.
+
+* Deployment for ECS
+
+CodeDeploy release on ECS only with blue/green.
+
+When setting it up, in the _deployment_ config you will need to set up, aside
+from the ecs cluster and service, also the A/NLB, the production listener (and
+optionally a test listener) and two target groups (old and new).
+
+On the AppSpec you will need to define:
+
+- Task definition
+- Container name
+- Container port
+
+Internally CodeDeploy will keep track of the *PRIMARY*.
+
+by installing a new version of the app as a new
+replacement task set. Then will re-route the traffic from the original
+application or task set to the new one.the original is terminated after a
+successful deployment.
+optional trigger, alarm, and rollback settings.
+While testing a test listener can be used to validate the new one.
+The LB traffic will be moved from the old one to the new one.
+
+NOTE: All the traffic is moved at once, there is no concept of shifting traffic
+slowly.
+
+* Internals of In place
+
+You need an application specification file (AppSpec file) in your project.
+It will define the actions to execute. You bundle this file with the deployable
+in a zip and push to s3. This is called _application_revision_.
+
+If using EC2 you need to pass a set of nodes to CodeDeploy,
+AWS CodeDeploy calls a set of Amazon EC2 instances a deployment group.
+
+A deployment group contains individually tagged Amazon EC2 instances,
+Amazon EC2 instances in an Auto Scaling groups, or both.
+
+The agent will then pull everything from s3 after having spoken with the
+CodeDeploy and release.
+
+* Internals of blue/green
+
+- AWS Lambda: Traffic is shifted from one version of a Lambda function to a new version of the same Lamdba function.
+- Amazon ECS: Traffic is shifted from a task set in your Amazon ECS service to an updated, replacement task set in the same Amazon ECS service.
+- EC2: Traffic is shifted from one set of instances in the original environment to a replacement set of instances.
+
+* AppSpec file
+
+This is the file that allows you to define how your deployment is going to work.
+Depending on what service are you going to use, the file
+config changes.
+
+For ECS you will need (YAML or JSON): ecs service name, container name and port
++ function to validate
+For Lambda (YAML or JSON): Lambda function version + function to validate
+For EC2/Prem (YAML): You can run scripts after every stage of the process to
+validate
+
+* Health
+
+CodeDeploy will monitor the health status of instances in the deployment
+configuration.
+If this number falls under a limit defined in the deployment, it will fail.
+
+NOTE: Even if the minimum healthy hosts value is 0, deployment to at least one
+instance must succeed.
+
+There are three default deployment configuration:
+
+- CodeDeployDefault.OneAtATime: Predefined minimum healthy hosts value 99%
+- CodeDeployDefault.HalfAtATime: Predefined minimum healthy hosts value 50%
+- CodeDeployDefault.AllAtOnce: Predefined minimum healthy hosts value 0%
+
+You can define this values if you want in the config. It can be defined as a
+total number of instances or a percentage (when translated to a number will be
+rounded up).
+
+There are two types of health status for each instance:
+
+- revision health: Current/Old/Unknown Health based on the revision currently installed
+- instance health: Healthy/Unhealthy Based whether deployments to an instance have been successful
+
+* Roll back
+
+You can roll back deployments when conditions are met. For example the
+deployment fails or an alarm monitoring threshold is hit.
+
+When this happen you can choose to rollback manually or automatically.

@@ -1,4 +1,4 @@
-AWS CodePipeline
+AWS CodeBuild
 || Last update: 02 Jan 2019
 
 * Intro
@@ -13,7 +13,7 @@ The components of the system are:
 - Build input artifacts
 - Build spec
 - build project
-- Build output artifact
+- Build output artifacts
 
 * Build project
 
@@ -151,7 +151,7 @@ Sources and multiple output.
 
     aws codebuild create-project --generate-cli-skeleton
 
-Will generate the schelethon in JSON.
+Will generate the skeleton in JSON.
 
     aws codebuild create-project --cli-input-json file://create-project.json
 

@@ -1,0 +1,123 @@
+AWS CodeDeploy
+|| Last update: 02 Jan 2019
+
+* Intro
+
+Automates app deployment on:
+
+- EC2/On-premise
+- AWS Lambda
+- ECS services
+
+It is a generic tool that can manage not only apps, but also packages and config.
+
+Does it live in the same space as OpsWork?
+
+* Sources
+
+Supported sources:
+
+- S3
+- Github
+- Bitbucket
+
+* Deployment options
+
+You can have in-place or blue/green.
+
+All deployments on EC2/Premises will require installing an agent on the node
+that communicates with the system.
+
+** In-place
+
+With in place the old revision is stopped, the new one installed and configured
+and the new one started and validated.
+During these actions you can use the LB and deregister the servers while this
+happens.
+
+NOTE: Lambda and ECS cannot use this type
+
+** Blue/Green
+
+All lambda and ecs releases are of this type.
+
+It depends on the target:
+
+*** EC2
+
+A new set of instances in a deployment group is created, traffic is shifted
+from the old one to the new one after the system is validated. The old ones
+can be destroyed or kept.
+
+*** Lambda
+
+All AWS Lambda compute platform deployments are blue/green deployments.
+
+    Traffic is shifted from your current serverless
+    environment to one with your updated Lambda function versions. You can specify Lambda functions
+    that perform validation tests and choose the way in which the traffic shift occurs.
+    Source: Docs
+
+For Lambda it will update the version. Traffic can be shifted in one of these
+patterns.
+
+    - Canary: Traffic is shifted in two increments. You can choose from predefined canary options that
+    specify the percentage of traffic shifted to your updated Lambda function version in the first
+    increment and the interval, in minutes, before the remaining traffic is shifted in the second increment.
+    - Linear: Traffic is shifted in equal increments with an equal number of minutes between each
+    increment. You can choose from predefined linear options that specify the percentage of traffic shifted
+    in each increment and the number of minutes between each increment.
+    - All-at-once: All traffic is shifted from the original Lambda function to the updated Lambda function
+    version all at once.
+    Source: Docs
+
+*** ECS
+
+ECS will do blue green by installing a new version of the app as a new
+replacement task set. Then will re-route the traffic from the original
+application or task set to the new one.the original is terminated after a
+successful deployment.
+optional trigger, alarm, and rollback settings.
+
+While testing a test listener can be used to validate the new one.
+
+The LB traffic will be moved from the old one to the new one.
+
+All the traffic is moved at once.
+
+* Internals of In place
+
+You need an application specification file (AppSpec file) in your project.
+It will define the actions to execute. You bundle this file with the deployable
+in a zip and push to s3. This is called _application_revision_.
+
+If using EC2 you need to pass a set of nodes to codedeploy,
+AWS CodeDeploy calls a set of Amazon EC2 instances a deployment group.
+A deployment group contains individually tagged Amazon EC2 instances, Amazon EC2 instances in
+Amazon EC2 Auto Scaling groups, or both.
+
+The agent will then pull everything from s3 after having spoken with the
+CodeDeploy and release.
+
+* Internals of blue/green
+
+- AWS Lambda: Traffic is shifted from one version of a Lambda function to a new version of the same
+Lamdba function.
+- Amazon ECS: Traffic is shifted from a task set in your Amazon ECS service to an updated, replacement
+task set in the same Amazon ECS service.
+- EC2/On-Premises: Traffic is shifted from one set of instances in the original environment to a
+replacement set of instances.
+
+Remember you must identify servers by tags or ASG. They need to have the agent
+installed and the correct role.
+
+    Copy an existing Amazon EC2 Auto Scaling group: During the blue/green deployment, AWS
+    CodeDeploy creates the instances for your replacement environment during the deployment. With
+    this option, AWS CodeDeploy uses the Amazon EC2 Auto Scaling group you specify as a template
+    for the replacement environment, including the same number of running instances and many other
+    configuration options.
+    Choose instances manually: You can specify the instances to be counted as your replacement using
+    Amazon EC2 instance tags, Amazon EC2 Auto Scaling group names, or both. If you choose this
+    option, you do not need to specify the instances for the replacement environment until you create a
+    deployment.
+    Source: Docs

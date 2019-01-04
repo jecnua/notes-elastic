@@ -19,9 +19,9 @@ It supports:
 
 To communicate between stages, input and output artifacts are saved on s3.
 You choose an s3 bucket when you create the pipeline. This method looks similar
-to councourse.
+to concourse.
 
-As far as I can see CodePipeline is just a way to pipe togheter:
+As far as I can see CodePipeline is just a way to pipe together:
 
 - CodeCommit
 - CodeBuild
@@ -83,7 +83,7 @@ Every action has a *type*, and it can have one or both of the following:
 Artifacts have unique names.
 
 If one action fails you have a _failure_. This will stop the pipeline and it
-won't restart for that revision until explicitaly asked.
+won't restart for that revision until explicitly asked.
 
 Unfortunately actions are FORCED to be a specific subset, but you can use
 containers via CodeBuild and Lambda via the *invoke* actions.
@@ -120,7 +120,7 @@ There are two options in the setting of a custom action:
 
 ** Job worker
 
-The job worker wil have to poll CodePipeline. Three strategies to authorize:
+The job worker will have to poll CodePipeline. Three strategies to authorize:
 
 - EC2 with IAM role
 - Identity federation in aws
@@ -146,7 +146,7 @@ is supported for encryption.
 
 ** Invoke action
 
-Invoking a Lambda is adviced to do tasks like:
+Invoking a Lambda is advised to do tasks like:
 
 - Applying CF stacks
 - Switching DNS during a blue/green
@@ -279,7 +279,7 @@ The detection method changes depending on the source type:
 You can start a pipeline manually or automatically.
 Automatically is via events from the providers (like a new ECR image version).
 All three supported sources allow polling of the resource to check for changes
-but it is not adviced.
+but it is not advised.
 
 If you create a new pipeline with TF, you need to crate the CW Event yourself
 to notify when a new xyz if triggered. There are steps in the docs on how to do

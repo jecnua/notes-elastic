@@ -1,0 +1,88 @@
+AWS OpsWorks
+|| Last update: 7 Jan 2019
+
+Configuration management service using a managed Puppet (Enterprise) or Chef.
+There are basically three flavours:
+
+- AWS OpsWorks for Puppet Enterprise
+- AWS OpsWorks for Chef automate
+- AWS OpsWorks Stacks
+
+The managed servers are backed up automatically, manage update and security
+patching.
+
+* AWS OpsWorks for Puppet Enterprise
+
+Provides a fully-managed puppet master Enterprise. This service can manage both
+on premise and AWS resources.
+
+Deploys puppet agent on the managed nodes.
+
+They use r10k.
+
+    In the r10k remote field of the Configure Puppet Code
+    Manager area, specify a valid SSH or HTTPS URL of your Git remote. In the r10k
+    private key field, paste in the SSH private key that AWS OpsWorks can use to
+    access the r10k remote repository.
+    Source: Docs
+
+To add a node to the ones managed by OpsWork, use the associateNode() api.
+The master have it's own repo that uses to install the agent on the node
+(anything) you install manually will be overriden in case of updates.
+
+Puppet master can be set to accept all self-signed CSRs but aws does not
+recommend it.
+
+Automatic backups of the system are made on S3.
+
+    System maintenance launches a new instance from a backup that is performed
+    as part of the maintenance process, which helps reduce risk from degraded
+    or impaired Amazon EC2 instances that undergo periodic maintenance.
+    Source: Docs
+
+** Associate node
+
+AWS reccomends to use an automatic associations of new nodes via user-data
+(unattended method).
+
+Make sure to create the right role.
+
+* AWS OpsWorks for Chef automate
+
+Same as puppet just for Chef.
+
+Supports knife and berkshelf commands.
+
+    In the chef-repo directory, create the following three directories, as
+    shown in the Starter Kit:
+    • cookbooks/ - Stores cookbooks that you download or create.
+    • roles/ - Stores roles in .rb or .json formats.
+    • environments/ - Stores environments in .rb or .json formats.
+    Source: Docs
+
+** Associate node
+
+You can add a node with knife.
+You can use a tool called knife-ec2.
+
+    knife-ec2, you can use it instead of knife bootstrap to provision and
+    bootstrap new EC2instances.
+    Source: Docs
+
+** Chef compliance
+
+
+
+* AWS OpsWorks Stacks
+
+The original service, allows you to create, manage, deploy and monitor
+stacks and applications.
+
+A group of instances is called Stack. A group of cloud resources specialised is
+called layer.
+
+    A layer represents a set of EC2 instances that serve a particular purpose
+
+Layers use Chef recipes to handle convergence.
+
+This service DOES NOT require a Chef master to run.

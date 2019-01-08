@@ -1,5 +1,7 @@
 AWS OpsWorks
-|| Last update: 7 Jan 2019
+|| Last update: 8 Jan 2019
+
+* Intro
 
 Configuration management service using a managed Puppet (Enterprise) or Chef.
 There are basically three flavours:
@@ -10,6 +12,11 @@ There are basically three flavours:
 
 The managed servers are backed up automatically, manage update and security
 patching.
+
+NOTE: Amazon EBS volumes must be xfs formatted.
+
+When you attach or move Amazon EBS volumes, the instances involved in the operation must be
+offline. I
 
 * AWS OpsWorks for Puppet Enterprise
 
@@ -71,7 +78,11 @@ You can use a tool called knife-ec2.
 
 ** Chef compliance
 
+Chef Compliance is a tool to track compliance in you nodes based on policies
+called _rules_.
+There are predefined rules or you can make some yourself.
 
+You can use the _Audit_cookbook_.
 
 * AWS OpsWorks Stacks
 
@@ -79,10 +90,265 @@ The original service, allows you to create, manage, deploy and monitor
 stacks and applications.
 
 A group of instances is called Stack. A group of cloud resources specialised is
-called layer.
+called layer. It's a container for AWS resources. They should have a common
+purpose and should be logically managed together.
 
-    A layer represents a set of EC2 instances that serve a particular purpose
 
+A stack is one or more layers. A layer represents a set of EC2 instances that
+serve a particular purpose.
 Layers use Chef recipes to handle convergence.
 
-This service DOES NOT require a Chef master to run.
+This service run chef but DOES NOT require a Chef master to run.
+
+    One of the key AWS OpsWorks Stacks features is a set of lifecycle events—
+    Setup, Configure, Deploy, Undeploy, and Shutdown—which automatically run a
+    specified set of recipes at the appropriate time on each instance.
+    Each layer can have a set of recipes assigned to each lifecycle event.
+    Source: Docs
+
+    You can use AWS OpsWorks Stacks to create instances and add them to a layer. When you start the
+    instance, AWS OpsWorks Stacks launches an Amazon EC2 instance using the configuration settings
+    specified by the instance and its layer. After the Amazon EC2 instance has finished booting, AWS
+    OpsWorks Stacks installs an agent that handles communication between the instance and the service
+    and runs the appropriate recipes in response to lifecycle events.
+
+AWS OpsWorks Stacks supports the following instance types:
+
+- 24/7: Instances are started manually and run until you stop them.
+- Time-based: are automatically started and stopped by AWS OpsWorks Stacks on a
+user-specified schedule.
+- Load-based instances: are automatically started and stopped by AWS OpsWorks Stacks when
+they cross a threshold for a user-specified load metric such as CPU or memory utilization.
+
+    Time-based instances are run by AWS OpsWorks Stacks on a specified daily and weekly schedule.
+    They allow your stack to automatically adjust the number of instances to accommodate predictable
+    usage patterns.
+
+With time based you cannot specify particular dates. Just:
+
+• Time of day
+• Day of the week
+
+    Load based are automatically started and stopped by AWS OpsWorks Stacks, based on
+    specified load metrics, such as CPU utilization.
+    They allow your stack to automatically adjust the number of instances to accommodate variations in
+    incoming traffic. Load-based instances are available only for Linux-based stacks.
+    AWS OpsWorks Stacks supports instance autohealing. If an agent stops communicating with the service,
+    AWS OpsWorks Stacks automatically stops and restarts the instance.
+
+You can scale on CPU, memory or load.
+When a scaling event occurs, AWS OpsWorks Stacks starts or stops only load-based instances. It does not
+start or stop 24/7 instances or time-based instances.
+
+Automatic load-based scaling does not create new instances; it starts and stops only those
+instances that you have created. You must therefore provision enough load-based instances in
+advance to handle the maximum anticipated load.
+
+YOU NEED TO CREATE THEM BEFOREHAND.
+
+* Stacks
+
+The stack is a top level entity. It represent a set of instances you want to
+manage collectively.
+
+A stack handles tasks that apply to the group of instances as a whole.
+
+Stacks can be seen as environments.
+
+* Layer
+
+Stack contains layers. A layer is a blueprint for a set of instances, such as
+Amazon EC2 instances. Layers should have at least one instance.
+
+It specifies information such as the instance's settings, resources,
+installed packages, and security groups.
+
+Each instance needs to be part of a layer with the exception of
+_registered_instances_.
+
+You can give OpsWork your ssh key and it will allow you to login on the box to
+debug.
+
+It will run automatically Setup and Deploy recipes.
+
+Data in _json_ format is passed to Chef recipes for all instances in a layer.
+You can this way pass data to recipes.
+
+Instance shutdown timeout is how long OpsWork wait after running the shutdown
+lifecycle events before stopping the server (def 120s).
+
+You can attach an Elastic Load Balancer at any layer.
+
+You can set to give an EIP to every server in the stack.
+
+** Auto Healing to replace failed instances
+
+The setting is YES by default.
+If the agent cannot speak with OpsWork for a specific amount of time, the node
+is considere Unhealthy.
+
+For store-abcked instances when using autohealing, it Creates a new Amazon
+EC2 instance with the same host name, configuration, and layer membership.
+
+** ECS on OpsWork
+
+Is just a BAD IDEA.
+
+    Do not use the ECS Optimized AMI to create instances in an ECS layer, because
+    this AMI already includes the ECS agent. AWS OpsWorks Stacks also attempts to
+    install the ECS agent during the instance setup process, and the conflict can
+    cause setup to fail.
+
+* Load balancing
+
+AWS OpsWorks Stacks does not support Application Load Balancer. You can only
+use Classic Load Balancer with AWS OpsWorks Stacks.
+
+You can attach only one load balancer to a layer.
+Each load balancer can handle only one layer.
+
+* Logging
+
+Logging is on the drive but you can set CloudWatch integrations.
+
+    With instance store-backed instance, the logs disappear when the instance stops.
+    You must either retrieve the logs before you stop the instance or use a service such as CloudWatch
+    Logs to store selected logs remotely.
+    Source: Docs
+
+* Apps
+
+Represent the code you want to run on an application server.
+
+For chef 12 oe more you can host the code on:
+
+- s3
+- git
+- bazaar
+- http archive: compressed ONLY
+
+* DataSources
+
+Only RDS is supported.
+
+* Env variable
+
+The recommendations in this topic apply to Chef 11.10 and earlier versions of
+Chef. To get environment variables in Chef 12 and newer releases, you must use
+the App Data Bag.
+
+* Deploys
+
+OpsWorks do no automatically deploy to online instances. You must perform the
+operation manually.
+
+If you run the _deploy_ command or cookbook command, the new config is applied
+to all the servers concurrently. This may create problems and downtime.
+
+It's advice to keep the old version running while deploying the new one.
+
+** Rolling Deployment
+
+You need to do it yourself. Remove a server from the elb and lunch the deploy
+on the specific server you want to run on. Verify the app works and put it back
+in the lb.
+
+** Use separate stack
+
+Basically different ENV.
+
+* Chef support
+
+Stacks running Chef 0.9 or 11.4 use Chef Solo and stacks running Chef 12 or
+11.10 use Chef Client in local mode. For Linux stacks, you can use the
+Configuration Manager to specify which Chef version to use when you create a
+stack. Windows stacks must use Chef 12.2. For more information, including
+guidelines for migrating stacks to more recent Chef versions.
+
+Chef cookbooks can be:
+
+- git (linux and windows)
+- subversion (only linux)
+
+For Chef 11.10 and later, if your recipes depend on other cookbooks, you must
+include corresponding depends statements in your cookbook's metadata.rb file.
+For example, if your cookbook includes a recipe with a statement such as
+include_recipe anothercookbook::somerecipe, your cookbook's metadata.rb file
+must include the following line: depends "anothercookbook".
+
+uses chef-client in
+local mode, which launches a local in-memory Chef server called chef-zero. The presence of this
+server enables recipes to use Chef search and data bags. The support has some limitations, which
+are described in Implementing Recipes: Chef 12.2 (p. 303), but you can run many community
+cookbooks without modification.
+
+The procedure for installing AWS OpsWorks Stacks cookbooks works somewhat differently for Chef
+11.10 stacks than for earlier Chef versions. For Chef 11.10 stacks, after AWS OpsWorks Stacks installs the
+built-in, custom, and Berkshelf cookbooks, it merges them to a common directory in the following order:
+1. Built-in cookbooks.
+2. Berkshelf cookbooks, if any.
+3. Custom cookbooks, if any.
+
+Databags:
+
+You cannot create a data bag by adding it to your cookbook repository. You must use custom
+JSON
+
+The primary limitation of Chef 11.4 stacks is that recipes cannot use Chef search or data bags.
+Chef 11.4 stacks do not support data bags, but you can add arbitrary data to the stack configuration and
+deployment attributes by specifying custom JSON.
+
+* Custom cookbook
+
+To have a stack install and use custom cookbooks, you must configure the stack to enable custom
+cookbooks, if it is not already configured.
+
+    Updating Custom Cookbooks
+    When you provide AWS OpsWorks Stacks with custom cookbooks, the built-in Setup recipes create a
+    local cache on each newly-started instance, and download the cookbooks to the cache. AWS OpsWorks
+    Stacks then runs recipes from the cache, not the repository. If you modify the custom cookbooks in the
+    repository, you must ensure that the updated cookbooks are installed on your instances' local caches.
+    AWS OpsWorks Stacks automatically deploys the latest cookbooks to new instances when they are
+    started. For existing instances, however, the situation is different:
+    • You must manually deploy updated custom cookbooks to online instances.
+    • You do not have to deploy updated custom cookbooks to offline instance store-backed instances,
+    including load-based and time-based instances.
+    AWS OpsWorks Stacks automatically deploys the current cookbooks when the instances are restarted.
+    • You must start offline EBS-backed 24/7 instances that are not load-based or time-based.
+    • You cannot start offline EBS-backed load-based and time-based instances, so the simplest approach is
+    to delete the offline instances and add new instances to replace them.
+    Because they are now new instances, AWS OpsWorks Stacks automatically deploys the current custom
+    cookbooks when the instances are started.
+    To manually update custom cookbooks
+    1. Update your repository with the modified cookbooks. AWS OpsWorks Stacks uses the cache URL
+    that you provided when you originally installed the cookbooks, so the cookbook root file name,
+    repository location, and access rights should not change.
+    • For Amazon S3 or HTTP repositories, replace the original .zip file with a new .zip file that has the
+    same name.
+    • For Git or Subversion repositories, edit your stack settings (p. 186) to change the Branch/
+    Revision field to the new version.
+    2. On the stack's page, click Run Command and select the Update Custom Cookbooks command.
+
+* Lifecycle
+
+Each layer has a set of five lifecycle events, each of which has an associated
+set of recipes that are
+specific to the layer
+
+- setup
+- configure
+- deploy
+- undeploy
+- shutdown
+
+here was a question around lifecycle, setup, configure, deploy, undeploy
+More around, would you use opsworks  cloudformation or beanstalk. There was
+a strange question around the use of custom cookbooks, you had to know
+version 11.10 supports it I think.
+
+    You can run custom recipes manually, but the best approach is usually to have
+    AWS OpsWorks Stacks run them automatically. Every layer has a set of built-in
+    recipes assigned each of five lifecycle events —Setup, Configure, Deploy,
+    Undeploy, and Shutdown. Each time an event occurs for an instance, AWS OpsWorks
+    Stacks runs the associated recipes for each of the instance's layers, which
+    handle the corresponding tasks.

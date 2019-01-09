@@ -1,5 +1,16 @@
-Spot fleet
-|| Last update: 9 Oct 2018
+Spot
+|| Last update: 9 Jan 2019
+
+* Pricing
+
+** Pre-defined duration
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html#fixed-duration-spot-instances]]
+
+    Spot instances are also available to run for a predefined duration – in
+    hourly increments up to six hours in length – at a discount of up to 30-50%
+    compared to On-Demand pricing.
+    Source: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html#fixed-duration-spot-instances
 
 * Health checks
 
@@ -35,5 +46,4 @@ You can scale the spot fleet to 0 if needed while maintaining it active.
 
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-requests.html#spot-fleet-health-checks]]
 - [[https://aws.amazon.com/about-aws/whats-new/2017/02/new-amazon-ec2-spot-advisor-and-spot-fleets-now-support-health-checks/]]
-- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html]]
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html]]

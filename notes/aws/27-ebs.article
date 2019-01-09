@@ -1,0 +1,25 @@
+EBS
+|| Last update: 9 Jan 2019
+
+* Snapshot restritions
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html]]
+
+    If you have access to a shared encrypted snapshot and you want to restore a
+    volume from it, you must create a personal copy of the snapshot and then use
+    that copy to restore the volume. We recommend that you re-encrypt the
+    snapshot during the copy process with a different key that you control. This
+    protects your access to the volume if the original key is compromised, or if
+    the owner revokes the key for any reason.
+
+* Unavailability
+
+An EBS is unavailable from the EC2 when all of your attached volumes perform
+zero read write IO, with pending IO in the queue.
+
+* Encryption
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html]]
+
+Snapshots taken from encrypted volumes are always encrypted.
+Volumes that are created from encrypted snapshots are also always encrypted.

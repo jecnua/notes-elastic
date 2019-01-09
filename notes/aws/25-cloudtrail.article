@@ -1,0 +1,14 @@
+Cloudtrail
+|| Last update: 9 Jan 2019
+
+* File validation
+
+- [[http://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-intro.html]]
+
+    To determine whether a log file was modified, deleted, or unchanged after
+    CloudTrail delivered it, you can use CloudTrail log file integrity validation.
+    [...]
+    This makes it computationally infeasible to modify, delete or forge CloudTrail
+    log files without detection. You can use the AWS CLI to validate the files
+    in the location where CloudTrail delivered them.
+    Source: http://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-intro.html

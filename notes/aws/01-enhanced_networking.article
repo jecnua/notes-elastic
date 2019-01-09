@@ -59,6 +59,11 @@ ENA supports network speeds of up to 20 Gbps
     Gbps throughput between two instances across multiple flows, and will post
     an update once we have rolled out this change.
 
+- [[http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/network_mtu.html#jumbo_frame_instances]]
+
+For instances that are collocated inside a placement group, jumbo frames help
+to achieve the maximum network throughput possible.
+
 * Check availability/usage
 
 ** Image (AMI) support

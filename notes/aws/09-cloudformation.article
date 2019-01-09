@@ -7,6 +7,37 @@ Update reference archs:
 
 - ECS [[https://github.com/aws-samples/ecs-refarch-cloudformation/]]
 
+* Helper scripts
+
+- [[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html]]
+
+    AWS CloudFormation provides the following Python helper scripts that you can
+    use to install software and start services on an Amazon EC2 instance that
+    you create as part of your stack:
+    cfn-init: Use to retrieve and interpret resource metadata, install packages,
+    create files, and start services.
+    cfn-signal: Use to signal with a CreationPolicy or WaitCondition, so you can
+    synchronize other resources in the stack when the prerequisite resource or
+    application is ready.
+    cfn-get-metadata: Use to retrieve metadata for a resource or path to a specific
+    key.
+    cfn-hup: Use to check for updates to metadata and execute custom hooks when
+    changes are detected.
+    Source: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
+
+* Best practices
+
+- [[http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/best-practices.html#organizingstacks]]
+
+Be careful with DependOn not to create loop between resources.
+
+** Notifications
+
+- [[http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-monitor-stack.html]]
+
+Use NotificationARNs.member.N with CreateStack to push stack events into SNS in
+real-time.
+
 * Share modules
 
 The best practices to share modules is to pull them on s3 and allow people to
@@ -93,6 +124,20 @@ and I expect more.
 Only gui, sdk and cli.
 
 - https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-advanced-options
+
+* Custom resources
+
+- [[http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html]]
+
+    Custom resources enable you to write custom provisioning logic in templates
+    that AWS CloudFormation runs anytime you create, update (if you changed the
+    custom resource), or delete stacks.
+    [...]
+    Custom resources require one property: the service token, which specifies
+    where AWS CloudFormation sends requests to, such as an Amazon SNS topic.
+    Source: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html
+
+You can notify SNS or a lambda.
 
 * Re/Sources
 

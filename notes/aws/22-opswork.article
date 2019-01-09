@@ -1,5 +1,5 @@
 AWS OpsWorks
-|| Last update: 8 Jan 2019
+|| Last update: 9 Jan 2019
 
 * Intro
 
@@ -16,7 +16,11 @@ patching.
 NOTE: Amazon EBS volumes must be xfs formatted.
 
 When you attach or move Amazon EBS volumes, the instances involved in the operation must be
-offline. I
+offline.
+
+NOTE: OpsWorks does not allow to use SPOT.
+
+NOTE: OpsWorks does not integrate with AWS Config
 
 * AWS OpsWorks for Puppet Enterprise
 

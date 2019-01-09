@@ -1,0 +1,34 @@
+SQS
+|| Last update: 9 Jan 2019
+
+* Intro
+
+If you need to process long-running jobs once and only once, use an SQS queue
+and set the visibility timeout to long enough for jobs to process.
+
+You are getting a lot of empty receive requests when using Amazon SQS. This is making a lot of unnecessary network
+load on your instances. What can you do to reduce this load?
+
+** Long polling
+
+- [[http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html]]
+
+    Long polling helps reduce the cost of using Amazon SQS by eliminating the
+    number of empty responses (when there are no messages available for a
+    ReceiveMessage request) and false empty responses (when messages are
+    available but aren't included in a response).
+    http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
+
+Long polling allows SQS service to wait until a message is available in the queue
+before sending a response.
+
+** Large Messages
+
+- [[http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/s3-messages.html]]
+
+    You can use Amazon S3 and the Amazon SQS Extended Client Library for Java to
+    manage Amazon SQS messages. This is especially useful for storing and consuming
+    messages up to 2 GB in size. Unless your application requires repeatedly
+    creating queues and leaving them inactive or storing large amounts of data
+    in your queue, consider using Amazon S3 for storing your data.
+    Source: http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/s3-messages.html

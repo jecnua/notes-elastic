@@ -2,3 +2,318 @@ AWS Beanstalk
 || Last update: 8 Jan 2019
 
 * Intro
+
+Deploy and manage applications. Manages capacity provisioning, load balancing,
+scaling, and application health monitoring.
+
+Supported languags n Go, Java, .NET, Node.js, PHP, Python, and Ruby.
+Also allows docker and multi-docker environments.
+
+You can interact with the service with *eb*, the command line interface.
+
+    Elastic Beanstalk automatically launches an environment and creates
+    and configures the AWS resources needed to run your code. After your
+    environment is launched, you can then manage your environment and deploy
+    new application versions.
+    Source: Docs
+
+It provides both configured env or docker containers.
+
+Application is separated from env.
+
+It supports all type of LB. Default is application.
+
+* Packer
+
+    You create your own Elastic Beanstalk platform using Packer.
+    Elastic Beanstalk manages Packer as a separate built-in platform, and you don't need to worry about
+    Packer configuration and versions.
+    You create a platform by providing Elastic Beanstalk with a Packer template.
+    When you create a custom platform, you launch a single instance environment without an Elastic IP that
+    runs Packer. Packer then launches another instance to build an image. You can reuse this environment for
+    multiple platforms and multiple versions of each platform
+
+    A platform definition archive is the platform equivalent of an application source bundle (p. 50). The
+    platform definition archive is a ZIP file that contains a platform definition file, a Packer template, and the
+    scripts and files used by the Packer template to create your platform.
+    The platform definition file is a YAML-formatted file that must be named platform.yaml and be in the
+    root of your platform definition archive.
+
+* Application
+
+Logical collection of beanstalk components (environment, version, and configuration).
+Similar to a folder.
+
+    An application version refers to a specific, labeled iteration of deployable
+    code for a web application. An application version points to an Amazon Simple
+    Storage Service (Amazon S3) object that contains the deployable code such as
+    a Java WAR file. An application version is part of an application.
+    Applications can have many versions and each application version is unique. I
+    Source: Docs
+
+** Application version
+
+There are limits on how many you can keep.
+You can set how MANY you want to keep or the gae limit!
+
+You can keep them on s3 even if you _delete_ them as far as beanstalk is
+concerned.
+
+** Application bundle
+
+- zip or war.
+- no more than 512MB
+- no top level dir
+
+    If you want to deploy a worker application that processes periodic background tasks, your application
+    source bundle must also include a cron.yaml file.
+
+* environment
+
+As the name imply. Can release _applications_.
+You can deploy any version in any env.
+
+Version deployed. Each env runs a single application version at the same time.
+You first create an environment.
+environment tier makes you choose if yout will run is to serve https requests
+or only as a worker.
+
+- web server environement
+- worker
+
+When you create a single node, there will be no LB created.
+
+** http env
+
+an env is route53, lb, asg and so on.
+
+AWS resources created for an environment include one elastic load balancer, an
+Auto Scaling group, and one or more Amazon EC2 instances.
+Every environment has a CNAME (URL) that points to a load balancer. The
+environment has a URL aliased in Amazon Route 53 to an Elastic Load Balancing
+URL by using a CNAME record.
+
+** Worker env
+
+It will create an SQS queue
+
+AWS resources created for a worker environment tier include an Auto Scaling group, one or more
+Amazon EC2 instances, and an IAM role. For the worker environment tier, Elastic Beanstalk also creates
+and provisions an Amazon SQS queue if you don’t already have one.
+
+- Amazon Simple Queue Service (Amazon SQS) queue
+- perform leader election with Amazon DynamoDB
+- publish instance health metrics to Amazon CloudWatch
+
+A worker environment tier for a web application that processes background tasks doesn't
+include a load balancer. However, a worker environment does effectively scale out by adding
+instances to the Auto Scaling group to process data from the Amazon SQS queue when the load
+necessitates it.
+
+    Elastic Beanstalk simplifies this process by managing the Amazon SQS queue and running a daemon
+    process (p. 148) on each instance that reads from the queue for you. When the daemon pulls an
+    item from the queue, it sends an HTTP POST request locally to http://localhost/ on port 80
+    with the contents of the queue message in the body. All that your application needs to do is perform
+    the long-running task in response to the POST
+
+
+    When the application in the worker environment returns a 200 OK response to acknowledge that it
+    has received and successfully processed the request, the daemon sends a DeleteMessage call to the
+    Amazon SQS queue so that the message will be deleted from the queue
+
+    You cannot disable dead letter queues. Messages that cannot be delivered are always eventually sent to
+    a dead letter queue. You can, however, effectively disable this feature by setting the MaxRetries option
+    to the maximum valid value of 100.
+
+You can have periodic tasks.
+
+You can configure the URL path for posting worker queue messages, but you can't configure
+the IP port. Elastic Beanstalk always posts worker queue messages on port 80. The worker
+environment application or its proxy must listen to port 80.
+
+* environment link
+
+Beanstalk sets an environment variable with the same name as the link. The value of the variable is the
+endpoint that you can use to connect to the other component, which can be a web server or worker
+environment.
+
+* Logs
+
+You can set beanstalk to update the logs on s3 or push it to CWLogs.
+if you want to keep it after termination too or not.
+
+AWS Elastic Beanstalk provides two ways to regularly view logs from the Amazon EC2 instances that run
+your application:
+• Configure your Elastic Beanstalk environment to upload rotated instance logs to the environment's
+Amazon S3 bucket.
+• Configure the environment to stream instance logs to Amazon CloudWatch Logs
+
+* Deployments
+
+Configuration changes are different from application deployments.
+With application you can have rolling deployments.
+
+** Application deployments
+
+Each deployment is identified by a deployment ID. Deployment IDs start at 1 and
+increment by one with each deployment and instance configuration change.
+
+*** Typologies
+
+The options are:
+
+- All at once (def)
+- Immutable: new instance passes health checks before switching over to the new version
+
+If you a load balancer this two options are added:
+
+- Rolling
+- Rolling with additional batch: Deploy the new version in batches, but first launch a new batch of instances to ensure full capacity during the deployment process.
+
+When processing a batch, Elastic Beanstalk detaches all instances in the batch
+from the load balancer, deploys the new application version, and then reattaches
+the instances.
+With batch of instances out of service, terminates them, and then launches a batch with the new
+configuration
+
+Only this last one have the option "percentage of the fleet" at a time or "fixed"
+(how many instances at a time).
+
+    In an immutable update, a second Auto Scaling group is launched in your
+    environment and the new version serves traffic alongside the old version until
+    the new instances pass health checks.
+    [...]
+    Immutable deployments can prevent issues caused by partially completed
+    rolling deployments. If the new instances don't pass health checks, Elastic
+    Beanstalk terminates them, leaving the original instances untouched.
+
+NOTE: During a rolling deployment, some instances serve requests with the old
+version of the application, while instances in completed batches serve other
+requests with the new version.
+
+During a rolling update,
+capacity is only reduced by the size of a single batch, which you can configure. Elastic Beanstalk takes
+one batch of instances out of service, terminates them, and then launches a batch with the new
+configuration.
+
+** Difference between rolling update and deployments
+
+    Rolling updates occur when you change settings that require new EC2 instances to be provisioned for
+    your environment. This includes changes to the Auto Scaling group configuration, such as instance
+    type and key pair settings, and changes to VPC settings. In a rolling update, each batch of instances is
+    terminated prior to a new batch being provisioned to replace it.
+    Rolling deployments (p. 117) occur whenever you deploy your application and can typically be
+    performed without replacing instances in your environment. Elastic Beanstalk takes each batch out of
+    service, deploys the new application version, and then places it back in service.
+
+** Configuration updates
+
+The options are:
+
+- Disabled
+- Immutable: new instance passes health checks before switching over to the new version
+
+If you a load balancer this two options are added:
+
+- Rolling based on health: CloudFormation waits for instances to pass health checks
+- Rolling based on time: CloudFormation waits for the specified amount of time after new instances are registered before moving on to the next batch
+
+Only this two have the options batch size and minimum capacity.
+
+If you a load balancer this two options are added:
+
+    In immutable updates When all of the new instances pass health checks,
+    Elastic Beanstalk transfers them to the original Auto Scaling
+    group, and terminates the temporary Auto Scaling group and old instances.
+    Elastic Beanstalk creates a second, temporary Auto
+    Scaling group behind your environment's load balancer to contain the new instances. First, Elastic
+    Beanstalk launches a single instance with the new configuration in the new group. This instance serves
+    traffic alongside all of the instances in the original Auto Scaling group that are running the previous
+    configuration.
+
+    During an immutable environment update, the capacity of your environment doubles for a short
+    time when the instances in the new Auto Scaling group start serving requests and before the
+    original Auto Scaling group's instances are terminated.
+
+    Immutable updates require enhanced health reporting (p. 373) to evaluate your environment's health
+    during the update. Enhanced health reporting combines standard load balancer health checks with
+    instance monitoring to ensure that the instances running the new configuration are serving requests
+
+    If you use immutable updates for application version deployments, but not for configuration,
+    you might encounter an error if you attempt to deploy an application version that contains
+    configuration changes that would normally trigger a rolling update (for example, configurations
+    that change instance type). To avoid this, make the configuration change in a separate update,
+    or configure immutable updates for both deployments and configuration changes.
+
+** Swap environment url
+
+a blue/green deployment, where you deploy the new version to a separate environment,
+and then swap CNAMEs of the two environments to redirect traffic to the new version instantly.
+
+    Swap the CNAME of the current environment with a new environment. After a CNAME swap, all traffic
+    to the application using the environment URL goes to the new environment. When you are ready to
+    deploy a new version of your application, you can launch a separate environment under the new version.
+    When the new environment is ready to start taking requests, perform a CNAME swap to start routing
+    traffic to the new environment with no interruption of service.
+
+NOTE: This URL is generally accessible from the Internet unless you configure
+your environment to use a custom VPC with an internal load balancer.
+
+* Database
+
+Add an Amazon RDS SQL database to your environment for development and testing
+
+    When you add a database to your environment using this configuration page, its lifecycle is tied to your
+    environment's lifecycle. If you terminate your environment, the database is deleted and you lose your
+    data. For production environments, consider configuring your instances to connect to a database created
+    outside of Elastic Beanstalk.
+
+You can set beanstalk of snapshottiung the db before deleting the env.
+
+* Configuration
+
+Use .ebextensions to configure options that are required to make your application work, and provide
+default values for other options that can be overridden at a higher level of precedence.
+
+    option_settings:
+     - namespace: aws:elasticbeanstalk:application
+     option_name: Application Healthcheck URL
+     value: /health
+
+* env.yaml
+
+You can include a YAML formatted environment manifest in the root of your application source bundle
+to configure the environment name, solution stack and environment links (p. 152) to use when creating
+your environment. An environment manifest uses the same format as Saved Configurations (p. 326).
+
+* Healthchecks
+
+The Elastic Beanstalk health agent is a daemon process that runs on each EC2 instance in your
+environment, monitoring operating system and application-level health metrics and reporting issues to
+Elastic Beanstalk.
+
+* xxx
+
+If you use periodic tasks (p. 149) in a worker environment, Elastic Beanstalk creates a DynamoDB
+table and uses it to perform leader election and store information about the task. Each instance in the
+environment attempts to write to the table every few seconds to become leader and perform the task
+when scheduled.
+
+* Containers
+
+You have single container and multi containers.
+
+- single container: one container per instance. deployed on ec2
+- multi containers: uses ECS
+
+it takes a dockerfile or you can pull a remote docker image.
+
+    The instances in the environment each run the same set of containers, which are defined
+    in a Dockerrun.aws.json file. Use the multicontainer configuration when you need to deploy multiple
+    Docker containers to each instance.
+
+In multicontainer . Elastic Beanstalk takes care of Amazon ECS tasks including cluster
+creation, task definition and execution.
+
+    Note: Building custom images during deployment with a Dockerfile is not supported by the
+    multicontainer Docker platform on Elastic Beanstalk.

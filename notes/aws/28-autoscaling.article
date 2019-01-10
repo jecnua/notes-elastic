@@ -1,0 +1,89 @@
+Autoscaling
+|| Last update: 10 Jan 2019
+
+* Intro
+
+    Auto Scaling’s termination policies and Standby state enable blue/green deployment
+    Termination policies in Auto Scaling groups to determine which EC2 instances
+    to remove during a scaling action.
+    Auto Scaling also allows instances to be placed in Standby state, instead of
+     termination, which helps with quick rollback when required
+    Source: http://jayendrapatil.com/aws-blue-green-deployment/
+
+* Lunch config
+
+    Auto Scaling group can have only one launch configuration at a time, and it
+    can’t be modified. If needs modification, a new launch configuration can be
+    created and attached to the existing Auto Scaling Group
+    Source: http://jayendrapatil.com/aws-blue-green-deployment/
+
+* Lifecycle
+
+- [[https://docs.aws.amazon.com/autoscaling/ec2/userguide/AutoScalingGroupLifecycle.html]]
+
+* Termination
+
+- [[https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html]]
+
+* Standby
+
+- [[https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enter-exit-standby.html#standby-state]]
+
+    You can put an instance that is in the InService state into the Standby
+    state, update or troubleshoot the instance, and then return the instance
+    to service. Instances that are on standby are still part of the Auto Scaling
+    group, but they do not actively handle application traffic.
+    [...]
+    By default, the desired capacity of your Auto Scaling group is decremented
+    when you put an instance on standby. This prevents the launch of an additional
+    instance while you have this instance on standby. Alternatively, you can
+    specify that the capacity is not decremented. This causes the Auto Scaling
+    group to launch an additional instance to replace the one on standby.
+    Source: Docs
+
+The events are _EnterStandby_ and _ExitStandby_.
+
+*NOTE*: Amazon EC2 Auto Scaling does not perform health checks on instances that
+are in a standby state.
+
+* Blue/green
+
+- [[https://d0.awsstatic.com/whitepapers/AWS_Blue_Green_Deployments.pdf]]
+- [[http://jayendrapatil.com/aws-blue-green-deployment/]]
+
+** Update DNS Routing with Amazon Route 53
+
+    You can shift traffic all at once or you can do a weighted distribution. With
+    Amazon Route 53, you can define a percentage of traffic to go to the green
+    environment and gradually update the weights until the green environment
+    carries the full production traffic. A weighted distribution provides the ability to
+    perform canary analysis where a small percentage of production traffic is
+    introduced to a new environment. You can test the new code and monitor for
+    errors, limiting the blast radius if any issues are encountered. It also allows the
+    green environment to scale out to support the full production load if you’re using
+    Elastic Load Balancing
+    Source: Docs
+
+** Swap the Auto Scaling Group Behind Elastic Load Balancer
+
+    A "least outstanding requests routing algorithm" is an algorithm that chooses
+    which instance receives the next request by selecting the instance that, at
+    that moment, has the lowest number of outstanding (pending, unfinished) requests.
+    Since newly added instances would initially be handling no requests, they
+    would be heavily favoured for new requests until the point when their workload
+    approaches the workload of the instances that were already actively handling
+    requests. Idle (underutilized) instances are favoured until the load is balanced,
+    at which time the instances are all going to be treated equally.
+    Source: https://stackoverflow.com/questions/40287918/aws-elastic-load-balancer-instances-priority
+
+PRO: With an already warm load balancer, you can be confident that you’ll have
+the capacity to support production load.
+
+** Via lunch config
+
+Update the LC, double the size of the ASG then put it back to the original.
+To rollback put back the old LC and repeat.
+
+* Re/Sources
+
+- [[http://jayendrapatil.com/aws-blue-green-deployment/]]

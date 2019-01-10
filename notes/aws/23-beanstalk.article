@@ -1,5 +1,5 @@
 AWS Beanstalk
-|| Last update: 8 Jan 2019
+|| Last update: 10 Jan 2019
 
 * Intro
 
@@ -247,7 +247,9 @@ If you a load balancer this two options are added:
 
 ** Swap environment url
 
-a blue/green deployment, where you deploy the new version to a separate environment,
+- [[https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.CNAMESwap.html]]
+
+A blue/green deployment, where you deploy the new version to a separate environment,
 and then swap CNAMEs of the two environments to redirect traffic to the new version instantly.
 
     Swap the CNAME of the current environment with a new environment. After a CNAME swap, all traffic

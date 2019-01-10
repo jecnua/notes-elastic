@@ -1,5 +1,10 @@
 Route53
-|| Last update: 9 Jan 2019
+|| Last update: 10 Jan 2019
+
+
+* Aliases
+
+- [[https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-choosing-alias-non-alias.html]]
 
 * Failover
 
@@ -11,3 +16,4 @@ Route53
     The health of a specified resource, such as a web server
     The status of other health checks
     The status of an Amazon CloudWatch alarm
+    Source: Docs

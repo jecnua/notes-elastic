@@ -1,10 +1,13 @@
 Route53
 || Last update: 10 Jan 2019
 
-
 * Aliases
 
 - [[https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-choosing-alias-non-alias.html]]
+
+* Routing policies
+
+- [[https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html]]
 
 * Failover
 

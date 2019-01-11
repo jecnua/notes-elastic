@@ -9,6 +9,66 @@ and set the visibility timeout to long enough for jobs to process.
 You are getting a lot of empty receive requests when using Amazon SQS. This is making a lot of unnecessary network
 load on your instances. What can you do to reduce this load?
 
+* Queues
+
+Two types:
+
+- Standard
+- FIFO: Less throughput
+
+    Amazon SQS offers standard as the default queue type. Standard queues support a nearly unlimited
+    number of transactions per second (TPS) per action. Standard queues support at-least-once message
+    delivery. However, occasionally (because of the highly distributed architecture that allows nearly
+    unlimited throughput), more than one copy of a message might be delivered out of order. Standard
+    queues provide best-effort ordering which ensures that messages are generally delivered in the same
+    order as they're sent.
+    Source: Docs
+
+
+    FIFO (First-In-First-Out) queues are designed to enhance messaging between applications when the
+    order of operations and events is critical, or where duplicates can't be tolerated
+    [...]
+    FIFO queues also provide exactly-once processing but have a limited number of transactions per second
+    (TPS)
+    Source: Docs
+
+In addition, FIFO queues support message groups that allow multiple ordered message groups within a
+single queue.
+
+NOTE: Every message sent to a FIFO queue requires a message group ID. If you don't need multiple ordered
+message groups, specify the same message group ID for all your messages.
+
+Each message receives a system-assigned message ID that Amazon SQS returns to you in the
+SendMessage response.
+
+* Message Deduplication ID
+
+    The token used for deduplication of sent messages. If a message with a particular message
+    deduplication ID is sent successfully, any messages sent with the same message deduplication ID are
+    accepted successfully but aren't delivered during the 5-minute deduplication interval.
+    Note
+    Message deduplication applies to an entire queue, not to individual message groups.
+    Amazon SQS continues to keep track of the message deduplication ID even after the
+    message is received and deleted.
+    Source: Docs
+
+* GroupID
+
+    You can't request to receive messages with a specific message group ID.
+    When receiving messages from a FIFO queue with multiple message group IDs, Amazon SQS first
+    attempts to return as many messages with the same message group ID as possible. This allows other
+    consumers to process messages with a different message group ID.
+    Source: Docs
+
+* Polling
+
+The process of consuming messages from a queue depends on whether you use short
+polling (default) or long polling.
+
+When you consume messages from a queue using short polling, Amazon SQS samples a subset of its
+servers (based on a weighted random distribution) and returns messages from only those servers. Thus,
+a particular receive request might not return all of your messages.
+
 ** Long polling
 
 - [[http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html]]
@@ -22,7 +82,7 @@ load on your instances. What can you do to reduce this load?
 Long polling allows SQS service to wait until a message is available in the queue
 before sending a response.
 
-** Large Messages
+* Large Messages
 
 - [[http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/s3-messages.html]]
 
@@ -32,3 +92,32 @@ before sending a response.
     creating queues and leaving them inactive or storing large amounts of data
     in your queue, consider using Amazon S3 for storing your data.
     Source: http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/s3-messages.html
+
+* Dead letter queue
+
+    Amazon SQS supports dead-letter queues, which other queues (source queues) can target for messages
+    that can't be processed (consumed) successfully. Dead-letter queues are useful for debugging your
+    application or messaging system because they let you isolate problematic messages to determine why
+    their processing doesn't succeed.
+    Source: Docs
+
+NOTE: When you designate a queue to be a source queue, a dead-letter queue is not created
+automatically. You must first create a normal standard or FIFO queue before designating it a
+dead-letter queue.
+
+    The redrive policy specifies the source queue, the dead-letter queue, and the conditions under which
+    Amazon SQS moves messages from the former to the latter if the consumer of the source queue fails
+    to process a message a specified number of times. When the ReceiveCount for a message exceeds
+    the maxReceiveCount for a queue, Amazon SQS moves the message to a dead-letter queue
+    Source: Docs
+
+NOTE: The dead-letter queue of a FIFO queue must also be a FIFO queue. Similarly, the dead-letter
+queue of a standard queue must also be a standard queue.
+
+* SQS delay queue
+
+    Delay queues let you postpone the delivery of new messages to a queue for a number of seconds. If you
+    create a delay queue, any messages that you send to the queue remain invisible to consumers for the
+    duration of the delay period. The default (minimum) delay for a queue is 0 seconds. The maximum is
+    15 minutes.
+    Source: Docs

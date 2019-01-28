@@ -42,4 +42,6 @@ However NLB was sold as a Layer4 (TCP only) load balancer. SSL termination clear
 makes no sense for something like that. I would define now an NLB as an hybrid
 Layer4/5 LB.
 
+SSL termination is managed via [[https://github.com/awslabs/s2n]].
+
 It does integrate with ACM.

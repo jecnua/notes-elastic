@@ -1,0 +1,45 @@
+Load Balancing
+|| Last update: 28 Jan 2019
+
+* NLB
+
+An hybrid layer4/5 load balancer.
+
+** BAD: Allow Healthcheck from NLB requires whitelisting entire subnets
+
+- [[https://forums.aws.amazon.com/thread.jspa?threadID=263245]]
+- [[https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups]]
+
+To allow NLB Healthcheck you will need to whitelist the whole subnets where
+you are spinning the NLB into.
+The only other way is an horrible hack with lambdas to find the internal IPs
+of the NLB (not straighforward) and keep it updated.
+Example: [[https://github.com/binxio/cfn-lb-ip-address-provider]]
+
+    Looks like currently the only way to determine IP addresses is by checking
+    the ENI description for the name of the ELB.
+    Source: https://forums.aws.amazon.com/thread.jspa?threadID=263245
+
+** SSL termination
+
+- [[https://aws.amazon.com/blogs/aws/new-tls-termination-for-network-load-balancers/]]
+- [[https://network.exampleloadbalancer.com/nlbtls_detail.html]]
+
+    Elastic Load Balancing now supports TLS termination on Network Load
+    Balancers. With this new feature, you can offload the decryption/encryption
+    of TLS traffic from your application servers to the Network Load Balancer,
+    which helps you optimize the performance of your backend application servers
+    while keeping your workloads secure. Additionally, Network Load Balancers
+    preserve the source IP of the clients to the back-end applications, while
+    terminating TLS on the load balancer.
+
+    TLS termination on Network Load Balancers also offers centralized deployment
+    of SSL certificates by integrating with AWS Certificate Manager (ACM) and
+    Identity Access Manager (IAM). You can also optionally configure encryption
+    to the targets.
+
+However NLB was sold as a Layer4 (TCP only) load balancer. SSL termination clearly
+makes no sense for something like that. I would define now an NLB as an hybrid
+Layer4/5 LB.
+
+It does integrate with ACM.

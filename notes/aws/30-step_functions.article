@@ -1,0 +1,9 @@
+Step functions
+|| Last update: 11 Feb 2019
+
+* Local environment
+
+- [[https://hub.docker.com/r/amazon/aws-stepfunctions-local]]
+- [[https://aws.amazon.com/about-aws/whats-new/2019/02/develop-and-test-aws-step-functions-workflows-locally/]]
+
+You can run AWS step functions locally.

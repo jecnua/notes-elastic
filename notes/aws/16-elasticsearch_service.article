@@ -1,10 +1,11 @@
 Amazon Elasticsearch Service
-|| Last update: 9 Oct 2018
+|| Last update: 11 Feb 2019
 
 * Intro
 
 It allows external (internet access and internal).
 If you want it internal you need to define security groups and subnets.
+Enables you to deploy your instances across three Availability Zones (AZs).
 
 * Terraform
 

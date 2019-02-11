@@ -1,19 +1,17 @@
 DynamoDB
-|| Last update: 31 Aug 2018
-
-* Intro
-
-TDB
+|| Last update: 11 Feb 2019
 
 * Local environment
 
-You can run a docker image with a dynamodb server using the AWS docker image:
-
 - [[https://hub.docker.com/r/amazon/dynamodb-local/]]
 
+You can run a docker image with a dynamodb server using the AWS docker image.
 Example:
 
     docker run -p 8000:8000 amazon/dynamodb-local
+
+It supports the new transaction API and "as many as 20 global secondary indexes
+per table".
 
 * Re/Sources
 

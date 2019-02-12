@@ -143,8 +143,6 @@ shared among containers.
 
 * Networking
 
-- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html]]
-
 You can launch a task with different Network configurations.
 
 - host
@@ -156,6 +154,8 @@ NOTE: User Defined Networks are not supported!
 - [[https://github.com/aws/amazon-ecs-agent/issues/437][ISSUE #437 User Defined Networks]]
 
 ** AWSVPC
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html]]
 
 When using _awsvpc_ you must specify one or more subnets and one or more sg to attach
 to the ENI.

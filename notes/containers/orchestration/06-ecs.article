@@ -202,6 +202,14 @@ registry.
 
 ** User Defined Networks are not supported!
 
+** ENI density issue
+
+A big constraints is the ENI limit per EC2 instance, the so-called ENI density
+issue.
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI]]
+- [[https://github.com/aws/containers-roadmap/issues/7]]
+
 ** Issue with cluster stabilising (~3h stabilizing)
 
     We have one stack stuck in UPDATE_ROLLBACK_IN_PROGRESS. The deployment of a

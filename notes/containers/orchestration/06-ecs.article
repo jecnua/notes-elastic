@@ -210,6 +210,12 @@ issue.
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI]]
 - [[https://github.com/aws/containers-roadmap/issues/7]]
 
+    The number of ENIs per instance is limited from 2 to 15 depending on the
+    instance type. As EKS is sharing ENIs between pods, you can place up to 750
+    pods per instance. Much more than the maximum of 15 tasks you can place per
+    instance with ECS.
+    Source: https://cloudonaut.io/eks-vs-ecs-orchestrating-containers-on-aws/
+
 ** Issue with cluster stabilising (~3h stabilizing)
 
     We have one stack stuck in UPDATE_ROLLBACK_IN_PROGRESS. The deployment of a

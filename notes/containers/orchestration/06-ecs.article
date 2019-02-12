@@ -145,6 +145,7 @@ shared among containers.
 
 You can launch a task with different Network configurations.
 
+- none
 - host
 - bridge
 - awsvpc: Each task will have it's own ENI. (Beware on finishing the allocation space for ENI)

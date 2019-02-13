@@ -1,5 +1,5 @@
 ECS
-|| Last update: 12 Feb 2019
+|| Last update: 13 Feb 2019
 
 * Intro
 
@@ -153,6 +153,10 @@ You can launch a task with different Network configurations.
 NOTE: User Defined Networks are not supported!
 
 - [[https://github.com/aws/amazon-ecs-agent/issues/437][ISSUE #437 User Defined Networks]]
+- [[https://medium.com/pablo-perez/ecs-service-discovery-to-work-around-lack-of-user-defined-bridge-network-ecs-limitation-6fa6b9672d84]]
+
+AWS ECS Link is not bidirectional [[https://github.com/aws/amazon-ecs-agent/issues/1415]]
+and docker link is deprecated.
 
 ** AWSVPC
 
@@ -215,6 +219,11 @@ issue.
     pods per instance. Much more than the maximum of 15 tasks you can place per
     instance with ECS.
     Source: https://cloudonaut.io/eks-vs-ecs-orchestrating-containers-on-aws/
+
+** Inability to mount configs
+
+There is nothing like the kubernetes config maps and that makes mounting files
+extremely difficult. EFS?
 
 ** Issue with cluster stabilising (~3h stabilizing)
 

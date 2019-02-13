@@ -2,13 +2,16 @@ CoreOS: Notes
 
 * Intro
 
+UPDATE: Torus is dead 18 Feb 2017 [[https://github.com/coreos/torus/commit/4df3e5633f466f90047071b995a41fca3ecca5ad]]
+
+UPDATE: Looks like the OS too is dead but [[https://www.flatcar-linux.org/]]
+
 They added signing and validating images first (docker only partway)
 
-    "Any action is a separate operation. Doesn't have to run as root" -- Alex Polvi
+    "Any action is a separate operation. Doesn't have to run as root"
+    -- Alex Polvi
 
 Docker run in non-root account? When?
-
-CoreOS 1.0. Docker???
 
 * OCI
 

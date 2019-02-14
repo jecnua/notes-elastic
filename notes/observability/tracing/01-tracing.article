@@ -287,6 +287,7 @@ Observability SDK (metrics, tracing, tags):
 
 * Re/Sources
 
+- [[https://www.datadoghq.com/blog/instrument-opencensus-opentracing-and-openmetrics/]] - 6 Feb 2019
 - [[https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/]] - 8 May 2018
 - [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]] - 25 Apr 2018
 - VIDEO: [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017

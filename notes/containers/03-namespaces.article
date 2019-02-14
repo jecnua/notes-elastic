@@ -5,12 +5,13 @@ Namespaces
 
 .image images/namespaces.png
 
-Example:
+* Network namespaces
 
-    docker run --net=host \
-    -v /:/hostfs/ \
-    --pid=host \
-    --uts=host \
-    --ipc=host \
-    -v $(pwd):/src/ \
-    alpine
+    A network namespace is logically another copy of the network stack, with
+    its own routes, firewall rules, and network devices.”
+    Source: p-netns(8) manual
+
+
+    The network namespace construct makes the partitioning of network stack
+    between processes and containers running on a host possible.
+    Source: https://aws.amazon.com/blogs/compute/under-the-hood-task-networking-for-amazon-ecs/

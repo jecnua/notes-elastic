@@ -161,9 +161,25 @@ and docker link is deprecated.
 ** AWSVPC
 
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html]]
+- [[https://aws.amazon.com/blogs/compute/under-the-hood-task-networking-for-amazon-ecs/]]
+
+.image images/cni-vpc.png _ 800
+.caption Source: [[https://aws.amazon.com/blogs/compute/under-the-hood-task-networking-for-amazon-ecs/]]
 
 When using _awsvpc_ you must specify one or more subnets and one or more sg to attach
 to the ENI.
+
+    To avoid the race condition between configuring the network stack and
+    commands being invoked in application containers, the ECS agent creates an
+    additional “pause” container for each task before starting the containers in
+    the task definition. It then sets up the network namespace of the pause
+    container by executing the previously mentioned CNI plugins. It also starts
+    the rest of the containers in the task so that they share their network
+    stack of the pause container. This means that all containers in a task are
+    addressable by the IP addresses of the elastic network interface, and they
+    can communicate with each other over the localhost interface.
+    Source: https://aws.amazon.com/blogs/compute/under-the-hood-task-networking-for-amazon-ecs/
+
 It *only*supports*A/NLB*. When creating a target group you need to use _ip_ as
 target type and not instance. This is because you are targeting the ENI and not
 the node. However you lose the ability of dynamic port mapping.

@@ -26,6 +26,29 @@ tells to the Docker CLI to automatically issue a docker rm command once the cont
 
 https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
 
+* Dockerfile
+
+** Limitations
+
+Good video: https://www.youtube.com/watch?v=IyuyA8rSBAo&list=PLkA60AVN3hh9gnrYwNO6zTb9U3i1Y9FMY&index=26
+The Dockerfile Explosion and the need for higher level tools - Wild Card Track
+Gareth
+
+https://nathanleclaire.com/blog/2014/09/29/the-dockerfile-is-not-the-source-of-truth-for-your-image/
+
+* Labels
+
+- [[http://label-schema.org/rc1/]]
+
+Useful in prometheus too!!
+A lot
+
+*** Alteranatives
+
+- Generate Dockerfiles
+- No Dockerfile (Packer, Habitat and so on)
+- Expand on deckerfile (Rocker, Dockramp and so on)
+
 * Links
 
 https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c#.l62f928xh

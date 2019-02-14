@@ -1,5 +1,5 @@
 Prometheus
-|| Last update: 13 Jul 2018
+|| Last update: 13 Feb 2019
 
 * Disclaimer
 
@@ -106,10 +106,7 @@ does only read
 - less configuration (tell my mornitoring service - do that in any case) NO. zk
 - scales
 
-difference in perf between text and protobuf
-both format are both http
-not much different
-encoding/payload
+From version 2.0 Prometheus DOES NOT SUPPORT PROTOBUF anymore.
 
 phrometeus push metrics to _something_else_
 replay your historical metadata (???)
@@ -171,14 +168,21 @@ with auto-discovery
 so can put metadata from this process
 they advice: *one*exporter*per*process*
 
-** why not json
+* Exposition formats
 
-text or protobus
-json is bad for both
+- [[https://prometheus.io/docs/instrumenting/exposition_formats/]]
+- [[https://github.com/RichiH/OpenMetrics/blob/master/markdown/protobuf_vs_text.md]]
 
-json is not really streamable
-with text you can start processing line by line
-json you need it all togheter
+From version 2.0 Prometheus DOES NOT SUPPORT PROTOBUF anymore.
+
+** Why not json
+
+- [[https://www.youtube.com/watch?v=4DzoajMs4DM&feature=youtu.be&t=11m59s]]
+
+- json is bad for both
+- json is not really streamable
+- with text you can start processing line by line
+- json you need it all together
 
 ** client libraries
 

@@ -51,6 +51,7 @@ It does integrate with ACM.
 ** Too many connections to the LB
 
 - [[https://youtu.be/qy7zNaDTYGQ?t=2505][AWS re:Invent 2016: Elastic Load Balancing Deep Dive and Best Practices (NET403)]]
+- [[https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-metrics.html]]
 
 How can you control if a LoadBalancer is suffering?
 For the Classic Load Balancer there where two main metrics:

@@ -45,3 +45,22 @@ Layer4/5 LB.
 SSL termination is managed via [[https://github.com/awslabs/s2n]].
 
 It does integrate with ACM.
+
+* Metrics
+
+** Too many connections to the LB
+
+- [[https://youtu.be/qy7zNaDTYGQ?t=2505][AWS re:Invent 2016: Elastic Load Balancing Deep Dive and Best Practices (NET403)]]
+
+How can you control if a LoadBalancer is suffering?
+For the Classic Load Balancer there where two main metrics:
+
+- Surge Queue Length: Request comes in but backend is busy and there is nowhere to send it. Stored in the load balancer. 1000 for each IP. CONSIDERED A BAD IDEA.
+- Spillover Count
+
+In the A/NLB however this metrics are not present. The most related metric on
+the A/NLB would be:
+
+- *Rejected*Connection*Count*: Number of request rejected because there is nowhere to send it
+
+Some more info here:

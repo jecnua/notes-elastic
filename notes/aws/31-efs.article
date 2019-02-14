@@ -97,6 +97,15 @@ There are two:
     not accessed every day.
     Source: https://aws.amazon.com/about-aws/whats-new/2019/02/amazon-efs-introduces-lower-cost-storage-class/
 
+* Backups
+
+You can backup EFS with AWS Backup.
+
+    Customers can configure and audit the AWS resources they want to back up,
+    automate backup scheduling, set retention policies, and monitor all recent
+    backup and restore activity.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/01/introducing-amazon-elastic-file-system-integration-with-aws-backup/
+
 * Re/Sources
 
 - [[https://aws.amazon.com/blogs/aws/new-infrequent-access-storage-class-for-amazon-elastic-file-system-efs]] - 13 FEB 2019

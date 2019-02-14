@@ -1,0 +1,102 @@
+AWS Elastic File System (EFS)
+|| Last update: 14 Feb 2019
+
+* Intro
+
+- [[https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html]]
+- [[https://aws.amazon.com/efs/pricing/]]
+
+* Storage classes
+
+Options:
+
+- EFS Standard (Default)
+- EFS Infrequent Access (EFS IA)
+
+    EFS IA reduces storage costs for files not accessed every day, with savings
+    up to 85% compared to the EFS Standard storage class.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/02/amazon-efs-introduces-lower-cost-storage-class/
+
+    Files in the Standard Access class can be accessed with latency measured in
+    single-digit milliseconds; files in the Infrequent Access class have latency
+    in the double-digits.
+    Source: https://aws.amazon.com/blogs/aws/new-infrequent-access-storage-class-for-amazon-elastic-file-system-efs/
+
+* Performance
+
+- [[https://d1.awsstatic.com/whitepapers/Storage/amazon_efs_choosing_between_different_performance_and_throughput.pdf][WHITEPAPER: Choosing Between the Different Throughput & Performance Modes]]
+
+** Performance modes
+
+There are two performance mode:
+
+- *General*Purpose*: Supports up to 7,000 operations per second per file system
+- *Max*I/O*: This mode scales to higher levels of aggregate throughput and performance, with slightly higher latency. It does not have an intrinsic limit on operations per second.
+
+    With either mode, throughput scales with the size of the file system, and
+    can also burst to higher levels as needed. The size of the file system
+    determines the upper bound on how high and how long you can burst. For
+    example:
+    1 TiB – A 1 TiB file system can deliver 50 MiB/second continuously, and
+    burst to 100 MiB/second for up to 12 hours each day.
+    10 TiB – A 10 TiB file system can deliver 500 MiB/second continuously, and
+    burst up to 1 GiB/second for up to 12 hours each day.
+    EFS uses a credit system that allows you to “save up” throughput during
+    quiet times and then use it during peak times.
+    Source: https://aws.amazon.com/blogs/aws/new-provisioned-throughput-for-amazon-elastic-file-system-efs/
+
+NOTE: The performance mode can’t be changed after the file system has been created.
+
+** Throughput modes
+
+- [[https://docs.aws.amazon.com/efs/latest/ug/performance.html#throughput-modes]]
+
+There are two:
+
+- *Bursting*Throughput* (Default)
+- *Provisioned*Throughput*
+
+  Using provisioned throughput means that I will be billed separately for
+  storage (in GiB/month units) and for provisioned throughput (in
+  MiB/second-month units).
+  Source: https://aws.amazon.com/blogs/aws/new-provisioned-throughput-for-amazon-elastic-file-system-efs/
+
+* Encryption
+
+- [[https://docs.aws.amazon.com/efs/latest/ug/managing.html#managing-encrypt]]
+
+- At rest
+- [[https://aws.amazon.com/blogs/aws/new-encryption-of-data-in-transit-for-amazon-efs/][In transit]]
+
+    A cryptographic algorithm that meets the approval of FIPS 140-2 is used to
+    encrypt data and metadata. The encryption is transparent and has a minimal
+    effect on overall performance.
+    Source: https://aws.amazon.com/blogs/aws/new-encryption-at-rest-for-amazon-elastic-file-system-efs/
+
+    In order to make it easy for you to implement encryption in transit, we are
+    also releasing an EFS mount helper. The helper (available in source code and
+    RPM form) takes care of setting up a TLS tunnel to EFS, and also allows you
+    to mount file systems by ID. The two features are independent; you can use
+    the helper to mount file systems by ID even if you don’t make use of
+    encryption in transit. The helper also supplies a recommended set of default
+    options to the actual mount command.
+    Source: https://aws.amazon.com/blogs/aws/new-encryption-of-data-in-transit-for-amazon-efs/
+
+- [[https://github.com/aws/efs-utils]]
+
+* Lifecycle Management
+
+    Customers can use EFS IA by creating a new file system and enabling Lifecycle
+    Management. With Lifecycle Management enabled, EFS automatically will move
+    files that have not been accessed for 30 days from the Standard storage class
+    to the Infrequent Access storage class. The EFS IA storage class enables
+    storing infrequently accessed files and actively used files in the same file
+    system without requiring changes to applications or workflows. EFS IA and
+    Lifecycle Management give customers a simple way to store and access
+    file-based data in AWS while significantly reducing storage costs for files
+    not accessed every day.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/02/amazon-efs-introduces-lower-cost-storage-class/
+
+* Re/Sources
+
+- [[https://aws.amazon.com/blogs/aws/new-infrequent-access-storage-class-for-amazon-elastic-file-system-efs]] - 13 FEB 2019

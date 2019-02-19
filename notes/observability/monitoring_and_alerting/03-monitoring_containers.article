@@ -1,14 +1,86 @@
 Monitoring containers
+|| Last update: 19 Feb 2019
 
-* cAdvisor: containers metrics
+* Intro
+
+We will run two global services (scheduled on all our nodes):
+
+- The Prometheus node exporter to get node metrics
+- Google's cAdvisor to get container metrics
+
+The Prometheus server to scrape these exporters and will be configured to use
+DNS service discovery.
+
+* cAdvisor
 
 .image images/cAdvisor.png 100 _
 
-** Install and run
+- [[https://github.com/google/cadvisor]]
+
+cAdvisor is an open source collector to gather container metrics.
+It auto-discovers all containers and collects CPU, memory, filesystem, and
+network from the node it is running on.
+
+    cAdvisor (short for container Advisor) analyzes and exposes resource usage
+    and performance data from running containers.
+    Source: https://prometheus.io/docs/guides/cadvisor/
+
+It exposes this data in its own UI or via Prometheus metrics. It has other
+exporters.
+
+** Storage Plugins (exporters)
+
+- [[https://github.com/google/cadvisor/blob/master/docs/storage/README.md][Github Exporters]]
+
+cAdvisor [[https://github.com/google/cadvisor/blob/master/docs/runtime_options.md][stores]]
+the latest historical data in memory.
+We could also [[https://github.com/google/cadvisor/blob/master/docs/storage/influxdb.md][save the data]]
+in InfluxDB and pull that from grafana directly, but we would lose Prometheus
+capabilities.
+Can push to influxdb, elasticsearch (only v2) or prometheus.
+
+- [[https://github.com/google/cadvisor/issues/1812][GA Elasticsearch and Kibana 6 is out but cadvisor does not work with it. ]]
+
+NOTE: Don't use it with Elasticsearch since there is not support for new
+versions.
+
+Use [[https://github.com/google/cadvisor/blob/master/docs/storage/prometheus.md][Prometheus]].
+
+- [[https://prometheus.io/docs/guides/cadvisor/]]
+
+** Usage
+
+Run cAdviros as a deamon on your cluster.
+
+Beware the mountpoint. Without _/sys_ won't work and without it you can't get
+the metrics of the system. So you need to mount the right / instead.
+
+Instead of:
+
+    -v /sys:/sys:ro
+
+On a normal ubuntu system you should mount /sys while on ECS IAM optimised you
+need to mount a different endpoint. Use:
+
+    -v /cgroup:/sys/fs/cgroup:ro
+
+Explained in this two tickets:
+
+- [[https://github.com/google/cadvisor/issues/1515]] - Unable to start cadvisor when running on AWS Linux Optimized AMI, rootfs/sys/fs/cgroup/cpuset: no such file or directory
+- [[https://github.com/google/cadvisor/issues/1843]] - Fails startup on RHEL: Failed to start container manager: inotify_add_watch /sys/fs/cgroup/cpuacct,cpu: no such file or directory
+
+There are two sub-parent probably connected to this:
+
+- [[https://github.com/google/cadvisor/issues/1900]] - Unable to find cpuset on AWS ECS
+
+Some metrics start by /ecs dome by /docker.
+
+** Run via bash locally
 
 Quick glance about the usage of containers in your system.
 
-    sudo docker run \
+    docker run \
+      --rm \
       --volume=/:/rootfs:ro \
       --volume=/var/run:/var/run:rw \
       --volume=/sys:/sys:ro \
@@ -16,37 +88,55 @@ Quick glance about the usage of containers in your system.
       --publish=8080:8080 \
       --detach=true \
       --name=cadvisor \
-      -l org.label-schema.group="ep-monitoring" \
       google/cadvisor:latest
 
 cAdvisor exposes its raw and processed stats via a remote REST API.
 This is what Prometheus uses to pull the data.
 
-** Notes
+** Performance
 
-cAdvisor [[https://github.com/google/cadvisor/blob/master/docs/runtime_options.md][stores]] the latest historical data in memory.
+cAdvisor may take a lot of resources in your system. To lower this usage there
+are some adviced settings: --disable-metrics='disk,tcp,udp' and
+'increasing housekeeping even higher to 10s'.
 
-We could also [[https://github.com/google/cadvisor/blob/master/docs/storage/influxdb.md][save the data]] in InfluxDB and pull that from grafana directly, but we would lose Prometheus capabilities.
+    "Entrypoint": [
+        "/usr/bin/cadvisor",
+        "--logtostderr",
+        "--housekeeping_interval",
+        "10s",
+        "--disable_metrics",
+        "disk,tcp,udp"
+    ],
 
-** Links
+To quote:
 
-- [[https://github.com/google/cadvisor][github]]
+    Try using `--ignore-metrics` to disable metrics you are not using.
+    Particularly expensive metrics are disk, diskIO, UDP, and tcp metrics.
+    Source: https://github.com/google/cadvisor/issues/2049#issuecomment-424038803
+
+Other options are:
+
+- --docker_only
+-
 
 * Phrometeus
 
 .image images/prometheus.png 100 _
+
+- [[https://prometheus.io/]]
+- [[https://github.com/prometheus/prometheus]]
 
 ** Install and run
 
 To [[https://prometheus.io/docs/introduction/install/][install]] it with docker:
 
     docker run \
+    --rm \
     --publish=9090:9090 \
     --name=prometheus \
     --detach=true \
     --volume=/opt/data/prometheus/metrics:/prometheus \
     --volume=/opt/data/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
-    -l org.label-schema.group="ep-monitoring" \
     prom/prometheus:latest
 
 ** Configurations
@@ -55,7 +145,7 @@ To check what flags you can pass to Prometheus check the [[https://github.com/pr
 
 prometheus.yml holds the server configurations. For now I will use the [[https://github.com/prometheus/prometheus/blob/master/documentation/examples/prometheus.yml][default one]].
 
-    sudo docker exec -i -t prometheus /bin/bash
+    docker exec -i -t prometheus /bin/bash
 
 ** Notes
 
@@ -81,7 +171,7 @@ And then you need to [[https://www.robustperception.io/reloading-prometheus-conf
     # From the server
     curl -X POST http://localhost:9090/-/reload
 
-** Node exporter for OS/node metrics
+* Node exporter for OS/node metrics
 
 Add the node exporter:
 
@@ -89,7 +179,6 @@ Add the node exporter:
     --publish=9100:9100 \
     --name=nodeexporter \
     --detach=true \
-    -l org.label-schema.group="ep-monitoring" \
     prom/node-exporter:latest
 
 Add the job:
@@ -99,22 +188,47 @@ Add the job:
     # metrics_path defaults to '/metrics'
     # scheme defaults to 'http'.
     static_configs:
-      - targets: ['10.96.221.143:9100']
+      - targets: ['x.x.x.x:9100']
 
 Now add grafana dashboards
 
-- https://github.com/stefanprodan/dockprom/blob/master/docker-compose.yml
+- [[https://github.com/stefanprodan/dockprom/blob/master/docker-compose.yml]]
 
 You can use these as a base
 
-https://stefanprodan.com/2016/a-monitoring-solution-for-docker-hosts-containers-and-containerized-services/
+- [[https://stefanprodan.com/2016/a-monitoring-solution-for-docker-hosts-containers-and-containerized-services/]]
 
 Test?
 
-https://github.com/kbudde/rabbitmq_exporter
+- [[https://github.com/kbudde/rabbitmq_exporter]]
 
-** Links
+* NOTES TO REVIEW
 
-- [[https://prometheus.io/][website]]
-- [[https://github.com/prometheus/prometheus][github]]
-- [[https://hub.docker.com/r/prom/prometheus/][docker hub]]
+      docker network create --driver overlay prom
+
+      docker service create --name node --mode global --network prom \
+      --mount type=bind,source=/proc,target=/host/proc \
+      --mount type=bind,source=/sys,target=/host/sys \
+      --mount type=bind,source=/,target=/rootfs \
+      prom/node-exporter \
+      -collector.procfs /host/proc \
+      -collector.sysfs /host/proc \
+      -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($|/)"
+
+      docker service create --name cadvisor --network prom --mode global \
+      --mount type=bind,source=/,target=/rootfs \
+      --mount type=bind,source=/var/run,target=/var/run \
+      --mount type=bind,source=/sys,target=/sys \
+      --mount type=bind,source=/var/lib/docker,target=/var/lib/docker \
+      google/cadvisor:latest
+
+      - job_name: 'node'
+      dns_sd_configs:
+      - names: ['tasks.node']
+      type: 'A'
+      port: 9100
+      - job_name: 'cadvisor'
+      dns_sd_configs:
+      - names: ['tasks.cadvisor']
+      type: 'A'
+      port: 8080

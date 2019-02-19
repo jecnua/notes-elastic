@@ -55,57 +55,14 @@ What should cover:
 - Network configuration
 - Log forwarding
 - Cron job to push metrics to cloudwatch
-- Run cAdvisor
+- Run cAdvisor (NOTE: more notes on the monitoring containers article)
 
 /var/log/cfn-*
 /var/log/ecs-*
 
 * Monitoring
 
-* cAdvisor
-
-- [[https://github.com/google/cadvisor]]
-
-OBJECTIVE: Get container metrics
-
-Can push to influxdb or elasticsearch (or prometheus)
-
-- [[https://github.com/google/cadvisor/blob/master/docs/storage/README.md]]
-
-
-Run it as a deamon on your cluster.
-
-run cAdviros as a deamon on every node
-
-- https://prometheus.io/docs/guides/cadvisor/
-
-without /sys won't work and without it you can't get the metrics of the system.
-so you need to mount the right / instead
-
-Instead of:
-
-    -v /sys:/sys:ro
-
-on a normal ubuntu system you should mount /sys while on ecs iam optimised
-you need to mount a different endpoint
-
-use:
-
-    -v /cgroup:/sys/fs/cgroup:ro
-
-Examplained in this two tickets:
-
-- [[https://github.com/google/cadvisor/issues/1515]] - Unable to start cadvisor when running on AWS Linux Optimized AMI, rootfs/sys/fs/cgroup/cpuset: no such file or directory
-- [[https://github.com/google/cadvisor/issues/1843]] - Fails startup on RHEL: Failed to start container manager: inotify_add_watch /sys/fs/cgroup/cpuacct,cpu: no such file or directory
-
-There are two subparent
-probably connected to This
-
-- [[https://github.com/google/cadvisor/issues/1900]] - Unable to find cpuset on AWS ECS
-
-Some start by /ecs dome by /docker
-
-* Node exporter
+** Node exporter
 
 OBJECTIVE: Get node metrics
 

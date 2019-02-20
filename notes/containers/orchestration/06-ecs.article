@@ -1,5 +1,5 @@
 ECS
-|| Last update: 13 Feb 2019
+|| Last update: 20 Feb 2019
 
 * Intro
 
@@ -240,6 +240,16 @@ issue.
 
 There is nothing like the kubernetes config maps and that makes mounting files
 extremely difficult. EFS?
+
+** Lack of task level metrics
+
+    Having CPU/memory metrics per task allows us to debug task issues such as a
+    hot task. We're able to isolate a task that might be in trouble and kill it
+    before it introduces an issue. The cluster level metrics aren't helpful in
+    many other cases.
+    Source: [[https://github.com/aws/containers-roadmap/issues/70]]
+
+- [[https://github.com/aws/containers-roadmap/issues/70]]
 
 ** Issue with cluster stabilising (~3h stabilizing)
 

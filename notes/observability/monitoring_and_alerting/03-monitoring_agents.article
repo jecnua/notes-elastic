@@ -1,5 +1,5 @@
-Monitoring containers
-|| Last update: 19 Feb 2019
+Monitoring agents
+|| Last update: 20 Feb 2019
 
 * Intro
 
@@ -48,9 +48,14 @@ Use [[https://github.com/google/cadvisor/blob/master/docs/storage/prometheus.md]
 
 - [[https://prometheus.io/docs/guides/cadvisor/]]
 
+When you use prometheus you can see the metrics at _/metrics_:
+
+    # If you are running it in localhost
+    curl localhost:8080/metrics
+
 ** Usage
 
-Run cAdviros as a deamon on your cluster.
+Run cAdvisor as a daemon on your cluster.
 
 Beware the mountpoint. Without _/sys_ won't work and without it you can't get
 the metrics of the system. So you need to mount the right / instead.
@@ -75,7 +80,7 @@ There are two sub-parent probably connected to this:
 
 Some metrics start by /ecs dome by /docker.
 
-** Run via bash locally
+*** Run via bash locally
 
 Quick glance about the usage of containers in your system.
 
@@ -92,6 +97,75 @@ Quick glance about the usage of containers in your system.
 
 cAdvisor exposes its raw and processed stats via a remote REST API.
 This is what Prometheus uses to pull the data.
+
+*** Run it via Puppet
+
+    # You need to have the Puppet docker module
+    docker::run { 'google-cadvisor':
+      image            => 'google/cadvisor:<version>',
+      ports            => ['8080'],
+      expose           => ['8080'],
+      net              => 'host',
+      volumes          => [
+        '/:/rootfs:ro',
+        '/var/run:/var/run:rw',
+        '/sys:/sys:ro',
+        '/var/lib/docker/:/var/lib/docker:ro',
+      ],
+      restart_service  => true,
+      privileged       => false,
+      pull_on_start    => true,
+      extra_parameters => [
+        '--sig-proxy=false',
+      ],
+    }
+
+** Memory usage
+
+A not of interest is the memory usage.
+
+.image images/memory.png _ 800
+
+The legend shows "hot" and "total".
+
+*hot* refers to the _working_set_
+([[https://en.wikipedia.org/wiki/Resident_set_size][RSS]] + cache),
+which is held in RAM and are pages that has been recently touched as calculated
+by the kernel. No swap.
+*Working*Set* is the bytes of memory that the kernel deems to be necessary for
+continuing to run the processes in a container. Kernel cannot tolerate
+overcommitment of the sum total of working set.
+
+*total* includes _hot_ + _cold_ memory and refers to all the memory used by a
+process. Cold are the pages that have not been touched in a while and the
+kernel can reclaim safely under pressure.
+
+    Total (`memory.usage_in_bytes`) = `rss` + `cache`
+    Working set = Total - inactive (not recently accessed memory = `inactive_anon` + `inactive_file`)
+    Source: https://github.com/google/cadvisor/issues/638#issuecomment-160151279
+
+Total memory usage reported by Linux or cgroups is generally misleading because
+it includes cache. [[http://www.linuxatemyram.com/]]
+
+They delegate to libcontainer to retrieve stats.
+
+- [[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=34e431b0ae398fc54ea69ff85ec700722c9da773]]
+
+NOTE: Don't run with swap enabled
+
+RSS is somewhat lower than Usage, since Usage counts pages that have not been
+accessed in a while. So if your program is using and freeing pages, those are
+not reclaimed until the machine gets close to running out of memory, and starts
+to reclaim inactive pages.
+
+Maybe transparent huge pages?? ECS [[https://github.com/aws/amazon-ecs-agent/issues/280]]
+
+    With ecs agent version 1.14.0, released this past January, we made a change to
+    the memory utilization metrics reporting to make it more accurately reflect the
+    amount of memory in use by your application. Specifically, we changed the metric
+    to exclude memory used by the linux page cache, since this is memory that can be
+    reclaimed transparently by the kernel.
+    Source: https://github.com/aws/amazon-ecs-agent/issues/863#issuecomment-311715298
 
 ** Performance
 
@@ -173,13 +247,29 @@ And then you need to [[https://www.robustperception.io/reloading-prometheus-conf
 
 * Node exporter for OS/node metrics
 
-Add the node exporter:
+Node-exporter is a Prometheus exporter that expose the metrics for the instance
+in prom syntax. You can run it locally:
 
     docker run \
     --publish=9100:9100 \
     --name=nodeexporter \
     --detach=true \
     prom/node-exporter:latest
+
+    # CHECK THIS
+    docker service create --name node --mode global --network prom \
+    --mount type=bind,source=/proc,target=/host/proc \
+    --mount type=bind,source=/sys,target=/host/sys \
+    --mount type=bind,source=/,target=/rootfs \
+    prom/node-exporter \
+    -collector.procfs /host/proc \
+    -collector.sysfs /host/proc \
+    -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($|/)"
+
+See the metrics at:
+
+    # If you are running it in localhost
+    curl localhost:9100/metrics
 
 Add the job:
 
@@ -190,19 +280,19 @@ Add the job:
     static_configs:
       - targets: ['x.x.x.x:9100']
 
-Now add grafana dashboards
+Now add grafana dashboards:
 
 - [[https://github.com/stefanprodan/dockprom/blob/master/docker-compose.yml]]
 
-You can use these as a base
+You can use these as a base:
 
 - [[https://stefanprodan.com/2016/a-monitoring-solution-for-docker-hosts-containers-and-containerized-services/]]
 
-Test?
+* NOTES TO REVIEW
+
+    Test?
 
 - [[https://github.com/kbudde/rabbitmq_exporter]]
-
-* NOTES TO REVIEW
 
       docker network create --driver overlay prom
 
@@ -222,13 +312,13 @@ Test?
       --mount type=bind,source=/var/lib/docker,target=/var/lib/docker \
       google/cadvisor:latest
 
-      - job_name: 'node'
+      - job_name: 'node'
       dns_sd_configs:
-      - names: ['tasks.node']
-      type: 'A'
-      port: 9100
-      - job_name: 'cadvisor'
+      - names: ['tasks.node']
+      type: 'A'
+      port: 9100
+      - job_name: 'cadvisor'
       dns_sd_configs:
-      - names: ['tasks.cadvisor']
-      type: 'A'
-      port: 8080
+      - names: ['tasks.cadvisor']
+      type: 'A'
+      port: 8080

@@ -190,6 +190,9 @@ Should finish soon. Not hunders of millisends, if it is you may have blocking ca
 
 NodeJS scales well because it uses LOW resources per connections thanks to this method.
 
+- [[https://stackoverflow.com/questions/51002530/how-can-i-check-the-current-usage-of-ram-with-node-js-discord-js-bot/51002636]]
+- [[https://www.valentinog.com/blog/memory-usage-node-js/]]
+
 * Private repo
 
 https://medium.com/engenharia-noalvo/ways-to-have-your-private-npm-registry-and-a-final-diy-solution-eed001a88e74

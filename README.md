@@ -27,7 +27,7 @@
 - [notes/interesting/02-git_and_opensource](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/interesting/02-git_and_opensource.article)
 - [notes/graphql/01-graphql_monitoring](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/graphql/01-graphql_monitoring.article)
 - [notes/cicd/01-jenkins](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/cicd/01-jenkins.article)
-- [notes/cicd/02-drone_plugins](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/cicd/02-drone_plugins.article)
+- [notes/cicd/02-drone](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/cicd/02-drone.article)
 - [notes/puppet/99-resources](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/puppet/99-resources.article)
 - [notes/puppet/02-mcollective](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/puppet/02-mcollective.article)
 - [notes/puppet/00-puppet_4](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/puppet/00-puppet_4.article)

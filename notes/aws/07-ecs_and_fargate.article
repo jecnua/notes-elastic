@@ -130,7 +130,7 @@ is not working at the moment on CF.
 - [[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-applicationautoscaling-scalingpolicy.html]]
 - [[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-applicationautoscaling-scalabletarget.html]]
 
-** Disk space on ecr
+** Disk space on ECS
 
 TIL that the ECS service has parameters for automatically cleaning up unused
 Docker images and ECS tasks. Otherwise, your container hosts will eventually

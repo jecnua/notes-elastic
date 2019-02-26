@@ -1,26 +1,33 @@
 Some comparisons
 || Last update: 27 Sep 2018
 
-* No namspaces on ecs
+* No namspaces on ECS
 
-In ECS separation is both logical and phisical
+In ECS separation is both logical and physical
 In k8s namespaces are logical separation into 'virtual clusters'
 
-* COnfig configmaps
+* Config configmaps
 
-there is nothing like config-maps on ecs
+there is nothing like config-maps on ECS:
 
-    Here it is worth noting the weakness of the ECS volumes feature compared to the numerous options in Kubernetes. In ECS you have to download any needed files to the ECS instance yourself if you want to make use of a docker volume mount with those files. These can be config files with options, templates needed by your containers, or secret credentials you have to inject during runtime. There are no options similar to what is available in Kubernetes, like a “Config Map” or “Secret” resource, which can be used as a volume mount later.
+    Here it is worth noting the weakness of the ECS volumes feature compared to
+    the numerous options in Kubernetes. In ECS you have to download any needed
+    files to the ECS instance yourself if you want to make use of a docker
+    volume mount with those files. These can be config files with options,
+    templates needed by your containers, or secret credentials you have to
+    inject during runtime. There are no options similar to what is available in
+    Kubernetes, like a “Config Map” or “Secret” resource, which can be used as
+    a volume mount later.
 
 possible solutions:
 
-- MOunt an efs? https://engineering.loyaltylion.com/how-to-use-amazon-efs-with-ec2-containers-8ad98c01769b
+- Mount an efs? [[https://engineering.loyaltylion.com/how-to-use-amazon-efs-with-ec2-containers-8ad98c01769b]]
 
-* Ecs needs no master or control plane
+* ECS needs no master or control plane
 
 That's a big pro.
 
-* No sense to sidcar injection
+* No sense to sidecar injection
 
 ECS doesn't not have this concept
 
@@ -32,19 +39,15 @@ or workload
 
 same reason
 
-* selection of nodes is limited in Ecs
+* selection of nodes is limited in ECS
 
 no concept of affinity, anti, tolerance, taints
 
-* both have the concept of deamon set now
+* both have the concept of daemon set now
 
-s
+* Deployments are much more flexible in k8s
 
-* Deployments are much more flexyble in k8s
-
-* c
-
-no concept of
+No concept of:
 
 - service
 - stateful Sept
@@ -52,5 +55,4 @@ no concept of
 
 * Re/Sources
 
-- All ECS documentation
-- https://kublr.com/blog/comparing-aws-ecs-and-self-managed-kubernetes-ecs-tutorial/ - November 14, 2017
+- [[https://kublr.com/blog/comparing-aws-ECS-and-self-managed-kubernetes-ECS-tutorial/]] - November 14, 2017

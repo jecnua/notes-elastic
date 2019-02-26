@@ -93,7 +93,7 @@ of the ECS cluster.
 
 NOTE: AWS advices to scale service tasks to 0 before deleting it.
 
-* Service
+* Workload types
 
 You can define the number of tasks you want to run on the cluster in a service.
 A *service* will run and maintain a specified number of tasks simultaneously.
@@ -103,12 +103,12 @@ A service can define two types of workload:
 - REPLICA
 - DEAMON
 
-** Deamon
+** Daemon
 
-A *deamon* run a single instance of a task on every node of the cluster.
-Usually this is very useful to run agents and management deamons (collect metrics,
+A *daemon* run a single instance of a task on every node of the cluster.
+Usually this is very useful to run agents and management daemons (collect metrics,
 clean up the node, watch for events and so on). This is similar to the concept
-of _deamon_set_ in k8s. For obvious reasons fargate do not support this type of
+of _daemon_set_ in k8s. For obvious reasons fargate do not support this type of
 workload.
 
 * Tasks
@@ -116,7 +116,7 @@ workload.
 A *task*definition* is in _json_ and containers up to _10_ containers.
 It defines lunch type, ports, drives and so on.
 
-A *task* is an instatiation of a task definition.
+A *task* is an instantiation of a task definition.
 
 You can't move a task to another cluster.
 
@@ -197,7 +197,7 @@ want to expose.
 
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#other_container_definition_params]]
 
-Two docker flags can be spacified to share namespaces:
+Two docker flags can be specified to share namespaces:
 
 - pidMode: ontainers to share their process ID (PID) namespace with other containers in the task, or with the host
 - ipcMode: containers to share their inter-process communication (IPC) namespace with the other containers in the task, or with the host
@@ -217,6 +217,72 @@ You can schedule based on resources, isolation and availability.
 
 On fargate only ECR and dockerhub are supported. No other private container
 registry.
+
+* Monitoring
+
+Abstractions are: tasks, services, and clusters
+
+We have organized the metrics into two broad categories:
+
+    Resource metrics, both at the level of ECS abstractions (tasks, services, and
+    clusters) and at the level of containers and EC2 instances
+    Metrics that track the current status of ECS tasks and services.
+    Source: https://www.datadoghq.com/blog/amazon-ecs-metrics/
+
+    Monitoring ECS involves paying attention to two levels of abstraction: the
+    status of your services, tasks, and containers, as well as the resource use
+    from the underlying compute and storage infrastructure, monitored per EC2 host
+    or Docker container.
+    [...]
+    Note that CloudWatch does not surface metrics for the status of your
+    services, tasks, or containers, so we’ll show you how to use the AWS CLI to
+    query this information from the ECS API.
+    Source: https://www.datadoghq.com/blog/ecs-monitoring-tools/
+
+The CloudWatch console doesn’t include the sort of breakdowns of task status
+you’d get from the ECS API.
+
+    You’ll also find the desiredCount, runningCount, and pendingCount of tasks
+    within each service, and the deployments array displays this information for
+    each time you’ve launched a service.
+    Source: https://www.datadoghq.com/blog/ecs-monitoring-tools/
+
+To get this info you need to use the CLI.
+
+In order to investigate ECS resource use at the container level, you’ll need
+some way to query metrics from Docker itself.
+
+    Consult our Docker monitoring guide to learn about three techniques for
+    collecting Docker metrics: viewing pseudo-files in sysfs, running docker
+    stats, and making calls to a local REST API that runs as part of the Docker
+    daemon.
+    Source: https://www.datadoghq.com/blog/ecs-monitoring-tools/
+
+** Fargate metadata endpoint
+
+    In order to collect metrics from Docker containers deployed with Fargate,
+    you’ll need to query the ECS task metadata endpoint, a variation on the
+    Docker API that runs on the ECS backend. If a container sends an HTTP
+    request to the endpoint’s stats path, ECS will return, for each container
+    in a task, the same JSON object you’d receive from a call to the stats
+    endpoint of the Docker API. For version two of the ECS API, the IP address
+    of the task metadata endpoint is static, and containers would send requests
+    to 169.254.170.2/v2/stats. For version three, the URI of the endpoint is the
+    value of the environment variable ECS_CONTAINER_METADATA_URI, which the ECS
+    Agent defines automatically for each container in a task.
+    [...]
+    You can build a container image that queries the ECS task metadata endpoint
+    automatically, setting the query script as its primary process. A single
+    container within a task can request statistics for all of that task’s
+    containers, so you simply need to name that container image within the
+    task’s definition. The GitHub repository for the ECS Agent includes an
+    example of such a script, written in Go (this script also queries the
+    /metadata path, which returns basic information about a task, such as
+    container names and task status).
+    You can then configure your Fargate tasks to direct the output of your API
+    calls to a destination of your choice, such as your CloudWatch logs (via
+    awslogs).
+    Source: https://www.datadoghq.com/blog/ecs-monitoring-tools/
 
 * Problems
 
@@ -275,10 +341,10 @@ Ways around it?
     rollback and continue the update rollback to get the stack into an
     'UPDATE_ROLLBACK_COMPLETE' state from the UPDATE_ROLLBACK_FAILED' state.
     You can read more about it in the following link:
-    [-] http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html
+    http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html
     You could also attempt to continue the rollback using the
     'continue-update-rollback' CLI command as shown in the document given below:
-    [-] https://docs.aws.amazon.com/cli/latest/reference/cloudformation/continue-update-rollback.html
+    https://docs.aws.amazon.com/cli/latest/reference/cloudformation/continue-update-rollback.html
 
 Basically:
 
@@ -289,10 +355,20 @@ Basically:
     and Cloudformation service team is working on this issue. I have added +1
     on the internal ticket mentioning this case ID so that it can get more wait.
 
+** Memory
+
+    A task definition can also specify resource limits for the memory and CPU
+    utilization of individual containers. Some parameters define impassable
+    (“hard”) limits, while others define “soft” limits that can be ignored if
+    resources are available. For example, the memory parameter always defines a
+    hard limit, and ECS will terminate any container that crosses it, while the
+    memoryReservation parameter always defines a soft limit.
+    Source: https://www.datadoghq.com/blog/amazon-ecs-metrics/
+
 * Re/Sources
 
-- [[https://github.com/aws/amazon-ecs-agent]]
-- [[https://github.com/aws/amazon-ecs-init]]
+- [[https://www.datadoghq.com/blog/amazon-ecs-metrics/]] - February 21, 2019
+- [[https://www.datadoghq.com/blog/ecs-monitoring-tools/]] -  February 21, 2019
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container-instance-draining.html]]
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/bootstrap_container_instance.html#bootstrap_docker_daemon]]
 - [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CleaningUp.html]]

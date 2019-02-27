@@ -1,0 +1,53 @@
+FUNC PYTHON - NOTES
+
+use a pure dependency-injection style, and ZERO globals.
+what you would put in the init put it once in the main()
+than call you function with all the requirements.
+
+Go article about making everything a parameter:
+
+- [[http://peter.bourgon.org/blog/2017/06/09/theory-of-modern-go.html]] - 2017/06/09
+
+    The pure-dependency injection style is basically functional programming,
+    requiring state as an explicit parameter.
+    Source: https://news.ycombinator.com/item?id=14523728
+
+Some comments: [[https://news.ycombinator.com/item?id=14523728]]
+
+- [[https://peter.bourgon.org/go-best-practices-2016/#program-design]]
+
+Interesting bit:
+
+    So we should provide a usable default here. With interface types, one good
+    way is to pass something that provides a no-op implementation of the
+    interface.
+    Source: https://peter.bourgon.org/go-best-practices-2016/#program-design
+
+* To investigate
+
+    By modeling each concrete object as an interface, capturing only the methods
+    we use, we allow callers to swap in alternative implementations. This
+    reduces source-level coupling between packages, and enables us to mock out
+    the concrete dependencies in tests. Testing the original version of the
+    code, with concrete package-level globals, involves tedious and error-prone
+    swapping-out of components.
+    Source: http://peter.bourgon.org/blog/2017/06/09/theory-of-modern-go.html
+
+* Realizations
+
+The main() function will be the constructor for prod and not tested.
+IN here you will create the config objects (to contain for example log and tracing)
+and all the other dependencies.
+This object when mocked should create noop implementation of the interface,
+so that in the functions where this is passed, you don't need to check if
+that is present before using it.
+No:
+
+  if config.logger != null {
+
+  }
+
+every time. Just use it because it can be noop.
+keep the level of indentation to 1/2 and not a three.
+not structuring your code as a deep tree of calls. Instead it should be a
+relatively flat object graph.

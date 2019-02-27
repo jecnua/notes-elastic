@@ -1,5 +1,5 @@
 Jaeger
-|| Last update: 14 May 2018
+|| Last update: 27 Feb 2019
 
 * Intro
 
@@ -155,6 +155,12 @@ At Uber, they monitor:
 
 At Uber they don't use auto-scaling for collectors, just a fixed size pool.
 The bottleneck is typically the storage, which is hard to auto-scale.
+
+* Jeager operator
+
+Almost production ready:
+
+- [[https://github.com/jaegertracing/jaeger-operator]]
 
 * PRO and CON
 

@@ -114,6 +114,10 @@ They however allow:
 - probabilist, head based sampling
 - constant sampling
 
+Another idea on a possible approach:
+
+- [[https://groups.google.com/forum/?#!msg/distributed-tracing/fybf1cW04ZU/KhcF5NxTBwAJ][GOOGLE GROUP: Keeping "most interesting" traces]]
+
 * Test it
 
 - [[https://github.com/jaegertracing/jaeger/tree/master/examples/hotrod]]

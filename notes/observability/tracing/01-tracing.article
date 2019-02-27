@@ -280,6 +280,9 @@ Observability SDK (metrics, tracing, tags):
 - Most notably, gRPC’s tracing library
 - Includes exporters in Zipkin format and B3 propagation format
 
+OpenCensus, differently from Jaeger, allow
+[[https://github.com/census-instrumentation/opencensus-service#opencensus-collector][tail-based sampling]].
+
 * Other Services
 
 - Google Stackdriver https://cloud.google.com/trace/

@@ -105,13 +105,14 @@ Expose a rest interface.
 
 * Sampling
 
-For now they do not support tail-based sampling.
-They allow:
+For now Jaeger *does*not* support tail-based sampling.
+
+- [[https://github.com/jaegertracing/jaeger/issues/425][GITHUB ISSEUS: Discuss post-trace (tail-based) sampling]]
+
+They however allow:
 
 - probabilist, head based sampling
-- constant
-
-- [[https://github.com/jaegertracing/jaeger/issues/425]] - Discuss post-trace (tail-based) sampling
+- constant sampling
 
 * Test it
 

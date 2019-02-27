@@ -10,7 +10,7 @@ Dockerize nodejs
 How to gather the metrics?
 
 - APM
-- Asynch Hooks API - https://nodejs.org/dist/latest-v9.x/docs/api/async_hooks.html (exp in node9, stable in node10)
+- Asynch Hooks API - [[https://nodejs.org/dist/latest-v9.x/docs/api/async_hooks.html]] (exp in node9, stable in node10)
 - Performance Hooks API (experimental)
 
 The basic is always the same. If you want to see how much time you spend on a
@@ -29,7 +29,7 @@ APM tab
 also collect the errors
 endpoints - rpm/errors/rpm for each one
 distribution of the request time
-more instances of the same errors are grouped togheter
+more instances of the same errors are grouped together
 from 6.3 will be open
 
 ** Asynch Hooks API
@@ -44,7 +44,7 @@ Allows us to place hooks around asynchronous operations.
 
 *** Pull model
 
-You need long-living applicaitions for this (not lambda).
+You need long-living applications for this (not lambda).
 
 *** Push module
 
@@ -55,7 +55,8 @@ This should be tested with lambda.
 
 - [[https://github.com/lorenwest/node-monitor]] - last update 2014
 
-* Resources
+* Re/Sources
 
+- [[https://www.elastic.co/blog/elastic-apm-6-6-0-released]] - 29 JANUARY 2019
 - [[https://blog.sqreen.io/diy-node-apm/]] - Nov 21, 2017 - Very good
 - [[https://blog.risingstack.com/node-js-performance-monitoring-with-prometheus/]] -  Jun 27th, 2017

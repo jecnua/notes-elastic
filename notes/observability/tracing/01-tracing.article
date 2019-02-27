@@ -59,9 +59,9 @@ Span also support what is called _tags_. They are an unbounded sequence of
 key-value pair where the key is always a string.
 They represent contextual metadata relevant to a specific request used to enrich
 the _context_.
-Some of them are _reserved_ but for user-defined ones is adviced to follow the
+Some of them are _reserved_ but for user-defined ones is advised to follow the
 [[https://github.com/opentracing/specification/blob/master/semantic_conventions.md#standard-span-tags-and-log-fields][semantic conventions]].
-For example if a span contains the tag error a lot of tracers colors it red.
+For example if a span contains the tag error a lot of tracers colours it red.
 Tags can be nested.
 
 *** Log events
@@ -77,7 +77,7 @@ of interest to the active span.
 
 ** Trace
 
-A *trace* encapsulate the transactions state as it propagates through the sistem.
+A *trace* encapsulate the transactions state as it propagates through the system.
 Implementation-wise it's a group of one or more spans. In the OpenTracing standards
 the spans are structured around a _DAG_ (Directly acyclic graph).
 
@@ -110,11 +110,9 @@ Instrumentation is applied use of Tracer libraries. Decides what and how to trac
     through the process, allocating child spans for intermediate
     operations. Finally, they inject trace context onto outgoing
     messages so the process can repeat on the other side.
-
     Instrumentation encode request-scoped state required for
     tracing to work. Services that use a compatible context format
     can understand their position in a trace.
-
     Source: https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf
 
 It is:
@@ -285,8 +283,13 @@ OpenCensus, differently from Jaeger, allow
 
 * Other Services
 
-- Google Stackdriver https://cloud.google.com/trace/
+- [[https://cloud.google.com/trace/][Google Stackdriver]]
 - Amazon X-Ray
+
+* Free tutorials
+
+- [[https://katacoda.com/opentracing]]
+- [[https://github.com/yurishkuro/opentracing-tutorial/]]
 
 * Re/Sources
 
@@ -295,4 +298,4 @@ OpenCensus, differently from Jaeger, allow
 - [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]] - 25 Apr 2018
 - VIDEO: [[https://www.youtube.com/watch?v=GccUVCI5TkM][OpenTracing with Jaeger - Utah Go User Group]] - 8 Nov 2017
 - [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Very useful to understand the concepts
-- https://news.ycombinator.com/item?id=15326272
+- [[https://news.ycombinator.com/item?id=15326272]]

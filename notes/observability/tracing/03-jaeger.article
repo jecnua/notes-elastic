@@ -11,9 +11,7 @@ My related code project [[https://github.com/jecnua/tracing-nodejs]].
 
 - [[http://www.jaegertracing.io/]]
 - [[https://github.com/uber/jaeger]]
-- [[https://github.com/cncf/toc/blob/master/proposals/jaeger.adoc]] CNCF proposal
-
-    Low overhead, dynamic sampling, scalable
+- [[https://github.com/cncf/toc/blob/master/proposals/jaeger.adoc][CNCF proposal]]
 
 The backend is written in GO and the UI is in react.
 Being pretty new, it's build to be scalable and it's cloud friendy. The client
@@ -61,9 +59,6 @@ Source: https://groups.google.com/forum/#!topic/jaeger-tracing/toBNkL_zEDE
 The Routing and Discovery phase of the collectors from the client library is also
 the responsibility of the agent.
 
-The agent *POLL* for a _sampling_strategy_ from the tracing backend and propagate
-the sampling rate to all tracer clients. This is useful in dynamic environments.
-
 Jaeger can accept Zipkin span transparently :D
 
 ** Span
@@ -105,18 +100,49 @@ Expose a rest interface.
 
 * Sampling
 
+- [[https://www.jaegertracing.io/docs/1.10/sampling/]]
+
+    Jaeger libraries implement consistent upfront (or head-based) sampling.
+    [...]
+    When service A receives a request that contains no tracing information,
+    Jaeger tracer will start a new trace, assign it a random trace ID, and make
+    a sampling decision based on the currently installed sampling strategy. The
+    sampling decision will be propagated with the requests to B and to C, so
+    those services will not be making the sampling decision again but instead
+    will respect the decision made by the top service A. This approach
+    guarantees that if a trace is sampled, all its spans will be recorded in the
+    backend. If each service was making its own sampling decision we would
+    rarely get complete traces in the backend.
+    Source: https://www.jaegertracing.io/docs/1.10/sampling/
+
+The agent *POLL* for a _sampling_strategy_ from the tracing backend and propagate
+the sampling rate to all tracer clients. This is useful in dynamic environments.
+
 For now Jaeger *does*not* support tail-based sampling.
 
 - [[https://github.com/jaegertracing/jaeger/issues/425][GITHUB ISSEUS: Discuss post-trace (tail-based) sampling]]
 
 They however allow:
 
-- probabilist, head based sampling
 - constant sampling
+- probabilist, head based sampling
+- rate limiting
+- remote
+
+Remote is probably the most interesting one:
+
+    [remote] This allows controlling the sampling strategies in the services
+    from a central configuration in Jaeger backend, or even dynamically (see
+    Adaptive Sampling).
+    Source: https://www.jaegertracing.io/docs/1.10/sampling/#client-sampling-configuration
 
 Another idea on a possible approach:
 
 - [[https://groups.google.com/forum/?#!msg/distributed-tracing/fybf1cW04ZU/KhcF5NxTBwAJ][GOOGLE GROUP: Keeping "most interesting" traces]]
+
+Upcoming Adaptive Sampling functionality:
+
+- [[https://github.com/jaegertracing/jaeger/issues/365][GITHUB ISSUE: Adaptive Sampling ]]
 
 * Test it
 

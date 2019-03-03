@@ -1,4 +1,5 @@
-FUNC PYTHON - NOTES
+Functional python - notes
+|| Last update: 3 Mar 2019
 
 use a pure dependency-injection style, and ZERO globals.
 what you would put in the init put it once in the main()
@@ -36,8 +37,9 @@ Interesting bit:
 * Realizations
 
 The main() function will be the constructor for prod and not tested.
-IN here you will create the config objects (to contain for example log and tracing)
-and all the other dependencies.
+IN there you will create the config objects (to contain for example log and
+tracing) and all the other dependencies.
+config objects takes optionl parameters only.
 This object when mocked should create noop implementation of the interface,
 so that in the functions where this is passed, you don't need to check if
 that is present before using it.
@@ -48,6 +50,21 @@ No:
   }
 
 every time. Just use it because it can be noop.
+AVOID NIL CHECKS VIA NO-OP IMPLEMENTATION. you can check if the user passes it
+in the constructor and act on it.
 keep the level of indentation to 1/2 and not a three.
 not structuring your code as a deep tree of calls. Instead it should be a
 relatively flat object graph.
+use environment vars for configuration, BUT each var is also defined as a flag.
+Be Explicit. changing the runtime behavior of an application should be
+discoverable and documented.
+define and parse your flags in func main. Only main has the right to
+decide the flags that will be available to the user.
+if you need to use an external library to do something, like a http call,
+you need to pass as a parameter.but don't pass directly the object, pass an
+interface and make the third party respect it. it will allow you to mock it.
+this is called: small interfaces to model dependencies.
+
+* Re/sources
+
+- [[https://peter.bourgon.org/go-best-practices-2016/]] very very good article. focus on point 5 to 12

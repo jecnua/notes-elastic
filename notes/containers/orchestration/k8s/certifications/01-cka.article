@@ -2086,7 +2086,8 @@ before draining it.
 
 * Re/Sources (not already referenced directly)
 
-- [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]]
-- [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
+- AMAZING VIDEO - [[https://www.youtube.com/watch?v=2dsCwp_j0yQ][YOUTUBE: Kubernetes the very hard way at Datadog]] - 24 Oct 2018
 - [[https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/]] - May 2018
 - [[https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/]] - Nov 2017
+- [[https://linuxacademy.com/linux/training/course/name/certified-kubernetes-administrator-preparation-course]]
+- [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]

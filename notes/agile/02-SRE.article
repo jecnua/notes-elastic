@@ -11,7 +11,15 @@ Principles:
 - Have time to do tomorrow better than today
 - Have the ability to regulate their workload
 
+* SLx
+
+- Service Level Objectives (SLO)
+- Service Level Indicators (SLI)
+- Service Level Agreement (SLA)
+
 * SLO
+
+- [[https://landing.google.com/sre/sre-book/chapters/service-level-objectives/]]
 
 Set of goals for reliability (how well the system should behave). Based on
 customer experience. If the customers are happy you are meeting your SLOs.
@@ -25,7 +33,19 @@ monetary.
 - Account
 - Act
 
+* SLA
+
+    The error budget is then the difference between the SLA and the existing
+    availability – sometimes measured uptime, sometimes number of errors in a
+    given period, or any way that you’ve decided upon as your SLI.
+    Source: http://willgallego.com/2019/02/23/resilience-engineering-and-error-budgets/
+
 ** Consequences
+
+    If SLO violations occur frequently enough to expend the error budget,
+    releases are temporarily halted while additional resources are invested in
+    system testing and development to make the system more resilient.
+    Source: Google SRE, Chapter 3 – Embracing Risk, “Benefits”
 
 *** Error Budget Policy
 
@@ -69,7 +89,7 @@ better. Project work example:
 - Automation of repetitive work
 - Coordinating and implementation of Postmortem action items
 
-* Shared Responsability Model
+* Shared Responsibility Model
 
 How it's done at google.
 
@@ -87,3 +107,4 @@ Maintaining consistency means fewer SREs can support more product.
 * Re/Sources
 
 - VIDEO [[https://www.youtube.com/watch?v=c-w_GYvi0eA][Getting Started with SRE - Stephen Thorne, Google]] 10 Jul 2018
+- [[http://willgallego.com/2019/02/23/resilience-engineering-and-error-budgets/]]

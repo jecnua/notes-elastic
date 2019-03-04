@@ -40,8 +40,7 @@ all this on GKE
 .image images/network_overlay.png
 .caption Source: [[https://www.youtube.com/watch?v=2dsCwp_j0yQ]]
 
-a lot of network overhead
-consumes cpu
+A lot of network overhead. consumes cpu.
 
 .image images/native_pod_routing.png
 .caption Source: [[https://www.youtube.com/watch?v=2dsCwp_j0yQ]]
@@ -54,14 +53,14 @@ going native pod routing
 all cloud provider are going that direction
 
 aws
-cni plugin from lyft
-using secondary interface on the conmtainer based on ipvlan
-it allocates more netowkrin intervaces and gives them an ip
+cni plugin from lyft [[https://github.com/lyft/cni-ipvlan-vpc-k8s]]
+using secondary interface on the container based on ipvlan
+it allocates more network interfaces and gives them an ip
 and directly forward them to the pods
 
 they wanted to avoid overlays
 avoid bridges (PTP or IPVLAN) -
-they wanted to route traffic between k8s clusters witrhout going to elb and the sort
+they wanted to route traffic between k8s clusters without going to elb and the sort
 but it's a beta features from the cloud provider
 
 

@@ -1065,7 +1065,7 @@ containers in a pod are deployed in parallel on the same node and share:
 - Network namespace (IP address and ports)
 - Mounts (they mount the same external storage - volumes)
 - IPC namespace (inter process communication)
-- PID namespace (only if set and not by default) [BETA in 1.12]
+- PID namespace (only if set and not by default) [BETA in 1.13] [[https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/]]
 
 Pods are *ephemeral* as they are not able to self-heal. It's up to _controllers_
 to handle pod replication and fault tolerance. You can attach the POD
@@ -1091,13 +1091,24 @@ The possible status phase of a pod are:
 - Failed
 - Unknown
 
-Reastart policies are:
+Restart policies are:
 
 - Always
 - On-failure
 - Never
 
 It's valid for all containers in a pod.
+
+*** Pods and namespaces
+
+The PID namespace sharing was added later in respect of the others (BETA in 1.13).
+However the github issue is very old: [[https://github.com/kubernetes/kubernetes/issues/1615][Shared PID and UTS namespaces ]]
+
+PID: [[https://github.com/kubernetes/enhancements/issues/495]] [[https://github.com/kubernetes/community/blob/master/contributors/design-proposals/node/pod-pid-namespace.md]]
+
+    Shared PID namespaces was promoted to beta in the last release. afaik no
+    one is working on configurable UTS namespaces.
+    Source: https://github.com/kubernetes/kubernetes/issues/1615
 
 *** Resource management for containers in a Pod
 

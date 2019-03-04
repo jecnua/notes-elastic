@@ -5,7 +5,36 @@ Namespaces
 
 .image images/namespaces.png
 
-* Network namespaces
+- PID
+- MNT
+- UTS
+- NET
+-
+
+* PID namespaces
+
+- [[https://github.com/kubernetes/kubernetes/issues/1615]]
+
+* UNIX Time Sharing namespaces (UTS)
+
+- [[http://man7.org/linux/man-pages/man2/uname.2.html]]
+
+    The UTS namespace is used to isolate two specific elements of the system
+    that relate to the uname system call.
+    Source: https://windsock.io/uts-namespace/
+
+The UTS namespace is about isolating hostnames.
+
+    Introduce utsname namespaces.  Instead of a single system_utsname
+    containing hostname domainname etc, a process can request it's
+    copy of the uts info to be cloned.  The data will be copied from
+    it's original, but any further changes will not be seen by processes
+    which are not it's children, and vice versa.
+    This is useful, for instance, for vserver/openvz, which can now clone
+    a new uts namespace for each new virtual server.
+    Source: https://lwn.net/Articles/179345/
+
+* Network namespaces (NET)
 
     A network namespace is logically another copy of the network stack, with
     its own routes, firewall rules, and network devices.”
@@ -15,3 +44,36 @@ Namespaces
     The network namespace construct makes the partitioning of network stack
     between processes and containers running on a host possible.
     Source: https://aws.amazon.com/blogs/compute/under-the-hood-task-networking-for-amazon-ecs/
+
+* Some thought
+
+    IPC namespaces can contain large objects (e.g. shm segments).
+    PID, UTS, NS, USER, and probably NET do not.
+
+    IPC objects (shms, sems, msqs) can be created by user and can have significant memory usage in typical use cases.
+    PID, UTS, NS, USER do not for typical use cases.
+    NET should not be large in "typical" use cases.
+
+    IPC objects live beyond the processes in a container, and so would need to be cleaned up in concert with the container or pod lifetime. PID automatically cleans up when process dies.
+    UTS, USER, and NS don't have user created objects.
+    NET, I'm not sure if we would give users permission to create objects with lifetime issues.
+
+    So, IPC is quite different from the others.
+
+    IPC ns per pod:
+
+    charge memory of all IPC objects to pod.
+    delete IPC object only at pod termination, not at single-container restart.
+    user responsible for clearing out ipc object on container restart.
+    shm segments are basically the same as multiple mmaps of a /tmpfs file. if we think /tmpfs as a pod volume makes sense, I guess so does pod-scope IPC ns.
+
+    IPC ns per container:
+
+    charge memory of all IPC objects to container
+    delete IPC objects at pod termination
+    delete IPC objects at container restart? Could be useful. Not clear if this is what users want, but could work. What will docker do?
+    Source: https://github.com/kubernetes/kubernetes/issues/1615
+
+* Re/Sources
+
+- [[https://github.com/kubernetes/kubernetes/issues/1615]]

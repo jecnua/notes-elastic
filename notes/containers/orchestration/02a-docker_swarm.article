@@ -47,7 +47,7 @@ externally. The *scope* for this overlay called swarm.
     38eda6530701        none                null                local
 
 - Embedded DNS server to provide service discovery.
-- Embedded LoadBalancing at containers level via IPVs.
+- Embedded LoadBalancing at containers level via IPVS.
 
 The internal elb serve the same port (service port) on every node.
 

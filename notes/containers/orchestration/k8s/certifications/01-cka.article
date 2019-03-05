@@ -1748,12 +1748,19 @@ A service for which Kubernetes does not provide a ClusterIP is called
 
 A service can expose multiple ports, but in this case they need to be named.
 
-*** Service discovery
+*** Service discovery (DNS)
+
+- [[https://github.com/coredns/coredns]]
+- [[https://coredns.io/plugins/]]
 
 k8s supports two methods of discovering a service:
 
 - DNS (recommended): The DNS add-on will create a DNS record for each Service
 - Environment variable: As soon as the pods start, env variable with all the existing services are added. They are *not*updated* after pod creation.
+
+DNS is provided by [[https://github.com/coredns/coredns][CoreDNS]] from version
+v1.13. It is much more flexyble than is predecessor and allow extensibility
+via [[https://coredns.io/plugins/][plugins]] (~30 only by default).
 
 The DNS name is in the form of:
 

@@ -350,8 +350,9 @@ It will also need a container runtime like:
 - [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
 
 kube-proxy is a network proxy in charge of managing the network connectivity.
-Listens on the _apiserver_ and reflects the
-kubernetes networking services on each node by managing network rules.
+Listens (monitor) on the _apiserver_ for changes in Service and Endpoint objects.
+It reflects these networking changes on each node by managing network rules.
+It will update the rules when new objects are created or removed.
 
     This reflects services as defined in the Kubernetes API on each node and can
     do simple TCP, UDP, and SCTP stream forwarding or round robin TCP, UDP, and
@@ -359,13 +360,13 @@ kubernetes networking services on each node by managing network rules.
     Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
 
 By default for each service and endpoint created. It opens a random port and
-listens for traffic to the *ClusterIP:Port* and redirect the trafficx to one
+listens for traffic to the *ClusterIP:Port* and redirect the traffic to one
 of the service _endpoints_.
-It support three proxy modes:
+It support three proxy modes that can be sent via flag at initialization:
 
-- userspace
-- iptables
-- [[http://www.linuxvirtualserver.org/software/ipvs.html][ipvs]] (alpha)
+- userspace (v1.0): TCP/UDP over IP or Layer 4
+- iptables (v1.1+) (*default*)
+- [[http://www.linuxvirtualserver.org/software/ipvs.html][ipvs]] (beta) (v1.9+): managed by the Huawei team
 
     --proxy-mode ProxyMode
     Which proxy mode to use: 'userspace' (older) or 'iptables' (faster) or 'ipvs'
@@ -375,8 +376,25 @@ It support three proxy modes:
     proxy.
     Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
 
-If you choose iptable, it will set up *iptable* rules to capture the traffic.
-About IPVS:
+In *iptables* mode, it will set up *iptable* rules to capture the traffic.
+It uses a _Readiness_Probe_ to ensure all pods are functional priori to
+connection. It supports up to 5k nodes.
+
+.image images/iptables.png _ 500
+.caption kube-proxy with iptables. Source: [[https://kubernetes.io/docs/concepts/services-networking/service/]]
+
+On very big clusters the iptable cluttering can become an issue not only on
+performance. The *IPVS* mode allow faster traggic and refresh while keeping
+a cleaner system (almost no iptables rule).
+The *IPVS* mode requires the IPVS modules installed in the kernel. It works in
+kernel space and is faster than the other options. Allows for more complex and
+smarter load balancing:
+
+- the typical round robin
+- shortest expected delay
+- least connection
+
+and more. It can manage more than 5k nodes.
 
     IPVS (IP Virtual Server) implements transport-layer load balancing inside
     the Linux kernel, so called Layer-4 switching. IPVS running on a host acts
@@ -384,6 +402,16 @@ About IPVS:
     requests for TCP/UDP based services to the real servers, and makes services
     of the real servers to appear as a virtual service on a single IP address.
     Source: http://www.linuxvirtualserver.org/software/ipvs.html
+
+Interesting tidbit, Datadog used IPVS in their cluster and they met a lot of bugs
+with it.
+
+- Accessing services from the host doesn't work
+- no localhost:nodeport
+- no graceful termination
+
+All should be fixed in version 1.12 but if you want to know more look at this
+video: [[https://www.slideshare.net/lbernail/kubernetes-at-datadog-the-very-hard-way]]
 
 * Metadata
 

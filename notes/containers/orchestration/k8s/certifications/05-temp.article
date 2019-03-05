@@ -86,12 +86,12 @@ very recent on - unstable cloud provider features
 a lot of iptables
 they moved to IPVS (huawei team)
 
-faster traffic and refresg
+faster traffic and refresh
 cleaner almost no iptables rules
 
 BUT accessing services from the host doesn't work
 no localhost:nodeport
-no gracerful temrination
+no gracerful termination
 ALL FIXED IN 1.12
 
 * IPV6 and DNS

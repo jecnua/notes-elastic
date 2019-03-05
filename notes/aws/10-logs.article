@@ -154,7 +154,7 @@ plus you can't guarante the document id
 
 lambda + kinesis
 
-bhe aware of
+be aware of
 
         All our lambdas were triggered by Kinesis streams and in 1–2%
         of cases we observed the same KinesisRecord being processed
@@ -193,7 +193,7 @@ IMP: No control over the number of processors per queue.
         each shard’s events in sequence.
         Source: https://docs.aws.amazon.com/lambda/latest/dg/scaling.html
 
-Kinesis and lambda throttleling:
+Kinesis and lambda throttling:
 
 - [[https://docs.aws.amazon.com/lambda/latest/dg/concurrent-executions.html]]
 

@@ -29,13 +29,14 @@ CKA notes
 .image images/k8s_high_level.png _ 700
 .caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
 
-Kubernetes is all about decoupling services. Based on 15 years of experience at
-google building Borg. Communication from outside or internal services is API
-driven. All configuration is saved in JSON format but often users write it in
-YAML. k8s will transform it in json before sending it to the API.
+Kubernetes is build on the concept of transient, decoupled objects connected
+together. It is based on 15 years of experience at google building Borg.
 
 - [[https://ai.google/research/pubs/pub43438][Borg paper]]
 
+Communication from outside or internal services is API driven.
+All configuration is saved in JSON format but often users write it in
+YAML. k8s will transform it in json before sending it to the API.
 Orchestration is managed by controllers (a series of watch-loops). All of them
 interrogates the API server for a particular object state and act accordingly.
 
@@ -311,8 +312,9 @@ to be modified, if the _resourceVersion_ is changed then a 409 confict is return
 This field is implemented by the _modifiedIndex_ parameter in etcd, and is unique
 to namespace, kind and server.
 
-When "kubectl proxy" is configures, you can send requests to localhost on the
-proxy port.
+The "kubectl proxy" command creates a local service to access a ClusterIP.
+Will allow to send requests to localhost on the proxy port. Useful for
+troubleshooting or development work.
 
     Without kubectl proxy configured, we can get the Bearer Token using kubectl,
     and then send it with the API request. A Bearer Token is an access token
@@ -342,7 +344,7 @@ It will also need a container runtime like:
 - [[https://coreos.com/rkt/][rkt]]
 - [[https://linuxcontainers.org/lxd/][lxd]]
 
-*** Kube proxy
+** Kube-proxy
 
 - [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/]]
 - [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
@@ -356,8 +358,14 @@ kubernetes networking services on each node by managing network rules.
     SCTP forwarding across a set of backends.
     Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
 
-It support three proxy modes - userspace, iptables and (alpha)
-[[http://www.linuxvirtualserver.org/software/ipvs.html][ipvs]].
+By default for each service and endpoint created. It opens a random port and
+listens for traffic to the *ClusterIP:Port* and redirect the trafficx to one
+of the service _endpoints_.
+It support three proxy modes:
+
+- userspace
+- iptables
+- [[http://www.linuxvirtualserver.org/software/ipvs.html][ipvs]] (alpha)
 
     --proxy-mode ProxyMode
     Which proxy mode to use: 'userspace' (older) or 'iptables' (faster) or 'ipvs'
@@ -367,9 +375,7 @@ It support three proxy modes - userspace, iptables and (alpha)
     proxy.
     Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
 
-By default for each service it sets up *iptable* rules to capture the traffic
-for it's ClusterIP and forwards it to one of the _endpoints_.
-
+If you choose iptable, it will set up *iptable* rules to capture the traffic.
 About IPVS:
 
     IPVS (IP Virtual Server) implements transport-layer load balancing inside
@@ -1626,13 +1632,25 @@ that defines how to handle existing jobs. There are three options:
 .image images/services.png _ 600
 .caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
 
-Pods are ephemeral and resources like IP addresses allocated to it cannot be
-static.
+Pods are ephemeral and resources like IP addresses allocated to them cannot be
+static. To solve this problem, instead of accessing the pods directly a
+construct called *service* is used.
 
-To solve this problem, instead of accessing the pods directly a construct called
-_service_ is used.
+    $ kubectl get svc --all-namespaces
+    NAMESPACE     NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)         AGE
+    default       kubernetes             ClusterIP   10.96.0.1      <none>        443/TCP         112s
+    kube-system   default-http-backend   NodePort    10.108.60.44   <none>        80:30001/TCP    100s
+    kube-system   kube-dns               ClusterIP   10.96.0.10     <none>        53/UDP,53/TCP   108s
+
+
+targetPort defaults to port, but it could be set to any value, including a string
+referring to a port on the backend pod. The port number can change in the pod
+definition during a release and this won't cause downtime if the name is the same.
+
+    TIP: Use named port
+
 A service groups pods using Labels and Selectors and load-balance traffic access
-to them. The service lifespan is decoupled from the pods. Coupling is loose.
+to them. The service lifespan is decoupled from the pods (loose coupling).
 You can define the port the service is going to listen to and the _targetPort_
 (the port the container is listening to). A tuple of Pods IP addresses along
 with the targetPort is referred to a service *endpoint*.
@@ -1648,20 +1666,30 @@ with the targetPort is referred to a service *endpoint*.
 
 Each service is associated with a endpoint object. It is a dynamic list of all
 the pods that are selected by a service label selector at any point in time.
+Google has been working on Extensible Service Proxy (ESP) based on nginx.
+This is more flexyble than endpoint but is not used outised Google App Engine
+and GKE.
 
 An IP is attached to the service in a different CIDR of the Pods and it's called
 ClusterIP.
 
+The CIDR for services can be set at API server _startup_option_.
+
 QUESTION: How do you choose this two CIDR sets?
 
-Some of the service type are:
+Services can be exposed internally or externally. They ca also connect internal
+resources to external ones. Services can be of the followig type:
 
-- ClusterIP: (default) Static lifetime IP only accessible from within the cluster
-- NodePort: The service is exposed on each node on a static port in the range 30000-32767
-- LoadBalancer: Only works in a cloud env and will create a lb on the cloud provider, open a random port on every node and accept traffic
-- ExternalName: Map service to an external endpoint residing outside the cluster. Has no selector and define no endpoint. It returns a CNAME of an external service.
+- *ClusterIP* (default): Static lifetime IP only accessible from within the cluster
+- *NodePort*: The service is exposed on each node on a static port.
+- *LoadBalancer* (only cloud): Only works in a cloud env and will create a lb on the cloud provider, open a random port on every node and accept traffic
+- *ExternalName*: Map service to an external endpoint residing outside the cluster.
 
-ClusterIP is a way to associate a *Virtual*IP* (VIP) to a service. The kube-proxy
+*NodePort* is in the range 30000-32767 (defined at cluster configuration). Used
+for debugging or when a static ip address is necessary (like firewalling
+whitelist).
+
+*ClusterIP* is a way to associate a *Virtual*IP* (VIP) to a service. The kube-proxy
 will manage the traffic. They represent a standard stable network overview of
 the system.
 
@@ -1671,6 +1699,11 @@ You can define externalIPs in the spec of any type of service. If incoming netwo
 traffic has this IP has the destination and arrives to one of the service ports
 then it will be routed to one of the service endpoint.
 
+*ExternalName* has no selector and define no port or endpoint. It returns an
+alias (CNAME) of an external service. redirection happens at DNS level not via
+proxy or forward. This can be useful to connect internal services to apps
+still not moved into kubernetes.
+
 NodePort created a ClusterIP anyway.
 LoadBalancer will create a ClusterIP AND open a random node port to attach to the LB.
 
@@ -1678,8 +1711,12 @@ NOTE: Giving the _port_ a name is very useful because it decouples pod and servi
 definition. You will be able to change the port you are listening to in the pod
 without changing the service if you keep the same name!
 
-We can have a service for which Kubernetes does not provide a ClusterIP and we
-call it [[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services][headless]].
+    While there is no configuration for this option, there is the possibility
+    of session affinity via IP.
+    Source: Linux foundation course
+
+A service for which Kubernetes does not provide a ClusterIP is called
+[[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services][headless]].
 
 A service can expose multiple ports, but in this case they need to be named.
 

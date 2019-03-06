@@ -48,6 +48,35 @@ Create it twice.
     that distribution.
     Source: https://aws.amazon.com/certificate-manager/faqs/
 
+* SSL cert with DNS validation
+
+- [[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-certificatemanager-certificate.html]]
+
+You can create an ACM certificate with CF using
+[[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-certificatemanager-certificate.html]]
+and you can choose both DNS and EMAIL validation mechanism.
+
+However CloudFormation *do*not* allow you to create the connected entry in the
+DNS name. There is only one output to the CF resource and is the ARN of the
+cert.
+
+People solved this problem by using custom resources in CF. They basically
+wrap a lambda around a new CF entity and in the lambda the use the sdk to query
+ACM and get the CNAME.
+
+- [[https://binx.io/blog/2018/10/05/automated-provisioning-of-acm-certificates-using-route53-in-cloudformation/]] - Oct 2019
+- [[https://github.com/binxio/cfn-certificate-provider]]
+
+You can get the list with the CLI:
+
+- [[https://docs.aws.amazon.com/cli/latest/reference/acm/describe-certificate.html#output]]
+
+With Terraform you can use
+[[https://www.terraform.io/docs/providers/aws/r/acm_certificate_validation.html][aws_acm_certificate_validation]]
+resource to solve it.
+
+** ISSUES with CF
+
 * Importing SSL certificates on ACM
 
 Since Oct 13, 2016 you don't need to upload SSL certs for CF and ELBs on IAM, but

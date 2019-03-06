@@ -1,5 +1,5 @@
 CKA notes
-|| Last update: 2 Jan 2019
+|| Last update: 6 Mar 2019
 
 * To clarify
 
@@ -9,22 +9,16 @@ CKA notes
 - no need for cni package
 - https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/
 - CRI https://github.com/kubernetes/community/blob/master/contributors/devel/container-runtime-interface.md
-- cri-o
 - vx-lan
 - externalIP
 - env from
-- headless service
 - how can the pod see in the env pod name and other info
-- downward api
 - pod presets
 - pod priority class
-- batch jobs???
 - are pod ip in statefulset static?
 - Search for QUESTION
 
 * Kubernetes course: CKA certified kubernetes administrator
-
-* Intro
 
 .image images/k8s_high_level.png _ 700
 .caption Source: [[https://www.safaribooksonline.com/videos/oscon-2017/][Kubernetes hands-on - Kelsey Hightower (Google) - Part 1]]
@@ -1681,7 +1675,7 @@ A service groups pods using Labels and Selectors and load-balance traffic access
 to them. The service lifespan is decoupled from the pods (loose coupling).
 You can define the port the service is going to listen to and the _targetPort_
 (the port the container is listening to). A tuple of Pods IP addresses along
-with the targetPort is referred to a service *endpoint*.
+with the _targetPort_ is referred to a service *endpoint*.
 
     $ kubectl get endpoints --all-namespaces
     NAMESPACE     NAME                      ENDPOINTS             AGE
@@ -1695,7 +1689,8 @@ with the targetPort is referred to a service *endpoint*.
 Each service is associated with a endpoint object. It is a dynamic list of all
 the pods that are selected by a service label selector at any point in time.
 Google has been working on Extensible Service Proxy (ESP) based on nginx.
-This is more flexyble than endpoint but is not used outised Google App Engine
+This is more flexible than endpoint but is not used outside
+[[https://cloud.google.com/endpoints/docs/frameworks/frameworks-extensible-service-proxy][Google App Engine]]
 and GKE.
 
 An IP is attached to the service in a different CIDR of the Pods and it's called
@@ -1706,7 +1701,7 @@ The CIDR for services can be set at API server _startup_option_.
 QUESTION: How do you choose this two CIDR sets?
 
 Services can be exposed internally or externally. They ca also connect internal
-resources to external ones. Services can be of the followig type:
+resources to external ones. Services can be of the following type:
 
 - *ClusterIP* (default): Static lifetime IP only accessible from within the cluster
 - *NodePort*: The service is exposed on each node on a static port.
@@ -1849,12 +1844,12 @@ They address the problem of:
 
 Volumes in general survive single container restarts but if you want also to
 survive a pod restart, you need to use a persistenVolumes that is decoupled
-for the pod lifecyle.
+for the pod lifecycle.
 
 Some of the volume types are:
 
 - emptyDir (default): non-persistant: local to the pod. if the pod dies it's lost. survive container restart.
-- hostPath: mount a dir on the node. is uncommon because pods should be independed from the node: usecase cAdvisor or similar daemon
+- hostPath: mount a dir on the node. is uncommon because pods should be independent from the node: usecase cAdvisor or similar daemon
 - nfs
 - iscsi
 - persistentVolumeClaim
@@ -1904,7 +1899,7 @@ mode.
 *** CSI
 
 CSI was created to standardize the Volume interface; a volume plugin built using
-a standardized CSI would work on different container orchestrators.
+a standardized CSI would work on different container orchestrator.
 
 Kubernetes 1.9 added alpha support for CSI
 With CSI, third-party storage providers can develop solutions without the need
@@ -1985,8 +1980,8 @@ This can be done through three apis:
 
 - [[https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/]]
 
-Containers in a pod can be aware on which steps they are of they lifecycle.
-There are two lifecyle hooks:
+Containers in a pod can be aware on which steps they are of they life-cycle.
+There are two life-cycle hooks:
 
 - PostStart
 - PreStop
@@ -2084,7 +2079,7 @@ There are two kinds of role:
 - Role: Grant access to specific namespace
 - ClusterRole: Grant permission cluster wide
 
-Once the role is created it can be binded. There are two types of binding.
+Once the role is created it can be bound. There are two types of binding.
 
 - RoleBinding: Bind user at the same namespace of the Role.
 - ClusterRoleBinding: Grant access to resources in ALL namespaces
@@ -2101,7 +2096,7 @@ followers.
 
 ETCD is implemented as a b+tree key-value store. You don't find and replace an
 entry, instead you always append new data to the end. Old data is marked for
-removal and will be garbage colleted (compaction process) later.
+removal and will be garbage collected (compaction process) later.
 
 In k8s ETCD store the cluster state but also configuration details like
 ConfigMaps and Secrets.
@@ -2114,7 +2109,7 @@ ConfigMaps and Secrets.
 
 * Node maintenance
 
-In order to work on a node to do maintainance, you need to move away all the
+In order to work on a node to do maintenance, you need to move away all the
 workload running at the moment on that node and make sure no new Pod is
 allocated on it. This process is in two steps.
 
@@ -2152,7 +2147,7 @@ pass a new flag to force through.
     $ kubectl drain --ignore-daemonsets --delete-local-data ip-x-x-x-x.eu-west-1.compute.internal
 
 Is very important to know that the _drain_ command will move all the Pods away
-EVEN if there is no node able to recieve it (they will stay pending). Make sure
+EVEN if there is no node able to receive it (they will stay pending). Make sure
 you have enough capacity to host all the Pods on the node you want to work on
 before draining it.
 

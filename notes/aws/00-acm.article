@@ -48,10 +48,6 @@ Create it twice.
     that distribution.
     Source: https://aws.amazon.com/certificate-manager/faqs/
 
-CHECK: IS IT POSSIBLE?
-
-Maybe I have to use a CloudFormation stack set. It now all sounds more complicated than it should be.
-
 * Importing SSL certificates on ACM
 
 Since Oct 13, 2016 you don't need to upload SSL certs for CF and ELBs on IAM, but

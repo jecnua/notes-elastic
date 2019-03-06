@@ -1,9 +1,58 @@
-AWS certificate manager
-|| Last update: 18 Jan 2017
+AWS Certificate Manager (ACM)
+|| Last update: 6 Mar 2019
 
 * Intro
 
-* Adding SSL certs
+- [[https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html]]
+- [[https://aws.amazon.com/certificate-manager/faqs/]]
+
+* SSL certs for CloudFront
+
+- [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html]]
+
+By the way CloudFormation has supported ACM since August 2016.
+But we couldn't use it because the only validation it supported was via email
+rather than DNS. At some point in the last year, they've added DNS validation
+support - I don't know exactly when - and so now I believe there's no impediment
+to using it.
+
+CloudFront has a restriction on where the SSL certs needs to reside in ACM.
+The certificate *NEEDS* to be requested in us-east-1.
+
+    If you want to require HTTPS between viewers and CloudFront, you must change
+    the AWS region to US East (N. Virginia) in the AWS Certificate Manager console
+    before you request or import a certificate.
+    Source: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html
+
+    The reason for this is that CloudFront, unlike most AWS services, where the
+    regional implementation of the service is independent of all other regions,
+    has all of its provisioning/administrative infrastructure based in us-east-1.
+    Source: https://stackoverflow.com/questions/37289994/aws-certificate-manager-do-regions-matter
+
+* SSL certs and multi-region environments
+
+CloudFormation stack cannot create a resource in a different region.
+So if you need a cert to be used from CF and for example and ALB in eu, you need
+the stack to be in us-east-1 to request the certificate there and in EU too.
+Create it twice.
+
+    Q: Can I use the same ACM certificate in more than one AWS Region?
+    It depends on whether you’re using Elastic Load Balancing or Amazon
+    CloudFront. To use a certificate with Elastic Load Balancing for the same
+    site (the same fully qualified domain name, or FQDN, or set of FQDNs) in a
+    different Region, you must request a new certificate for each Region in
+    which you plan to use it. To use an ACM certificate with Amazon CloudFront,
+    you must request the certificate in the US East (N. Virginia) region. ACM
+    certificates in this region that are associated with a CloudFront
+    distribution are distributed to all the geographic locations configured for
+    that distribution.
+    Source: https://aws.amazon.com/certificate-manager/faqs/
+
+CHECK: IS IT POSSIBLE?
+
+Maybe I have to use a CloudFormation stack set. It now all sounds more complicated than it should be.
+
+* Importing SSL certificates on ACM
 
 Since Oct 13, 2016 you don't need to upload SSL certs for CF and ELBs on IAM, but
 you can use ACM directly.
@@ -43,7 +92,7 @@ And one for Cloudfront (with PATH):
       --certificate-chain file://gd_bundle-g2-g1.crt \
       --path /cloudfront/cloudfront_star_test_co_uk_april_2016/
 
-- https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html#list-server-certificates
+- [[https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html#list-server-certificates]]
 
 * API
 
@@ -77,8 +126,6 @@ Example of reply at the time of this doc:
             }
         ]
     }
-
-On the gui:
 
 ** Request a cert
 

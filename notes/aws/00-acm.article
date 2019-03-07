@@ -71,6 +71,10 @@ You can get the list with the CLI:
 
 - [[https://docs.aws.amazon.com/cli/latest/reference/acm/describe-certificate.html#output]]
 
+We opened a support ticket with AWS and they confirmed that you can't do all
+the process in CF and you will need to used something else (like a custom
+resource + lambda).
+
 With Terraform you can use
 [[https://www.terraform.io/docs/providers/aws/r/acm_certificate_validation.html][aws_acm_certificate_validation]]
 resource to solve it.

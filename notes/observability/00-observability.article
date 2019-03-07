@@ -39,7 +39,7 @@ How to use the tools?
 
 Logs show the response time. Metrics will tell you if the response time is in line
 with the expected behaviour and how to compare to other requests. Traces shows you
-where that time was spent inside the call and how was it distribuited.
+where that time was spent inside the call and how was it distributed.
 
 - Log - will store all the events to be easily searched and aggregated
 - Metric - can identify trends
@@ -49,5 +49,6 @@ where that time was spent inside the call and how was it distribuited.
 
 * Re/Sources
 
-- [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] Amazing clear read
+- [[https://www.honeycomb.io/wp-content/uploads/2018/08/Honeycomb-Guide-Achieving-Observability-v1_1.pdf]] - Aug 2018
+- [[https://www.jfokus.se/jfokus18/preso/An-Introduction-to-Distributed-Tracing-and-Zipkin.pdf]] - Amazing read
 - [[https://peter.bourgon.org/blog/2017/02/21/metrics-tracing-and-logging.html]] - Feb 2017

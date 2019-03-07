@@ -1,0 +1,262 @@
+Appswitch - FAST WRITTEN NOTES
+
+mesh put back toghetr the application
+
+service mesh app-level glue layer to address those ISSUES
+
+service mesh is an app glue layer
+- auth
+- visibility
+- etc
+
+abstract networking from containers
+
+
+a NIC on the host is still a nick in the container
+network aspect is misaligned from the rest
+
+the networking aspect of the kernel was influence by the wasy VM did networking
+containers needed to support the usecase of the VM
+
+the abstraction need to be stepped closed
+
+application lebel networking abstraction
+equivalent p
+
+appsswitch container eqwuivalent on the teck stack
+
+thjey absytract the newtrok artifact
+how the applicaiton think about network
+rpc calls, socket, json, socker, bla legal
+all socket/session in appswitch
+
+they project that as sockets
+
+some thing can be addressed differently
+and keep retro compatibility
+
+applications of appswitch
+on plugs in the application, like appswitch client
+and a daemon
+
+the client monitor the application network API the BSD socker API
+any bind, networking and so on
+every app view of the network
+all calls are intercepted by the client
+and it has a trap generator
+
+trap the system call
+and forward them in the daemon
+a trap handler
+it receive the calls
+and translate them all in behalf of the application
+
+let's say there is acluient
+they create a sockets
+and make a connect call
+and pass ip
+
+on another server
+a socket
+makes bind and listen
+
+appswtich record the creation of this server
+appswitch makes notes of it
+and comunicate the existance ofg this
+to other nodes in this cluster
+
+when the pp tends to connect to an ip
+appsswitch know about this
+and when the server comes up
+and do the behind
+apps maybe bind to another ip addres
+the ip may be different
+there is a virtual overtlaty
+the client think one ip but the appswitch deamon translate them
+and on the deamon side do the revere translation
+
+is a mesh, that's how they do overlay
+the client doesn't know anything about
+the ip is used
+
+they can do get sock name
+and another call
+but appswitch is gonna take them
+
+the deamon stores all the ip that come up on the cluster
+the communication between the deamon is a gossip protocol
+
+there may be a gateway
+you can have multiple cluster
+all slicked together
+they can speak to each other on a different cluster
+because they are decoupled
+
+this layer
+the difficult thing is intercepting the API without performance cost
+without any app change or code change
+transparent
+performance cost is very low, something faster
+
+should not require, root, run as module, no performance cost, all transparent
+
+how does it compare to ISTIO
+the client goes through a proxy
+and and goes all the way
+
+with appsswitch integrated into isto
+there is no proxy anyumore
+proxy is a way to get in the path
+
+they do it without being in the data path
+they work at ip level
+optimized flow
+
+now two veth
+one in the docker brige
+one in the container
+plus there is the mesh
+
+sometimes you go through this 7-8 times
+appswtich remove all of this
+
+they integrated into istio
+up top 18x the performance
+istio.io blog 2018 delayeruing istio <--- read
+
+
+
+application can already connect to the network
+when you put in a container
+you need to conect with a linux bridge
+and this require privileged
+otherwise without this you don't need a root privileged
+
+
+all the needs of what the applicartionj needs
+can be done at that level
+since the
+
+appswitch can also be queired
+where the servers are
+dependency discovery and so on
+
+the app asking for a server can be delayed until the server is up????
+do the interleaving at the call l;level
+
+you can do load balancing
+you can have because appswitch know where servers are
+it doesn't get into the data path
+
+blog recently on ISTIO https://istio.io/blog/2019/appswitch/
+DINESH SUBHRAVETI
+you can have a flat network
+that extends across cloud provider, dc and so on
+
+you can do transparent TSL insertion
+
+native performance
+if they happen to be colocated the apps daemon knows that
+and the client ask for a local servera
+apps transparent return a unix socket
+instead of a tcp socket
+and it will just perform ever
+it happens over a linux socket
+
+ios available on docker hub
+played with it
+
+- what happens when the daemon crashes and where is the state saved?
+
+appswitch is not involved in the communication. is arbitrating the initial connect
+and then not. everything is already negotiated continue to go on.
+when it comes back it knows about the listening socket
+and rebinds them
+while it restarts the service may not be available. apps switch keeps track of the
+existing socket. existing app not affected.
+the listening socket dies when the daemon dies
+
+- does apps switch work with statically linked binary?
+
+3 property.
+all transparent. any app of any time can work.
+no restriction
+
+- can do dynamic l7 routing via header?
+
+yes it does do that. the way it work is if the user chooses that deep inspection
+appswtich will offload the data traffic
+usually it will not do in the data path but it can
+it will offload the management of http traffic to packet
+in a way more efficient because it passes the FD
+is passed to the plugin. the plugin can be envoy or any proxy
+as if envoy acquired some of the functionality of appswitch
+you need a proxy to do deep inspection
+but this is not a fast path.
+if you just takes decision on the header, you don't need a proxy
+appsswich does a PEAK option, at the header, and based on that can decide where
+to route. basically this type of stuff can happen without a proxy
+so you don't have to be there all the time
+
+- does it support tracing?
+
+that functionality is not well formed by available.
+not integrated.
+
+- does it work with swarm?
+
+nobody tried? client and deamon is all in go (some C and assembly)
+is a static bynar
+to run it with docker
+you prefix it with ex
+you run the container mounted
+and it is the entrypoint
+SO you mount this binary in xxx
+just chage your compose
+ex is a shell around your app
+no explicit dependency
+
+- transparent TLS insertion
+
+there is an inbuild proxy that does that
+not different from the other
+and come out of the box
+
+
+no cert management, like citadel
+is up to you to provide the keys take it has a parameter
+not integrated with external tool
+
+- it does not eliminate the layer is a layer 7
+
+appswitch can be used as a network medium for k8s
+but k8s doesn't do anything else on l7
+but for l7 use the proxy
+
+- size and scale you tested it with?
+
+
+
+- how about ingress/egress?
+
+it does have gataway support. gateway does the ingress.
+whe you do federation
+they all have a gataway
+and they dfo federation
+every connection between clusters
+will happen via through two gateways
+every cluster being a silo
+the client will still see the server
+it's a mesh of gateways
+
+it has both ingress and egress gateway
+
+- is it done via ibpf?
+
+it uses seccomp and ibpf snippets.
+any way to do
+oath token validation or enforcing k8s policies
+it support labels and label selectors
+the policy enforcement of connection can be done with build in support for labels
+
+-

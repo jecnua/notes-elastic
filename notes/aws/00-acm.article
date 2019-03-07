@@ -1,5 +1,5 @@
 AWS Certificate Manager (ACM)
-|| Last update: 6 Mar 2019
+|| Last update: 7 Mar 2019
 
 * Intro
 
@@ -74,6 +74,15 @@ You can get the list with the CLI:
 We opened a support ticket with AWS and they confirmed that you can't do all
 the process in CF and you will need to used something else (like a custom
 resource + lambda).
+
+    Your understanding of the issue is spot on and at the moment this is a
+    limitation with CloudFormation where it does not provide a method for
+    automated validation of ACM Certificates. As per the service team, the
+    reason behind this is due to the fact that the action of validating a
+    certificate is not provided as an API Operation by ACM at this time. When an
+    API Operation is available to perform the certificate validation,
+    CloudFormation will be adopting this as part of the service.
+    Source: AWS support - March 2019
 
 With Terraform you can use
 [[https://www.terraform.io/docs/providers/aws/r/acm_certificate_validation.html][aws_acm_certificate_validation]]

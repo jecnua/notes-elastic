@@ -11,7 +11,6 @@ service mesh is an app glue layer
 
 abstract networking from containers
 
-
 a NIC on the host is still a nick in the container
 network aspect is misaligned from the rest
 
@@ -23,9 +22,9 @@ the abstraction need to be stepped closed
 application lebel networking abstraction
 equivalent p
 
-appsswitch container eqwuivalent on the teck stack
+appsswitch container equivalent on the teck stack
 
-thjey absytract the newtrok artifact
+thjey absytract the newtrok artefact
 how the applicaiton think about network
 rpc calls, socket, json, socker, bla legal
 all socket/session in appswitch

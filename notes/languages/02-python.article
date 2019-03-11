@@ -1,7 +1,10 @@
 Python
-|| Last update: 14 Jul 2018
+|| Last update: 8 Mar 2019
 
-* Manging environment
+* Managing environment
+
+To manage the dev environment of a new project, I choose pipenv as a tool.
+At this moment in time looks like the best one to achieve the objective.
 
 ** Pipenv
 
@@ -16,7 +19,8 @@ Python
     Source: https://www.kennethreitz.org/essays/announcing-pipenv
 
 Created from the creator of Request.
-It is the[[https://packaging.python.org/guides/tool-recommendations/#application-dependency-management][advised tool]]
+It is the
+[[https://packaging.python.org/guides/tool-recommendations/#application-dependency-management][advised tool]]
 from the python packages community.
 
 *** Installation
@@ -31,12 +35,12 @@ Create a new dir
 
 Create a new pipenv project where nothing exists:
 
+    # You need the flag only if you are invide a virtualenv already
     PIPENV_IGNORE_VIRTUALENVS=1 pipenv --python 3.6
 
-Enter a project with pipenv
+To enter a project with pipenv:
 
-    # PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell --anyway
-    pipenv install --dev
+    PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell --anyway
 
 Now you can install dependencies
 
@@ -49,7 +53,7 @@ Now you can install dependencies
 
 * Unit test
 
-Use tyest doubles. There are many.
+Use test doubles. There are many.
 
 - Dummy: Can be passed around but usually they have no implementation
 - Fake: Simplified implementation of an interface but not adequate for production
@@ -60,14 +64,14 @@ Use tyest doubles. There are many.
 You can use the Mock library.
 unittest.mock (3.3+) is built in
 
-inittest.mock implemet the mock class. can be used for fakes, stub, spy or mock
+inittest.mock implement the mock class. can be used for fakes, stub, spy or mock
 
 ** unittest.mock and magicmock
 
 When initializing the spec parameter specifies the interface that Mock object is implementing.
 the parameter return_value specify the value to return.
 
-many built in function to asert:
+many built in function to assert:
 
 - assser_called
 - aseert_called_once
@@ -92,15 +96,15 @@ Four section
 - setting up the test: It is vital to mock all the side effects of the
 function or method that is being tested
 - executing the method
-- doing assetion
+- doing assertion
 - wrap up
 
-We need a setup a teardown methos (in some languages knows as before and after)
+We need a setup a teardown method (in some languages knows as before and after)
 
     However you might not notice this pattern when using mocks in python.
     That is because, when you use the patch decorator or context manager,
     the mocks will be automatically restored when the test ends. Because
-    of this behavior, you rarely will need to use the setup and teardown
+    of this behaviour, you rarely will need to use the setup and teardown
     methods in pytest.
 
 Run pytest
@@ -157,17 +161,16 @@ If you need to deploy (like on lambda) you will need a trick
 * Logs
 
 - [[https://blog.sneawo.com/blog/2017/07/28/json-logging-in-python/]]
-
 - [[http://structlog.readthedocs.io/]]
 
-api reference http://www.structlog.org/en/stable/api.html
+api reference [[http://www.structlog.org/en/stable/api.html]]
 
-- https://github.com/hynek/structlog/issues/87
-- https://github.com/hynek/structlog
-- http://www.structlog.org/en/stable/examples.html
+- [[https://github.com/hynek/structlog/issues/87]]
+- [[https://github.com/hynek/structlog]]
+- [[http://www.structlog.org/en/stable/examples.html]]
 
 
-By default by using structulog will log at WARN! To change it
+By default by using structlog will log at WARN! To change it
 
     logger.debug('debug')
     logger.info('info')
@@ -184,6 +187,23 @@ By default by using structulog will log at WARN! To change it
     logger.critical('critical')
 
     logging.getLogger('lambda_structlog').setLevel(logging.WARN)
+
+* Metrics
+
+** Prometheus
+
+- [[https://github.com/rycus86/prometheus_flask_exporter]]
+
+To expose Prometheus metrics for a framework like flask is pretty straightforward:
+Install the library:
+
+    pipenv install prometheus-flask-exporter
+
+Then add:
+
+    metrics = PrometheusMetrics(app)
+
+At the start of your app.
 
 * Re/Sources
 

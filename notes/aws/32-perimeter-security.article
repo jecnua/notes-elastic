@@ -3,12 +3,545 @@ AWS perimeter security - Talk (notes)
 
 * Intro
 
-- shield
 - WAF
-- firewallmanager
+- firewall manager
+- shield (paid have for free WAF and firewall)
 
+example of possible attack:
 bots
 sql injection and stuff
-DDoS - syn/udp/ICMP flood
+DDoS - SYN/UDP/ICMP flood
 
-* Best practices
+* Shield
+
+2016. DDoS protection
+
+2 tiers:
+
+- standard (default): available to all (automatic)
+- advanced: higher level visibility and protection
+
+** Shield advanced
+
+advanced give a 'point and protect' wizard.
+based on normal traffic
+looking at your traffic (baseline)
+24/7 DDoS response team (DRT)
+cloudwatch metrics
+tech xxx
+global threat environment dashboard (is just a fancy dashboard to all the attach and reaction they took in the x amount of time on AWS)
+attack diagnostic
+protect from economic attach
+
+you get WAF at no additional cost
+AWS firewall manager at no cost
+cost protection from scaling
+
+** DDoS response team (DRT)
+
+mitigation runbook for supporting AWS properties
+automation which reduce time to respond
+switft mitigation in attach
+
+is not a team of people, is a service that engages for DDoS
+when anomalies are notified
+internal customers are the AWS services
+automation around
+
+receiving signals from Shield services
+
+there are internal services
+called lookout
+net flow telemetry and from log
+it works with this internal services
+to recognise that
+
+another is called *blackwatches"
+packet filters array
+edge boxes have this
+transit centres have them
+and they enga**
+
+they enough packets so that the client
+can maintain service
+go give you overhead
+
+they want drop all the packages only some of them
+to allow you to scale and not me DDoS
+
+full automated workflow
+you can get this metrics only from shield advanced
+
+** Type of engagement (PAID)
+
+pre-emptive
+
+- DDoS architecture review
+- custom mitigation templates
+
+blakwatch is a tool to day 'hey, protect this'
+when shield detect the attack
+and the template calibrates to the target
+like the size of the machine about how much you can manage
+
+if you need to use static ip
+you can't use cname
+so you can't use cloudfront
+you can create a custom mitigation template for that cases
+and this one take PRECEDENCE over the default one
+plus you can decide things knowing the application of the client
+speking with them
+
+- operational readiness inquiry (priori to IEM infrastructure event manager)
+
+24x7 incident response
+
+- atumatically engaged for availabllity impacting the l3/l4 events again your resource
+- ???
+- ???
+
+shield engagement lambda function
+it will create a support ticket
+for you
+
+it will actually page the DDoS person in support in AWS
+15m for SLA?
+otherwise 1h?
+for DDoS things escalate to DRT
+and bypass 15m of the ticket by using the lambda
+
+they are on call with
+5m SLA and 24/7
+
+the DRT operator will join the call and speak with you
+to mitigate
+
+the lambda
+AWS-shield-lambda
+shieldengagementLambda.js
+if you are not enterprise don't put URGENT
+
+CHECK
+they will be paged
+2 pizza team
+will page one of them?
+is crazy?
+CHECK
+
+13 engagement out of the total
+6 were erroneous
+rest for the most part where legacy stuff
+
+when you page them:
+
+- do you have the right people in the call
+- are you prepared to make change? - if the fix is an architectural change can you do this?
+
+runbook two colums
+the problem
+the solution
+and who is responsible for that?
+like if you need to change the route53 and so on. who can do it
+
+- what is my application health - smoke test, distributed performance test,
+
+how do we know if we are clear?
+
+ADVANCED COUNTERMEASURES
+
+BGP traffic engineering
+communicates what routes are available and you can
+send announcement. leaking a route and shift it to another. like move the traffic
+directed in japane to america and move part of the traffic
+
+custom BlackWatch mitigations (depending on the application)
+- pattern matching
+- geo-shaping
+- NACLs
+look for pattern in the traffic and set different threshold.
+
+AWS WAF rules
+- log parsing
+like to find botnet ips
+
+architecture GAPs analysis
+- is more personal and manual
+
+example of pattern matching
+like for games and udp
+they would up a pattern in in the package
+and is less dangerous to make it on the wire (???)
+they can put some iptable roles
+and move it from the ??? to ???
+WAF can bake the rule in the WAF
+"if they have this pattern drop it"
+CHECK FOR MORE
+
+** STEPS to use shield advanced
+
+some steps are the same some only with advanced:
+
+1) shield is a registraction service. it associates arns with workflow
+but if you don't tell which arns wthey won't do
+they monitor netowrking and application layes
+you can register
+
+- ALL LB
+- cloudfront
+- route53
+- EIP
+
+2) use cloudfront and route53 over an LB. IPV6 is not supported.
+
+it maintains 2 network. the zones and external traffic 9route53 and cloudfront
+160 hop
+*black watches* is online there
+https/https
+ere is deterministic
+
+in the region everything goes so is more difficult
+
+3) use WAF and rate-based rules to mitigate application attach
+
+matches rules
+rate based rules (more complicated) - they give you some match criterial and they
+check if that rate is over in 5 minutes. by using this is simple to stop an
+application layer attach.
+
+high volume low entropy
+high volume high entropy
+
+date based rules only works with high volume.
+
+you can use WAF at any level
+but if possible push it out
+like it to the cloudfront
+and not the LB
+is better because it's easier to recognise it
+having WAF on cloudfront can help stop before it reaches origin
+
+4) monitor the cloudwatch alert for WAF (ONLY SHIELD ADVANCED)
+
+attack detected (0 or 1) - simple to activate stuff
+curve vector ???
+
+TIP
+if you use route53 healthcheck
+you can correlate with WAF rules
+
+5) engage with the DRT
+
+if you have resource outside of AWS you can still cover them with CF
+cloudfront is a sort of proxy
+origin can be a website
+
+you can associate CF with an ACL in WAF
+you can have mutpliple acl
+each ACL have multiple rules
+
+rate limit - the lower is 2000
+
+you have filter
+
+with rate it will block until the 5 minutes passes and that rate is no more
+firing
+
+** PAID (SHIELD ADVANCE)
+
+there is a button that says ENGAGE with DRT (ONLY PAID)
+gives read-write access to the WAF
+choose an existing role for the drt
+
+there is a s3 bucket???
+you can give them the s3 bucket of the logs
+so basically they want to give logs to DRT
+you can pre-chooose an s3 bucket
+with all your logs
+and give it to them
+
+sometimes people use the DRT like an ambulance so if they can react fast
+they can read the logs
+find an ip and add it to the WAF
+
+it can scan for all the resources (GUI)
+and it shows them to you
+click them to say protect resources
+
+then it tells if you want to add acl to xyz
+
+then it asks if you want to create a cloudwatch alarm
+and you can write to an sns topic
+you can use lambda to notify everywhere
+
+current incident bump up to the top
+on the gui
+
+there is a whitepaper
+AWS architecture for DDoS <--- search for it
+
+balckwatch looks at the header
+and drops the most suspiction package first
+for games for example
+like UDP
+header are not useful, so they need to look better
+and they need to drop only the ones that have a pattern?
+
+- [[https://www.youtube.com/watch?v=ELIiF-jE0y8]]
+
+* WAF
+
+you can use WAF separately
+application level protection
+customized security
+custom rules (based on your traffic)
+
+you can use pre-configured rules (on the marketplace, 3rd party)
+monitoring (cloudwatch)
+ability to pass log though 3rd party
+
+create security automation
+with lambda to react
+
+WAF works with alb, cloudfront and api gateway
+
+sql injection
+xss  consition
+marketplace rules
+
+web traffic filtering
+
+- rate based rules
+ip match and geo filter
+regex and string match condition
+size constraint (?? condition)
+
+visibility and debugging
+
+sampled blogs
+comprehensive logging (all of them???)
+
+managed rules from the marketplace
+you can pay and use them
+pay as you go
+pay and apply and you can apply to your web acl
+you can pay and try and you can stop paying every time
+vendors can cover different things
+
+security automation?
+you can run a CF template and can ???
+take logs, run through lambda do analysis and change rules on the fly
+
+there are a lot of options:
+
+- bot protection
+- etc
+
+you can take the code and automate it
+
+** guard duty
+
+you can use a lamba to connect the WAF with guard duty
+and if you find one ip attacking you
+you can add it to the rule
+
+* Firewall manager
+
+simplify the management of rules in all the account of your accounts
+and applications
+even if you have one account and multiple resources
+
+AWS organization can create global firewall rules
+but then single account can manipolate other(???) the same(???)
+automatically discover new resources
+if you add new account
+this allow compliance everywhere
+
+rapid response to internet attacks
+single console
+they are basically WAF rules
+quickly apply CVE patches and so on
+
+* Enhanced security analytics (WAF logs ro es)
+
+- [[https://www.youtube.com/watch?v=Zrnro4ohXdA]]
+
+WAF logs and elasticserch
+
+there is a video
+CHECK find the video
+
+blog how to analyze aws WAF logs using es
+amazon cognito authentication for kibana
+
+** cognito
+
+user pool
+and you can create users
+you can create a federated identity
+and that is what allows an application and will pass an user authentication
+through cognito
+
+create a stream for each account
+you can send them to firehose
+firehose delivery stream
+IAM role for kinesis to deliver the logs and copy from s3
+you can get only failures or all messages
+buffer???
+
+** WAF LOGS
+
+WAF logs are accessible even for the non paid version
+and when you pay they can do it for you. ooooh so difficult -.-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* Q/A
+
+** difference
+
+you won't get the alarm, history or metics
+no economic protection
+no WAF rules that goes with it
+
+different in protection between standard and paid
+is the rules and metrics
+
+for example no bgp and so on
+
+the automatic stuff is not there
+
+for some particular attack
+that is when you get the benefits of the paid one
+
+london, frankfurt
+to protect DDoS
+put on us-east-1
+go where the attacks are
+you want more overhead
+
+** why minimum is 2000?
+
+you can't change the number of minutes 5
+and the minimum is 2000
+
+** how to get lower than 2000
+
+use the same match condition
+like /
+then you can put than  everywhere
+you can get all the way down to 20
+???
+CHECK
+
+** rate page rules intelligence
+
+now the focus just to reduce the number
+no intelligence
+
+** different rules and different pattern????
+
+you can use a string match
+limited regex support
+you can put one rule to embrace multiple behaviour
+
+can you package the rules in the same RBR
+
+firewall manager????? you can do?????
+
+there is a soft limit of 10 rules
+you can have in a web ACL
+there will be improvement with that too
+
+** in the WAF logs there is a code why something was blocked
+
+it does not give you any context
+the WAF is not retorni anything
+is just a 403 forbidden from CF
+
+there is no error code
+is not build it
+
+you need lambda at edge
+
+they don't want to disclose to the client why you are??? rejecting???
+
+WAF is not a proxy
+is not an ???
+WAF is a compute cell than lives on xxx
+like elb or cloudfront
+and respond to ??? with an ???
+cloudfront and elb don't know why they just see the error
+
+why? it needs to be fast
+and? xxx
+
+** some bot cycle
+
+only some portion of the botnet attack you and cycle every couple of minutes or
+so.
+
+** There is IP reputation list
+
+WAF by default has a few
+but you can pull down grep list and add them
+there is a lambda function for it.
+
+you can use them for
+
+- whitelist
+- replication list ???
+- blacklist
+
+you can make a baseline with 6 rules of less
+
+** shadow rules in waf
+
+drt can subscripe waf customer to amazon.co.uk list
+that they don't even know anything about
+hashed
+but they can use the list in waf
+and they can give it to user
+
+
+
+
+
+
+
+
+you can have cloudfront
+with no cachine
+forward all
+but do ssl termination
+to get application accelleration

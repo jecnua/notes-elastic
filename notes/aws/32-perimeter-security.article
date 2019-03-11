@@ -1,0 +1,14 @@
+AWS perimeter security - Talk (notes)
+|| Last update: 11 Mar 2019
+
+* Intro
+
+- shield
+- WAF
+- firewallmanager
+
+bots
+sql injection and stuff
+DDoS - syn/udp/ICMP flood
+
+* Best practices

@@ -1,18 +1,26 @@
-Best practices for AWS and Terraform
-|| Last update: 24 Jan 2018
+Best practices for Terraform
+|| Last update: 12 Mar 2019
 
 * Intro
 
-Always changing sets of rule to follow the best practices
-I find around or discover by using the tools directly.
-Ever changing and totally opinionated :)
+Always changing sets of rule to follow ("my" best practices).
+I may have found them online or discovered them by using the tools directly.
+Totally opinionated :)
+
+* Latest version considered
+
+- Terraform: [[https://github.com/hashicorp/terraform/releases]] - 0.11.13
+- AWS: [[https://github.com/terraform-providers/terraform-provider-aws/releases]] - 2.0.0
+- Random: [[https://github.com/terraform-providers/terraform-provider-random/releases]] - 2.0.0
+- Template: [[https://github.com/terraform-providers/terraform-provider-template/releases]] - 2.1.0
+- Null: [[https://github.com/terraform-providers/terraform-provider-null/releases]] - 2.1.0
+- Archive: [https://github.com/terraform-providers/terraform-provider-archive/releases] - 1.1.0
 
 * Tags
 
 - [[https://aws.amazon.com/premiumsupport/knowledge-center/ec2-resource-tags/][Best practices]]
 
-Everywhere terraform allow to have tags, add them.
-At least try to have:
+Everywhere terraform allow to have tags, add them. At least try to have the following:
 
 - Name
 - Description (optional)
@@ -27,7 +35,7 @@ Tag the code you refer to in terraform (ALWAYS):
     TfCodePath   = "${join("/",slice(split("/", path.cwd),
     length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
 
-The other are not very useful:
+The other are _not_ very useful:
 
     TfCodePath   = "${join("/",slice(split("/", path.cwd),
     length(split("/", path.cwd)) - 3, length(split("/", path.cwd))))}"
@@ -49,9 +57,11 @@ Human readable.
 
 * EC2
 
-** T2 unlimited for DEV envs
+** Use Spot on lower envs
 
-With the release of [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/t2-unlimited.html][t2 unlimited]] I would say use t2 for all DEV/QA
+** t3 unlimited for DEV envs
+
+With the release of [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/t3-unlimited.html][t3 unlimited]] I would say use t3 for all DEV/QA
 projects when possible and alert just on *CPUSurplusCreditsCharged*
 (and ignore when using the surplus).
 
@@ -151,7 +161,7 @@ Prefer [[https://docs.aws.amazon.com/autoscaling/latest/userguide/create-asg-lau
 way AWS will manage AG from now on (plus they are more powerful).
 Among the benefits:
 
-- You can use t2 unlimited
+- You can use t3 unlimited
 - You can tag EBS volumes
 
 ** Enable metrics
@@ -522,6 +532,15 @@ The in _01-main_blue.tf_:
     }
 
 This 'export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"' it is used to cache plugins.
+
+* Terraform 0.12 compatibility
+
+    The filemd5, filesha1, etc functions from Terraform v0.12 are backported
+    primarily to allow writing modules that can work in both Terraform 0.11 and
+    0.12, since the sha1(file("...")) pattern in 0.12 works only for files
+    containing valid UTF-8 text; sha1file("...") must be used instead. Both
+    forms are equivalent in Terraform 0.11.
+    Source: https://github.com/hashicorp/terraform/releases/tag/v0.11.12
 
 * Resources
 

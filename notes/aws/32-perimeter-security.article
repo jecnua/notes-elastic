@@ -393,39 +393,6 @@ buffer???
 WAF logs are accessible even for the non paid version
 and when you pay they can do it for you. ooooh so difficult -.-
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 * Q/A
 
 ** difference
@@ -533,24 +500,11 @@ hashed
 but they can use the list in waf
 and they can give it to user
 
-
-
-
-
-
-
-
 you can have cloudfront
 with no cachine
 forward all
 but do ssl termination
 to get application accelleration
-
-
-
-
-
-
 
 <somthing> sky defender
 their waf
@@ -565,3 +519,12 @@ and got some of them turned off
 
 ddos
 over aggressively bots
+
+* Resources
+
+- PDF [[https://s3.amazonaws.com/solutions-reference/aws-waf-security-automations/latest/aws-waf-security-automations.pdf]]
+- PDF [[https://d1.awsstatic.com/whitepapers/Security/DDoS_White_Paper.pdf]]
+- [[https://docs.aws.amazon.com/waf/latest/developerguide/getting-started-ddos.html]]
+- [[https://www.slideshare.net/AmazonWebServices/dow-jones-wall-street-journals-journey-to-manage-traffic-spikes-while-mitigating-ddos-application-layer-threats-ctd304-reinvent-2017]]
+- [[https://aws.amazon.com/blogs/aws/prepare-for-the-owasp-top-10-web-application-vulnerabilities-using-aws-waf-and-our-new-white-paper/]]
+- [[https://aws.amazon.com/solutions/aws-waf-security-automations/]]

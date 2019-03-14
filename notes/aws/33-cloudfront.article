@@ -12,6 +12,7 @@ Cloudfront
 - [[https://aws.amazon.com/premiumsupport/knowledge-center/resolve-cnamealreadyexists-error/]]
 - [[https://stackoverflow.com/questions/52769331/cnamealreadyexists-pointing-subdomain-to-distribution-in-new-account]]
 - [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html#alternate-domain-names-wildcard]]
+- [[https://stackoverflow.com/questions/41546800/receiving-error-cname-already-registered-with-cloudfront-on-bitbucket-hosting]]
 
     You cannot add an alternate domain name to a CloudFront distribution if the
     alternate domain name already exists in another CloudFront distribution,
@@ -24,6 +25,18 @@ Cloudfront
 
 - [[https://serverfault.com/questions/910295/cnamealreadyexistsexception-when-trying-to-add-an-alternate-domain-name-to-a-clo]]
 
+Possible reason?
+
+    You can't create the Alternate Domain Name wildcard *.example.com if any
+    other AWS account has anything configured in CloudFront this wildcard also
+    matches. If account A has, for example, www.example.com, then account B
+    cannot create *.example.com because that would potentially allow account B
+    to hijack www.example.com if account A deleted their distribution.
+    Source: https://stackoverflow.com/questions/54115340/cnamealreadyexists-when-setting-a-wildcard-cname-in-a-cloudfront-distribution
+
+* Impossible to automatically migrate a distribution
+
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-migrate-account/]]
 
 * Lambda@Edge
 

@@ -1,5 +1,5 @@
 ECS
-|| Last update: 20 Feb 2019
+|| Last update: 14 Mar 2019
 
 * Intro
 
@@ -129,17 +129,29 @@ There are two types of launch type:
 
 *NOTE*: Many task definition parameters are _not_valid_ in fargate.
 
-*** Fargate
+* Fargate for ECS
 
 Some things to keep in consideration:
 
 - Will require the network mode to be AWSVPC: you have no control on the host it sort of make sense that they don't allow host or bridge
 - Will require to specify the the cpu and memory at task level while at container level is optional: in the end makes no sense since there is no cluster
+- CPU and Memory are only allowed with specific values
 - Only supports AWSLOGS for log config: since you can't install any other log drivers
 - Doesn't allow EBS or EFS: since you can't install drivers or mount anything
 
 Fargate has only 10GB of docker layer storage and 4GB for volume mounts to be
 shared among containers.
+
+** Multi-AZ
+
+- [[https://forums.aws.amazon.com/thread.jspa?messageID=822753&tstart=0]]
+
+You can't specify Placement constraints:
+
+    Placement constraints are not supported with FARGATE launch type.
+
+You implicitly provide the Availability Zone's as part of giving the subnets
+for the service.
 
 * Networking
 

@@ -153,11 +153,11 @@ and you will have a good coverage.
 
 Create a test dir (will be empty):
 
-    inspec terraform generate
+    inspec terraform generate --name infratest
 
 Generate real test
 
-  insp  ec terraform generate --name test --tfstate terraform.tfstate
+    inspec terraform generate --name infratest --tfstate terraform.tfstate
 
 ** Limitations
 

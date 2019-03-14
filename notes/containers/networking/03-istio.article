@@ -373,29 +373,79 @@ _initialisers_ allow you to have *automatic*sidecar*injection* in all your pods.
 
     istioctl kube-inject -f
 
-* Changelog
 
-There is no changelog, this is the best we have:
+* NOTES FROM WEBINAR
 
-- [[https://github.com/istio/istio/wiki/v0.2.9]]
-- [[https://istio.io/about/notes/][Release notes]]
+kubernetes primitives
+istio
+knative paas abstraction on top of istio
 
-Notable changes follow.
+istio gives very deep observability
 
-** 0.3
+istio
+layer 7 path based routing
+traffic shaping
+LB (a/b testing, canary)
 
-- HA
-- Better RBAC support
-- Mutual tsl
+manage telemetry
+fleet wide visibility (zipkin, prometheus and grafana)
 
-** 0.2.6
+security: identity based service access control
+service authorisation API level access control
+service-service encryption with TLS (mTLS)
 
-- [[https://github.com/istio/istio/wiki/v0.2.6]]
-- RBAC beta
-- Initialisers
+securing east-west traffic
+
+https://cloud.google.com/security/encryption-in-transit/application-layer-transport-security/
+https://groups.google.com/forum/#!topic/grpc-io/FRiBpXucIRk/discussion
+
+istio implements
+star xDS API
+
+listening discorvery api
+
+they can feed enovy wuith the data
+the auto-inject6
+mutatuion addition controller
+
+they do a redirection inside the netwrok namespace
+can upgrade the http protocol
+manage grpc
+add telemetry
+
+the price is
+network latency
+cpu
+memory
+
+some protocol don't go vai the proxy (istio)
+istio is not a full end to end
+more sa serice to service access control
+
+if you run pod as root
+you get the ability to run users
+like the user of envoy
+so you can exec in the containers
+create an evoy user with it's id and now you control the mesh
+
+don't run in the container as id 1
+
+ipv6 is another escape method
+iptable no kubernetes (nor envoy) doesn't look at ipv6
+
+run pod rootless?? requires some dev effort
+
+citadel provision xxx
+the you can provision the certificate and so on
+is about getting you fqdg and gets the cert
+it will uyse the service name identification
+
+is the injection of envoy that rewrite he iptables
+and not istio
 
 * Resources
 
+- Me: Notes from a webinar
 - Me: Notes from London Kubernetes Meetup -  October 2017
 - Video: [[https://www.youtube.com/watch?v=wq1nlJNvy1w][Setting Sail with Istio [B] - Lachlan Evenson, Microsoft]]
 - Video: [[https://www.youtube.com/watch?v=Bh7sWtrkijY][Istio 0.2 automatic sidecar injection using Kubernetes Initializers]] - 6 Oct 2017

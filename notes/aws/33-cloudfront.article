@@ -1,0 +1,32 @@
+Cloudfront
+|| Last update: 14 Mar 2019
+
+
+* Impossible to do blue/green with CloudFront
+
+- [[https://forums.aws.amazon.com/thread.jspa?threadID=256836]]
+- [[https://serverfault.com/questions/714742/blue-green-deployments-with-cloudfront]]
+
+** CNAME already exists
+
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/resolve-cnamealreadyexists-error/]]
+- [[https://stackoverflow.com/questions/52769331/cnamealreadyexists-pointing-subdomain-to-distribution-in-new-account]]
+- [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html#alternate-domain-names-wildcard]]
+
+    You cannot add an alternate domain name to a CloudFront distribution if the
+    alternate domain name already exists in another CloudFront distribution,
+    even if your AWS account owns the other distribution.
+    However, you can add a wildcard alternate domain name, such as *.example.com,
+    that includes (that overlaps with) a non-wildcard alternate domain name, such
+    as www.example.com. Overlapping domain names can be in the same distribution
+    or in separate distributions as long as both distributions were created by
+    using the same AWS account. (emphasis added)
+
+- [[https://serverfault.com/questions/910295/cnamealreadyexistsexception-when-trying-to-add-an-alternate-domain-name-to-a-clo]]
+
+
+* Lambda@Edge
+
+- [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AmazonCloudFront_DevGuide.pdf#lambda-at-the-edge]]
+- [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html]]
+- [[https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html]]

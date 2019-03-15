@@ -5,6 +5,11 @@ ElasticSearch
 
 UPDATE: Elastic reply to AWS creating their own distro [[https://www.elastic.co/blog/on-open-distros-open-source-and-building-a-company]]
 
+AWS articles:
+
+- [[https://aws.amazon.com/blogs/aws/new-open-distro-for-elasticsearch/]]
+- [[https://aws.amazon.com/blogs/opensource/keeping-open-source-open-open-distro-for-elasticsearch/]]
+
 * Nodes
 
 A node is a running instance of elasticsearch.

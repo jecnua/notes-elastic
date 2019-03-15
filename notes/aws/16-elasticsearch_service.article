@@ -1,11 +1,22 @@
 Amazon Elasticsearch Service
-|| Last update: 11 Feb 2019
+|| Last update: 14 Mar 2019
 
 * Intro
 
 It allows external (internet access and internal).
 If you want it internal you need to define security groups and subnets.
 Enables you to deploy your instances across three Availability Zones (AZs).
+
+* Open Distro for Elasticsearch
+
+- [[https://opendistro.github.io/for-elasticsearch/]]
+
+Release articles:
+
+- [[https://aws.amazon.com/blogs/aws/new-open-distro-for-elasticsearch/]]
+- [[https://aws.amazon.com/blogs/opensource/keeping-open-source-open-open-distro-for-elasticsearch/]]
+
+AWS started it's own distro.
 
 * Terraform
 

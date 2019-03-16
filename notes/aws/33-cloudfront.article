@@ -1,11 +1,28 @@
 Cloudfront
 || Last update: 14 Mar 2019
 
-
-* Impossible to do blue/green with CloudFront
+* It is impossible to do blue/green with CloudFront
 
 - [[https://forums.aws.amazon.com/thread.jspa?threadID=256836]]
 - [[https://serverfault.com/questions/714742/blue-green-deployments-with-cloudfront]]
+
+We searched online with no success and also opened a support ticket:
+
+    QUESTION:
+    Is it possible to due a blue/green deployment or a Canary deployments of a
+    CloudFront distribution?
+    Just to be clear I'm not referring to blue/green or Canary in relation to
+    the origin of the CloudFront distribution, I'm referring to it in relation
+    to changing the configuration of the CloudFront distribution itself.
+
+    ANSWER:
+    You are right, at this time, blue/green deployments are not possible due to
+    the fact that only a single CloudFront distribution can contain a single
+    CNAME.  This means that you cannot use the same CNAME across multiple
+    distributions and then fail over using DNS to another distribution as all
+    distributions share the same IP space which means that traffic would get
+    routed to whatever distribution has the alternate domain name associated to
+    it, in it's distribution config.
 
 ** CNAME already exists
 
@@ -14,14 +31,20 @@ Cloudfront
 - [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html#alternate-domain-names-wildcard]]
 - [[https://stackoverflow.com/questions/41546800/receiving-error-cname-already-registered-with-cloudfront-on-bitbucket-hosting]]
 
+    Duplicate and Overlapping Alternate Domain Names
     You cannot add an alternate domain name to a CloudFront distribution if the
     alternate domain name already exists in another CloudFront distribution,
     even if your AWS account owns the other distribution.
     However, you can add a wildcard alternate domain name, such as *.example.com,
-    that includes (that overlaps with) a non-wildcard alternate domain name, such
-    as www.example.com. Overlapping domain names can be in the same distribution
-    or in separate distributions as long as both distributions were created by
-    using the same AWS account. (emphasis added)
+    that includes (that overlaps with) a non-wildcard alternate domain name,
+    such as www.example.com. Overlapping domain names can be in the same
+    distribution or in separate distributions as long as both distributions were
+    created by using the same AWS account.
+    If you have overlapping alternate domain names in two distributions,
+    CloudFront sends the request to the distribution with the more specific name
+    match, regardless of the distribution that the DNS record points to. For
+    example, example.domain.com is more specific than *.domain.com.
+    Source: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html
 
 - [[https://serverfault.com/questions/910295/cnamealreadyexistsexception-when-trying-to-add-an-alternate-domain-name-to-a-clo]]
 
@@ -38,8 +61,58 @@ Possible reason?
 
 - [[https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-migrate-account/]]
 
+* You need to open support tickets to forward 'user agent and the referer' and not cache them
+
+To forward both the *user*agent* and the *referer* header and have them
+not be part of the cache-key of each object, you need to raise support
+tickets.
+
+    We have a undocumented feature where I can allow your distribution to
+    forward both the user-agent AND referer header and not have it be part of
+    the cache-key of the object.  If you'd like me to enable this for your
+    distribution please provide me a list of the distribution(s) that you wish
+    to have this enabled on and I can add that for you on the back-end.
+    [...]
+    Unfortunately, at this time, it's still a manual process as this is not a
+    live feature that we've released to the public, so any changes for this
+    would need to be handled by a support case.
+    Source: AWS Support
+
+Obviously this doesn't scale if you have many hundreds of CloudFront distributions.
+No way to check from the dashboard of sdk whether or not the feature is enabled.
+You lose it if you replace the distribution with another one.
+
 * Lambda@Edge
 
 - [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AmazonCloudFront_DevGuide.pdf#lambda-at-the-edge]]
 - [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html]]
 - [[https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html]]
+
+A Lambda@Edge function cannot be outside of us-east-1 in terms of where it's
+created.
+
+** Finding triggers
+
+    For an AWS Lambda function that is not a Lambda@Edge function if I go to it
+    the AWS Management Console I can see a list of the triggers that cause the
+    Lambda function to fire.
+
+    But if I do this for a Lambda@Edge function there are no triggers listed
+    when I was expecting to see the CloudFront distributions for which the
+    Lambda@Edge function is firing for some CloudFront event. Why is this? Is
+    this just a bug?
+
+I can't find it with list-event-source-mappings in the CLI either.
+
+    Understand that you were not able to see the triggers for your lambda@Edge
+    function, and you would like to know why this isn't listed.
+
+    Unlike normal lambda function, lambda@Edge functions can be associated with
+    an immutable version, and not to $LATEST version. So when you have loaded
+    the lambda console, this will always shows the $LATEST version of lambda
+    function, which wont be having any CloudFront triggers. You may need to
+    select the right version of the function (based on which function version
+    you have configured your CloudFront with), to see the triggers.
+    [...]
+    And once you click on this trigger, you may see the details like the
+    CloudFront distribution, event-type and path-pattern.

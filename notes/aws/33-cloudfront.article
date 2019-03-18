@@ -1,7 +1,14 @@
-Cloudfront
-|| Last update: 14 Mar 2019
+Cloudfront and Lambda@Edge
+|| Last update: 18 Mar 2019
 
-* It is impossible to do blue/green with CloudFront
+* Cloudfront
+
+** Caching
+
+You can forward the _user_agent_ *BUT* it will dilute the cache key.
+
+
+** It is impossible to do blue/green with CloudFront
 
 - [[https://forums.aws.amazon.com/thread.jspa?threadID=256836]]
 - [[https://serverfault.com/questions/714742/blue-green-deployments-with-cloudfront]]
@@ -24,7 +31,7 @@ We searched online with no success and also opened a support ticket:
     routed to whatever distribution has the alternate domain name associated to
     it, in it's distribution config.
 
-** CNAME already exists
+*** CNAME already exists
 
 - [[https://aws.amazon.com/premiumsupport/knowledge-center/resolve-cnamealreadyexists-error/]]
 - [[https://stackoverflow.com/questions/52769331/cnamealreadyexists-pointing-subdomain-to-distribution-in-new-account]]
@@ -57,11 +64,11 @@ Possible reason?
     to hijack www.example.com if account A deleted their distribution.
     Source: https://stackoverflow.com/questions/54115340/cnamealreadyexists-when-setting-a-wildcard-cname-in-a-cloudfront-distribution
 
-* Impossible to automatically migrate a distribution
+** Impossible to automatically migrate a distribution
 
 - [[https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-migrate-account/]]
 
-* You need to open support tickets to forward 'user agent and the referer' and not cache them
+** You need to open support tickets to forward 'user agent and the referer' and not cache them
 
 To forward both the *user*agent* and the *referer* header and have them
 not be part of the cache-key of each object, you need to raise support
@@ -72,7 +79,7 @@ tickets.
     the cache-key of the object.  If you'd like me to enable this for your
     distribution please provide me a list of the distribution(s) that you wish
     to have this enabled on and I can add that for you on the back-end.
-    [...]
+    [...]Lambda@Edge
     Unfortunately, at this time, it's still a manual process as this is not a
     live feature that we've released to the public, so any changes for this
     would need to be handled by a support case.
@@ -82,14 +89,32 @@ Obviously this doesn't scale if you have many hundreds of CloudFront distributio
 No way to check from the dashboard of sdk whether or not the feature is enabled.
 You lose it if you replace the distribution with another one.
 
+** Geoblocking
+
+CloudFront is able to do Geoblocking depending on the region.
+
 * Lambda@Edge
 
 - [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AmazonCloudFront_DevGuide.pdf#lambda-at-the-edge]]
 - [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html]]
 - [[https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html]]
 
-A Lambda@Edge function cannot be outside of us-east-1 in terms of where it's
-created.
+Lambda@Edge can be used to customize content or behaviour by adding logic to
+a request before it hit origin.
+
+RESTRICTION: Like CloudFront, a Lambda@Edge function cannot be outside of
+us-east-1 in terms of where it's created.
+
+If you want not to pay when DDoS'd you can pay for Shield and have the
+economic protection.
+
+QUESTIONS
+
+- can you filter for lambda at edge?
+- multiple handlers in the same lambda?
+- How do you do geolocation?
+
+QUESTIONS
 
 ** Finding triggers
 
@@ -99,13 +124,9 @@ created.
 
     But if I do this for a Lambda@Edge function there are no triggers listed
     when I was expecting to see the CloudFront distributions for which the
-    Lambda@Edge function is firing for some CloudFront event. Why is this? Is
-    this just a bug?
+    Lambda@Edge function is firing for some CloudFront event.
 
 I can't find it with list-event-source-mappings in the CLI either.
-
-    Understand that you were not able to see the triggers for your lambda@Edge
-    function, and you would like to know why this isn't listed.
 
     Unlike normal lambda function, lambda@Edge functions can be associated with
     an immutable version, and not to $LATEST version. So when you have loaded
@@ -116,3 +137,26 @@ I can't find it with list-event-source-mappings in the CLI either.
     [...]
     And once you click on this trigger, you may see the details like the
     CloudFront distribution, event-type and path-pattern.
+
+** Triggers difference
+
+<-- VIEW --> CF <-- ORIGIN -->
+
+** Cookie behaviour
+
+- [[https://stackoverflow.com/questions/53196242/aws-lambdaedge-to-set-cookies-to-origin-response]]
+- [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Cookies.html]]
+- [[https://aws.amazon.com/blogs/networking-and-content-delivery/leveraging-lambda-at-edge-for-adtech-cookie-syncing-at-the-edge/]] - 25 SEP 2018
+
+    [...] or Forward Cookies, choose Whitelist and add dsp_uid to the Whitelist
+    Cookies list. It’s important that you enable cookie forwarding for the cookie
+    syncing to work correctly.
+
+    Don't forward cookies to your origin – CloudFront doesn't cache your objects
+    based on cookie values. In addition, CloudFront removes the Cookie header
+    from requests that it forwards to your origin and removes the Set-Cookie
+    header from responses that it returns to your viewers.
+    Source: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Cookies.html
+
+You need to forwarded the whitelist of cookies you want to set.
+So if you are not doing it already it WILL dilute the cache.

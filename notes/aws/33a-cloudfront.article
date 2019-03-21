@@ -7,7 +7,6 @@ Cloudfront and Lambda@Edge
 
 You can forward the _user_agent_ *BUT* it will dilute the cache key.
 
-
 ** It is impossible to do blue/green with CloudFront
 
 - [[https://forums.aws.amazon.com/thread.jspa?threadID=256836]]
@@ -115,6 +114,11 @@ QUESTIONS
 - How do you do geolocation?
 
 QUESTIONS
+
+Environment variables aren’t supported with Lambda@Edge. This makes it difficult
+to do logging levels properly.
+
+- [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-requirements-limits.html#lambda-requirements-lambda-function-configuration]]
 
 ** Finding triggers
 

@@ -1,5 +1,5 @@
 ECS
-|| Last update: 14 Mar 2019
+|| Last update: 22 Mar 2019
 
 * Intro
 
@@ -12,6 +12,19 @@ ECS is a container management service region-specific.
 A cluster is a logical grouping of resources (tasks and services).
 If you run in ec2 lunch type, it will also include servers.
 A cluster _can_ contain both ec2 and fargate workload.
+
+** Events
+
+- [[https://aws.amazon.com/about-aws/whats-new/2016/11/amazon-ec2-container-service-now-sends-state-changes-to-cloudwatch-events/]]
+
+ECS sends state changes to CloudWatch Events.
+
+    [...] it is now possible to retrieve near real-time, event-driven updates
+    on the state of your Amazon ECS tasks and container instances. Events are
+    delivered through Amazon CloudWatch Events, and can be routed to any valid
+    CloudWatch Events target, such as an AWS Lambda function or an Amazon SNS
+    topic.
+    Source: https://aws.amazon.com/about-aws/whats-new/2016/11/amazon-ec2-container-service-now-sends-state-changes-to-cloudwatch-events/
 
 ** EC2
 

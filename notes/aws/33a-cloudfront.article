@@ -100,12 +100,22 @@ CloudFront is able to do Geoblocking depending on the region.
 
 Lambda@Edge can be used to customize content or behaviour by adding logic to
 a request before it hit origin.
+The functions run in the Edge Locations of the CloudFront CDN. Allows you to
+add “intelligence” in the CDN, without having to forward the request to a
+backend and losing benefits of content caching and geographical proximity with
+the client.
 
 RESTRICTION: Like CloudFront, a Lambda@Edge function cannot be outside of
 us-east-1 in terms of where it's created.
 
+LATEST is not supported, you need to specify a version.
+
 If you want not to pay when DDoS'd you can pay for Shield and have the
 economic protection.
+
+You obviously cannot delete a Lambda function while associated with a CloudFront
+Distribution. When you remove all associations to CloudFront Distributions,
+function replica are dropped after... a while.
 
 QUESTIONS
 
@@ -115,10 +125,20 @@ QUESTIONS
 
 QUESTIONS
 
-Environment variables aren’t supported with Lambda@Edge. This makes it difficult
-to do logging levels properly.
+Environment variables are not supported with Lambda@Edge. This makes it difficult
+to do logging levels properly among other things. If you don't want to hardcode
+parameters, you must inject them at function build and deploy time.
 
 - [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-requirements-limits.html#lambda-requirements-lambda-function-configuration]]
+
+CON:
+
+- N. Virginia only
+- No Environment variable
+- CWLogs are in separate AWS regions
+- Change Host header when changing Origin
+- Forwarded Cookies are part of the cache key
+
 
 ** Finding triggers
 

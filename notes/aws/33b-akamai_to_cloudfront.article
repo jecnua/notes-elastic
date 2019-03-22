@@ -1,2 +1,208 @@
 Akamai to CloudFront
 || Last update: 20 Mar 2019
+
+* Metrics
+
+- none - Adaptive Image Compression (not used) - HITS
+- low - Daily Unique Visitors (Unique Visitors) - UNIQUE VISITORS divided by country, state, province, browser and OS
+- high - origin performance
+- low - page views
+- none - SureRoute (Route Optimization) (not used) - ROUTE OPTIMIZATION
+- todays traffic yes, just today (use traffic)
+- high - *Traffic* YES response codes and edge hits
+- traffic by browser os YES, but just hits and percentage. no graph
+- traffic by geography, number of hits by country ONLY
+- unique visitor yes but only that
+- url hits very useful (url called and error codes)
+- url traffic very useful hits and offload by url (no error codes)
+
+* Info
+
+tieredDistribution mostly ineffective
+Can we move it?
+Mid tier caching
+
+validateEntityTag (only one using it)
+Is for http status
+Not modified
+Do not ask the oprogin everything
+Only for a hash of what it would be
+And you would  be transferring less data
+
+Cpcode is what you use to see the metrics in the backend
+
+* Config file from IO (luna)
+
+_report_ and _cpCode_ can be ignored.
+One is for Akamai logging one used to see the metrics on the console.
+
+* Mig
+
+** Post
+
+If you used this
+
+    {
+        "name": "allowPost",
+        "options": {
+            "enabled": true,
+            "allowWithoutContentLength": false
+        }
+    }
+
+https://control.akamai.com/apps/property-manager/#/property/1/edit?gid=19568&aid=10634232
+
+set it https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_AllowedMethods.html
+
+you can't get only GET HEAD and POST in CF
+there are only 3 choices
+Source: https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_AllowedMethods.html
+
+You set it here
+
+https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-cachebehavior.html
+
+I didn't find a way to ignore it with no body
+
+POSSIBLE ISSUE: you can't cache the post so they can ddos you
+
+** etag
+
+    {
+        "name": "validateEntityTag",
+        "options": {
+            "enabled": true
+        }
+    }
+
+    The ETag HTTP response header is an identifier for a specific version of a resource. It allows caches to be more efficient, and saves bandwidth, as a web server does not need to send a full response if the content has not changed. On the other side, if the content has changed, etags are useful to help prevent simultaneous updates of a resource from overwriting each other ("mid-air collisions").
+    Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag
+
+validateEntityTag
+
+https://en.wikipedia.org/wiki/HTTP_ETag
+
+Not matching ETags:  Entity Tags are not validated by default by Akamai. If you enable ETag validation, make sure all the servers in your datacenters respond with the same ETag value. I’ve seen many cases where one server is responding with the wrong ETag value, causing cache to be evicted and unnecessary requests to the origin
+- https://community.akamai.com/customers/s/article/Low-offload-Check-your-basics?language=en_US
+
+in cloudfortmation
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html
+
+looks like it's enabled by default
+however, it doesn't work with cmpressed
+
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html
+
+    Etag header
+    If you configure CloudFront to compress content, CloudFront removes the ETag response header from the files that it compresses. When the ETag header is present, CloudFront and your origin can use it to determine whether the version of a file in a CloudFront edge cache is identical to the version on the origin server. However, after compression the two versions are no longer identical. As a result, when a compressed file expires and CloudFront forwards another request to your origin, your origin always returns the file to CloudFront instead of an HTTP status code 304 (Not Modified).
+    Source: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html
+
+* allowTransferEncoding
+
+If you have this set:
+
+    {
+        "name": "allowTransferEncoding",
+        "options": {
+            "enabled": true
+        }
+    }
+
+https://control.akamai.com/dl/property-manager/property-manager-help/GUID-C707ECF1-FABA-4AD1-B443-8C3F2BFF3A51.html
+
+is Chunked Transfer Encoding
+
+in CF is enabled by default it seems
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html#ResponseCustomTransferEncoding
+
+cannot deactivate
+
+* tiered distribution
+
+    {
+        "name": "tieredDistribution",
+        "options": {
+            "enabled": true
+        }
+    }
+
+https://control.akamai.com/dl/property-manager/property-manager-help/GUID-045AECCC-0C68-42D2-B6E9-7219011E5676-1.html
+
+    Tiered Distribution allows Akamai Edge Servers to retrieve your cached content from other Akamai servers, instead of directly from the Origin.
+    Source: https://control.akamai.com/dl/property-manager/property-manager-help/GUID-045AECCC-0C68-42D2-B6E9-7219011E5676-1.html
+
+I can't find this option in CF. I suppose that the behaviour or is there or is not.
+
+* caching
+
+    {
+    'behavior': 'CACHE_CONTROL',
+    'mustRevalidate': False,
+    'defaultTtl': '5m',
+    'honorPrivateEnabled': False,
+    'honorMustrevalidateEnabled': False
+    }
+
+In CF I could not find any honorPrivateEnabled, honorMustrevalidateEnabled or
+must revalidate alternatives.
+
+Akamai have different cache behaviour:
+
+    honor origin cache control + expires - indicates that Akamai servers should respect both of the Cache-Control & Expires headers received from your servers.
+    honor origin cache control - indicates that Akamai servers should only respect the Cache-Control header received from your backend servers.
+    honor origin expires - tells the Akamai servers to only respect the Expires header received from your backend servers. Note: when selecting any of these three options, you need to define a default Max-Age which will be used in the case where your servers do NOT return any of the specified headers.
+    cache - lets you define the Time-To-Live (TTL) of all assets served through Akamai, regardless of what your servers indicate in the Cache-Control or Expires headers. We recommend this for all your static assets.
+    no store - prevents the Akamai cache from storing a copy of the file, and always requests a new copy from your backend servers. We recommend this for your dynamic HTML or API calls.
+    Source: https://developer.akamai.com/blog/2017/03/28/what-you-need-know-about-caching-part-1
+
+* Child
+
+** gzip
+
+[{'name': 'gzipResponse', 'options': {'behavior': 'ALWAYS'}}]
+[{'name': 'contentType', 'options': {'matchOperator': 'IS_ONE_OF', 'values':
+  ['text/html*', 'text/css*', 'application/x-javascript*', 'application/json*'],
+  'matchCaseSensitive': True, 'matchCaseSensitive': False}}]
+
+zip compression in response.
+gzip resposen is always active for all four. I can't gzip via content type in CF
+CF have it is the cache behavior but for path.
+
+you can use the default behaviour for most cases then override for specific paths
+with the cache behaviour array
+
+however I can't find matchCaseSensitive, matchCaseSensitive (always do).
+
+gzip resposen is always active for all four. I can't gzip via content type in CF
+
+** static content
+
+
+** dynamic content
+
+    [{'name': 'path', 'options': {'matchOperator': 'MATCHES_ONE_OF', 'values': ['/aaa/*', '/bbb/*', '/ccc/*'], 'matchCaseSensitive': False}}]
+    [{'name': 'caching', 'options': {'behavior': 'MAX_AGE', 'ttl': '7m', 'mustRevalidate': False}}, {'name': 'downstreamCache', 'options': {'behavior': 'ALLOW', 'ttl': '7m', 'allowBehavior': 'FROM_VALUE', 'sendHeaders': 'EXPIRES'}}]
+
+** cache query params
+
+- [[https://developer.akamai.com/legacy/api/luna/papi/behaviors.html#cachekeyqueryparams]]
+
+    [{'name': 'cacheKeyQueryParams', 'options': {'behavior': 'IGNORE_ALL'}}]
+
+drop all query params.
+
+** http/2
+
+How to enable it
+
+    [{'name': 'hostname', 'options': {'matchOperator': 'IS_ONE_OF', 'values': ['foo.com']}}, {'name': 'bucket', 'options': {'percentage': 100}}]
+    [{'name': 'http2', 'options': {'enabled': ''}}]
+
+    HttpVersion
+    (Optional) Specify the maximum HTTP version that you want viewers to use to communicate with CloudFront. The default value for new web distributions is http2. Viewers that don't support HTTP/2 automatically use an earlier HTTP version.
+    For viewers and CloudFront to use HTTP/2, viewers must support TLS 1.2 or later, and must support Server Name Identification (SNI).
+    In general, configuring CloudFront to communicate with viewers using HTTP/2 reduces latency. You can improve performance by optimizing for HTTP/2. For more information, do an Internet search for "http/2 optimization."
+    Type: String
+    Valid Values: http1.1 | http2
+    Required: No
+    Source: https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_DistributionConfig.html

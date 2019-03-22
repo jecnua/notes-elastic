@@ -125,6 +125,10 @@ Mock boto with Moto:
 
 - [[https://github.com/spulec/moto]]
 
+Limitation of cli and endpoint.
+
+- [[https://github.com/aws/aws-cli/issues/1270]]
+
 * Deployments
 
 If you need to deploy (like on lambda) you will need a trick

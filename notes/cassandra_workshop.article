@@ -1,0 +1,635 @@
+Cassandra workshop
+|| 28 Mar 2019
+
+- [[https://docs.datastax.com/en/cassandra/3.0/cassandra/architecture/archTOC.html]]
+
+- Low latency
+- HA (distributed)
+- Linear scalability
+
+Distributed has table
+
+big table - 2006
+dynamo - 2007
+cassandra (facebook) - 2008
+
+NoSQL
+datasize - tb on a single node
+transaction throughput
+maintenance?
+
+is Apple that drives the project. more committers and they use it the most.
+
+*
+
+Masterless (all servers have same role)
+all nodes are cluster
+add more servers for more capacity (disk space and i/o throughput)
+shared nothing
+
+** HA
+
+built in redundancy ?????
+
+they can do multi-dc ????? what about latency ???
+
+** linear scalability
+
+client writes/s by node
+
+YOU CAN'T DO JOIN
+their are not linear
+if the schema is problematic is an issue
+build schema well
+
+* What is cassandra
+
+distributed hash table
+assume replication of 3
+
+client connect to any node
+the client is smart
+and query the node that as the data
+because it is distributed
+
+the client know that node has the data ??????
+
+is a key/value
+column datastore
+
+you store in partition
+that are column
+and you access that by key
+
+* pro and con
+
+pro
+HA
+masterless
+linear scalability size and QPS
+low latency
+
+con
+no join
+poor secondary index (advice don't use it)
+restricted filtering
+no stored procedure, no view
+
+transaction
+basic trans though logged batch and LTW
+
+Used for
+OLTP
+Data ingestion (writes are very fast)
+Design your requests first, your model second (you need to know how you query your data before you ingest it)
+
+* infrastructure
+
+cassandra favors AP
+but
+you can tune it to act differently
+
+* use case
+
+iot
+very good with time series data
+cheap to write in cassandra (high ingestion rate)
+you can read data between dates
+
+web app
+very low latency
+automatic data replication across datacenters
+
+* review
+
+you need to duplicate the data to support different type of query
+is a no sql data table
+
+* Architecture
+
+** clustera
+
+cluster
+logical data center (aws region)
+logical rack (aws az)
+node
+
+controls the way it duplicates data
+
+you use multi datacenter
+to get data close to the user
+sometimes to have HA
+sustain single DC failure
+or you want different type of workload
+
+separation of concerns
+a dc hammering won't impact another dc concept
+
+** replicatiat on
+
+THIS IS NOT CONSISTENCY
+
+replication factor
+how many copy of the data live in the cluster
+in each datacenter
+
+is a keyspace property
+is often set to 3 (3 writes/shard)
+it will spread between racks
+
+is it a soft or hard constraints?????
+
+number of racks as the set replication factor
+wait for the new rack
+
+hintend handoff
+[[https://docs.datastax.com/en/cassandra/3.0/cassandra/operations/opsRepairNodesHintedHandoff.html]]
+get back online
+default to 3hours (configurable)
+--> you can add a new node
+it depends on the commit logs
+so depends on how much space do you have there
+
+-------> they replace with the same node
+
+if is down more than what you can afford
+you need to run a manual repair
+
+** consistency level
+
+number od replicas that must serve a read or write synchronously
+CL can be configured per request
+CL is a client application property
+
+you can set consistency level at write level
+you can write a data and say write on one
+
+this is set at application level/query level
+
+serve read synchronously / consistency level
+is always about the strict majority
+QUORUM: (cluster level) - 3 + 1 - strict majority is 3
+EACH_QUORUM: 3 is 2 and 1 is 1
+LOCAL_QUORUM: local quorum is a single dc
+LOCAL_ONE
+
+replication factor is per key space
+
+** token range
+
+each node gets a token range
+you hash the key
+get the id
+and write on the primary replica for this data
+
+primary replica
+
+when you add more nodes
+the token will be partitioned
+and moved
+
+when you add nodes
+the data will be streamed
+before and after
+adding nodes will put strain on the cluster
+
+adding nodes
+one at the time
+when it's healthy not in response to issue
+
+RF is 3
+the two nodes after you gets the data
+replication can be synchronous or asynch
+
+multiple datacenter replication
+the node is gonna send the data in multiple dc
+can be sunch or asynch
+
+each node is the coordinator node for a specific hash key
+it doesn't need to be the primary replica
+
+memory datastructure get flushed
+
+in a cassandra cluster a seed-node
+is the bootstrapping cluster
+the very first node
+one seed node for rack
+
+if you configure your driver to be token aware
+they will be aware of all the nodes information
+and they will contact directly contact the node with the data
+if you don't do that you will add an extra hop
+
+there is a deprecated and will be remove in 4.0
+that won't allow to recover from write error?????
+should be the client role to fix it
+a node fails mid write and the client did not wait fr it
+best way to solve it is idempotent app
+and push the data again
+
+if you write at 4 and read at 1 you may have an inconsistency
+
+strong consistency
+CL (Read) + CL(write) > RF
+
+like Write ALL and read one
+
+token aware
+it will automatically do the hash
+but needs to know about the nodes
+
+** coordinator
+
+you can coose the choordinator node for the repair
+you need to repair it while it's down
+
+download vnodes ???
+you can have virtual nodes that can be part of your cluster
+
+you need to decommission a node if it's down for too long
+
+keyspace is a group of tables
+and you can have different replication factor
+
+* booststrap
+
+cassandra.yaml
+list of ip address used for discovery at the start
+
+cassandra-env.sh
+
+
+jvm.options
+
+
+rack-dc.properties
+grossipngpropertyfilesnitch
+right aware and DC aware
+
+
+clock is very important in cassandra
+ntp monitoring
+better same type of nodes, not ambulances
+2TB max of disk. cassandra is not good at managing more than that
+too much data to stream/repair in case of error
+
+16gb per nodes is ok
+more will be used by the OS and boost read performance
+
+when running benchmark don't run it on enough data to fit in memory
+
+* replacing
+
+when a new one comes up
+cassandra will re-streams the data from other nodes
+
+don't be cheap, you need some headspace to allow streaming while serving
+tragic.
+replacing a node can be made with 0 downtime.
+
+set ip address
+is the identity? NO
+you need  to say in a flag that you are replacing THIS node
+is not connected to IP
+replace_address_first_boot
+
+procedure
+backup the config file in the origin node: yaml, env.sh etc
+BE CAREFUL if the original is the seed node you need to change the seed ip list in every nodes
+you need to do it on each server annually
+no API
+
+use same seed node on ALL node
+2 to 6 seed node
+you don't want to have ALL nodes as seed node (best practices)
+at least one per datacenter
+
+In AWS they re-use the EBS
+
+Sometimes cassandra restarts????
+
+* add a nodes
+
+cassandra reshuffle the token ring and assign tokens from existing nodes to new
+nodes.
+adding a new node takes time (data shuffling and streaming)
+
+when adding nodes:
+
+- the node same size as other nodes
+- only one node should be added at the time
+- if you have multiple racks, it should be balanced. 3 racks add 3 nodes
+
+* partition
+
+A partition should be small, like 100GB.
+data files, disorganize, merge them togheter and save to disk, delete the others
+called compaction
+
+deleted files are not deleted immediatrly the are only saved to be delated
+cassandra have a backlog of compation to go thorugh
+hours or days
+
+unthrottle the compaction
+you can re-throttle compation when you finish
+you can set it
+is a lot of I/O
+
+the node is is still in the node that is not responsible for it anymore
+you can trigger it and delete
+
+* monitoring and alerting
+
+keyspace or table specific
+
+some are useful for alerting
+some trouble shooting
+some just monitoring
+
+read/write latency
+
+10 EBS raid 0 - ebs volumes
+burst credit you get more of them when you have more disks
+don't do that (lol)
+data redundancy is in cassandra so raid 0 is enough
+
+* monitoting
+
+prometheus and grafana
+cassandra uses JMX
+
+70% disk space
+node down
+I/O disks
+99th percentile
+
+a lot of these metrics can trigger together so be careful to group them
+togheter in a single page
+
+* repair
+
+manual repair
+cluster is not consistent
+cassandra is eventually consistent
+
+read repair
+in the background
+when you read cassandra will check all the data and send repair command to the one
+that have wrong data
+
+cleanup
+
+- [[https://docs.datastax.com/en/cassandra/3.0/cassandra/operations/opsRepairNodesManualRepair.html]]
+
+Merkle three / compare make up tree in different node
+and see something different
+and it will ask to stream this data
+???
+use timestamp to decide which value is the correct one
+latest is correct
+
+is very I/O maintenance
+do one at the time
+
+you need to have the full cluster fully repaired every 10 days
+is a specific threshold you can modify
+it has to do with deletes
+when you delete a piece of data. files are immutable and you can't change it
+when you delete you insert a tombstone.
+if you lose the tombstone the data is gonna reappear
+this 10 days are to make sure all the data is consistent with the tombstone
+if any node missed this tombstone because it was down
+if it never gets repairs, when compaction happens, it's gonna looks at the table
+there is a possibility to have zombie data
+
+you want to do the cleanup before the tombstone are removed
+cassandra doesn't have an automatic schedule
+you need to run the cleanup
+cassandra-reaper tool helps with that
+
+- [[http://cassandra-reaper.io/]]
+
+to quickly scale up capacity
+the better way is to scale up
+
+max they have is 150 nodes
+2TB each
+--> 300TB
+
+
+* backup
+
+SSTables on disk
+they are immutable and can be copied off-node
+cassandra provides a mecanism to copy it: snapsshot, commitlogs
+hard link
+backups work on a per node basis
+
+how often?
+point in time recovery?
+backup retention?
+
+will copy all the SStables from a dnode as scanshot, schema info for all keyspaces
+and token ownership information off the node
+last one is very important
+
+incremental backup
+--> opensource
+
+you also need to backup the replay logs
+they replay everything
+
+* add a data datacenter
+
+they can be added/removed without downtime.
+
+specify same cluster name but different dc name
+then tell the nodes as seed node one of the existing dc
+
+run rebuild on the new node, one node at the time.
+
+* key space
+
+group of tables
+
+is a namespace
+allow to specify the replication factor
+and replication strategy
+
+replication strategy
+
+SimpleStrategy: don't use it (only single DC and doesn't do rack)
+NetworkTopologyStrategy: always (even with one DC if you want to migrate later)
+
+each dc must be named, even for single dc
+
+cassandra-rackdc.properties defines:
+
+- node's data center
+- node's rack
+
+dc=dc_us
+rack=rack_1
+
+- [[https://docs.datastax.com/en/cql/3.3/cql/cql_reference/cqlCreateKeyspace.html]]
+
+CREATE KEYSPACE my_name
+WITH replication = {'class': 'NetworkTopologyStrategy'}
+
+- [[https://docs.datastax.com/en/cql/3.3/cql/cql_using/useCreateTable.html]]
+
+then you create a table
+
+when you cluster with orderby
+never works
+
+
+* datatype
+
+- [[https://docs.datastax.com/en/cql/3.3/cql/cql_reference/cql_data_types_c.html]]
+
+uuid and timeuuid
+uuid usually as id for the key of the table and not incremeental integer. is not easy to have an incremenetal interger in a distribuited system. they should all agree
+timeuuid is sometimes used. there is a timestamp encoded in it. you can have sort ordering (is also collision free)
+
+counter
+collections
+UDTs - user data type
+
+* Primary key
+
+primary key are two parts
+partition key and the clustering columns
+
+clustering columns
+sorting order for all data in this partition by the second value
+
+    PRIMARY KEY((host, bucket_time,service),time)
+
+for example
+
+All data will be store in the same partition in the same node.
+
+usually time is used
+
+primary key ensure uniqueness
+No unique constraints (upsert)
+
+same primary key override (UPSERT)
+
+can be single value or composite
+if you put only one thing in the key
+you will put too much in one bucket
+so better to use composite
+
+(host, bucket_time, service)
+
+to avoid something to grow too much we add a new partition key
+bucket_time for example (could be today or something like that)
+
+primary key is the data placement in the cluster.
+
+You can have as many partitions as you want.
+it's better to have a lot of partitions.
+
+distributed hash table is the faster data
+second faster is sorted data
+cassandra uses both
+
+if you need to use filtering is not a scalable and not efficient
+you need a partition key
+so if you use it try not to use filters
+
+** best practices
+
+partitions should be bounded
+not grow indefinetly
+host and service is
+((host, service),time) is not good
+((host, service, bucket_time),time) is not good
+
+day of the week or month
+
+using the time (like slots of 5 minutes) is better to basically query by time
+
+you want to be sure that a single query don't hit too many partitions
+at the same time. if every query need to get 1k partition is not good.
+
+define uniquess in a partition
+define the storage (and sort) within a partition
+hard makes efficient range queries possible (within a partition)
+
+USE composite partition key but BOUNDED
+
+always provide the complete partition key
+to ensure only a subset of the replica get involved in the query.
+for scalability (that why you have the limitation)
+
+after you filter by partition key you COULD sort by clustering column
+because it's SORTED by that so it's very efficient.
+scan is very efficient for this case.
+
+You CAN have multiple clustering column. if you want to filter for the last
+column you need to sorter first by the other two.
+if you don't you need to do a full scan and it's slow.
+
+** Limits
+
+when partition size is more than 100MB there are ops issue
+very long g cycle. or problem restarting.
+hard limit is 2 billion. avoid more than a few millions row per partition.
+
+use the timestap even if you don't have to order
+
+** materialised view
+
+- [[https://www.instaclustr.com/apache-cassandra-materialized-view-instaclustr-support/]]
+
+They are buggy and you should not use them in 3, but they should be fixed in 4.
+in cassandra 3 is experimental.
+now is 3.11.4
+
+* hash
+
+murmurhash3 by default
+
+*
+
+use durability writes
+
+* Streaming limits
+
+stream_throughput_outbound_megabits_per_sec
+
+- [[http://cassandra.apache.org/doc/latest/configuration/cassandra_config_file.html#stream-throughput-outbound-megabits-per-sec]]
+
+* clustering
+
+gossip protocol
+
+- [[https://docs.datastax.com/en/cassandra/3.0/cassandra/architecture/archGossipAbout.html]]
+
+- [[https://docs.datastax.com/en/cassandra/3.0/cassandra/architecture/archSnitchesAbout.html]]
+- [[https://docs.datastax.com/en/cassandra/3.0/cassandra/architecture/archSnitchEC2MultiRegion.html]]
+
+* Re/Sources
+
+- [[https://www.datastax.com/dev/blog/cassandra-anti-patterns-queues-and-queue-like-datasets]]
+- [[http://www.read.seas.harvard.edu/~kohler/class/cs239-w08/decandia07dynamo.pdf]]
+- [[https://www.instaclustr.com/apache-cassandra-materialized-view-instaclustr-support/]]
+- [[http://cassandra.apache.org/blog/2018/12/03/introducing-transient-replication.html]]
+- [[http://cassandra.apache.org/blog/2018/08/07/faster_streaming_in_cassandra.html]]
+- [[https://medium.com/merapar/deploy-a-high-available-cassandra-cluster-in-aws-using-kubernetes-bd8ba07bfcdd]]
+- [[https://aws.amazon.com/blogs/big-data/best-practices-for-running-apache-cassandra-on-amazon-ec2/]]
+- [[https://hackernoon.com/how-to-create-simple-cassandra-cluster-on-aws-8407e4d60384]]
+
+
+
+https://www.beyondthelines.net/databases/dynamodb-vs-cassandra/
+https://aws-quickstart.s3.amazonaws.com/quickstart-cloudstax-nosql/doc/cloudstax-nosql-db-for-apache-cassandra-on-the-aws-cloud.pdf
+https://www.reddit.com/r/kubernetes/comments/8v3kqc/anyone_have_put_cassandra_on_kubernetes/
+https://www.youtube.com/watch?v=SoaLsshJA8s&feature=youtu.be
+https://github.com/instaclustr/cassandra-operator
+https://www.scylladb.com/
+https://www.scylladb.com/tech-talk/cassandra-and-scylladb-at-yahoo-japan/
+https://www.scylladb.com/2019/01/17/scylla-open-source-3-0-overview/

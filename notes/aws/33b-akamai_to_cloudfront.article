@@ -206,3 +206,22 @@ How to enable it
     Valid Values: http1.1 | http2
     Required: No
     Source: https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_DistributionConfig.html
+
+* Akamai
+
+** Pragma
+
+- [[https://community.akamai.com/customers/s/article/Akamai-Pragma-Header?language=en_US]]
+
+    Pragma: akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable,
+    akamai-x-get-cache-key, akamai-x-get-true-cache-key, akamai-x-get-extracted-values,
+    akamai-x-get-ssl-client-session-id, akamai-x-serial-no, akamai-x-get-request-id
+    Source: https://community.akamai.com/customers/s/article/Akamai-Pragma-Header?language=en_US
+
+    -H 'Pragma:akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable,
+    akamai-x-get-cache-key, akamai-x-get-extracted-values, akamai-x-get-nonces,
+    akamai-x-get-ssl-client-session-id, akamai-x-get-true-cache-key, akamai-x-serial-no,
+    akamai-x-get-request-id, akamai-x-request-trace, akamai-x-meta-trace,
+    akamai-x-get-extracted-values, no-cache'
+
+- [[http://www.comfsm.fm/computing/squid/FAQ-6.html]]

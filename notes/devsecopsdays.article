@@ -1,16 +1,41 @@
 DevSecOpsDays
-||
+|| 22 Mar 2019
 
 security -
 success like?
 
 having a security champion is not enough
 
-
-20 how to make a security changin work
-how to do threath model
-
-
-
+20 how to make a security changing work
+how to do threat model
 
 in the end is all about power
+
+Notes
+
+Defence in depth
+Least privilege
+risk assessment
+
+data and code separated
+2 subnet for db 2 for code
+
+k8s problem when ssl expire for the controllers
+
+every vulnerability creates a JIRA ticket
+
+ask what the developers know
+also infosec
+
+cache
+encryption
+ssl
+
+don't trust third party
+monitor them and dashboard
+circle ci 10$ a month
+
+buy-in from the seniors, backup
+you need support
+way up the changing
+you need sponsorship

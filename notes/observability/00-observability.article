@@ -1,5 +1,5 @@
 Observability
-|| Last update: 10 May 2018
+|| Last update: 1 Apr 2019
 
 * Questions
 
@@ -22,7 +22,7 @@ Observability
 
 Different tools have different focus:
 
-- Metrics: Aggregatable
+- Metrics: Aggregable
 - Logging: Events
 - Tracing: Request scoped
 
@@ -46,6 +46,12 @@ where that time was spent inside the call and how was it distributed.
 - Trace - identify cause across services
 
 (credit: adrianfcole)
+
+* Two different approaches/standards
+
+- [[https://medium.com/opentracing/merging-opentracing-and-opencensus-f0fe9c7ca6f0]]
+
+Open Tracing and Open Census are trying to merge the standards into one.
 
 * Re/Sources
 

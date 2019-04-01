@@ -61,6 +61,10 @@ the responsibility of the agent.
 
 Jaeger can accept Zipkin span transparently :D
 
+Performance can be tuned:
+
+- [[https://medium.com/jaegertracing/tuning-jaegers-performance-7a60864cf3b1]]
+
 ** Span
 
 Fields are:

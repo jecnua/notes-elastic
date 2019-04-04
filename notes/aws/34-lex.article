@@ -1,0 +1,66 @@
+Lex
+|| Last update: 4 Apr 2019
+
+* Intro
+
+It integrates with Polly automatically when you interact with it via voice
+
+You can interact via text or voice (lex use polly)
+you need to give the role to use polly
+
+LEX only support English
+
+* How it works
+
+intents
+
+utterances to understand what he wants to do
+
+questions are sent with prompt
+
+slot is data user must provide to fullfill the intent
+some are requires some not
+there are build in type like Amazon.date or amazon.number etc
+
+an user need to reply to all of them to reach the end
+
+fulfilment business logic to fullfill the work
+after all the input of the users.
+
+in case of failures for too long it has a phrase to hang up on the client.
+
+** g
+
+you can add more than one prompt for each slot to ask
+and it will pick randomicity
+you can set he number to reply before giving up
+
+you can add utterances for more complex phrases
+
+the order is what lex uses to ask the client
+so order is important
+
+there are custom slot type.
+you can specify specific words and synonyms for each word
+if someone say a synonyms he original word will be sent to the backed
+
+when you do it via utterances, you can fill more slots together
+
+** x
+
+there is a session timeout
+
+fulfilment can be done by a lambda
+or go back to the client
+
+* f
+
+everything is versioned
+once you publish a version you cannot change it any more
+you can only change the latest version
+
+use alias to point to the version you want to use
+
+* Re/Source
+
+- [[https://www.coursera.org/learn/aws-fundamentals-building-serverless-applications/]]

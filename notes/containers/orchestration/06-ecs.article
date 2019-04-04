@@ -323,7 +323,7 @@ some way to query metrics from Docker itself.
     per-container start and stop timeout value.
     Source: Docs
 
-Availabile on Fargate from PV 1.3.
+Available on Fargate from PV 1.3.
 
 * Problems
 

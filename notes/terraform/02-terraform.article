@@ -1,6 +1,30 @@
-Data source
+Terraform
+|| Last update: 2 Oct 2018
 
-* Availability zone
+* Building the new version
+
+To build the new version
+
+    docker run \
+      --rm \
+      -v $(pwd):/go/src/github.com/hashicorp/terraform \
+      -w /go/src/github.com/hashicorp/terraform \
+      -e XC_OS=linux \
+      -e XC_ARCH=amd64 \
+      golang:latest \
+      bash -c "apt-get update && apt-get install -y zip && GO111MODULE=on make bin"
+
+but make needs to be changed
+
+    # bin generates the releaseable binaries for Terraform
+    bin:
+            @TF_RELEASE=1 sh -c "'$(CURDIR)/scripts/build.sh'"
+
+This is what you want the bin to look like before building.
+
+* Data sources
+
+** Availability zone
 
     data "aws_vpc" "targeted_vpc" {
       id      = "${var.vpc_id}"
@@ -34,3 +58,8 @@ You can't use a. So you have to do something like this:
     FYI: Description:DescriptionLaunching a new EC2 instance. Status Reason: Your requested instance type (r4.2xlarge) is not supported in your requested Availability Zone (us-east-1c). Please retry your request by not specifying an Availability Zone or choosing us-east-1e, us-east-1d, us-east-1b. Launching EC2 instance failed.
 
 So you need to avoid some AZs.
+
+* To check
+
+- [[https://www.runatlantis.io/]]
+- [[https://medium.com/runatlantis/putting-the-dev-into-devops-why-your-developers-should-write-terraform-too-d3c079dfc6a8]]

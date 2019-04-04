@@ -1,7 +1,19 @@
 Cloudwatch
-|| Last update: 21 Dec 2018
+|| Last update: 4 Apr 2019
 
 * CloudWatch Logs
+
+You can tag CloudWatch resources.
+
+    You can now create tags in CloudWatch alarms that let you define policy
+    controls for your AWS resources. This enables you to specify fine grained
+    permissions, improving security for monitoring resources and cost allocation.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/04/you-can-now-use-resource-level-permissions-for-amazon-cloudwatch/
+
+** Metric math
+
+- [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/using-metric-math.html]]
+- [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/using-search-expressions.html]]
 
 ** CloudWatch Logs Insights
 

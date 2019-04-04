@@ -1,5 +1,13 @@
 DynamoDB
-|| Last update: 11 Feb 2019
+|| Last update: 4 Apr 2019
+
+* Intro
+
+Based on the DynamoDB document like Cassandra.
+
+* Global table
+
+You are not charged from streams while using DynamoDB glabal table.
 
 * Local environment
 

@@ -1,5 +1,5 @@
-ECS
-|| Last update: 22 Mar 2019
+ECS and FARGATE for ECS
+|| Last update: 04 Apr 2019
 
 * Intro
 
@@ -137,7 +137,7 @@ You can't move a task to another cluster.
 
 There are two types of launch type:
 
-- EC2: You create one or more asg and attach it to the cluster
+- EC2: You create one or more ASG and attach it to the cluster
 - Fargate: You just define the tasks but no cluster (costs much more)
 
 *NOTE*: Many task definition parameters are _not_valid_ in fargate.
@@ -243,6 +243,12 @@ You can schedule based on resources, isolation and availability.
 On fargate only ECR and dockerhub are supported. No other private container
 registry.
 
+* Secrets
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data.html]]
+
+You can specify secrets in ECS and for FARGATE from PV1.3.
+
 * Monitoring
 
 Abstractions are: tasks, services, and clusters
@@ -308,6 +314,8 @@ some way to query metrics from Docker itself.
     calls to a destination of your choice, such as your CloudWatch logs (via
     awslogs).
     Source: https://www.datadoghq.com/blog/ecs-monitoring-tools/
+
+* Enhanced Container Dependency management
 
 * Problems
 

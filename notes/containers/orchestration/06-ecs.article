@@ -317,6 +317,14 @@ some way to query metrics from Docker itself.
 
 * Enhanced Container Dependency management
 
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#other_container_definition_params]]
+
+    Enable defining dependencies for container startup and shutdown as well as a
+    per-container start and stop timeout value.
+    Source: Docs
+
+Availabile on Fargate from PV 1.3.
+
 * Problems
 
 ** User Defined Networks are not supported!

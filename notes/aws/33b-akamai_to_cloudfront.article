@@ -117,7 +117,9 @@ https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndRes
 
 cannot deactivate
 
-* tiered distribution
+* Tiered distribution
+
+- [[https://control.akamai.com/dl/property-manager/property-manager-help/GUID-045AECCC-0C68-42D2-B6E9-7219011E5676-1.html]]
 
     {
         "name": "tieredDistribution",
@@ -126,14 +128,14 @@ cannot deactivate
         }
     }
 
-https://control.akamai.com/dl/property-manager/property-manager-help/GUID-045AECCC-0C68-42D2-B6E9-7219011E5676-1.html
-
-    Tiered Distribution allows Akamai Edge Servers to retrieve your cached content from other Akamai servers, instead of directly from the Origin.
+    Tiered Distribution allows Akamai Edge Servers to retrieve your cached
+    content from other Akamai servers, instead of directly from the Origin.
     Source: https://control.akamai.com/dl/property-manager/property-manager-help/GUID-045AECCC-0C68-42D2-B6E9-7219011E5676-1.html
 
-I can't find this option in CF. I suppose that the behaviour or is there or is not.
+I can't find this option in CF. I suppose that the behaviour or is there or is
+not.
 
-* caching
+* Caching
 
     {
     'behavior': 'CACHE_CONTROL',
@@ -212,6 +214,8 @@ How to enable it
 ** Pragma
 
 - [[https://community.akamai.com/customers/s/article/Akamai-Pragma-Header?language=en_US]]
+- [[https://community.akamai.com/customers/s/article/Cache-Keys-Why-we-should-know-them?language=en_US]]
+- [[https://community.akamai.com/customers/s/article/Using-Akamai-Pragma-headers-to-investigate-or-troubleshoot-Akamai-content-delivery?language=en_US]]
 
     Pragma: akamai-x-cache-on, akamai-x-cache-remote-on, akamai-x-check-cacheable,
     akamai-x-get-cache-key, akamai-x-get-true-cache-key, akamai-x-get-extracted-values,
@@ -225,3 +229,9 @@ How to enable it
     akamai-x-get-extracted-values, no-cache'
 
 - [[http://www.comfsm.fm/computing/squid/FAQ-6.html]]
+
+My subset of choice:
+
+    curl $URL \
+    -H 'Pragma: akamai-x-cache-on, akamai-x-check-cacheable, akamai-x-get-true-cache-key, no-cache' \
+    --head

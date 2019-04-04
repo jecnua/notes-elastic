@@ -17,7 +17,7 @@ We searched online with no success and also opened a support ticket:
     QUESTION:
     Is it possible to due a blue/green deployment or a Canary deployments of a
     CloudFront distribution?
-    Just to be clear I'm not referring to blue/green or Canary in relation to
+    Just to be clear I'm not referring to blue/green or Canary in relatPriceClass_100ion to
     the origin of the CloudFront distribution, I'm referring to it in relation
     to changing the configuration of the CloudFront distribution itself.
 
@@ -133,12 +133,10 @@ parameters, you must inject them at function build and deploy time.
 
 CON:
 
-- N. Virginia only
 - No Environment variable
 - CWLogs are in separate AWS regions
 - Change Host header when changing Origin
 - Forwarded Cookies are part of the cache key
-
 
 ** Finding triggers
 
@@ -184,3 +182,13 @@ I can't find it with list-event-source-mappings in the CLI either.
 
 You need to forwarded the whitelist of cookies you want to set.
 So if you are not doing it already it WILL dilute the cache.
+
+* Prices
+
+- [[https://aws.amazon.com/cloudfront/pricing/]]
+
+You can have different types of price class in CF.
+
+- PriceClass_100 (cheapest): US, Canada and Europe
+- PriceClass_200: All but Australia and South America
+- PriceClass_All (default): All

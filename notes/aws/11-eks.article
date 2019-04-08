@@ -1,5 +1,5 @@
 EKS
-|| Last update: 18 Feb 2019
+|| Last update: 8 Apr 2019
 
 * Intro
 
@@ -69,9 +69,17 @@ The only events you can see from the hidden stuff is the leader election.
     kube-system   kube-dns.154bac008c601e32                    Deployment    ScalingReplicaSet   deployment-controller   Scaled up replica set kube-dns-64b69465b4 to 1
     kube-system   kube-dns-64b69465b4-qn59j.154bac008db3439e   Pod           FailedScheduling    default-scheduler       no nodes available to schedule pods
 
-* No access on logs by default
+* Control plane logs
 
-By default they are not logging on CWLogs at the time of this writing.
+- [[https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html]]
+
+Control plane logs are shipped to CWLogs since Apr 2019.
+
+    Now, you can send control plane logs including: audit, API server,
+    authenticator, controller-manager, and scheduler logs to Amazon CloudWatch
+    Logs. Each selected log stream is sent to Amazon CloudWatch Logs within your
+    account, and stored accordingly.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/04/amazon-eks-now-delivers-kubernetes-control-plane-logs-to-amazon-/
 
 * Costs
 

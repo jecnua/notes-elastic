@@ -1,16 +1,185 @@
-AWS perimeter security - Talk (notes)
-|| Last update: 11 Mar 2019
+AWS perimeter security - WAF, Shield and Firewall Manager
+|| Last update: 9 Apr 2019
 
 * Intro
 
 - WAF
-- firewall manager
-- shield (paid have for free WAF and firewall)
+- Shield (paid have for free WAF and firewall)
+- Firewall Manager (centralise multiple account management and rules application)
 
-example of possible attack:
-bots
-sql injection and stuff
-DDoS - SYN/UDP/ICMP flood
+* WAF
+
+WAF is a web application firewall (application level protection) able to work on:
+
+- API gateway
+- Cloudfront
+- ALB
+
+It is able to respond with either requested content or 403 (forbidden) status
+code (it can be configured).
+
+There are three main behaviours:
+
+- Allow all except specified
+- Deny all except specified
+- Count requests that match the specified rules (to test rules before applying them)
+
+You can use WAF separately from Shield and other tools.
+
+You use WAF by creating *conditions*, *rules* and *web*access*control*list* (web
+ACLs).
+You define conditions, combine conditions into rules and combine rules into ACL.
+
+    Use global to create WAF resources that you would associate with CloudFront
+    distributions and other regions for WAF resources that you would associate
+    with ALBs and API Gateway stages in that region.
+    Source: AWS interface
+
+It can protect you from:
+
+- Bad bots
+- SQL injection
+- Cross-site scripting (XSS)
+- DDoS - SYN/UDP/ICMP/[[https://www.cloudflare.com/learning/ddos/http-flood-ddos-attack/][HTTP flood]]
+
+** Conditions
+
+The *conditions* define basic characteristic what you are looking for in the
+web requests. You can use to create rules can be based on multiple elements:
+
+- IP address (max 10k IPs or IP ranges) - Supports /8 or any range from /16 to /32 CIDR blocks for IPv4
+- Country
+- Request headers
+- Specific string in requests
+- Length
+- SQL code (protect against SQL code injection)
+- Script (protect against cross-site scripting)
+
+Some conditions take multiple values.
+
+** Rules
+
+Rules are a combination of one or more conditions. There are two types of rules:
+
+- Regular
+- Rate based
+
+When more than one condition is set, WAF will block only the one that will fit
+*ALL* conditions (it's a logic AND).
+
+*** Regular rules
+
+You need at least one condition for regular rule (it's optional but makes no
+sense to have an empty one).
+
+*** Rate based rules
+
+- [[https://aws.amazon.com/blogs/aws/protect-web-sites-services-using-rate-based-rules-for-aws-waf/]]
+- [[https://docs.aws.amazon.com/waf/latest/developerguide/ddos-get-started-rate-based-rules.html]]
+
+Rules can be applied with a *rate*limit*. This type of rules triggers an action
+only if the set of _conditions_ exceeds the limit per data point (5 minutes).
+Protect against DDoS attack.
+
+    Rules that can allow, block, or count web requests that meet the specified
+    conditions. Alternatively, rules can block or count web requests that not
+    only meet the specified conditions, but also exceed a specified number of
+    requests in any 5-minute period.
+    Source: https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html
+
+Number of conditions are optional (0 or more). If not condition is set it will
+apply to all requests and it will just rate limit per IPs (default).
+
+The matched rules need to match some criteria and the rate is counted in 5
+minutes intervals. By using this you can stop an application layer attach based
+on volume.
+
+- High volume low entropy
+- High volume high entropy
+
+Rate based rules only works with _high_volume_of_traffic_.
+
+The lower for rate limit is *2000* (CHECK).
+
+With rate it will block the connections until the 5 minutes passes and that rate
+is no more firing.
+If more than one condition is set in the rule, ALL (logical AND) needs to apply.
+
+*IMPORTANT*: Rules that do not meet ALL conditions will not be counted towards
+the rate limit and would not be blocked by the rule.
+
+*** Web ACL
+
+- [[https://docs.aws.amazon.com/waf/latest/developerguide/web-acl.html]]
+
+You combine rules into ACLs. You can use ACL in WAF. You can have multiple ACL
+and each ACL have multiple rules. There are three types of actions:
+
+- Allow
+- Block
+- Count
+
+There is a default action for each rule.
+
+WAF compares a web request with the rules in an ACL in the order they are
+defined. It will take the action of the *first* rule that the request matches.
+
+Using count help here too. A rule that counts requests is affected by it's
+position in the web ACL.
+
+A default action is specified in case no rules in an ACL match.
+
+    On some occasions, AWS WAF might encounter an internal error that delays the
+    response to API Gateway, CloudFront or an Application Load Balancer about
+    whether to allow or block a request. On those occasions, API Gateway and
+    CloudFront will typically will allow the request or serve the content. An
+    Application Load Balancer typically will deny the request and not serve the
+    content.
+    Source: https://docs.aws.amazon.com/waf/latest/developerguide/how-aws-waf-works.html
+
+** Logs
+
+- [[https://aws.amazon.com/about-aws/whats-new/2018/08/aws-waf-launches-new-comprehensive-logging-functionality/]]
+- [[https://aws.amazon.com/blogs/security/how-to-analyze-aws-waf-logs-using-amazon-elasticsearch-service/]]
+
+** Monitoring
+
+It’s nice to monitor # of blocked vs. allowed requests over time, per individual rule and totals.
+
+** Rules and Dynamic adaptation
+
+- [[https://aws.amazon.com/solutions/aws-waf-security-automations/]]
+
+A pattern AWS pushes for is having CloudFront writing access files in a bucket
+and having a lambda trigger every time a new file is created. This lambda
+can find IPs that are causing a lot of errors or trying to access specific
+endpoint with malicious intent.
+
+The lambda can create or update an existing rule to add this IPs to a block
+ACL (temporary or permanently).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 * Shield
 
@@ -19,9 +188,12 @@ DDoS - SYN/UDP/ICMP flood
 2 tiers:
 
 - standard (default): available to all (automatic)
-- advanced: higher level visibility and protection
+- advanced: higher level visibility and protection. COver also EC2, CloudFront, ELB and route53.
 
-** Shield advanced
+* Shield advanced
+
+Adds additional feature on top of WAF like a dedicated support from the DDoS
+Response team (DRT) and advanced reporting.
 
 advanced give a 'point and protect' wizard.
 based on normal traffic
@@ -203,16 +375,6 @@ in the region everything goes so is more difficult
 
 3) use WAF and rate-based rules to mitigate application attach
 
-matches rules
-rate based rules (more complicated) - they give you some match criterial and they
-check if that rate is over in 5 minutes. by using this is simple to stop an
-application layer attach.
-
-high volume low entropy
-high volume high entropy
-
-date based rules only works with high volume.
-
 you can use WAF at any level
 but if possible push it out
 like it to the cloudfront
@@ -235,16 +397,7 @@ if you have resource outside of AWS you can still cover them with CF
 cloudfront is a sort of proxy
 origin can be a website
 
-you can associate CF with an ACL in WAF
-you can have mutpliple acl
-each ACL have multiple rules
-
-rate limit - the lower is 2000
-
-you have filter
-
-with rate it will block until the 5 minutes passes and that rate is no more
-firing
+you can associate CF with an ACL
 
 ** PAID (SHIELD ADVANCE)
 
@@ -288,13 +441,26 @@ and they need to drop only the ones that have a pattern?
 
 - [[https://www.youtube.com/watch?v=ELIiF-jE0y8]]
 
-* WAF
 
-you can use WAF separately
-application level protection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 customized security
 custom rules (based on your traffic)
-
 you can use pre-configured rules (on the marketplace, 3rd party)
 monitoring (cloudwatch)
 ability to pass log though 3rd party

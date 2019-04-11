@@ -1,5 +1,5 @@
 ElasticSearch
-|| Last update: 14 Mar 2019
+|| Last update: 11 Apr 2019
 
 * Intro
 
@@ -10,7 +10,7 @@ AWS articles:
 - [[https://aws.amazon.com/blogs/aws/new-open-distro-for-elasticsearch/]]
 - [[https://aws.amazon.com/blogs/opensource/keeping-open-source-open-open-distro-for-elasticsearch/]]
 
-* Nodes
+* Node types
 
 A node is a running instance of elasticsearch.
 Nodes can store data locally or not.
@@ -73,11 +73,13 @@ Data nodes only:
 - search
 - index
 
-* Cluster
+* Concepts
+
+** Cluster
 
 A cluster consists in one or more nodes with the same cluster names.
 
-* Index
+** Index
 
 An index is just a *logical*namespace* that point to physical shards.
 Read requests can be handled by a _primary_ or _replica_ shard. More copies
@@ -85,12 +87,22 @@ of the data you have, the more search throughput you can handle.
 
 NOTE: Once all replica shards report success, success is reported to the user.
 
-** Indexing
+*** Indexing
 
 New documents to ES pass to primary shards, add to storage and add to inverted
 index.
 
-* Search
+LIMITATIONS
+
+- [[https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html]]
+
+If you are trying to add metadata into the log document beware of the
+limitations:
+
+  RequestError(400, 'illegal_argument_exception', 'Limit of mapping depth [20] in
+  index [xxx-2018.09.05] has been exceeded due to object field [...]'):
+
+** Search
 
 We don't know which document will match the query... it could be in any shard.
 A search request consults *a*copy*of*every*shard*. There are two phases:
@@ -101,13 +113,7 @@ A search request consults *a*copy*of*every*shard*. There are two phases:
 The coordinating node perform a _merge_sort_ on the combined result from other
 shards. Is CPU intensive and memory intensive.
 
-* Scaling horizontally
-
-- Routing
-- Sharding
-- Time/Pattern based index creation and query
-
-* Performance
+* Performance and operations
 
 You can increase performances at the cost of data security:
 
@@ -115,33 +121,40 @@ You can increase performances at the cost of data security:
 - Consistency: Is the quorum. How many shards need to report to the primary
 before any write request is accepted (protects again split brain problems).
 
-* AWS
+** Search: Adaptive Replica Selection (default in v7.0+)
 
-- Same sg to all nodes (port 9300)
-- Spot(?)
+- [[https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search.html#search-adaptive-replica]]
 
-Use a small number of data nodes not on spot, to have safety of the data.
-Use spot instances to boost performances.
+    In Elasticsearch 6.x and prior, a series of search requests to the same
+    shard would be forwarded to the primary and each replica in round robin
+    fashion.
+    [...]
+    In 6.1, we added an experimental feature called Adaptive Replica Selection.
+    Each node tracks and compares how long search requests to other nodes take,
+    and uses this information to adjust how frequently to send requests to
+    shards on particular nodes.
+    Source: https://www.elastic.co/blog/elasticsearch-7-0-0-released
 
-* TO KNOW
+** Multi-cluster
 
-Currently ingest node only executes ingest preprocessing on the index thread pool. For both index requests and bulk requests. This should be changed, if pipelines are specified on bulk requests the bulk TP should be used for ingest preprocessing.
+- [[https://www.elastic.co/blog/tribe-nodes-and-cross-cluster-search-the-future-of-federated-search-in-elasticsearch]]
 
-* Road to ES 5.0
+Cross cluster search:
 
-- [[https://www.elastic.co/guide/en/elasticsearch/reference/master/breaking-changes-5.0.html]] breaking-changes-5.0
+    In Elasticsearch 7.0, we’re adding a new execution mode for cross-cluster
+    search: one which has fewer round-trips when they aren’t necessary. This
+    mode (ccs_minimize_roundtrips) can result in faster searches when the
+    cross-cluster search spans high-latencies, e.g. across a WAN.
+    Source: https://www.elastic.co/blog/elasticsearch-7-0-0-released
 
-No node.client!
+* To know (could be obsolete - need verification)
 
-- [[https://github.com/elastic/elasticsearch/pull/16963]]
+In AWS Use a small number of data nodes not on spot, to have safety of the data.
+In AWS Use spot instances to boost performances.
 
-Query cache settings deprecated! ?
-
-- [[https://github.com/elastic/elasticsearch/pull/15592]]
-
-- API for listing index file sizes
-- Enable the indices request cache by default (when you do a req with size 0) [[https://github.com/elastic/elasticsearch/pull/16870]]
-- Added ingest statistics to node stats API
+Currently ingest node only executes ingest preprocessing on the index thread pool.
+For both index requests and bulk requests. This should be changed, if pipelines
+are specified on bulk requests the bulk TP should be used for ingest preprocessing.
 
 The ingest stats include the following statistics:
 
@@ -163,41 +176,6 @@ The ingest stats include the following statistics:
 New: /_cluster/allocation/explain
 
 - [[https://github.com/elastic/elasticsearch/pull/17305]]
-
-** Test and fix
-
-Check difference in settings between 2.4 and 5
-
-- changed the version
-- set the right amount of memory
-
-[[https://www.elastic.co/guide/en/elasticsearch/reference/5.2/heap-size.html]]
-
-    TESTED (OK)
-    # docker logs 4454ad8a30e7 | grep 'heap size'
-    [2017-02-02T15:56:40,739][INFO ][o.e.e.NodeEnvironment    ] [xxx] heap size [29.9gb], compressed ordinary object pointers [true]
-
-TESTED (OK)
-
-    'ES_JAVA_OPTS="-Xms30g -Xmx30g -XX:+UnlockDiagnosticVMOptions -XX:+PrintCompressedOopsMode"',
-    # docker logs 4454ad8a30e7 | grep 'heap address'
-    heap address: 0x0000000080000000, size: 30720 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
-
-FIX
-using [1] data paths, mounts [[/usr/share/elasticsearch/data (/dev/xvda1)]], net usable_space [13gb], net total_space [15.6gb], spins? [possibly], types [ext4]
-
-FIX (FIXED)
-[2017-02-02T15:48:17,474][WARN ][o.e.d.p.d.e.Ec2DiscoveryPlugin] Using discovery.type setting to set hosts provider is deprecated. Set "discovery.zen.hosts_provider: ec2" instead
-
-FIX
-[2017-02-02T15:48:18,410][WARN ][o.e.d.s.g.GroovyScriptEngineService] [groovy] scripts are deprecated, use [painless] scripts instead
-
-FIX
-java.security.AccessControlException: access denied ("javax.management.MBeanServerPermission" "findMBeanServer")
-
-FIX
-[2017-02-02T15:49:30,754][ERROR][o.e.x.m.AgentService     ] [es5-data-qa-qa-10-96-32-225-1c69bbf5.ec2.internal] exception when exporting documents
-org.elasticsearch.xpack.monitoring.exporter.ExportException: failed to flush export bulks
 
 * Re/Sources
 

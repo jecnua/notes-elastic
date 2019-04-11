@@ -47,10 +47,10 @@ It can protect you from:
 The *conditions* define basic characteristic what you are looking for in the
 web requests. You can use to create rules can be based on multiple elements:
 
-- IP address (max 10k IPs or IP ranges) - Supports /8 or any range from /16 to /32 CIDR blocks for IPv4
+- IP address or range (max 10k IPs or IP ranges) - Supports /8 or any range from /16 to /32 CIDR blocks for IPv4
 - Country
 - Request headers
-- Specific string in requests
+- Specific string in requests that matches a regex
 - Length
 - SQL code (protect against SQL code injection)
 - Script (protect against cross-site scripting)
@@ -127,7 +127,8 @@ defined. It will take the action of the *first* rule that the request matches.
 Using count help here too. A rule that counts requests is affected by it's
 position in the web ACL.
 
-A default action is specified in case no rules in an ACL match.
+A default action is specified in case no rules in an ACL match and it can be
+block or allow.
 
     On some occasions, AWS WAF might encounter an internal error that delays the
     response to API Gateway, CloudFront or an Application Load Balancer about
@@ -137,10 +138,30 @@ A default action is specified in case no rules in an ACL match.
     content.
     Source: https://docs.aws.amazon.com/waf/latest/developerguide/how-aws-waf-works.html
 
-** Logs
+** Logs and ElasticSearch
 
+- [[https://docs.aws.amazon.com/waf/latest/developerguide/logging.html]]
 - [[https://aws.amazon.com/about-aws/whats-new/2018/08/aws-waf-launches-new-comprehensive-logging-functionality/]]
 - [[https://aws.amazon.com/blogs/security/how-to-analyze-aws-waf-logs-using-amazon-elasticsearch-service/]]
+- [[https://www.youtube.com/watch?v=Zrnro4ohXdA][Enhanced Security Analytics Using AWS WAF Full Logging]] - 24 Sep 2018
+
+      COGNITO
+      amazon cognito authentication for kibana
+      user pool
+      and you can create users
+      you can create a federated identity
+      and that is what allows an application and will pass an user authentication
+      through cognito
+
+      create a stream for each account
+      you can send them to firehose
+      firehose delivery stream
+      IAM role for kinesis to deliver the logs and copy from s3
+      you can get only failures or all messages
+      buffer???
+
+      WAF logs are accessible even for the non paid version
+      and when you pay they can do it for you. ooooh so difficult -.-
 
 ** Monitoring
 
@@ -158,7 +179,15 @@ endpoint with malicious intent.
 The lambda can create or update an existing rule to add this IPs to a block
 ACL (temporary or permanently).
 
+** Existing patterns
 
+*** AWS WAF security automations
+
+- [[https://aws.amazon.com/solutions/aws-waf-security-automations/]]
+
+*** AWS waf owasp
+
+- [[https://d0.awsstatic.com/whitepapers/Security/aws-waf-owasp.pdf]]
 
 
 
@@ -526,38 +555,6 @@ rapid response to internet attacks
 single console
 they are basically WAF rules
 quickly apply CVE patches and so on
-
-* Enhanced security analytics (WAF logs ro es)
-
-- [[https://www.youtube.com/watch?v=Zrnro4ohXdA]]
-
-WAF logs and elasticserch
-
-there is a video
-CHECK find the video
-
-blog how to analyze aws WAF logs using es
-amazon cognito authentication for kibana
-
-** cognito
-
-user pool
-and you can create users
-you can create a federated identity
-and that is what allows an application and will pass an user authentication
-through cognito
-
-create a stream for each account
-you can send them to firehose
-firehose delivery stream
-IAM role for kinesis to deliver the logs and copy from s3
-you can get only failures or all messages
-buffer???
-
-** WAF LOGS
-
-WAF logs are accessible even for the non paid version
-and when you pay they can do it for you. ooooh so difficult -.-
 
 * Q/A
 

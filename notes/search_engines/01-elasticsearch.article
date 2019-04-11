@@ -199,44 +199,6 @@ FIX
 [2017-02-02T15:49:30,754][ERROR][o.e.x.m.AgentService     ] [es5-data-qa-qa-10-96-32-225-1c69bbf5.ec2.internal] exception when exporting documents
 org.elasticsearch.xpack.monitoring.exporter.ExportException: failed to flush export bulks
 
-* Puppet
-
-** Useful settings
-
-    config => {
-      'node.zone'                                       => $::ec2_placement_availability_zone,
-      'node.data'                                       => ,
-      'node.master'                                     => ,
-      'cluster.routing.allocation.awareness.attributes' => 'zone', #This will force shard allocation for AZs
-      'cloud.aws.region'                                => ,
-      'discovery.type'                                  => 'ec2',
-      'discovery.ec2.groups'                            => ,
-      'discovery.ec2.tag.cluster'                       =>
-      'discovery.ec2.tag.env'                           => ,
-      'discovery.zen.minimum_master_nodes'              => ,
-      'http.compression'                                => true,
-      'network.host'                                    => '0.0.0.0',
-      'transport.bind_host'                             => '0.0.0.0',
-      'threadpool.bulk.queue_size'                      => '300',
-      'index.unassigned.node_left.delayed_timeout'      => '5m',
-      'indices.queries.cache.size'                      => '30%',
-      'action.disable_close_all_indices'                => true,
-      'action.disable_delete_all_indices'               => true,
-      'action.disable_shutdown'                         => true,
-      'action.destructive_requires_name'                => true,
-    },
-
-** Protections against destructive commands
-
-In puppet:
-
-    'action.disable_close_all_indices'                => true,
-    'action.disable_delete_all_indices'               => true,
-    'action.disable_shutdown'                         => true,
-    'action.destructive_requires_name'                => true,
-
-- [[https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_parameters.html action.destructive_requires_name]]
-
 * Re/Sources
 
 - [[https://www.npmjs.com/package/elasticdump2]]

@@ -116,6 +116,27 @@ With rate it will block the connections until the 5 minutes passes and that rate
 is no more firing.
 If more than one condition is set in the rule, ALL (logical AND) needs to apply.
 
+    If you add the rate limit rule multiple times, it effectively reduces the
+    number of requests each time. Basically what happens is each time you add
+    the rule, it counts an extra request for each IP. So say an IP makes a
+    single request. If you have 2 rate limit rules applied, the request is
+    counted twice. So basically, instead of 2000 requests, the IP only has to
+    make 1000 before it gets blocked. If you add 3 rules, it will count each
+    request 3 times - so the IP will be blocked at 667 requests.
+    The other thing they clarified is that the "window" is 5 minutes, but if the
+    total is breached anywhere in that window, it will be blocked. I thought the
+    WAF would only evaluate the requests after a 5 minute period. So for example.
+    Say you have a single rule for 2000 requests in 5 minutes. Say an IP makes
+    2000 requests in the 1st minute, then only 10 requests after that for the
+    next 4 minutes. I initially understood that the IP would only be blocked
+    after minute 5 (because WAF evaluates a 5 minute window). But apparently,
+    if the IP exceeds the limit anywhere in that window, it will be locked
+    immediately. So if that IP makes 2000 requests in minute 1, it will actually
+    be blocked from minute 2, 3, 4 and 5. But then will be allowed again from
+    minute 6 onward.
+    Source: https://www.reddit.com/r/aws/comments/9zuh7w/why_does_ip_rate_limiting_in_waf_have_a_minimum/ (support ticket?)
+
+
 *IMPORTANT*: Rules that do not meet ALL conditions will not be counted towards
 the rate limit and would not be blocked by the rule.
 
@@ -146,10 +167,26 @@ block or allow.
     On some occasions, AWS WAF might encounter an internal error that delays the
     response to API Gateway, CloudFront or an Application Load Balancer about
     whether to allow or block a request. On those occasions, API Gateway and
-    CloudFront will typically will allow the request or serve the content. An
+    CloudFhttps://i.imgur.com/pBBN44Y.pngront will typically will allow the request or serve the content. An
     Application Load Balancer typically will deny the request and not serve the
     content.
     Source: https://docs.aws.amazon.com/waf/latest/developerguide/how-aws-waf-works.html
+
+** XSS and SQL injection problems
+
+- [[https://www.reddit.com/r/aws/comments/b0tuy9/waf_xsssqlinj_unuseable_crazy_high_number_of/]]
+- [[https://i.imgur.com/pBBN44Y.png]]
+- [[https://i.imgur.com/8jr31LD.png]]
+
+A lot of false positive.
+
+** SSL traffic
+
+    Yes, it's necessary for a Web Application Firewall (WAF) to have access to the decrypted traffic because a WAF, in general, has to inspect (among other things) the HTTP headers, HTTP request body, URI query strings, etc. which can't be done on encrypted traffic.
+    This is why AWS' WAF product can only be deployed on services such as CloudFront, API Gateway, or an Application Load Balancer where the SSL/TLS is managed by AWS.
+    So—for example—if you use an Application Load Balancer, a secure HTTPS connection is formed between the end user and the load balancer and the SSL/TLS encryption terminates at the load balancer. Then AWS runs the (now decrypted) traffic through the WAF before sending it to the designated target (e.g. your application server). Backend encryption (between the load balancer and the target) is also supported whereby the traffic is encrypted again as it exits the load balancer (after running through the WAF).
+    CHECK
+    Source: https://www.reddit.com/r/aws/comments/ay709e/does_waf_decrypt_traffic/
 
 ** Logs and ElasticSearch
 
@@ -157,6 +194,15 @@ block or allow.
 - [[https://aws.amazon.com/about-aws/whats-new/2018/08/aws-waf-launches-new-comprehensive-logging-functionality/]]
 - [[https://aws.amazon.com/blogs/security/how-to-analyze-aws-waf-logs-using-amazon-elasticsearch-service/]]
 - [[https://www.youtube.com/watch?v=Zrnro4ohXdA][Enhanced Security Analytics Using AWS WAF Full Logging]] - 24 Sep 2018
+
+Note that, WAF log does not contain body of the request. (CHECK)
+
+      I believe AWS' WAF product logs HTTP headers and the rule(s) that were
+      triggered, but I don't think the HTTP request body is logged. Sensitive
+      information present in the headers or request URI may show up in the logs
+      though. If this is a concern, you may want to consider re-working your
+      application to only include sensitive information in the request body.
+      CHECK
 
       COGNITO
       amazon cognito authentication for kibana
@@ -235,6 +281,11 @@ LIMITATIONS
     the Log Parser AWS Lambda function whenever a new log file is saved in this
     bucket.
     Source: https://docs.aws.amazon.com/solutions/latest/aws-waf-security-automations/deployment.html
+
+*** AWS WAF embargoed countries ofac
+
+- [[https://aws.amazon.com/blogs/security/how-to-use-aws-waf-to-filter-incoming-traffic-from-embargoed-countries/]]
+- [[https://github.com/aws-samples/aws-waf-embargoed-countries-ofac]]
 
 *** OWASP template
 

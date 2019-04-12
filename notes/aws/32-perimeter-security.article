@@ -37,7 +37,7 @@ You define conditions, combine conditions into rules and combine rules into ACL.
 
 It can protect you from:
 
-- Bad bots
+- Bad bot
 - SQL injection
 - Cross-site scripting (XSS)
 - DDoS - SYN/UDP/ICMP/[[https://www.cloudflare.com/learning/ddos/http-flood-ddos-attack/][HTTP flood]]
@@ -76,6 +76,17 @@ sense to have an empty one).
 
 - [[https://aws.amazon.com/blogs/aws/protect-web-sites-services-using-rate-based-rules-for-aws-waf/]]
 - [[https://docs.aws.amazon.com/waf/latest/developerguide/ddos-get-started-rate-based-rules.html]]
+
+    AWS WAF provides HTTP flood protection that is a rate-based rule.
+    The rate-based rule is automatically triggered when web requests from a
+    client exceed a configurable threshold. The threshold is defined by the
+    maximum number of incoming requests allowed from a single IP address within
+    a five-minute period.
+    After this threshold is breached, additional requests from the IP address
+    are blocked until the request rate falls below the threshold. For this
+    example, you defined 2000 requests as a threshold for the HTTP flood
+    rate–based rule.
+    Source: https://aws.amazon.com/blogs/compute/amazon-api-gateway-adds-support-for-aws-waf/
 
 Rules can be applied with a *rate*limit*. This type of rules triggers an action
 only if the set of _conditions_ exceeds the limit per data point (5 minutes).
@@ -119,10 +130,12 @@ and each ACL have multiple rules. There are three types of actions:
 - Block
 - Count
 
-There is a default action for each rule.
+There is a default action for each rule. There can be 10 rules per ACL.
 
 WAF compares a web request with the rules in an ACL in the order they are
 defined. It will take the action of the *first* rule that the request matches.
+
+You can associate only one webacl with a CloudFront distribution or an ALB.
 
 Using count help here too. A rule that counts requests is affected by it's
 position in the web ACL.
@@ -181,17 +194,60 @@ ACL (temporary or permanently).
 
 ** Existing patterns
 
-*** AWS WAF security automations
+*** AWS WAF security automations template
 
 - [[https://aws.amazon.com/solutions/aws-waf-security-automations/]]
+- [[https://docs.aws.amazon.com/solutions/latest/aws-waf-security-automations/welcome.html]]
+- [[https://github.com/awslabs/aws-waf-security-automations]]
 
-*** AWS waf owasp
+NOTE: v2.2
+
+What it can do for you:
+
+- Simple rate limiting again http flood from one IP (only rate limited rule in all the template)
+- It can blacklist know endpoints from these three reputation lists: spamhaus, torproject, and emergingthreats
+- You CAN whitelist IPs by adding something external (the stack will just create empty IPSets)
+- Protect from SQL injection
+- Protect from Xss attacks (could lead to false positives)
+- Bot protection will work only with added logic. You will need to add a link in the website you think a scraper is hitting accessible only by scrapers (no other incoming link). This link will need to point to an API gateway
+- Scanners Probes Protection (check every time a new CF file is put on s3) works by reading CloudFront logs and searching for abuses. It is implemented but I am not sure about the performance on a site as big as the mirror. I found at least one Issue on github speaking about performance issues with that.
+
+What this template CAN’T do for you:
+
+- Protect you from an http flood attack from multiple IPs if a single IP do not reach the 2000req/5min rate.
+- Protect you from an http flood from multiple IPs even if they have the same user agent.
+
+For the log parser consider [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html#access-logs-timing]]
+It will also check if any ip generates too many (env variable) errors.
+
+    The log parser only take action when access log files are delivered to S3.
+    [...]
+    Lastly, please note that rate-based rules aggregates data per 5 minutes
+    period and the log parser does it by per minute.
+    Source: https://github.com/awslabs/aws-waf-security-automations/issues/56#issuecomment-408125032
+
+LIMITATIONS
+
+- S3 bucket needs to be in the same region on the cloudformation template
+- Only one deployment per region can use the same s3 bucket (the bucket will be modified to trigger a lambda)
+
+    The solution will modify the bucket’s notification configuration to trigger
+    the Log Parser AWS Lambda function whenever a new log file is saved in this
+    bucket.
+    Source: https://docs.aws.amazon.com/solutions/latest/aws-waf-security-automations/deployment.html
+
+*** OWASP template
 
 - [[https://d0.awsstatic.com/whitepapers/Security/aws-waf-owasp.pdf]]
 
+** Test WAF
 
+*** Artillery
 
+- [[https://artillery.io/]]
+- [[https://aws.amazon.com/blogs/compute/amazon-api-gateway-adds-support-for-aws-waf/]]
 
+    artillery quick -n 2000 --count 10 INVOKE_URL/pets
 
 
 

@@ -1,14 +1,37 @@
-s3
-|| Last update: 27 Nov 2018
+S3
+|| Last update: 12 Apr 2019
 
 * Storage classes
 
-- Standard – Designed for frequently accessed data.
-- Standard-IA – Designed for long-lived, infrequently accessed data.
-- One Zone-IA – Designed for long-lived, infrequently accessed, non-critical data.
-- Glacier – Designed for long-lived, infrequent accessed, archived critical data.
+- [[https://aws.amazon.com/s3/storage-classes/]]
+
+- Standard - Designed for frequently accessed data.
+- Standard-IA (min duration 30d) - Designed for long-lived, infrequently accessed data.
+- One Zone-IA (min duration 30d) - Designed for long-lived, infrequently accessed, non-critical data.
+- Intelligent-Tiering (min duration 30d)
+- Glacier (min duration 90d) - Designed for long-lived, infrequent accessed, archived critical data.
+- Glacier Deep Archive (min duration 180d) - Long-term retention of data that is accessed rarely in a year (maintaining data in on-premises magnetic tape libraries or archiving data offsite)
 - Reduced Redundancy (deprecated/not recommended): Use One Zone-IA instead
-- Intelligent-Tiering
+
+** Glacier
+
+- Retrieval options in minutes (using expedited retrieval)
+
+** Glacier Deep Archive
+
+- [[https://aws.amazon.com/blogs/aws/new-amazon-s3-storage-class-glacier-deep-archive/]]
+
+- Data is stored across 3 or more AWS Availability Zones
+- Retrieved within 12 hours
+- Bulk retrieval option, where you can retrieve petabytes of data within 48 hours
+
+    Choose S3 Glacier Deep Archive when you want the lowest storage cost for
+    archived data that is accessed at most once or twice a year, and you are
+    willing to accept 12 or 48 hour latencies to first byte.
+    [...]
+    Glacier Deep Archive is integrated with Tape Gateway, a cloud-based virtual
+    tape library feature of AWS Storage Gateway.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/03/S3-glacier-deep-archive/
 
 ** Intelligent-Tiering
 

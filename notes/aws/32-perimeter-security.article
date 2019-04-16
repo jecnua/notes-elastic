@@ -3,6 +3,8 @@ AWS perimeter security - WAF, Shield and Firewall Manager
 
 * Intro
 
+- [[https://www.youtube.com/watch?v=ELIiF-jE0y8][AWS re:Invent 2018: Orchestrate Perimeter Security Across Distributed Applications (SEC326)]]
+
 - WAF
 - Shield (paid have for free WAF and firewall)
 - Firewall Manager (centralise multiple account management and rules application)
@@ -56,6 +58,9 @@ web requests. You can use to create rules can be based on multiple elements:
 - Script (protect against cross-site scripting)
 
 Some conditions take multiple values.
+
+If you add more than one condition to a rule, all condition must match for the
+rule to apply.
 
 ** Rules
 
@@ -140,18 +145,25 @@ If more than one condition is set in the rule, ALL (logical AND) needs to apply.
 *IMPORTANT*: Rules that do not meet ALL conditions will not be counted towards
 the rate limit and would not be blocked by the rule.
 
-*** Web ACL
+** Filters
+
+Filters are transformations that reformats a web request before the WAF
+inspect the request. It helps to eliminate unusual formatting the attacker
+use in web requests in an effort to bypass the protection.
+
+** Web ACL
 
 - [[https://docs.aws.amazon.com/waf/latest/developerguide/web-acl.html]]
 
 You combine rules into ACLs. You can use ACL in WAF. You can have multiple ACL
-and each ACL have multiple rules. There are three types of actions:
+and each ACL have multiple rules (up to 10xACL). There are three types of actions:
 
 - Allow
 - Block
 - Count
 
-There is a default action for each rule. There can be 10 rules per ACL.
+There is a default action for each rule (the default action can only Allow or
+Block).
 
 WAF compares a web request with the rules in an ACL in the order they are
 defined. It will take the action of the *first* rule that the request matches.
@@ -171,6 +183,21 @@ block or allow.
     Application Load Balancer typically will deny the request and not serve the
     content.
     Source: https://docs.aws.amazon.com/waf/latest/developerguide/how-aws-waf-works.html
+
+A web acl can cover one or more distribution.
+
+** Error pages
+
+- [[https://docs.aws.amazon.com/waf/latest/developerguide/cloudfront-features.html#cloudfront-features-custom-error-pages]]
+
+    When AWS WAF blocks a web request based on the conditions that you specify,
+    it returns HTTP status code 403 (Forbidden) to CloudFront. Next, CloudFront
+    returns that status code to the viewer.
+    CloudFront can't distinguish between an HTTP status code 403 that is returned
+    by your origin and one that is returned by AWS WAF when a request is blocked.
+    This means that you can't return different custom error pages based on the
+    different causes of an HTTP status code 403.
+    Source: https://docs.aws.amazon.com/waf/latest/developerguide/cloudfront-features.html#cloudfront-features-custom-error-pages
 
 ** XSS and SQL injection problems
 
@@ -195,14 +222,25 @@ A lot of false positive.
 - [[https://aws.amazon.com/blogs/security/how-to-analyze-aws-waf-logs-using-amazon-elasticsearch-service/]]
 - [[https://www.youtube.com/watch?v=Zrnro4ohXdA][Enhanced Security Analytics Using AWS WAF Full Logging]] - 24 Sep 2018
 
-Note that, WAF log does not contain body of the request. (CHECK)
+WAF logs contain the time a web request was recieved, information about the
+request and the action that was taken.
 
-      I believe AWS' WAF product logs HTTP headers and the rule(s) that were
-      triggered, but I don't think the HTTP request body is logged. Sensitive
-      information present in the headers or request URI may show up in the logs
-      though. If this is a concern, you may want to consider re-working your
-      application to only include sensitive information in the request body.
-      CHECK
+    Important
+    Do not choose Kinesis stream as your source.
+    One AWS WAF log is equivalent to one Kinesis Data Firehose record. If you
+    typically receive 10,000 requests per second and you enable full logs, you
+    should have a 10,000 records per second limit in Kinesis Data Firehose. If
+    you don't configure Kinesis Data Firehose correctly, AWS WAF won't record
+    all logs.
+    Source: https://docs.aws.amazon.com/waf/latest/developerguide/logging.html
+
+To get the log you will need to use FireHose. FireHose will recieve data from
+WAF and put it in a destination of choice.
+The name *needs* to start with *aws-waf-logs-*.
+
+WAF logs HTTP headers and the rule(s) that were triggered, but not the HTTP
+request body is logged. Sensitive information present in the headers or request
+URI may show up in the logs though. If this is a concern, you can REDACT them.
 
       COGNITO
       amazon cognito authentication for kibana
@@ -225,6 +263,9 @@ Note that, WAF log does not contain body of the request. (CHECK)
 ** Monitoring
 
 It’s nice to monitor # of blocked vs. allowed requests over time, per individual rule and totals.
+
+Metrics are available only in US East (N. Virginia). You can view the data of
+the last hour or preceding 3h.
 
 ** Rules and Dynamic adaptation
 
@@ -291,7 +332,9 @@ LIMITATIONS
 
 - [[https://d0.awsstatic.com/whitepapers/Security/aws-waf-owasp.pdf]]
 
-** Test WAF
+** Test WAF ACL
+
+To test an ACL configure all rules to _count_ and set default action to _allow_.
 
 *** Artillery
 
@@ -300,52 +343,197 @@ LIMITATIONS
 
     artillery quick -n 2000 --count 10 INVOKE_URL/pets
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 * Shield
 
-2016. DDoS protection
+- [[https://aws.amazon.com/shield/]]
 
-2 tiers:
+Protect against DDoS attacks. There are two tiers:
 
-- standard (default): available to all (automatic)
+- standard (default): available to all users for free (automatic)
 - advanced: higher level visibility and protection. COver also EC2, CloudFront, ELB and route53.
 
-* Shield advanced
+Works on:
 
-Adds additional feature on top of WAF like a dedicated support from the DDoS
-Response team (DRT) and advanced reporting.
+- EC2
+- LB
+- CF
+- Route53 zone
+- Global accelerator
 
-advanced give a 'point and protect' wizard.
-based on normal traffic
-looking at your traffic (baseline)
-24/7 DDoS response team (DRT)
-cloudwatch metrics
-tech xxx
-global threat environment dashboard (is just a fancy dashboard to all the attach and reaction they took in the x amount of time on AWS)
-attack diagnostic
-protect from economic attach
+** Shield standard
 
-you get WAF at no additional cost
-AWS firewall manager at no cost
-cost protection from scaling
+Available to everybody at no extra cost. It protects you from:
 
-** DDoS response team (DRT)
+- SYN/ACK floods
+- UDP Reflection
+- Reflection attacks
+- HTTP slow reads
+
+and others.
+
+    It improves mitigation using AWS's proprietary BlackWatch systems. AWS Shield
+    Standard uses several techniques like deterministic packet filtering, and
+    priority based traffic shaping to automatically mitigate attacks without
+    impacting your applications.
+    Source: https://datacenterrookie.wordpress.com/2017/01/11/shield-your-apps-from-ddos-attacks/
+
+This protection is applied automatically and transparently.
+Protects only at network and transport layer (3/4).
+You have no cloudwatch metrics nor information on what it's doing.
+
+** Shield advanced
+
+Provides additional DDoS mitigation capability for volumetric attacks,
+intelligent attack detection, and mitigation for attacks at the application &
+network layers (so also layer 7).
+
+It protects you from:
+
+- DNS query flood
+- HTTP flood/cache-busting (layer 7)
+
+You can protect also EIPs.
+
+You get 24×7 access to the DDoS Response Team (DRT) for custom
+mitigation during attacks, advanced real time metrics and reports, and DDoS cost
+protection to guard against bill spikes after a DDoS attack.
+
+- Deploys ACL at the border
+- Cloudwatch metrics (max 2 week retention) <--- move them somewhere else
+- Detailed report and attack notification (you will get notifications for both layer 3/4/7)
+- Global threat environment dashboard: It's just a fancy dashboard to all the attach and reaction they took in the x amount of time on AWS
+
+To recieve notifications you will need to create a CloudWatch SNS topic in each
+region.
+
+Advanced give a 'point and protect' wizard.
+Creates rules based on normal traffic and looking at your traffic (baseline).
+
+It also offers protection from economic expenses of an attack.
+
+If you pay for shield advanced you get WAF and AWS firewall manager at no
+additional cost.
+
+It can scan for all the resources (GUI) and it shows them to you and you can
+click them to say protect resources.
+It will tells if you want to add an ACL to the resource.
+
+It will ask you if you want to create a cloudwatch alarm to write to an SNS
+topic. You can use lambda to notify everywhere.
+
+Current incident bump up to the top on the gui.
+
+Shield Advanced is able to put protection at AWS edge and not inside your VPC
+also for resources that are internal like EIP.
+Is able to promote network ACL at the border where it can manage more traffic.
+
+- [[https://docs.aws.amazon.com/waf/latest/developerguide/monitoring-cloudwatch.html]]
+
+Vectors:
+
+- ACKFlood
+- ChargenReflection
+- DNSReflection
+- GenericUDPReflection
+- MemcachedReflection
+- MSSQLReflection
+- NetBIOSReflection
+- NTPReflection
+- PortMapper
+- RequestFlood
+- RIPReflection
+- SNMPReflection
+- SSDPReflection
+- SYNFlood
+- UDPFragment
+- UDPTraffic
+- UDSReflection
+
+*** DDoS response team (DRT)
+
+- [[https://docs.aws.amazon.com/waf/latest/developerguide/ddos-overview.html#ddos-drt]]
+- [[https://s3.amazonaws.com/aws-shield-lambda/ShieldEngagementLambda.pdf]]
+- [[https://s3.amazonaws.com/aws-shield-lambda/ShieldEngagementLambda.js]]
+
+Is a 24x7 incident response mechanism and escalation.
+In the dashboard there will be a button that says ENGAGE with DRT (not
+present otherwise).
+
+You will need to give read-write access to the WAF and choose an existing role
+for the DRT. You can pre-choose an s3 bucket to give the DRT access with all
+your logs.
+
+Sometimes people use the DRT like an ambulance so if they can react fast.
+To engage with them automatically you can use a lambda function to bypass
+the 15m SLA of the ticket.
+
+It will create a support ticket for you.
+It will actually page the DDoS person in support in AWS.
+For DDoS things escalate to DRT. They are on call with (5m SLA and 24/7).
+The DRT operator will join the call and speak with you to mitigate.
+
+NOTE: If you are not enterprise don't put URGENT!
+
+    13 engagement out of the total
+    6 were erroneous
+    rest for the most part where legacy stuff
+    Source: Conference
+
+Before you page them you need to be sure:
+
+- Do you have the right people in the call?
+- Are you prepared to make changes?
+- If the fix is an architectural change can you do this?
+- What is my application health?
+- Can you run smoke test, distributed performance test, etc?
+- How do we know if we are clear?
+
+It would be good to have a runbook with three columns.
+The problem, the solution and who is responsible for that?
+Like if you need to change the route53 who can do it.
+
+    For layer 3 and layer 4 attacks, AWS provides automatic attack detection and
+    proactively applies mitigations on your behalf. For layer 7 DDoS attacks,
+    AWS attempts to detect and notify AWS Shield Advanced customers through
+    CloudWatch alarms, but does not apply mitigations proactively. This is to
+    avoid inadvertently dropping valid user traffic.
+    Source: https://docs.aws.amazon.com/waf/latest/developerguide/ddos-overview.html#ddos-drt
+
+* Firewall manager
+
+Simplify the management of rules in all the accounts of your organization.
+
+An AWS organization can create global firewall rules. It will
+automatically discover new resources, if you add new account and so on.
+This allow compliance everywhere.
+A single account will be able to manipulate others.
+
+Allows:
+
+- Rapid response to internet attacks
+- Single console
+- Quickly apply CVE patches and so on
+
+
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+
+
+balckwatch looks at the header
+and drops the most suspicion package first
+for games for example
+like UDP
+header are not useful, so they need to look better
+and they need to drop only the ones that have a pattern?
 
 mitigation runbook for supporting AWS properties
 automation which reduce time to respond
@@ -402,59 +590,6 @@ speking with them
 
 - operational readiness inquiry (priori to IEM infrastructure event manager)
 
-24x7 incident response
-
-- atumatically engaged for availabllity impacting the l3/l4 events again your resource
-- ???
-- ???
-
-shield engagement lambda function
-it will create a support ticket
-for you
-
-it will actually page the DDoS person in support in AWS
-15m for SLA?
-otherwise 1h?
-for DDoS things escalate to DRT
-and bypass 15m of the ticket by using the lambda
-
-they are on call with
-5m SLA and 24/7
-
-the DRT operator will join the call and speak with you
-to mitigate
-
-the lambda
-AWS-shield-lambda
-shieldengagementLambda.js
-if you are not enterprise don't put URGENT
-
-CHECK
-they will be paged
-2 pizza team
-will page one of them?
-is crazy?
-CHECK
-
-13 engagement out of the total
-6 were erroneous
-rest for the most part where legacy stuff
-
-when you page them:
-
-- do you have the right people in the call
-- are you prepared to make change? - if the fix is an architectural change can you do this?
-
-runbook two colums
-the problem
-the solution
-and who is responsible for that?
-like if you need to change the route53 and so on. who can do it
-
-- what is my application health - smoke test, distributed performance test,
-
-how do we know if we are clear?
-
 ADVANCED COUNTERMEASURES
 
 BGP traffic engineering
@@ -489,9 +624,9 @@ CHECK FOR MORE
 
 some steps are the same some only with advanced:
 
-1) shield is a registraction service. it associates arns with workflow
-but if you don't tell which arns wthey won't do
-they monitor netowrking and application layes
+1) shield is a registration service. it associates arns with workflow
+but if you don't tell which arns they won't do
+they monitor networking and application layers
 you can register
 
 - ALL LB
@@ -535,66 +670,6 @@ origin can be a website
 
 you can associate CF with an ACL
 
-** PAID (SHIELD ADVANCE)
-
-there is a button that says ENGAGE with DRT (ONLY PAID)
-gives read-write access to the WAF
-choose an existing role for the drt
-
-there is a s3 bucket???
-you can give them the s3 bucket of the logs
-so basically they want to give logs to DRT
-you can pre-chooose an s3 bucket
-with all your logs
-and give it to them
-
-sometimes people use the DRT like an ambulance so if they can react fast
-they can read the logs
-find an ip and add it to the WAF
-
-it can scan for all the resources (GUI)
-and it shows them to you
-click them to say protect resources
-
-then it tells if you want to add acl to xyz
-
-then it asks if you want to create a cloudwatch alarm
-and you can write to an sns topic
-you can use lambda to notify everywhere
-
-current incident bump up to the top
-on the gui
-
-there is a whitepaper
-AWS architecture for DDoS <--- search for it
-
-balckwatch looks at the header
-and drops the most suspiction package first
-for games for example
-like UDP
-header are not useful, so they need to look better
-and they need to drop only the ones that have a pattern?
-
-- [[https://www.youtube.com/watch?v=ELIiF-jE0y8]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 customized security
 custom rules (based on your traffic)
 you can use pre-configured rules (on the marketplace, 3rd party)
@@ -612,14 +687,9 @@ marketplace rules
 
 web traffic filtering
 
-- rate based rules
-ip match and geo filter
-regex and string match condition
-size constraint (?? condition)
-
 visibility and debugging
 
-sampled blogs
+sampled logs
 comprehensive logging (all of them???)
 
 managed rules from the marketplace
@@ -646,28 +716,11 @@ you can use a lamba to connect the WAF with guard duty
 and if you find one ip attacking you
 you can add it to the rule
 
-* Firewall manager
-
-simplify the management of rules in all the account of your accounts
-and applications
-even if you have one account and multiple resources
-
-AWS organization can create global firewall rules
-but then single account can manipolate other(???) the same(???)
-automatically discover new resources
-if you add new account
-this allow compliance everywhere
-
-rapid response to internet attacks
-single console
-they are basically WAF rules
-quickly apply CVE patches and so on
-
 * Q/A
 
 ** difference
 
-you won't get the alarm, history or metics
+you won't get the alarm, history or metrics
 no economic protection
 no WAF rules that goes with it
 
@@ -723,7 +776,7 @@ there will be improvement with that too
 ** in the WAF logs there is a code why something was blocked
 
 it does not give you any context
-the WAF is not retorni anything
+the WAF is not returning anything
 is just a 403 forbidden from CF
 
 there is no error code
@@ -764,17 +817,17 @@ you can make a baseline with 6 rules of less
 
 ** shadow rules in waf
 
-drt can subscripe waf customer to amazon.co.uk list
+drt can superscribe waf customer to amazon.co.uk list
 that they don't even know anything about
 hashed
 but they can use the list in waf
 and they can give it to user
 
 you can have cloudfront
-with no cachine
+with no caching
 forward all
 but do ssl termination
-to get application accelleration
+to get application acceleration
 
 <somthing> sky defender
 their waf
@@ -798,3 +851,4 @@ over aggressively bots
 - [[https://www.slideshare.net/AmazonWebServices/dow-jones-wall-street-journals-journey-to-manage-traffic-spikes-while-mitigating-ddos-application-layer-threats-ctd304-reinvent-2017]]
 - [[https://aws.amazon.com/blogs/aws/prepare-for-the-owasp-top-10-web-application-vulnerabilities-using-aws-waf-and-our-new-white-paper/]]
 - [[https://aws.amazon.com/solutions/aws-waf-security-automations/]]
+- Talks and conferences

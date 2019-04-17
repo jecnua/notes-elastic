@@ -72,10 +72,51 @@ Rules are a combination of one or more conditions. There are two types of rules:
 When more than one condition is set, WAF will block only the one that will fit
 *ALL* conditions (it's a logic AND).
 
+    Rules that can allow, block, or count web requests that meet the specified
+    conditions. Alternatively, rules can block or count web requests that not
+    only meet the specified conditions, but also exceed a specified number of
+    requests in any 5-minute period.
+    Source: https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html
+
+    Number of conditions are optional (0 or more). If not condition is set it will
+    apply to all requests and it will just rate limit per IPs (default).
+
 *** Regular rules
 
 You need at least one condition for regular rule (it's optional but makes no
 sense to have an empty one).
+
+The matched rules need to match some criteria and the rate is counted in 5
+minutes intervals. By using this you can stop an application layer attach based
+on volume.
+
+- High volume low entropy
+- High volume high entropy
+
+If more than one condition is set in the rule, ALL (logical AND) needs to apply.
+
+If you add the rate limit rule multiple times, it effectively reduces the
+number of requests each time. Basically what happens is each time you add
+the rule, it counts an extra request for each IP. So say an IP makes a
+single request. If you have 2 rate limit rules applied, the request is
+counted twice. So basically, instead of 2000 requests, the IP only has to
+make 1000 before it gets blocked. If you add 3 rules, it will count each
+request 3 times - so the IP will be blocked at 667 requests.
+The other thing they clarified is that the "window" is 5 minutes, but if the
+total is breached anywhere in that window, it will be blocked. I thought the
+WAF would only evaluate the requests after a 5 minute period. So for example.
+Say you have a single rule for 2000 requests in 5 minutes. Say an IP makes
+2000 requests in the 1st minute, then only 10 requests after that for the
+next 4 minutes. I initially understood that the IP would only be blocked
+after minute 5 (because WAF evaluates a 5 minute window). But apparently,
+if the IP exceeds the limit anywhere in that window, it will be locked
+immediately. So if that IP makes 2000 requests in minute 1, it will actually
+be blocked from minute 2, 3, 4 and 5. But then will be allowed again from
+minute 6 onward.
+Source: https://www.reddit.com/r/aws/comments/9zuh7w/why_does_ip_rate_limiting_in_waf_have_a_minimum/ (support ticket?)
+
+*IMPORTANT*: Rules that do not meet ALL conditions will not be counted towards
+the rate limit and would not be blocked by the rule.
 
 *** Rate based rules
 
@@ -94,56 +135,19 @@ sense to have an empty one).
     Source: https://aws.amazon.com/blogs/compute/amazon-api-gateway-adds-support-for-aws-waf/
 
 Rules can be applied with a *rate*limit*. This type of rules triggers an action
-only if the set of _conditions_ exceeds the limit per data point (5 minutes).
-Protect against DDoS attack.
-
-    Rules that can allow, block, or count web requests that meet the specified
-    conditions. Alternatively, rules can block or count web requests that not
-    only meet the specified conditions, but also exceed a specified number of
-    requests in any 5-minute period.
-    Source: https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html
-
-Number of conditions are optional (0 or more). If not condition is set it will
-apply to all requests and it will just rate limit per IPs (default).
-
-The matched rules need to match some criteria and the rate is counted in 5
-minutes intervals. By using this you can stop an application layer attach based
-on volume.
-
-- High volume low entropy
-- High volume high entropy
+only if the set of _conditions_ exceeds the limit per data point (5 minutes, not configurable).
+It helps to protect against DoS attack from a single IP.
 
 Rate based rules only works with _high_volume_of_traffic_.
-
-The lower for rate limit is *2000* (CHECK).
+The lower number you can set for rate limit is *2000* (not configurable).
 
 With rate it will block the connections until the 5 minutes passes and that rate
 is no more firing.
-If more than one condition is set in the rule, ALL (logical AND) needs to apply.
 
-    If you add the rate limit rule multiple times, it effectively reduces the
-    number of requests each time. Basically what happens is each time you add
-    the rule, it counts an extra request for each IP. So say an IP makes a
-    single request. If you have 2 rate limit rules applied, the request is
-    counted twice. So basically, instead of 2000 requests, the IP only has to
-    make 1000 before it gets blocked. If you add 3 rules, it will count each
-    request 3 times - so the IP will be blocked at 667 requests.
-    The other thing they clarified is that the "window" is 5 minutes, but if the
-    total is breached anywhere in that window, it will be blocked. I thought the
-    WAF would only evaluate the requests after a 5 minute period. So for example.
-    Say you have a single rule for 2000 requests in 5 minutes. Say an IP makes
-    2000 requests in the 1st minute, then only 10 requests after that for the
-    next 4 minutes. I initially understood that the IP would only be blocked
-    after minute 5 (because WAF evaluates a 5 minute window). But apparently,
-    if the IP exceeds the limit anywhere in that window, it will be locked
-    immediately. So if that IP makes 2000 requests in minute 1, it will actually
-    be blocked from minute 2, 3, 4 and 5. But then will be allowed again from
-    minute 6 onward.
-    Source: https://www.reddit.com/r/aws/comments/9zuh7w/why_does_ip_rate_limiting_in_waf_have_a_minimum/ (support ticket?)
+Rate based rules can only BLOCK or COUNT.
 
-
-*IMPORTANT*: Rules that do not meet ALL conditions will not be counted towards
-the rate limit and would not be blocked by the rule.
+When an IP is rate limited, it won't it the CF cache but _403_Forbidden_ is
+going to be returned.
 
 ** Filters
 

@@ -4,14 +4,12 @@
  
 ## Articles
  
+- [notes/faas/02-toolchain_and_patterns](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/02-toolchain_and_patterns.article)
 - [notes/faas/frameworks/03-local_testing](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/03-local_testing.article)
-- [notes/faas/frameworks/05-paid](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/05-paid.article)
 - [notes/faas/frameworks/02-aws_sam](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/02-aws_sam.article)
 - [notes/faas/frameworks/04-code_testing](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/04-code_testing.article)
-- [notes/faas/frameworks/00-intro](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/00-intro.article)
 - [notes/faas/frameworks/01-serverless](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/frameworks/01-serverless.article)
-- [notes/faas/03-pattern](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/03-pattern.article)
-- [notes/faas/02-toolchain](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/02-toolchain.article)
+- [notes/faas/00-faas](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/00-faas.article)
 - [notes/faas/01-aws_lambda](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/faas/01-aws_lambda.article)
 - [notes/databases/01-postgress](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/databases/01-postgress.article)
 - [notes/devsecopsdays](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/devsecopsdays.article)

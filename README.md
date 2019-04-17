@@ -61,6 +61,7 @@
 - [notes/containers/orchestration/k8s/05-kubeadm](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/05-kubeadm.article)
 - [notes/containers/orchestration/k8s/01b-k8s_creation](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/01b-k8s_creation.article)
 - [notes/containers/orchestration/k8s/14-google_next](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/14-google_next.article)
+- [notes/containers/orchestration/k8s/15-kind](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/15-kind.article)
 - [notes/containers/orchestration/k8s/01a-kubernetes](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/01a-kubernetes.article)
 - [notes/containers/orchestration/k8s/02-maintainance](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/02-maintainance.article)
 - [notes/containers/orchestration/k8s/12-dashboard](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/12-dashboard.article)

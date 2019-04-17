@@ -1,5 +1,15 @@
-Fluentd
+Fluentd - OBSOLETE - TO BE UPDATED
 || Last update: 17 Jan 2017
+
+* Intro
+
+- [[https://github.com/fluent]]
+- [[https://github.com/fluent/fluentd]]
+- [[https://www.fluentd.org/]]
+- [[https://www.fluentd.org/architecture]]
+
+In April 2019 FluentD [[https://www.cncf.io/announcement/2019/04/11/cncf-announces-fluentd-graduation/][graduated]]
+as a CNCF project.
 
 * Installation
 
@@ -18,10 +28,6 @@ As sudo:
     /opt/td-agent/embedded/bin/fluent-gem install fluent-plugin-record-modifier
     /opt/td-agent/embedded/bin/fluent-gem install fluent-plugin-secure-forward
     usermod -G adm td-agent
-
-** Puppet
-
-fluentd puppet module
 
 ** On kubernetes
 
@@ -58,86 +64,86 @@ directory. If you don't you will see the following:
     error=#<Errno::ENOENT: No such file or directory @ rb_sysopen -
     /var/lib/fluentd/es-containers.log.pos>
 
-    * Configuration
+* Configuration
 
-    When fluentd is installed via puppet, files are in /etc/td-agent/config.d/.
-    For example: /etc/td-agent/config.d/02-your-app.conf
+When fluentd is installed via puppet, files are in /etc/td-agent/config.d/.
+For example: /etc/td-agent/config.d/02-your-app.conf
 
-        <filter docker.**>
-          @type record_transformer
-          <record>
-            source_hostname "#{Socket.gethostname}"
-          </record>
-          <record>
-            source_environment "qa"
-          </record>
-        </filter>
-        <match docker.**>
-          @type elasticsearch
-          host xxx
-          port 9200
-          include_tag_key true
-          logstash_format true
-          logstash_prefix yyy
-          # Set the chunk limit the same as for fluentd-gcp.
-          buffer_chunk_limit 2M
-          # Cap buffer memory usage to 2MiB/chunk * 32 chunks = 64 MiB
-          buffer_queue_limit 32
-          flush_interval 5s
-          # Never wait longer than 5 minutes between retries.
-          max_retry_wait 30
-          retry_wait 10s
-          # Disable the limit on the number of retries (retry forever).
-          disable_retry_limit
-          # Use multiple threads for processing.
-          num_threads 1
-        </match>
+    <filter docker.**>
+      @type record_transformer
+      <record>
+        source_hostname "#{Socket.gethostname}"
+      </record>
+      <record>
+        source_environment "qa"
+      </record>
+    </filter>
+    <match docker.**>
+      @type elasticsearch
+      host xxx
+      port 9200
+      include_tag_key true
+      logstash_format true
+      logstash_prefix yyy
+      # Set the chunk limit the same as for fluentd-gcp.
+      buffer_chunk_limit 2M
+      # Cap buffer memory usage to 2MiB/chunk * 32 chunks = 64 MiB
+      buffer_queue_limit 32
+      flush_interval 5s
+      # Never wait longer than 5 minutes between retries.
+      max_retry_wait 30
+      retry_wait 10s
+      # Disable the limit on the number of retries (retry forever).
+      disable_retry_limit
+      # Use multiple threads for processing.
+      num_threads 1
+    </match>
 
-    With [[https://github.com/uken/fluent-plugin-elasticsearch][fluent-plugin-elasticsearch]]:
+With [[https://github.com/uken/fluent-plugin-elasticsearch][fluent-plugin-elasticsearch]]:
 
-        <match docker.**>
-          @type elasticsearch
-          host your_url
-          port 80
-          include_tag_key true
-          logstash_format true
-          logstash_prefix docker
-          # Set the chunk limit the same as for fluentd-gcp.
-          buffer_chunk_limit 2M
-          # Cap buffer memory usage to 2MiB/chunk * 32 chunks = 64 MiB
-          buffer_queue_limit 32
-          flush_interval 5s
-          # Never wait longer than 5 minutes between retries.
-          max_retry_wait 30
-          retry_wait 10s
-          # Disable the limit on the number of retries (retry forever).
-          disable_retry_limit
-          # Use multiple threads for processing.
-          num_threads 1
-        </match>
+    <match docker.**>
+      @type elasticsearch
+      host your_url
+      port 80
+      include_tag_key true
+      logstash_format true
+      logstash_prefix docker
+      # Set the chunk limit the same as for fluentd-gcp.
+      buffer_chunk_limit 2M
+      # Cap buffer memory usage to 2MiB/chunk * 32 chunks = 64 MiB
+      buffer_queue_limit 32
+      flush_interval 5s
+      # Never wait longer than 5 minutes between retries.
+      max_retry_wait 30
+      retry_wait 10s
+      # Disable the limit on the number of retries (retry forever).
+      disable_retry_limit
+      # Use multiple threads for processing.
+      num_threads 1
+    </match>
 
-    *** Docker inspect
+*** Docker inspect
 
-        "LogConfig": {
-            "Type": "fluentd",
-            "Config": {
-                "tag": "docker.{{.Name}}  --log-opt fluentd-async-connect=true"
-            }
-        },
+    "LogConfig": {
+        "Type": "fluentd",
+        "Config": {
+            "tag": "docker.{{.Name}}  --log-opt fluentd-async-connect=true"
+        }
+    },
 
-    *** Add tags
+*** Add tags
 
-    [[http://docs.fluentd.org/v0.12/articles/config-file#3-ldquofilterrdquo-event-processing-pipeline][http://docs.fluentd.org/v0.12/articles/config-file]]
+[[http://docs.fluentd.org/v0.12/articles/config-file#3-ldquofilterrdquo-event-processing-pipeline][http://docs.fluentd.org/v0.12/articles/config-file]]
 
-        <filter docker.**>
-          @type record_transformer
-          <record>
-            source_hostname "#{Socket.gethostname}"
-          </record>
-          <record>
-            source_environment "development"
-          </record>
-        </filter>
+    <filter docker.**>
+      @type record_transformer
+      <record>
+        source_hostname "#{Socket.gethostname}"
+      </record>
+      <record>
+        source_environment "development"
+      </record>
+    </filter>
 
 * Usage
 

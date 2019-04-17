@@ -31,6 +31,8 @@ This is a general drawback of the Serverless framework: the shorthand syntax is 
 
 Another difference is that SAM Local allows you to run Lambda functions locally and to spin up an API Gateway locally. This makes it easier to develop and test Lambda functions without deploying them to AWS. With the Serverless framework you can also invoke Lambda functions from the command line, but only if they are deployed to AWS and available through API Gateway.
 
-* Sources
+* Re/Sources
 
 - [[https://sanderknape.com/2018/02/comparing-aws-sam-with-serverless-framework/]] - February 22, 2018
+- [[https://github.com/SanderKnape/comparing-serverless-and-sam]]
+- [[https://www.dashbird.io/]]

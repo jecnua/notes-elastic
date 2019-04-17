@@ -1,5 +1,11 @@
-Patterns
-|| Last update: 4 Sep 2018
+Toolchain and Patterns
+|| Last update: 14 Mar 2018
+
+* To check
+
+- https://theburningmonk.com/2016/08/aws-lambda-janitor-lambda-function-to-clean-up-old-deployment-packages/
+
+- If your function needs to read from/write to a DynamoDB table then your integration test should be using the real table as opposed to something like dynamodb-local.
 
 * Patterns
 

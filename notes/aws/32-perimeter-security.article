@@ -135,7 +135,8 @@ the rate limit and would not be blocked by the rule.
     Source: https://aws.amazon.com/blogs/compute/amazon-api-gateway-adds-support-for-aws-waf/
 
 Rules can be applied with a *rate*limit*. This type of rules triggers an action
-only if the set of _conditions_ exceeds the limit per data point (5 minutes, not configurable).
+only if the set of _conditions_ exceeds the limit per data point (5 minutes, not
+configurable).
 It helps to protect against DoS attack from a single IP.
 
 Rate based rules only works with _high_volume_of_traffic_.

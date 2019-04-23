@@ -6,7 +6,7 @@ Cloudfront and Lambda@Edge
 ** Limits
 
 It is not possible at the moment to find out what is the limits for CloudFront
-number of distribution with lambda associations.
+number of distribution with lambda associations (default is 25).
 
     So I did some digging online and it does not appear to be possible to check
     these specific CloudFront limits from the customer side. In order to check
@@ -91,7 +91,6 @@ You can forward the _user_agent_ *BUT* it will dilute the cache key.
 You need to open support tickets to forward 'user agent and the referer' and
 not cache them.
 
-
 To forward both the *user*agent* and the *referer* header and have them
 not be part of the cache-key of each object, you need to raise support
 tickets.
@@ -149,8 +148,8 @@ function replica are dropped after... a while.
 
 QUESTIONS
 
-- can you filter for lambda at edge?
-- multiple handlers in the same lambda?
+- Can you filter for lambda at edge?
+- Multiple handlers in the same lambda?
 - How do you do geolocation?
 
 QUESTIONS

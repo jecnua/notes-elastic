@@ -3,10 +3,6 @@ Cloudfront and Lambda@Edge
 
 * Cloudfront
 
-** Caching
-
-You can forward the _user_agent_ *BUT* it will dilute the cache key.
-
 ** Limits
 
 It is not possible at the moment to find out what is the limits for CloudFront
@@ -89,7 +85,12 @@ Possible reason?
 
 - [[https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-migrate-account/]]
 
-** You need to open support tickets to forward 'user agent and the referer' and not cache them
+** User agent and the referer
+
+You can forward the _user_agent_ *BUT* it will dilute the cache key.
+You need to open support tickets to forward 'user agent and the referer' and
+not cache them.
+
 
 To forward both the *user*agent* and the *referer* header and have them
 not be part of the cache-key of each object, you need to raise support
@@ -100,15 +101,22 @@ tickets.
     the cache-key of the object.  If you'd like me to enable this for your
     distribution please provide me a list of the distribution(s) that you wish
     to have this enabled on and I can add that for you on the back-end.
-    [...]Lambda@Edge
+    [...]
     Unfortunately, at this time, it's still a manual process as this is not a
     live feature that we've released to the public, so any changes for this
     would need to be handled by a support case.
     Source: AWS Support
 
 Obviously this doesn't scale if you have many hundreds of CloudFront distributions.
-No way to check from the dashboard of sdk whether or not the feature is enabled.
+No way to check from the dashboard of SDK whether or not the feature is enabled.
 You lose it if you replace the distribution with another one.
+
+Also important to know:
+
+    [...] you need to aware that when this feature is enabled, all methods will
+    be enabled (ie GET, HEAD, OPTIONS, PUT, PATCH, POST, and DELETE) on the
+    distributions that you have provided.
+    Source: AWS support
 
 ** Geoblocking
 

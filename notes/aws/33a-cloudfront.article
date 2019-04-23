@@ -1,11 +1,33 @@
 Cloudfront and Lambda@Edge
-|| Last update: 18 Mar 2019
+|| Last update: 23 Apr 2019
 
 * Cloudfront
 
 ** Caching
 
 You can forward the _user_agent_ *BUT* it will dilute the cache key.
+
+** Limits
+
+It is not possible at the moment to find out what is the limits for CloudFront
+number of distribution with lambda associations.
+
+    So I did some digging online and it does not appear to be possible to check
+    these specific CloudFront limits from the customer side. In order to check
+    these updated custom limits in future, you will need to open a case with
+    Premium Support and then we'll be able to check on the internal tooling.
+    Source: AWS Support
+
+To find out how many current CloudFront distributions in an account have
+associated Lambda@Edge functions you need to loop and use the CLI:
+
+    Then, with regards to checking how many CloudFront distributions have Lambda
+    functions associated with them.
+    You are correct here in that the only way of finding this out is to examine
+    the behaviours for each distribution and check if any functions are
+    associated. Unfortunately AWS does not currently have an official automated
+    way of performing a query like this.
+    Source: AWS Support
 
 ** It is impossible to do blue/green with CloudFront
 

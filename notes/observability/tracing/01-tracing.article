@@ -1,5 +1,11 @@
 Distributed tracing (concepts) and OpenTracing
-|| Last update: 10 May 2018
+|| Last update: 23 Apr 2019
+
+* UPDATE
+
+- [[https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289]]
+
+OpenTracing will sunset Nov 6 2019.
 
 * Intro
 

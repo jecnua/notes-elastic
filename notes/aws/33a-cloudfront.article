@@ -130,7 +130,7 @@ CloudFront is able to do Geoblocking depending on the region.
 Lambda@Edge can be used to customize content or behaviour by adding logic to
 a request before it hit origin.
 The functions run in the Edge Locations of the CloudFront CDN. Allows you to
-add “intelligence” in the CDN, without having to forward the request to a
+add "intelligence" in the CDN, without having to forward the request to a
 backend and losing benefits of content caching and geographical proximity with
 the client.
 

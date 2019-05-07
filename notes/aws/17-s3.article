@@ -1,6 +1,20 @@
 S3
 || Last update: 12 Apr 2019
 
+* Intro
+
+Amazon S3 will no longer support path-style API requests starting September 30th, 2020
+
+- [[https://forums.aws.amazon.com/ann.jspa?annID=6776]]
+
+So use:
+
+    example: //<bucketname>.s3.amazonaws.com/key
+
+NOT:
+
+    example: //s3.amazonaws.com/<bucketname>/key
+
 * Storage classes
 
 - [[https://aws.amazon.com/s3/storage-classes/]]

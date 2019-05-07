@@ -149,7 +149,7 @@ Some things to keep in consideration:
 - Will require the network mode to be AWSVPC: you have no control on the host it sort of make sense that they don't allow host or bridge
 - Will require to specify the the cpu and memory at task level while at container level is optional: in the end makes no sense since there is no cluster
 - CPU and Memory are only allowed with specific values
-- Only supports AWSLOGS for log config: since you can't install any other log drivers
+- Only supports AWSLOGS and Splunk (from [[https://aws.amazon.com/about-aws/whats-new/2019/05/aws-fargate-pv1-3-now-supports-the-splunk-log-driver/][v1.3]]) as log drivers: since you can't install any other log drivers
 - Doesn't allow EBS or EFS: since you can't install drivers or mount anything
 
 Fargate has only 10GB of docker layer storage and 4GB for volume mounts to be

@@ -18,6 +18,9 @@ So many good companies are working to make it better:
 Kubernetes is 2 years old.
 Multizone cluster in k8s is called "ubernetes lite".
 
+NOTE: Interesting article on k8s and AWS
+[[https://zwischenzugs.com/2019/03/25/aws-vs-k8s-is-the-new-windows-vs-linux/]]
+
 ** Kubernetes distribution
 
 - OpenShift from Red Hat

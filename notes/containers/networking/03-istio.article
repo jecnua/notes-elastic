@@ -1,4 +1,4 @@
-Istio
+Istio (NEEDS UPDATE)
 || Last update: 2 Oct 2018
 
 * Intro
@@ -15,6 +15,9 @@ Istio is a:
 
 Istio was announced in the May of 2017.
 Istio is not a k8s technology and can work with other orchestrators.
+
+UPDATE: Requirements wise Istio is much more costly than Linkerd2
+[[https://medium.com/@michael_87395/benchmarking-istio-linkerd-cpu-c36287e32781][Benchmarking Istio & Linkerd CPU (Apr 2019)]]
 
 * Data plane and control plane
 

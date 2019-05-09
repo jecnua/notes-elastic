@@ -1,27 +1,27 @@
 EKS
-|| Last update: 8 Apr 2019
+|| Last update: 9 May 2019
 
 * Intro
 
 EKS is AWS managed k8s offer.
 
-150 dollars per cluster
+It has some integrations:
 
-integration
-pod iam access
-load balancing with ELB
-ECR for storing images
-s3 for helm repos
-you can deploy AWs resource with cloudformation (???)
+- Load balancing with ELB
+- ECR for storing images
+- s3 for helm repos
 
-ingress nginx for aws
-kubernetes.github.io/ingress-nginx/deploy/#aws
+For Ingress you can use nginx:
 
-you will need to update dns and worker nodes
+- [[kubernetes.github.io/ingress-nginx/deploy/#aws]]
 
-control plane on AWS is completely opaque
+Updates are still problematic for nodes.
 
-azure eks does not support calico and network plugin is still preview
+- You will need to update DNS plugin and worker nodes
+
+The control plane on AWS is completely opaque.
+
+NOTE: Azure k8s managed service does not support calico and network plugin is still preview
 
 * Quickstart
 
@@ -102,6 +102,7 @@ Control plane logs are shipped to CWLogs since Apr 2019.
 * Costs
 
 EKS is .20/hour.
+150 dollars per cluster per month.
 
 * Lack of advanced LB support
 

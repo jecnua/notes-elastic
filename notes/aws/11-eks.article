@@ -5,6 +5,24 @@ EKS
 
 EKS is AWS managed k8s offer.
 
+150 dollars per cluster
+
+integration
+pod iam access
+load balancing with ELB
+ECR for storing images
+s3 for helm repos
+you can deploy AWs resource with cloudformation (???)
+
+ingress nginx for aws
+kubernetes.github.io/ingress-nginx/deploy/#aws
+
+you will need to update dns and worker nodes
+
+control plane on AWS is completely opaque
+
+azure eks does not support calico and network plugin is still preview
+
 * Quickstart
 
 They released a quickstart and these are the links:

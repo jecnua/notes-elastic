@@ -20,3 +20,25 @@ Route53
     The status of other health checks
     The status of an Amazon CloudWatch alarm
     Source: Docs
+
+* Weighted Routing
+
+- [[https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html#routing-policy-weighted]]
+
+CNAME non-ALIAS records can be used to point to CloudFront distributions.
+Weighted routing with one record being a CNAME non-ALIAS record and the other
+being an ALIAS A record *isn't* allowed. A CNAME cannot co-exist with any other
+data.
+
+As you cannot have weighted records of different types it will not allow you to
+create records of A and CNAME. When you create the 2 CNAME weighted records
+Route 53 allows this as long as they have different Set ID. The set ID is what
+allows Route 53 to recognise each of the CNAME records as unique, so Route 53
+has 2 CNAME records when they are weighted and not 1.
+
+    So to summarise your concern, a weighted record is not a single record but
+    individual records separated by their set ID. You can create multiple records
+    of the same name with different values (A, AAAA, TXT etc..) however, Route
+    53 will treat all these as different records. You cannot have a CNAME of the
+    same name due to the limitation discussed.
+    Source: AWS support

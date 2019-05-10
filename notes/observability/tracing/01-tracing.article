@@ -299,6 +299,7 @@ OpenCensus, differently from Jaeger, allow
 
 * Re/Sources
 
+- [[https://medium.com/jaegertracing/embracing-context-propagation-7100b9b6029a]] - 6 May 2019
 - [[https://www.datadoghq.com/blog/instrument-opencensus-opentracing-and-openmetrics/]] - 6 Feb 2019
 - [[https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/]] - 8 May 2018
 - [[https://sematext.com/blog/opentracing-zipkin-as-distributed-tracer/]] - 25 Apr 2018

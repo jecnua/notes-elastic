@@ -193,8 +193,6 @@ To read:
 - https://www.weave.works/prometheus-configmaps-continuous-deployment/
 - https://www.weave.works/k8s-future-simplified-kubernetes-installation/
 - http://cloudacademy.com/blog/kubernetes-ecosystem-operations/
-- http://cloudacademy.com/blog/deploying-kubernetes-applications-with-helm/
-- https://hackernoon.com/the-missing-ci-cd-kubernetes-component-helm-package-manager-1fe002aac680
 - http://kube.news/
 - https://coreos.com/blog/the-prometheus-operator.html
 - https://coreos.com/blog/kubernetes-1-6.html

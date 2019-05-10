@@ -13,10 +13,10 @@ You can use:
 
 You need helm.
 
-- https://github.com/kubernetes/helm/blob/master/docs/install.md
-- https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md
-- https://github.com/kubernetes/helm/blob/master/docs/chart_template_guide/subcharts_and_globals.md#subcharts-and-global-values
-- https://github.com/kubernetes/charts/tree/master/stable/prometheus#configuration
+- [[https://github.com/kubernetes/helm/blob/master/docs/install.md]]
+- [[https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md]]
+- [[https://github.com/kubernetes/helm/blob/master/docs/chart_template_guide/subcharts_and_globals.md#subcharts-and-global-values]]
+- [[https://github.com/kubernetes/charts/tree/master/stable/prometheus#configuration]]
 
 After that:
 

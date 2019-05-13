@@ -34,8 +34,21 @@ Stacks API calls. When we’re running lots in parallel, the CLI
 gets a rate limit error. It then re-tries (it’s unclear if it uses exponential
 backoff), but only 5 times. After 5 rate limiting errors it fails with an exit
 code 255.
+
+    2019-05-09 10:04:02,937 - MainThread - botocore.retryhandler - DEBUG -
+    Reached the maximum number of retry attempts: 5
+
 None of these rate limits are documented and apparently depend on the region and
 the load on the service end point at the time.
+
+NOTE: 250 DescribeStacks throttling exceptions?
+
+    The only quick work around that I can think of is to utilize multiple regions.
+    As Cloudfront is a global resource, it does not matter from which region
+    you create the stack. If you can try to split your stack deployments in
+    multiple regions, you will distribute the describe stacks API calls between
+    different service endpoints(per region).
+    Source: AWS Support
 
 ** It is impossible to do blue/green with CloudFront
 

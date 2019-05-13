@@ -25,6 +25,18 @@ associated Lambda@Edge functions you need to loop and use the CLI:
     way of performing a query like this.
     Source: AWS Support
 
+** API rate limit
+
+When you create a CloudFront stack, the CLI periodically issues Describe Stacks
+API calls whilst the stack update is being processed.
+But there is some sort of rate limit, per account and region, on these Describe
+Stacks API calls. When we’re running lots in parallel, the CLI
+gets a rate limit error. It then re-tries (it’s unclear if it uses exponential
+backoff), but only 5 times. After 5 rate limiting errors it fails with an exit
+code 255.
+None of these rate limits are documented and apparently depend on the region and
+the load on the service end point at the time.
+
 ** It is impossible to do blue/green with CloudFront
 
 - [[https://forums.aws.amazon.com/thread.jspa?threadID=256836]]

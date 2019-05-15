@@ -37,8 +37,10 @@ They released a quickstart and these are the links:
 
 - [[https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/]]
 
-VPC CIDR choice is restricted (even for a demo you need to choice an allowed
-CIDR). Otherwise you will receive something like this:
+VPC CIDR choice is
+[[https://aws.amazon.com/about-aws/whats-new/2019/05/amazon-eks-adds-support-for-public-ip-addresses-within-cluster-v/][no longer]]
+restricted to [[https://en.wikipedia.org/wiki/Private_network][RFC1918]] only.
+Before you used to receive something like this:
 
     * aws_eks_cluster.demo: error creating EKS Cluster (terraform-eks-demo):
     InvalidParameterException: CIDR(s) attached to your VPC is invalid.

@@ -1,0 +1,130 @@
+Meetup
+|| 15 May 2019
+
+* First talk - Autoscaling on latency
+
+Linkerd (Buoyant)
+not on cpu or memory
+only CNCF mesh
+
+cluster autoscaler
+--> horizontal pod autoscaler (cpu and memory by default)
+vertical pod autoscale (size resource request)
+
+k8s does metrics
+
+metrics.k8s.io (top - metrics server - cpu and memory)
+--> custom.metrics.k8s.io (anything you want - tied to a pod)
+external.metrics.k8s.io (something like latency of elb or something) - turn it to on so it scales up before a flash sale
+
+cpu is an approximation
+cpu are different in the cloud (different between node you land on)
+orchestrated env are complex (noisy neighborou) - page cache is a proble, elk trashing io
+cpu utilization is wrong bit.ly/cpu-wrnong
+
+memory is good but for redis and memcache
+
+golden signal (SRE)
+latency
+traffic
+errors
+saturation
+
+tail latency is important
+latency is not normally distribuited <--
+
+bit.ly/latency-wrong
+
+you need to measure the latency
+expose the custome metrics
+
+expose the metrics for prometheus
+that scrapes linked?
+
+linkerd cli
+linkerd install is gonna show you what to apply
+
+linkerd control plane
+dashboard
+controller
+prometheus
+grafana
+
+linkerd inject like the old istio
+
+** how to expose the custom metrics
+
+bit.ly/k8s-aggregation
+
+prometheus adapter
+get quer
+
+bit.ly/k8s-adapter
+
+kubectl -> api server -> k8s-prometeheus-adapter -> prometheus
+
+linkerd stable helm chart
+to install it
+
+kubectl you can get --raw
+because there is no kubectl command
+you can expose all the linkerd metrics as custom metrics
+
+prometheus adapter!!!
+and one query for it
+
+kubernetes doesn't do float
+so they do millis
+
+helm command
+
+** HPO
+
+it calls the api server (that get it from prometheus that geti it on the application)
+it chanegs the deployment
+
+HPA policy
+use the latency and use the average latency as scaling
+
+kubernetes stat deploy?
+
+** route based scaling
+
+cred processing or route based
+linked have route based metrics
+prometheus have linear prediction
+because otherwise it does
+NICE look at it
+
+linkerd
+
+l5d-autoscale - https://github.com/grampelberg/talks/blob/master/kubecon-12-2018/slides.pdf
+latency-auto
+linkerd-get-started
+k8s-adapter
+
+kubecast podcast (3-4y ago)
+
+* Second talk
+
+NHS app
+AKS
+
+cosmo db multi db
+multi region
+region indipendedn
+
+geo replication
+
+helm (package deployment)
+chart museum - store chart
+
+twistlock
+ops genie - vuln scan
+
+* Third talk - spotinst
+
+GCP and AWS
+2 clusters
+spotinst
+HPA, in spotinst

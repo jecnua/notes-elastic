@@ -19,6 +19,12 @@ you can remove and readd linkerd when you want, just reapply the yaml
 
 istio insted you need to configure istio proxy via ip in range.
 
+linkerd is the only mesh that is a CNCF project.
+
+https://github.com/grampelberg/talks/blob/master/kubecon-12-2018/slides.pdf
+
+https://www.youtube.com/watch?v=gSiGFH4ZnS8&t=0s&index=16&list=WL
+
 * Linkerd 2.0
 
 linkerd 2.0 procy is no longer on JVM but rewritten in rust.

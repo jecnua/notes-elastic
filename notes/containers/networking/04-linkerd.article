@@ -15,7 +15,7 @@ looks like lightweight of the istio model.
 you can use it with ingress or anything else
 you can have part of your application using linkerd, some part not.
 
-you can remove and readd linkerd when you want, just reapply the yaml
+you can remove and re-add linkerd when you want, just reapply the yaml
 
 istio instead you need to configure istio proxy via ip in range.
 

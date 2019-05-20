@@ -1,5 +1,20 @@
-Terraform
+Terraform - [OBSOLETED - NEED UPDATES]
 || Last update: 2 Oct 2018
+
+* Intro
+
+Terraform opened for free their hosted state capabilities:
+
+- [[https://www.hashicorp.com/blog/introducing-terraform-cloud-remote-state-management]] - MAY 16 2019
+- [[https://www.hashicorp.com/blog/terraform-collaboration-for-everyone]] - OCT 23 2018
+
+* Atlantis
+
+- [[https://www.runatlantis.io/]]
+
+Atlantis devs have been bought from Hashicorp.
+
+- [[https://medium.com/runatlantis/joining-hashicorp-200ee9572dc5]] - Oct 23, 2018
 
 * Building the new version
 

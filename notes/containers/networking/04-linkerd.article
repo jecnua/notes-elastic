@@ -10,24 +10,23 @@ Patched as a different thing and released as a sidecar.
 
 Using Java as a data plane comes with a lot of tradoff.
 
-looks like lighterwight of the istio model.
+looks like lightweight of the istio model.
 
-you can use it with ingress or anyting else
+you can use it with ingress or anything else
 you can have part of your application using linkerd, some part not.
 
 you can remove and readd linkerd when you want, just reapply the yaml
 
-istio insted you need to configure istio proxy via ip in range.
+istio instead you need to configure istio proxy via ip in range.
 
 linkerd is the only mesh that is a CNCF project.
 
-https://github.com/grampelberg/talks/blob/master/kubecon-12-2018/slides.pdf
-
-https://www.youtube.com/watch?v=gSiGFH4ZnS8&t=0s&index=16&list=WL
+- [[https://github.com/grampelberg/talks/blob/master/kubecon-12-2018/slides.pdf]]
+- [[https://www.youtube.com/watch?v=gSiGFH4ZnS8&t=0s&index=16&list=WL]]
 
 * Linkerd 2.0
 
-linkerd 2.0 procy is no longer on JVM but rewritten in rust.
+linkerd 2.0 proxy is no longer on JVM but rewritten in rust.
 scalable and light.
 is a CNCF project.
 

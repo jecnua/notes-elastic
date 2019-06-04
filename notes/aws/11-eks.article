@@ -33,12 +33,16 @@ They released a quickstart and these are the links:
 
 * Architecture
 
+- [[https://learn.hashicorp.com/terraform/aws/eks-intro]]
+
 ** VPC CNI
 
 - [[https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/]]
 
-VPC CIDR choice is
-[[https://aws.amazon.com/about-aws/whats-new/2019/05/amazon-eks-adds-support-for-public-ip-addresses-within-cluster-v/][no longer]]
+VPC CIDR choice is:
+
+- [[https://aws.amazon.com/about-aws/whats-new/2019/05/amazon-eks-adds-support-for-public-ip-addresses-within-cluster-v/][no longer]]
+
 restricted to [[https://en.wikipedia.org/wiki/Private_network][RFC1918]] only.
 Before you used to receive something like this:
 
@@ -48,8 +52,9 @@ Before you used to receive something like this:
     status code: 400, request id: xxx-xxx-xxx-xxx-xxx
 
 The CIDR blocks supported by Amazon VPC are
-[[https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#VPC_Sizing][here]].
-[[https://aws.amazon.com/about-aws/whats-new/2018/10/amazon-eks-now-supports-additional-vpc-cidr-blocks/][Latest addition]]:
+
+- [[https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#VPC_Sizing][here]].
+- [[https://aws.amazon.com/about-aws/whats-new/2018/10/amazon-eks-now-supports-additional-vpc-cidr-blocks/][Latest addition]]:
 
 - 100.64.0.0/10
 - 198.19.0.0/16
@@ -72,10 +77,81 @@ doesn't work:
 
     go get -u -v github.com/heptio/authenticator/cmd/heptio-authenticator-aws
 
-* Reduced visibility
+* Usage
 
-AWS is hiding system pods and master nodes.
-kubectl doesn't show them to you.
+** Service "LoadBalancer"
+
+On EKS it will create an old ELB!
+
+** Ingress
+
+- [[https://kubernetes-sigs.github.io/aws-alb-ingress-controller/]]
+- [[https://aws.amazon.com/blogs/opensource/kubernetes-ingress-aws-alb-ingress-controller/]] - 20 NOV 2018
+
+    This project was originated by Ticketmaster and CoreOS as part of
+    Ticketmaster's move to AWS and CoreOS Tectonic.
+    [...]
+    This project was donated to Kubernetes SIG-AWS to allow AWS, CoreOS,
+    Ticketmaster and other SIG-AWS contributors to officially maintain the
+    project. SIG-AWS reached this consensus on June 1, 2018.
+    Source: https://kubernetes-sigs.github.io/aws-alb-ingress-controller/
+
+Make sure the _nodes_ have the right credentials. This is something is not in
+the normal EKS, so they need to be added after.
+
+- [[https://kubernetes-sigs.github.io/aws-alb-ingress-controller/examples/iam-policy.json]]
+
+Have subnets tagged correctly.Subnets tagged with:
+
+    kubernetes.io/cluster/clusterName: owned
+    or
+    kubernetes.io/cluster/clusterName: shared
+
+where clusterName is what you specified in controller flags via:
+
+    --cluster-name=clusterName
+
+Plus you need to specify which are the subnets for the internal subnet and
+external subnet. Tags need to have value 1 and not "true".
+
+- [[https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/config/#subnet-auto-discovery]]
+
+Tag the subnets.
+
+You need to add kubernetes.io/role/elb tag onto public subnets instead of
+kubernetes.io/role/internal-elb to let controller auto-discovery it for
+internet-facing ingresses.
+
+To enable an ALB ingress on EKS you need to download and use the templates
+for the ingress-controller and RBAC.
+
+- [[https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/setup/]]
+
+NOTE: You will need to change the cluster name inside the ingress-controller
+template.
+
+
+QUESTIONS:
+
+- Why the ALB have the name of the first ingress?
+- What about route53?
+- What happens if i spin the cluster in a private subnet?
+
+*** Possible misconfiguration
+
+    E0305 21:14:12.385165 1 :0] kubebuilder/controller "msg"="Reconciler error"
+    "error"="failed to build LoadBalancer configuration due to retrieval of
+    subnets failed to resolve 2 qualified subnets. Subnets must contain the
+    kubernetes.io/cluster/\u003ccluster name\u003e tag with a value of shared or
+    owned and the kubernetes.io/role/internal-elb tag signifying it should be
+    used for ALBs Additionally, there must be at least 2 subnets with unique
+    availability zones as required by ALBs. Either tag subnets to meet this
+    requirement or use the subnets annotation on the ingress resource to
+    explicitly call out what subnets to use for ALB creation. The subnets that
+    did resolve were []" "Controller"="alb-ingress-controller"...
+    Sorce: https://github.com/kubernetes-sigs/aws-alb-ingress-controller/issues/886
+
+You probably can't connect
 
 ** Events
 
@@ -136,3 +212,8 @@ Reduce IP allocation overhead:
     and then adds them to the warm pool. This threshold can be configured using the
     WARM_IP_TARGET environment variable; it can also be configured in amazon-vpc-cni.yaml.
     Source: https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/
+
+** Reduced visibility
+
+AWS is hiding system pods and master nodes.
+kubectl doesn't show them to you.

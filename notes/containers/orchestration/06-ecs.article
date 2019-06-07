@@ -1,5 +1,5 @@
 ECS and FARGATE for ECS
-|| Last update: 04 Apr 2019
+|| Last update: 7 Jun 2019
 
 * Intro
 
@@ -173,7 +173,7 @@ You can launch a task with different Network configurations.
 - none
 - host
 - bridge
-- awsvpc: Each task will have it's own ENI. (Beware on finishing the allocation space for ENI)
+- awsvpc
 
 NOTE: User Defined Networks are not supported!
 
@@ -208,6 +208,32 @@ to the ENI.
 It *only*supports*A/NLB*. When creating a target group you need to use _ip_ as
 target type and not instance. This is because you are targeting the ENI and not
 the node. However you lose the ability of dynamic port mapping.
+
+Each task will have it's own ENI.
+
+Beware on finishing the allocation space for ENI.
+
+- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI]]
+- [[https://github.com/aws/containers-roadmap/issues/7]]
+
+A big constraints is the ENI limit per EC2 instance, the so-called ENI density
+issue.
+
+    The number of ENIs per instance is limited from 2 to 15 depending on the
+    instance type. As EKS is sharing ENIs between pods, you can place up to 750
+    pods per instance. Much more than the maximum of 15 tasks you can place per
+    instance with ECS.
+    Source: https://cloudonaut.io/eks-vs-ecs-orchestrating-containers-on-aws/
+
+From June 2019 there is the option to raise the ENI density:
+
+    Previously, Amazon ECS provisioned one ENI per task that used the awsvpc
+    network mode. As a result, the number of ENIs available on EC2 instances
+    often became the bounding constraint despite there being ample vCPU and
+    memory available for additional containers to utilize. Now, you can enjoy
+    increased ENI density limits that range anywhere from 3 to 8 times the
+    number of ENIs previously available.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/06/Amazon-ECS-Improves-ENI-Density-Limits-for-awsvpc-Networking-Mode/
 
 ** Internet access
 
@@ -328,20 +354,6 @@ Available on Fargate from PV 1.3.
 * Problems
 
 ** User Defined Networks are not supported!
-
-** ENI density issue
-
-A big constraints is the ENI limit per EC2 instance, the so-called ENI density
-issue.
-
-- [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI]]
-- [[https://github.com/aws/containers-roadmap/issues/7]]
-
-    The number of ENIs per instance is limited from 2 to 15 depending on the
-    instance type. As EKS is sharing ENIs between pods, you can place up to 750
-    pods per instance. Much more than the maximum of 15 tasks you can place per
-    instance with ECS.
-    Source: https://cloudonaut.io/eks-vs-ecs-orchestrating-containers-on-aws/
 
 ** Inability to mount configs
 

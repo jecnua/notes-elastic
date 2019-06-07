@@ -3,6 +3,17 @@ Distributed tracing (concepts) and OpenTracing
 
 * UPDATE
 
-- [[https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289]]
+- [[https://medium.com/jaegertracing/jaeger-and-opentelemetry-1846f701d9f2]] - May 27 2019
+- VIDEO [[https://www.youtube.com/watch?v=IdYZphA5S7s][OpenTelemetry: Panel Discussion and Q&A]] - 22 May 2019
+- [[https://www.cncf.io/blog/2019/05/21/a-brief-history-of-opentelemetry-so-far/]] - May 21 2019
+- [[https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289]] - Apr 19 2019
+- [[https://opentracing.io/registry]]
 
 OpenTracing and OpenCensus will sunset Nov 6 2019.
+
+    The greatest promise of OpenTelemetry is not to solve some new problems that
+    OpenTracing and OpenCensus did not solve. Instead, it is the promise of a
+    single standard instead of competing two standards.
+    [...]
+    Be backwards compatible with OpenTracing and OpenCensus instrumentation via shims.
+    Source: https://medium.com/jaegertracing/jaeger-and-opentelemetry-1846f701d9f2

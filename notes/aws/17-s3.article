@@ -27,6 +27,33 @@ NOT:
 - Glacier Deep Archive (min duration 180d) - Long-term retention of data that is accessed rarely in a year (maintaining data in on-premises magnetic tape libraries or archiving data offsite)
 - Reduced Redundancy (deprecated/not recommended): Use One Zone-IA instead
 
+** Data protection
+
+S3 allow you to lock your bucket content to all public access. Bast way to do it
+in CloudFormation is:
+
+    Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: MyBucket
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            -
+              ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
+        LifecycleConfiguration:
+          Rules:
+            -
+              ExpirationInDays: 30
+              Id: ExpirationInDaysRule
+              NoncurrentVersionExpirationInDays: 30
+              Status: Enabled
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+
 ** Glacier
 
 - Retrieval options in minutes (using expedited retrieval)

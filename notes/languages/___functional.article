@@ -1,0 +1,63 @@
+Functional notes
+
+there is no way to know before entering if synch or asynch
+you need to know the function????
+if there is no callback is prob synch <-
+o che non ritorni una promise
+but you can't know without types
+
+you search that returns promise
+
+forach o map?
+
+scope, non serve passare
+
+exception in nodejs
+
+console log
+
+
+const {ecsContainerlist,
+    describeContainer,
+    describeEc2Instances,
+    changeRecord} = require('./api');
+
+only that method
+
+
+const debugJson = (incipit) => (logline) => { logger.debug(incipit + ' ' + JSON.stringify(logline)); return logline; };
+
+function describeContainer(cluster, ecs) {
+
+  function describeContainer2(ecsInstancesList) {
+    return 0;
+  }
+
+  return describeContainer2;
+
+}
+
+  const debugJson = (incipit) => (logline) => { logger.debug(incipit + ' ' + JSON.stringify(logline)); return logline; };
+
+
+ecsContainerlist(cluster, ecs)
+  .then(xxx('Ecs info:'))
+  .then(yyy(cluster, ecs))
+  .then(zzz('Ecs instances ids:'))
+  .then(getEc2InstancesId)
+  .then((activeInstances) => {})
+
+
+
+currying automatico te le ritorna
+nell'ordine che c'e'
+
+Ramda?
+sostituisce lodash
+contenuto sempre alla fine
+
+
+si aspettano di ricevere una unzione
+che accetta un solo parametreo (dati)
+
+https://highlandjs.org/

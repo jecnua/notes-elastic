@@ -1,0 +1,7 @@
+Kubernetes Metric Server
+|| Last update: 7 Jun 2019
+
+* Metric server
+
+- [[https://github.com/kubernetes-incubator/metrics-server]]
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/eks-metrics-server-pod-autoscaler/]]

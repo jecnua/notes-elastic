@@ -100,7 +100,7 @@ aws provider almost no doc
 localVolumeProvider and mount paths - if you don't use the disk uid in the mount path when you monunt local volume. if the nodes comes back with the same name the volumnes will collide
 almost never tested on large cluster
 cluster autoscaler doesn't work with more than 50ASG
-kubed abandonmed (same configmaps across all namespaces) -0 using more than 10gb
+kubed abandoned (same configmaps across all namespaces) -0 using more than 10gb
 metric server doesn't start up with a single server in NotReady state
 kube-state-metrics: normal way to check stuf, pod node collector generates 100MB payload https://github.com/appscode/kubed
 voyager ingress controller, map sort bug lead to continos pod creation. https://github.com/appscode/voyager

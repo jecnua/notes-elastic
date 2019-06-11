@@ -243,6 +243,12 @@ To get the log you will need to use FireHose. FireHose will recieve data from
 WAF and put it in a destination of choice.
 The name *needs* to start with *aws-waf-logs-*.
 
+    Note: The region in which you should enable Kinesis Data Firehose must match
+    the region where your AWS WAF web ACL is deployed. If you’re enabling logging
+    for AWS WAF deployed on Amazon CloudFront, then Kinesis Data Firehose must be
+    created in the Northern Virginia AWS Region.
+    Source: https://aws.amazon.com/blogs/security/how-to-analyze-aws-waf-logs-using-amazon-elasticsearch-service/
+
 WAF logs HTTP headers and the rule(s) that were triggered, but not the HTTP
 request body is logged. Sensitive information present in the headers or request
 URI may show up in the logs though. If this is a concern, you can REDACT them.

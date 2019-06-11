@@ -1,5 +1,5 @@
-Terraform - [OBSOLETED - NEED UPDATES]
-|| Last update: 2 Oct 2018
+Terraform
+|| Last update: 11 Jun 2019
 
 * Terraform
 
@@ -32,73 +32,73 @@ or:
       )
     }"
 
+* Modules
+
+** Multiple providers
+
+You can pass mulitple providers of the same type to a module by using aliases.
+In the main repo:
+
+    provider "aws" {
+      alias   = "aws-us"
+      region  = "us-east-1"
+      version = "~> 2.14.0"
+    }
+
+    provider "aws" {
+      alias   = "aws-eu"
+      region  = "eu-west-1"
+      version = "~> 2.14.0"
+    }
+
+    module "my_module_green" {
+      providers = {
+        "aws.aws-us"  = "aws.aws-us"
+        "aws.aws-eu"  = "aws.aws-eu"
+        random        = "random"
+      }
+      source          = "./module_localize/"
+      [...]
+    }
+
+However to do this you will need to specify the module ALIAS in the module you
+are calling:
+
+    provider "aws" {
+      alias = "aws-us"
+    }
+
+    provider "aws" {
+      alias = "aws-eu"
+    }
+
+Then in the resources inside the module use:
+
+    resource "aws_waf_rule" "wafrule" {
+      provider    = "aws.aws-us"
+      name        = "xyz"
+      metric_name = "xyz"
+
+      predicates {
+        data_id = "${aws_waf_ipset.ipset.id}"
+        negated = false # Only this ip
+        type    = "IPMatch"
+      }
+    }
+
+* Validation
+
+- [[https://github.com/hashicorp/terraform/issues/2847][GITHUB: Value assertions / validations in configuration files]]
+
+You still can't have assertion or validation of variables.
+
 * Atlantis
 
 - [[https://www.runatlantis.io/]]
+- [[https://medium.com/runatlantis/putting-the-dev-into-devops-why-your-developers-should-write-terraform-too-d3c079dfc6a8]]
 
 Atlantis devs have been bought from Hashicorp.
 
 - [[https://medium.com/runatlantis/joining-hashicorp-200ee9572dc5]] - Oct 23, 2018
 
-* Building the new version
-
-To build the new version
-
-    docker run \
-      --rm \
-      -v $(pwd):/go/src/github.com/hashicorp/terraform \
-      -w /go/src/github.com/hashicorp/terraform \
-      -e XC_OS=linux \
-      -e XC_ARCH=amd64 \
-      golang:latest \
-      bash -c "apt-get update && apt-get install -y zip && GO111MODULE=on make bin"
-
-but make needs to be changed
-
-    # bin generates the releaseable binaries for Terraform
-    bin:
-            @TF_RELEASE=1 sh -c "'$(CURDIR)/scripts/build.sh'"
-
-This is what you want the bin to look like before building.
-
-* Data sources
-
-** Availability zone
-
-    data "aws_vpc" "targeted_vpc" {
-      id      = "${var.vpc_id}"
-      default = false
-      state   = "available"
-    }
-
-    data "aws_availability_zones" "available_subnets" {
-      state = "available"
-    }
-
-    ## TODO: count.index+1 is to avoid zone a in us-east (see readme)
-    resource "aws_subnet" "my_private" {
-      count                   = 2
-      vpc_id                  = "${data.aws_vpc.targeted_vpc.id}"
-      availability_zone       = "${data.aws_availability_zones.available_subnets.names[count.index+1]}"
-      cidr_block              = "${var.subnets_cidr_block[count.index]}"
-      map_public_ip_on_launch = "false"
-    }
-
-This doesn't work:
-
-** Problem 1
-
-You can't use a. So you have to do something like this:
-
-    availability_zone       = "${data.aws_availability_zones.available_subnets.names[count.index+1]}"
-
-** Problem 2
-
-    FYI: Description:DescriptionLaunching a new EC2 instance. Status Reason: Your requested instance type (r4.2xlarge) is not supported in your requested Availability Zone (us-east-1c). Please retry your request by not specifying an Availability Zone or choosing us-east-1e, us-east-1d, us-east-1b. Launching EC2 instance failed.
-
-So you need to avoid some AZs.
-
-* To check
-
-- [[https://www.runatlantis.io/]]
-- [[https://medium.com/runatlantis/putting-the-dev-into-devops-why-your-developers-should-write-terraform-too-d3c079dfc6a8]]
+* Re/Sources

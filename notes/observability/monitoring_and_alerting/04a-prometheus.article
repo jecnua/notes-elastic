@@ -59,7 +59,7 @@ To quote someone I don't remember now:
 - no automatic horizontal scaling
 - no user/auth management
 
-*** Limitations
+** Limitations
 
 - Only numeric time series
 
@@ -67,7 +67,7 @@ To quote someone I don't remember now:
 
 ** Text over http
 
-Phrometeus choosed to use http as a transport.
+Prometheus chose to use http as a transport.
 
 ** Scaling?
 
@@ -102,13 +102,13 @@ does only read
 - automatic upness monitoring
 - horizontal monitoring (tell to push to different things) WRONG
 - more flexyble (production monitoring on your laptop ? ) NO, NOT SG
-- simple HA - two phrometeus server pulling in the same one (many of the same configured service)
+- simple HA - two Prometheus server pulling in the same one (many of the same configured service)
 - less configuration (tell my mornitoring service - do that in any case) NO. zk
 - scales
 
 From version 2.0 Prometheus DOES NOT SUPPORT PROTOBUF anymore.
 
-phrometeus push metrics to _something_else_
+Prometheus push metrics to _something_else_
 replay your historical metadata (???)
 flag for turning local storage
 just turn local storage and only push remotely
@@ -130,7 +130,7 @@ you can't dump and you can't redeploy
 
 one workaroud:
 many prometheus server that federates on a single ...
-one phrometeus that pulls every x minues
+one Prometheus that pulls every x minues
 
 ** Alerts
 
@@ -194,7 +194,7 @@ client libs keep state but not much (no history, only current state)
     - Summary: similar to a histogram, samples observations, it calculates configurable quantiles over a sliding time window
     Source: https://blog.risingstack.com/node-js-performance-monitoring-with-prometheus/
 
-rates not computes!!! data as raw as possible and you do in on phrometeus side
+rates not computes!!! data as raw as possible and you do in on Prometheus side
 
 metrics for you
 manage metrics for you
@@ -216,7 +216,7 @@ CON
 PRO
 
 - idempotent
-- many phrometeus scraping the smae node have the same data
+- many Prometheus scraping the smae node have the same data
 
 Prometheus can gather data by any source that exposes metrics in it's format.
 When this is not available, _exporters_ can be written to do the heavy
@@ -282,7 +282,7 @@ Well... that's one of the sad points. Prometheus *by*choice* does not cluster.
 - persistange storage in k8s (statelass)
 - VM vsan plugin
 
-Some phrometeus from inside the cluster and one from outside in a VM
+Some Prometheus from inside the cluster and one from outside in a VM
 In AWS 9090 in /metrics
 
 *** Long term storage
@@ -331,7 +331,7 @@ garethr-docker puppet module.
 
 ** relabeling
 
-most useful part of phrometeus
+most useful part of Prometheus
 but maybe not very useful
 very flexyble
 
@@ -343,14 +343,11 @@ You can use:
 - Chart
 - Manual
 
-** Chart
+** Helm chart
+
+- [[https://github.com/helm/charts/tree/master/stable/prometheus]]
 
 You need helm.
-
-- [[https://github.com/kubernetes/helm/blob/master/docs/install.md]]
-- [[https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md]]
-- [[https://github.com/kubernetes/helm/blob/master/docs/chart_template_guide/subcharts_and_globals.md#subcharts-and-global-values]]
-- [[https://github.com/kubernetes/charts/tree/master/stable/prometheus#configuration]]
 
 After that:
 

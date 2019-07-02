@@ -29,7 +29,7 @@ your systems *to* give:
 - instrumentation
 - storage
 - querying
-- alerting
+- alerting (via alert manager)
 - dashboards
 
 It _FOCUS_ on operation system monitoring but can be used in other contexts.
@@ -134,19 +134,19 @@ one phrometeus that pulls every x minues
 
 ** Alerts
 
-a query that return timeseries
+Prometheus implements alerting via an aplication called alert manager.
+
+- [[https://prometheus.io/docs/alerting/overview/]]
+
+In this context an alert is a query that return a timeseries.
+When you add a query this way you can have two results:
+
 - no timeseries: all ok
 - some timeseries: an alert for each one of them
 
-nobody wants to set up an openbsd XD
+Alert manager is a different service but part of the same binary.
 
-alert manage is a different part?
-is a a different service but part
-of the binary
-
-pull doesn scale or it does it?
-
-** Pull
+** Pull method
 
 run on every network segment
 fewer step as possible
@@ -294,6 +294,39 @@ Thanos videos
 
 - [[https://www.youtube.com/watch?v=IpGfmmJ2hcw][Declarative Multi-Cluster Monitoring with Prometheus - Matthias Loibl, Loodse & Frederic Branczyk]]
 
+** Monitoring nodes (OBSOLETE - 2016)
+
+You may (_will_) have many exporter on a single node, each of them exposing the
+metrics of a single application that is not natively aware of Prometheus.
+However, one exporter you want for sure is the *node-exporter*.
+
+The node-exporter _exports_ the metrics of the node and is indeed something
+you want to have on any of your machine.
+
+*** Puppet
+
+This is how I installed it on my machines (we use Puppet at work):
+
+    class {'::docker':
+    }->
+    docker::run { 'prom-node-exporter':
+      image            => 'prom/node-exporter',
+      ports            => ['9100'],
+      expose           => ['9100'],
+      net              => 'host',
+      restart_service  => true,
+      privileged       => false,
+      pull_on_start    => false,
+      extra_parameters => [ '--restart=always' ],
+    }
+
+In the module _metadata.json_ you need to add the only dependency this code has:
+garethr-docker puppet module.
+
+    "dependencies": [
+      {"name":"garethr-docker","version_requirement":">= 5.3.0"}
+    ],
+
 * Advanced
 
 ** relabeling
@@ -301,3 +334,55 @@ Thanos videos
 most useful part of phrometeus
 but maybe not very useful
 very flexyble
+
+* Prometheus on k8s - Installation (OBSOLETE - 2017)
+
+You can use:
+
+- [[https://github.com/coreos/prometheus-operator][Operator]] (too much for now)
+- Chart
+- Manual
+
+** Chart
+
+You need helm.
+
+- [[https://github.com/kubernetes/helm/blob/master/docs/install.md]]
+- [[https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md]]
+- [[https://github.com/kubernetes/helm/blob/master/docs/chart_template_guide/subcharts_and_globals.md#subcharts-and-global-values]]
+- [[https://github.com/kubernetes/charts/tree/master/stable/prometheus#configuration]]
+
+After that:
+
+    helm install stable/prometheus
+
+- https://github.com/kubernetes/charts/tree/master/stable/prometheus
+
+*NOTE*: If you do this you won't be able to point an ingress to it!
+
+    NAME                                    CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+    fun-owl-prometheus-alertmanager         10.99.192.59     <none>        80/TCP                       20m
+    fun-owl-prometheus-kube-state-metrics   None             <none>        80/TCP                       20m
+    fun-owl-prometheus-node-exporter        None             <none>        9100/TCP                     20m
+    fun-owl-prometheus-server               10.104.246.185   <none>        80/TCP                       20m
+
+So or you add a new service that doesn't change name, or you point the ingress
+to a name that WILL change.
+
+Also you miss new targets.
+
+    server.ingress.enabled
+    server.ingress.hosts
+    alertmanager.ingress.enabled
+    alertmanager.ingress.hosts
+
+Pass that!
+
+    helm upgrade <name-generated> stable/prometheus \
+    --set server.ingress.enabled=true \
+    --set server.ingress.hosts='{prom-URI}' \
+    --set alertmanager.ingress.enabled=true \
+    --set alertmanager.ingress.hosts='{am-URI}' \
+    -f values.yaml
+
+*NOTE*: Array are passed via [[https://github.com/kubernetes/helm/blob/master/docs/using_helm.md#the-format-and-limitations-of---set][curly braces]].

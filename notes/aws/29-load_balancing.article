@@ -5,6 +5,14 @@ Load Balancing
 
 An hybrid layer4/5 load balancer.
 
+It allows UDP load balancing: [[https://aws.amazon.com/blogs/aws/new-udp-load-balancing-for-network-load-balancer/]]
+
+    UDP on Network Load Balancers is supported for Instance target types (IP
+    target types and PrivateLink are not currently supported).
+    [...]
+    health checks must be done using TCP, HTTP, or HTTPS.
+    Source: https://aws.amazon.com/blogs/aws/new-udp-load-balancing-for-network-load-balancer/
+
 ** BAD: Allow Healthcheck from NLB requires whitelisting entire subnets
 
 - [[https://forums.aws.amazon.com/thread.jspa?threadID=263245]]

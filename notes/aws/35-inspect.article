@@ -1,0 +1,75 @@
+AWS Inspect
+|| Last update: 8 Jul 2019
+
+* Intro
+
+It is REGION wide. You will need to replicate the code in each region.
+
+** Installation
+
+- [[https://docs.aws.amazon.com/inspector/latest/userguide/inspector_agents-on-linux.html]]
+
+You can istall is also via SSM if you want to do it via AWS.
+
+** Install via ansible
+
+In your requirements.yml:
+
+    - src: git+https://github.com/geerlingguy/ansible-role-aws-inspector.git
+      version: 15387c24bba9728f4044b3850f05ef7434fa9904
+      name: aws-inspector
+
+Then in the role:
+
+* Permission
+
+Inspector doesn't need any specific right for the vulnerability scan.
+You just need to be able to download and install the agent.
+
+* Notifications
+
+You can send a notification to an SNS topic.
+You can invoke a lambda from SNS if needed.
+An example of the lambda is here ([[https://aws.amazon.com/blogs/aws/scale-your-security-vulnerability-testing-with-amazon-inspector/]], beware is 2016)
+An example of auto-update in case of vulnerability is here [[https://aws.amazon.com/blogs/security/how-to-remediate-amazon-inspector-security-findings-automatically/]]
+
+When you create the SNS topic you need to add the right to inspector to write
+on it.
+
+    {
+      "Version": "2008-10-17",
+      "Id": "inspector-sns-publish-policy",
+      "Statement": [
+        {
+          "Sid": "inspector-sns-publish-statement",
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "inspector.amazonaws.com"
+          },
+          "Action": "SNS:Publish",
+          "Resource": "arn:aws:sns:*"
+        }
+      ]
+    }
+    # https://aws.amazon.com/blogs/aws/scale-your-security-vulnerability-testing-with-amazon-inspector/
+
+* Security
+
+** CVE
+
+- [[http://docs.aws.amazon.com/inspector/latest/userguide/inspector_cves.html]]
+- [[http://docs.aws.amazon.com/inspector/latest/userguide/inspector_findings.html]]
+
+    Amazon Inspector performs security assessments of Amazon EC2 instances by
+    using AWS managed rules packages such as the Common Vulnerabilities and
+    Exposures (CVEs) package.
+    Source: https://aws.amazon.com/blogs/security/how-to-set-up-continuous-golden-ami-vulnerability-assessments-with-amazon-inspector/
+
+** Network exposure
+
+- [[https://aws.amazon.com/blogs/security/amazon-inspector-assess-network-exposure-ec2-instances-aws-network-reachability-assessments/]]
+
+* Re/Sources
+
+- [[https://aws.amazon.com/blogs/security/how-to-set-up-continuous-golden-ami-vulnerability-assessments-with-amazon-inspector/]], 20 DEC 2017
+- [[https://aws.amazon.com/blogs/security/how-to-remediate-amazon-inspector-security-findings-automatically/]], 08 FEB 2017

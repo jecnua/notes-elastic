@@ -1,5 +1,5 @@
 AWS Inspect
-|| Last update: 8 Jul 2019
+|| Last update: 13 Jul 2019
 
 * Intro
 
@@ -9,7 +9,7 @@ It is REGION wide. You will need to replicate the code in each region.
 
 - [[https://docs.aws.amazon.com/inspector/latest/userguide/inspector_agents-on-linux.html]]
 
-You can istall is also via SSM if you want to do it via AWS.
+You can install is also via SSM if you want to do it via AWS.
 
 ** Install via ansible
 
@@ -36,22 +36,57 @@ An example of auto-update in case of vulnerability is here [[https://aws.amazon.
 When you create the SNS topic you need to add the right to inspector to write
 on it.
 
-    {
-      "Version": "2008-10-17",
-      "Id": "inspector-sns-publish-policy",
-      "Statement": [
-        {
-          "Sid": "inspector-sns-publish-statement",
-          "Effect": "Allow",
-          "Principal": {
-            "Service": "inspector.amazonaws.com"
-          },
-          "Action": "SNS:Publish",
-          "Resource": "arn:aws:sns:*"
-        }
-      ]
+    resource "aws_sns_topic" "sns_topic_aws_inspector" {
+      name         = "eu-west-1-aws-inspector"
+      display_name = "eu-west-1-aws-inspector"
     }
-    # https://aws.amazon.com/blogs/aws/scale-your-security-vulnerability-testing-with-amazon-inspector/
+
+    resource "aws_sns_topic_policy" "sns_topic_aws_inspector_policy" {
+      arn = "${aws_sns_topic.sns_topic_aws_inspector.arn}"
+
+      policy = <<EOF
+    {
+     "Version": "2008-10-17",
+     "Id": "inspector-sns-publish-policy",
+     "Statement": [
+       {
+         "Sid": "inspector-sns-publish-statement",
+         "Effect": "Allow",
+         "Principal": {
+           "Service": "inspector.amazonaws.com"
+         },
+         "Action": "SNS:Publish",
+         "Resource": "${aws_sns_topic.sns_topic_aws_inspector.arn}"
+       }
+     ]
+    }
+    EOF
+    }
+
+Then you will have to register your email manually.
+
+Example of CF template SNS policy:
+
+- [[https://github.com/kyhau/aws-cf-templates/blob/master/templates/Inspector-SNS.template]]
+
+Good example:
+
+- [[https://gist.github.com/wokamoto/c8362fa35909b5360f04cae9ebd81400]]
+
+** Terraform limitations
+
+At the moment there is not way to connect the new created inspect template to
+an SNS topic. A request is open but it's stale.
+
+The only thing I found https://github.com/kyhau/aws-cf-templates/blob/master/templates/Inspector-SNS.template
+
+Example in CF:
+
+- [[https://github.com/awslabs/server-fleet-management-at-scale/blob/master/deployment/server-fleet-management-at-scale-inspector.yaml]]
+
+* Triggers
+
+- [[https://aws.amazon.com/about-aws/whats-new/2017/07/amazon-inspector-adds-event-triggers-to-automatically-run-assessments/]]
 
 * Security
 
@@ -69,7 +104,18 @@ on it.
 
 - [[https://aws.amazon.com/blogs/security/amazon-inspector-assess-network-exposure-ec2-instances-aws-network-reachability-assessments/]]
 
+* Monitoring
+
+- [[https://docs.aws.amazon.com/inspector/latest/userguide/using-cloudwatch.html]]
+
+Not much on that side.
+
+* TO READ
+
+- [[https://github.com/SumoLogic/sumologic-aws-lambda/blob/master/inspector/python/inspector.py]]
+
 * Re/Sources
 
+- [[https://www.cloudreach.com/en/insights/blog/how-to-continuously-assess-the-security-of-your-amis/]], February 23rd, 2018
 - [[https://aws.amazon.com/blogs/security/how-to-set-up-continuous-golden-ami-vulnerability-assessments-with-amazon-inspector/]], 20 DEC 2017
 - [[https://aws.amazon.com/blogs/security/how-to-remediate-amazon-inspector-security-findings-automatically/]], 08 FEB 2017

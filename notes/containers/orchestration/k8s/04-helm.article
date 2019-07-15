@@ -1,10 +1,23 @@
-Helm (chaotic notes - NEEDS UPDATING)
-|| Last update: 10 May 2019
+Helm 2
+|| Last update: 13 Jul 2019
 
 * Intro
 
-Package manager for kubernetes. He uses charts. Templates to deploy what you
-need to deploy.
+- [[https://helm.sh/]]
+- [[https://helm.sh/docs/]]
+- [[https://helm.sh/docs/chart_best_practices/#the-chart-best-practices-guide]]
+
+Helm is a tool to allow the reuse and composability of releases in k8s.
+It bundles yaml files in charts and using this charts will release the
+services in kubernetes. Helm charts are build on top of k8s resources.
+It have a powerful mechanism of templating (go) that allow the injection of
+values at deployment time (otherwise will use the defaults).
+
+Enable compositions via dependencies (it can use other charts).
+
+* History
+
+Originated by Deis in 2015 and donated to the CNCF in 2018.
 
 ** Why
 
@@ -13,7 +26,7 @@ You can always do a:
   kubectl apply -f dir/*
 
 So why use helm? helm has the concept of _releases_.
-releases are stored as _configMaps_ inside kubernetes and are made by
+Releases are stored as _configMaps_ inside kubernetes and are made by
 the totality of all the resources applied to kubernetes.
 
 - PRO: reuse code, templating, delete unused resources
@@ -23,24 +36,81 @@ kubectl we apply don't delete anything that's not present anymore.
 If you in the latest version of your YAML do no have a resource
 anymore, it will leave it there. HELM instead removes it.
 
-* Concept
+* Concepts
+
+- [[https://www.slideshare.net/djablonski/steering-the-course-with-helm]]
+
+.image images/helm-infra.jpg
+.caption Source: https://www.ibm.com/cloud/garage/content/course/helm-fundamentals/1
 
 - Chart
 - Repository
 - Release
+- Template
+
+Tiller is what applies the
+
 
 ** Charts
 
-Is the template of a kubernetes resource.
-Charts have versions.
+They consist of a YAML configuration files and templates that are rendered into
+Kubernetes manifest files. It a wrapping of resources that bundles together:
+
+- metadata
+- templates
+- default values
+- docs
+
+You can generate a skeleton of a chart with the command:
+
+    helm create
+
+Charts uses semantic versioning.
+
+The default value files are stored in the _values.yaml_ in the root of the chart.
+They can be overridden later.
+
+Charts are stored in a registry called *helm*museum*.
 
 ** Repositories
 
-Repositories are just a bucket for charts.
+- [[https://github.com/helm/charts/tree/master/stable]]
+- [[https://chartmuseum.com/]]
+- [[https://www.cncf.io/wp-content/uploads/2018/08/Continuous-Delivery-for-Kubernetes-Apps-with-Helm-and-ChartMuseum.pdf]] - Aug 2018
+
+A _repositories_ is a web server with an index.yaml
+You can use git repository.
+Charts can be packaged into chart archives (a .tar.gz) packaged version.
+These packaged charts can also be automatically downloaded and installed from
+chart repositories or repos.
+
+You can create your own chart repository with [[https://chartmuseum.com/][chartmuseum]].
+
+Other interesting repositories are:
+
+- https://github.com/helm/charts/tree/master/incubator
+- https://bitnami.com/stacks/helm
 
 ** Release
 
-A _release_ is an instance of a chart.
+A _release_ is an instance of a chart that is loaded in k8s.
+Information about releases are stored as config maps.
+
+    helm install <stable>
+    #
+    helm install stable/prometheus
+
+When you run:
+
+    helm upgrade
+
+It will change the release to a new release.
+
+** Template
+
+- [[https://helm.sh/docs/chart_template_guide/]]
+
+A k8s configuration file mixed with go/spring templates.
 
 * Installation
 
@@ -55,12 +125,24 @@ This example will download the binary in _/tmp_:
   tar xvf helm-v2.13.1-linux-amd64.tar.gz
   cd linux-amd64/
   ./helm --help
-  ./helm search
-  ./helm init
   # Then put it in your path
   # sudo cp helm ~/bin/helm
 
+Helm init will install a *tiller* application in your k8s cluster.
+
+** Mac
+
+With brew:
+
+    brew install kubernetes-helm
+
 * Usage
+
+- [[https://helm.sh/docs/helm/#helm-init]]
+
+  helm init --wait
+
+Then:
 
   helm repo update
   helm update
@@ -71,32 +153,162 @@ Create your own repo with charts
 
 If you want to just see what he is going to do:
 
-    helm install xxx --debug --dry-run
+    helm install <chart> --debug --dry-run
 
-* Rest
+Is a good idea to give a name to releases. If you don't it will give it a
+random name.
 
-Deploy a set of services and deployments.
-Information about releases are stored as config maps.
+    helm install --name prometheus stable/prometheus --debug --dry-run
 
-1) initialise (tiller) - get all help resources
-2) help clent
+The debug flag will output the yaml that will actually be used and applied to
+the cluster.
 
-    helm init
+- [[https://helm.sh/docs/helm/#helm-template]]
 
-(deployments)
+    helm delete --purge <name>
 
-    help repo updates
+You can rollback to another release.
 
-git push
-drone.io build the project
-builds the docker image
-help plugin
-call the help chart and change the value
-all this info is passed to helm
-and send it to the cluster
+* Templating
+
+Templating uses the go templating language:
+
+    {{ .Values.service.name }}
+
+Comes from a value file.
+
+There can be helpers file. The all begin with _ and they WON'T be rendered.
+They contain helpers can are reused in multiple places inside the charts.
+By conventions they end in _.tpl_.
+
+* Overriding values
+
+THE OVERRIDE ORDER IS CLEARLY DEFINED
+
+    These values can be overridden by writing your own YAML file and using it when
+    running helm install, or by setting options individually on the command line
+    with the --set flag. You only need to specify those values that you want to
+    change from the defaults.
+    Source: https://www.digitalocean.com/community/tutorials/an-introduction-to-helm-the-package-manager-for-kubernetes
+
+From command line (imperative) will look something like this:
+
+    helm upgrade <name> --set replicaCount=3,image=xyz <chartname>
+
+Best way you define a new value file and use that to override the default value
+since it's declarative.
+
+    helm install test --values overrides.yaml
+
+You can see all the values defines in a chart with:
+
+    helm inspect values <chart_name>
+
+* Dependencies
+
+Dependencies are defined in the _requirements.yaml_ file.
+They follow the following syntax.
+
+    dependencies:
+    - name: aname
+      version: ^0.1.0
+      repository: "@xyz"
+
+*NOTE*: In helm 3 the _requirements_ file will be merged into the main Chart.yaml
+
+* Create a new chart
+
+To create a new chart use:
+
+    helm create <name>
+
+It will create a new directory with the following files inside:
+
+    .
+    ├── Chart.yaml
+    ├── charts
+    ├── templates
+    │   ├── NOTES.txt
+    │   ├── _helpers.tpl
+    │   ├── deployment.yaml
+    │   ├── ingress.yaml
+    │   ├── service.yaml
+    │   └── tests
+    │       └── test-connection.yaml
+    └── values.yaml
+
+To apply a local chart, point to the path:
+
+      helm install <path>
+      # for example from the
+      helm install mychart
+      # or from inside the chart
+      helm install .
+
+You can see all the generated yaml before applying:
+
+      helm template mytest | less
+
+* Flow control and advanced capabilities
+
+There are way to impose flow control:
+
+- If/else
+- with
+- range
+- variables (in range)
+- nested templates
+- files inside a template
+- glob patterns and encoding
+
+One trick to autodeploy every time a config map changes is to add:
+
+    spec:
+      template:
+        metadata:
+          annotations:
+            checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+
+or use:
+
+    helm upgrade --recreate-pods
+
+** Hooks
+
+- [[https://helm.sh/docs/developing_charts/#hooks]]
+
+Helm have hook to allow a better release process:
+
+- pre-install
+- pre-upgrade
+- post-upgrade
+- post-install
+
+- pre-delete
+- pre-rollback
+- post-rollback
+- post-delete
+
+- crd-install
+
+* Security
+
+Options to enforce access control with Helm:
+
+- Deploy tiller per namespace with RBAC and client certs
+- Use: helm --template test | kubectl -f -
+- Wait for Helm 3
 
 * Helm 3
 
 - [[https://sweetcode.io/a-first-look-at-the-helm-3-plan/]]
+- [[https://github.com/helm/helm/releases/tag/v3.0.0-alpha.1]] - 15 May 2019
 
 Moving to Lua.
+
+* Re/Sources
+
+- GOOD SLIDES - [[https://speakerdeck.com/devopsgatheringio/04-helm-build-fashionable-container-systems-with-kubernetes-by-peter-rossbach]] - 12 Mar 2019
+- [[https://medium.com/dailymotion/deploying-apps-on-multiple-kubernetes-clusters-with-helm-19ee2b06179e]] - 14 Jun 2019
+- [[https://www.digitalocean.com/community/tutorials/an-introduction-to-helm-the-package-manager-for-kubernetes]] - 6 August 2018
+- [[https://github.com/helm/helm/issues/1569#issuecomment-261662068]]

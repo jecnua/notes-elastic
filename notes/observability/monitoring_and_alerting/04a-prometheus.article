@@ -1,4 +1,4 @@
-Prometheus (need refining)
+Prometheus (OBSOLETE - TO BE CLEANED)
 || Last update: 13 Feb 2019
 
 * Disclaimer
@@ -146,10 +146,19 @@ When you add a query this way you can have two results:
 
 Alert manager is a different service but part of the same binary.
 
+To make alert manager to point to the correct Prometheus DNS (and not the pod
+id/name) in Helm you need to set the option _baseURL_:
+
+    server:
+      baseURL: https://prometheus.mydomain.com
+
+- [[https://github.com/helm/charts/tree/master/stable/prometheus]]
+
 ** Pull method
 
 run on every network segment
 fewer step as possible
+
 - open port in firewll/router
 - open VPN tunnel
 
@@ -294,6 +303,8 @@ Thanos videos
 
 - [[https://www.youtube.com/watch?v=IpGfmmJ2hcw][Declarative Multi-Cluster Monitoring with Prometheus - Matthias Loibl, Loodse & Frederic Branczyk]]
 
+*
+
 ** Monitoring nodes (OBSOLETE - 2016)
 
 You may (_will_) have many exporter on a single node, each of them exposing the
@@ -303,77 +314,23 @@ However, one exporter you want for sure is the *node-exporter*.
 The node-exporter _exports_ the metrics of the node and is indeed something
 you want to have on any of your machine.
 
-*** Puppet
-
-This is how I installed it on my machines (we use Puppet at work):
-
-    class {'::docker':
-    }->
-    docker::run { 'prom-node-exporter':
-      image            => 'prom/node-exporter',
-      ports            => ['9100'],
-      expose           => ['9100'],
-      net              => 'host',
-      restart_service  => true,
-      privileged       => false,
-      pull_on_start    => false,
-      extra_parameters => [ '--restart=always' ],
-    }
-
-In the module _metadata.json_ you need to add the only dependency this code has:
-garethr-docker puppet module.
-
-    "dependencies": [
-      {"name":"garethr-docker","version_requirement":">= 5.3.0"}
-    ],
-
-* Advanced
-
-** relabeling
-
-most useful part of Prometheus
-but maybe not very useful
-very flexyble
-
-* Prometheus on k8s - Installation (OBSOLETE - 2017)
+* Prometheus on k8s
 
 You can use:
 
-- [[https://github.com/coreos/prometheus-operator][Operator]] (too much for now)
-- Chart
-- Manual
+- [[https://github.com/coreos/prometheus-operator][Operator]]
+- Helm chart
+- Manually
 
 ** Helm chart
 
 - [[https://github.com/helm/charts/tree/master/stable/prometheus]]
 
-You need helm.
-
-After that:
+You can install prometheus simply by running:
 
     helm install stable/prometheus
 
-- https://github.com/kubernetes/charts/tree/master/stable/prometheus
-
-*NOTE*: If you do this you won't be able to point an ingress to it!
-
-    NAME                                    CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
-    fun-owl-prometheus-alertmanager         10.99.192.59     <none>        80/TCP                       20m
-    fun-owl-prometheus-kube-state-metrics   None             <none>        80/TCP                       20m
-    fun-owl-prometheus-node-exporter        None             <none>        9100/TCP                     20m
-    fun-owl-prometheus-server               10.104.246.185   <none>        80/TCP                       20m
-
-So or you add a new service that doesn't change name, or you point the ingress
-to a name that WILL change.
-
-Also you miss new targets.
-
-    server.ingress.enabled
-    server.ingress.hosts
-    alertmanager.ingress.enabled
-    alertmanager.ingress.hosts
-
-Pass that!
+Some possible options:
 
     helm upgrade <name-generated> stable/prometheus \
     --set server.ingress.enabled=true \

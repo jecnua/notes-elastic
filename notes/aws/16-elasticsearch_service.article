@@ -1,5 +1,5 @@
 Amazon Elasticsearch Service
-|| Last update: 14 Mar 2019
+|| Last update: 17 Jul 2019
 
 * Intro
 
@@ -39,6 +39,20 @@ If you use a SG don't use the policy.
 * Server size
 
 - [[https://aws.amazon.com/elasticsearch-service/pricing/]]
+
+* Data retention
+
+- [[https://aws.amazon.com/about-aws/whats-new/2019/07/amazon-elasticsearch-service-increases-data-protection-with-automated-hourly-snapshots-at-no-extra-charge/]]
+- [[https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-managedomains-snapshots.html]]
+
+The service will snapshot your data hourly and keep it for 14 days free of charge.
+
+    For domains running Elasticsearch 5.3 and later, Amazon ES takes hourly
+    automated snapshots and retains up to 336 of them for 14 days.
+    For domains running Elasticsearch 5.1 and earlier, Amazon ES takes daily
+    automated snapshots (during the hour you specify) and retains up to 14 of
+    them for 30 days.
+    Souce: https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-managedomains-snapshots.html
 
 * Re/Sources
 

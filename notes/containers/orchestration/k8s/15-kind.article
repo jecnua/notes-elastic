@@ -4,3 +4,7 @@ Kind
 * Intro
 
 - [[https://www.loodse.com/blog/2019-03-12-running-kubernetes-in-the-ci-pipeline-/]]
+
+You can create a cluster in a couple of minutes with:
+
+    kind create cluster

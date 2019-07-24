@@ -1,0 +1,60 @@
+DNS resolution in k8s
+|| Last update: 24 Jul 2019
+
+* Intro
+
+- [[https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pods]]
+- [[https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/]]
+- [[https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/]]
+
+** DNS resolution
+
+- [[https://github.com/gliderlabs/docker-alpine/issues/8]]
+
+Alpine does not support more than 3
+
+- [[https://wiki.musl-libc.org/functional-differences-from-glibc.html]]
+- [[https://github.com/gliderlabs/docker-alpine/issues/255]]
+
+DON'T USE ALPINE!!!
+
+** ndots
+
+- [[https://pracucci.com/kubernetes-dns-resolution-ndots-options-and-why-it-may-affect-application-performances.html]]
+
+* CoreDNS
+
+- [[https://coredns.io/]]
+- [[https://github.com/coredns/deployment/blob/master/kubernetes/Scaling_CoreDNS.md]]
+- [[https://coredns.io/2018/05/21/migration-from-kube-dns-to-coredns/]] - 21 May, 2018
+
+** Issues
+
+- [[https://blog.quentin-machu.fr/2018/06/24/5-15s-dns-lookups-on-kubernetes/]]
+
+* SkyDNS (old)
+
+- [[https://rsmitty.github.io/KubeDNS-Tweaks/]]
+
+Also known as kube-dns is the predecessor or CoreDNS.
+
+** Issues
+
+- [[https://github.com/kubernetes/kubernetes/issues/47142#issuecomment-434039955][kube-dns : Intermittent dns issue from pods to external server]]
+- [[https://github.com/kubernetes/dns/issues/85][DNS failures for internal AWS URLs]]
+- [[https://www.weave.works/blog/racy-conntrack-and-dns-lookup-timeouts]] - AUGUST 16, 2018
+
+** Grafana
+
+- [[https://grafana.com/grafana/dashboards/3152]]
+- [[https://grafana.com/grafana/dashboards/6320]]
+
+I combined both of them here:
+
+- [[https://gist.github.com/jecnua/81240d6d24e9baea845e153170c97391]]
+
+* AWS integration
+
+- [[https://kubernetes.io/blog/2017/04/configuring-private-dns-zones-upstream-nameservers-kubernetes/]] - April 04, 2017
+- [[https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html]]
+- [[https://d0.awsstatic.com/whitepapers/hybrid-cloud-dns-options-for-vpc.pdf]]

@@ -111,7 +111,6 @@ The k8s aws script use flannel.
 Flannel manages the docker bridge and talk at the start with etcd for subnet info.
 
 To do service discovery the proxy will query k8s. Paying 0 hit is difficult (almost impossible) but paying 1 hop for discovery should be acceptable in most cases. So this way of using VIP and proxies works in most cases.
-There are alternative mechanism like DNS but you have to configure it (???)
 
 All pods are in the same underlying flannel network and you *can't* contact them *directly* from outside the system. Nor you should. If you want to access from outside use *services*.
 
@@ -166,10 +165,6 @@ This way there is no risk of losing it. It can be moved around.
 How do you ensure memcached is on the same server as your application? What happens is that in docker you can share network namespaces to allow this app to talk like they are in _localhost_. This is done by k8s by creating a small, empty container that *own* the network (grabs the ip), that the others int he pod will *join* to share it. This container won't be seen in any kubectl command.
 This infrastructure pod consume no resource. Any other container is the pod says to docker "gimme a container and make me join the network of THAT container". In this way they logically became the same group.
 
-*** DNS
-
-.link http://kubernetes.io/docs/admin/dns/ Dns
-
 *** Node ip
 
     $ kubectl describe service my-nginx
@@ -214,12 +209,6 @@ More on other docs.
 Or that one :)
 
 .link http://kubernetes.io/docs/user-guide/horizontal-pod-autoscaling/ pod autoscaling
-
-* Advices
-
-- Enable cross zone load balancing when using LoadBalancer (1.4+ is not manual)
-- DNS addon could get under load easily. Scale as required.
-- Study all the components under kube-system
 
 * Releases
 

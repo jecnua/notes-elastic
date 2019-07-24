@@ -1,0 +1,21 @@
+External dns
+|| Last update: 24 Jul 2019
+
+* Intro
+
+- [[https://github.com/kubernetes-incubator/external-dns]]
+- [[https://github.com/helm/charts/tree/master/stable/external-dns]]
+
+A kubernetes cluster can manages route53 via external-dns.
+The app manage a route53 hosted zone by adding/removing record sets.
+When a new ingress is created, external-dns checks if the record set for it
+already exists.
+If it already exists checks if the record was created by itself or not.
+External-dns controls this by checking if there is a TXT entry with the same
+name.
+When it creates a record set it also create a TXT entry.
+If yes the record will be update. If not it will be ignored.
+There is nothing in the logs that says the route was created in another way and
+needs to be ignored.
+External-dns is also able to remove a route if the ingress is deleted (only if
+it was created by itself).

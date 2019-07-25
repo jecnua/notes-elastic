@@ -1,0 +1,30 @@
+kube2iam
+|| Last update: 25 Jul 2019
+
+* Intro
+
+    {"asctime": "2019-07-25 07:47:28", "levelname": "ERROR", "message": "Unable
+    to scrape xxx statistics from ap-southeast-2 because of error: Unable to
+    locate credentials"}
+
+This is the exact reason we’re removing it, it’s very unreliable
+and the issue in Github we’ve found is still pending as open
+
+- [[https://github.com/jtblin/kube2iam/issues/178][GITHUB ISSUE: Interface conversion fails, causing pods not to get credentials.]] OPEN SINCE 2018
+
+the pods fail to retrieve the credentials from the /security_credentials endpoint
+(or something similar)
+
+    /latest/meta-data/iam/security-credentials/
+
+the pods get a 404 from there .. but it doesn’t happen to all pods in the
+daemonset, which is very strange
+
+** Helmfile
+
+- name: kube2iam
+  namespace: kube-system
+  chart: stable/kube2iam
+  version: 0.9.1
+  values:
+    - ../<value_file>

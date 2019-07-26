@@ -14,7 +14,6 @@ CKA notes
 - env from
 - how can the pod see in the env pod name and other info
 - pod presets
-- pod priority class
 - are pod ip in statefulset static?
 - Search for QUESTION
 
@@ -1241,7 +1240,7 @@ The PriorityClass will impact the:
 
 - Scheduling order
 - Preemption: allows graceful termination period
-- Pod distruption budget.
+- Pod disruption budget
 
 You can also set Quotas and assign it to a priority class via a ScopeSelector.
 
@@ -1264,6 +1263,14 @@ You can also set Quotas and assign it to a priority class via a ScopeSelector.
             values: ["high"]
 
 You need to create a priority object and add the class in the pod definition.
+
+A new option in stable (1.15) added the capability to enable or disable pod
+preemption.
+
+    Add a Preempting field to both PodSpec and PriorityClass. Setting the Preempting field in
+    PriorityClass provides a straightforward interface, and allows ResourceQuotas to restrict
+    preemption.
+    Source: https://www.cncf.io/wp-content/uploads/2019/07/CNCF-Webinar_-Kubernetes-1.15.pdf
 
 *** Node selector
 
@@ -1742,6 +1749,14 @@ A service for which Kubernetes does not provide a ClusterIP is called
 [[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services][headless]].
 
 A service can expose multiple ports, but in this case they need to be named.
+
+*** Service LoadBalancer finalizer - ALPHA 1.15
+
+- [[https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#garbage-collecting-load-balancers]]
+
+Is a protection to ensure that the service resource is not fully deleted until
+the load balancer resource is deleted. Any service of type load balancer will be
+attached a finalize, which should be removed by service controller upon cleanup.
 
 *** Service discovery (DNS)
 

@@ -1,0 +1,17 @@
+Storage
+|| Last update: 25 Jul 2019
+
+* Ephemereal storage
+
+Shared storage between containers in a pod.
+
+** Ephemereal storage - BETA 1.15
+
+    This enhancement utilizes filesystem project
+    quotas to provide monitoring of resource
+    consumption and optionally enforcement of
+    limits. Project quotas offer a kernel-based
+    means of monitoring and restricting filesystem
+    consumption that can be applied to one or
+    more directories.
+    Source: https://www.cncf.io/wp-content/uploads/2019/07/CNCF-Webinar_-Kubernetes-1.15.pdf

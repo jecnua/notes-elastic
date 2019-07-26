@@ -1,0 +1,19 @@
+PDP - Pod Disruption Budget
+|| Last update: 25 Jul 2019
+
+* Intro
+
+- [[https://kubernetes.io/docs/concepts/workloads/pods/disruptions/]]
+- [[https://kubernetes.io/docs/tasks/run-application/configure-pdb/]]
+
+1.15 (BETA) PDB Controls the number of voluntary disruptions for workloads on
+kubernetes. You can define it via:
+
+- Minimum available
+- Maximum unavailable
+
+PDB needs to know the desired number of replicas specified in a controller and
+at the moment it only knows 4:
+
+Now it support everything that implements the
+[[https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/horizontal-pod-autoscaler.md#scale-subresource][scale subresource]].

@@ -1,5 +1,5 @@
 DNS resolution in k8s
-|| Last update: 24 Jul 2019
+|| Last update: 25 Jul 2019
 
 * Intro
 
@@ -27,6 +27,16 @@ DON'T USE ALPINE!!!
 - [[https://coredns.io/]]
 - [[https://github.com/coredns/deployment/blob/master/kubernetes/Scaling_CoreDNS.md]]
 - [[https://coredns.io/2018/05/21/migration-from-kube-dns-to-coredns/]] - 21 May, 2018
+
+** NodeLocal DNSCache - BETA 1.15
+
+Is an addon run a dns cache pod as DS to improve perf and availability.
+runs as node local dns pod. CoreDNS.
+
+host-network set to true
+create a dedicated dummy interface with a link local ip to listen to dns queries
+
+cache listen to the instance that cluster dns is there for case misses.
 
 ** Issues
 

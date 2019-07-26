@@ -1,148 +1,41 @@
 Kubeadm (OBSOLETE)
-|| Last update: 11 Dec 2018 || kubeadm 1.13.0
+|| Last update: 25 Jul 2019 || kubeadm 1.15.0
 
 * Intro
-
-My project at [[https://github.com/jecnua/terraform-aws-kubernetes]]
 
 BEWARE: Is better to install kubelet of the same version of k8s you want to
 install with kubeadm or you could have this error:
 
-    │error execution phase preflight: [preflight] Some fatal errors occurred:
-    │ [ERROR KubeletVersion]: the kubelet version is higher than the control plane version. This is
-    │ not a supported version skew and may lead to a malfunctional cluster. Kubelet version: "1.13.0" Cont
-    │rol plane version: "1.12.3"
+from v 1.15 kubeadm control plane flag - still require lb pre-provisioners.
+inside kubeamd you
+put the control plane how it can be found. then add the upload cert flags. both
+nodes can be joined in any order. kubeamd automatic certificate copying. if not
+external dns, creates an etcd member in each control plane node. stack
+configuration file. also make it upgradable.  you can also upgrade.
 
+* kubeamd config file - BETA 1.15
 
+Set of yaml. Alternative to command line flags.
+Use of external ETCD
+utilizing kube proxy
+ext
 
-    [init] Using Kubernetes version: v1.13.0
-    [preflight] Running pre-flight checks
-            [WARNING Service-Docker]: docker service is not enabled, please run 'systemctl enable docker.service'
-    [preflight] Pulling images required for setting up a Kubernetes cluster
-    [preflight] This might take a minute or two, depending on the speed of your internet connection
-    [preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
-    [kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
-    [kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
-    [kubelet-start] Activating the kubelet service
-    [certs] Using certificateDir folder "/etc/kubernetes/pki"
-    [certs] Generating "etcd/ca" certificate and key
-    [certs] Generating "etcd/peer" certificate and key
-    [certs] etcd/peer serving cert is signed for DNS names [ip-10-0-11-44.eu-west-1.compute.internal localhost] and IPs [10.0.11.44 127.0.0.1 ::1]
-    [certs] Generating "apiserver-etcd-client" certificate and key
-    [certs] Generating "etcd/healthcheck-client" certificate and key
-    [certs] Generating "etcd/server" certificate and key
-    [certs] etcd/server serving cert is signed for DNS names [ip-10-0-11-44.eu-west-1.compute.internal localhost] and IPs [10.0.11.44 127.0.0.1 ::1]
-    [certs] Generating "ca" certificate and key
-    [certs] Generating "apiserver" certificate and key
-    [certs] apiserver serving cert is signed for DNS names [ip-10-0-11-44.eu-west-1.compute.internal kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.$
-    [certs] Generating "apiserver-kubelet-client" certificate and key
-    [certs] Generating "front-proxy-ca" certificate and key
-    [certs] Generating "front-proxy-client" certificate and key
-    [certs] Generating "sa" key and public key
-    [kubeconfig] Using kubeconfig folder "/etc/kubernetes"
-    [kubeconfig] Writing "admin.conf" kubeconfig file
-    [kubeconfig] Writing "kubelet.conf" kubeconfig file
-    [kubeconfig] Writing "controller-manager.conf" kubeconfig file
-    [kubeconfig] Writing "scheduler.conf" kubeconfig file
-    [control-plane] Using manifest folder "/etc/kubernetes/manifests"
-    [control-plane] Creating static Pod manifest for "kube-apiserver"
-    [control-plane] Creating static Pod manifest for "kube-controller-manager"
-    [control-plane] Creating static Pod manifest for "kube-scheduler"
-    [etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
-    [wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
-    [apiclient] All control plane components are healthy after 24.004987 seconds
-    [uploadconfig] storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
-    [kubelet] Creating a ConfigMap "kubelet-config-1.13" in namespace kube-system with the configuration for the kubelets in the cluster
-    [patchnode] Uploading the CRI Socket information "/var/run/dockershim.sock" to the Node API object "ip-10-0-11-44.eu-west-1.compute.internal" as an annotation
-    [mark-control-plane] Marking the node ip-10-0-11-44.eu-west-1.compute.internal as control-plane by adding the label "node-role.kubernetes.io/master=''"
-    [mark-control-plane] Marking the node ip-10-0-11-44.eu-west-1.compute.internal as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
-    [bootstrap-token] Using token: 3yg5wy.cp36onnk8u8y7lzj
-    [bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
-    [bootstraptoken] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
-    [bootstraptoken] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
-    [bootstraptoken] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
-    [bootstraptoken] creating the "cluster-info" ConfigMap in the "kube-public" namespace
-    [addons] Applied essential addon: CoreDNS
-    [addons] Applied essential addon: kube-proxy
+It can be used any moment after the installation too (like the upgrade).
 
+** Control plane in HA - BETA 1.15
 
-/var/lib/kubelet/kubeadm-flags.env
+Dynamic HA clusters can easily be created with the kubeadm tool using exactly
+the same kubeadm init and kubeadm join commands the users are familiar with,
+the only difference that you have to pass the --control-plane flag.
 
-KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf
+    sudo kubeadm init --config=kubeadm-config.yaml \
+      --upload-certs
 
-root@ip-10-0-11-44:/home/ubuntu# cat /var/lib/kubelet/config.yaml | grep staticPod
-staticPodPath: /etc/kubernetes/manifests
-root@ip-10-0-11-44:/home/ubuntu# ls -la /etc/kubernetes/manifests
-total 24
-drwxr-xr-x 2 root root 4096 Dec 11 15:41 .
-drwxr-xr-x 4 root root 4096 Dec 11 15:41 ..
--rw------- 1 root root 2029 Dec 11 15:41 etcd.yaml
--rw------- 1 root root 3182 Dec 11 15:41 kube-apiserver.yaml
--rw------- 1 root root 2964 Dec 11 15:41 kube-controller-manager.yaml
--rw------- 1 root root 1051 Dec 11 15:41 kube-scheduler.yaml
+################################################################################
+################################################################################
+################################################################################
 
-
-root@ip-10-0-11-44:/home/ubuntu# ls -la /etc/kubernetes/pki
-total 68
-drwxr-xr-x 3 root root 4096 Dec 11 15:41 .
-drwxr-xr-x 4 root root 4096 Dec 11 15:41 ..
--rw-r--r-- 1 root root 1090 Dec 11 15:41 apiserver-etcd-client.crt
--rw------- 1 root root 1679 Dec 11 15:41 apiserver-etcd-client.key
--rw-r--r-- 1 root root 1099 Dec 11 15:41 apiserver-kubelet-client.crt
--rw------- 1 root root 1679 Dec 11 15:41 apiserver-kubelet-client.key
--rw-r--r-- 1 root root 1269 Dec 11 15:41 apiserver.crt
--rw------- 1 root root 1675 Dec 11 15:41 apiserver.key
--rw-r--r-- 1 root root 1025 Dec 11 15:41 ca.crt
--rw------- 1 root root 1679 Dec 11 15:41 ca.key
-drwxr-xr-x 2 root root 4096 Dec 11 15:41 etcd
--rw-r--r-- 1 root root 1038 Dec 11 15:41 front-proxy-ca.crt
--rw------- 1 root root 1679 Dec 11 15:41 front-proxy-ca.key
--rw-r--r-- 1 root root 1058 Dec 11 15:41 front-proxy-client.crt
--rw------- 1 root root 1675 Dec 11 15:41 front-proxy-client.key
--rw------- 1 root root 1679 Dec 11 15:41 sa.key
--rw------- 1 root root  451 Dec 11 15:41 sa.pub
-
-And on the node:
-
-    Connecting to 10.0.11.44 port 6443
-    Connecting with token 3yg5wy.cp36onnk8u8y7lzj
-    [preflight] Running pre-flight checks
-            [WARNING Service-Docker]: docker service is not enabled, please run 'systemctl enable docker.service'
-    [discovery] Trying to connect to API Server "10.0.11.44:6443"
-    [discovery] Created cluster-info discovery client, requesting info from "https://10.0.11.44:6443"
-    [discovery] Failed to connect to API Server "10.0.11.44:6443": token id "3yg5wy" is invalid for this cluster or it has expired. Use "kubeadm token create" on the master node to creating a new valid token
-    [discovery] Trying to connect to API Server "10.0.11.44:6443"
-    [...]
-    [discovery] Created cluster-info discovery client, requesting info from "https://10.0.11.44:6443"
-    [discovery] Cluster info signature and contents are valid and no TLS pinning was specified, will use API Server "10.0.11.44:6443"
-    [discovery] Successfully established connection with API Server "10.0.11.44:6443"
-    [join] Reading configuration from the cluster...
-    [join] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
-    [kubelet] Downloading configuration for the kubelet from the "kubelet-config-1.13" ConfigMap in the kube-system namespace
-    [kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
-    [kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
-    [kubelet-start] Activating the kubelet service
-    [tlsbootstrap] Waiting for the kubelet to perform the TLS Bootstrap...
-    [patchnode] Uploading the CRI Socket information "/var/run/dockershim.sock" to the Node API object "ip-10-0-11-151.eu-west-1.compute.internal" as an annotation
-    This node has joined the cluster:
-    * Certificate signing request was sent to apiserver and a response was received.
-    * The Kubelet was informed of the new secure connection details.
-    Run 'kubectl get nodes' on the master to see this node join the cluster.
-    Cloud-init v. 18.4-0ubuntu1~18.04.1 running 'modules:final' at Tue, 11 Dec 2018 15:40:40 +0000. Up 35.96 seconds.
-    Cloud-init v. 18.4-0ubuntu1~18.04.1 finished at Tue, 11 Dec 2018 15:42:06 +0000. Datasource DataSourceEc2Local.  Up 121.79 seconds
-
-The flags:
-
-    $ cat /var/lib/kubelet/kubeadm-flags.env
-    KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf
-
-
-* Why?
-
-It will decouple me from using salt/ansible to configure the system
-and actually UNDERSTANDING how it works.
-
-* How does kubeadm works?
+* Usage
 
 Kubeadm will deploy:
 
@@ -150,7 +43,7 @@ Kubeadm will deploy:
 - kube-controller-manager
 - kube-scheduler
 
-It also by default run etcd in a container on the crontoller node
+It also by default run etcd in containers on the crontoller node.
 
 .image images/kubernetes-arch.png _ 400
 .caption Source: [[https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master][https://www.ianlewis.org/en/how-kubeadm-initializes-your-kubernetes-master]]
@@ -247,3 +140,51 @@ So now the new join call is:
 - [[http://kubernetes.io/docs/admin/kubeadm/][Kubeadm reference]]
 - [[http://kubernetes.io/docs/getting-started-guides/kubeadm/#limitations][Limitations]]
 - [[https://kubernetes.io/docs/tasks/administer-cluster/kubeadm-upgrade-1-7/][Upgrade from 1.6 to 1.7]]
+
+** NOTES TO CLEAN
+
+    │error execution phase preflight: [preflight] Some fatal errors occurred:
+    │ [ERROR KubeletVersion]: the kubelet version is higher than the control plane version. This is
+    │ not a supported version skew and may lead to a malfunctional cluster. Kubelet version: "1.13.0" Cont
+    │rol plane version: "1.12.3"
+
+    /var/lib/kubelet/kubeadm-flags.env
+
+    KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf
+
+    root@ip-10-0-11-44:/home/ubuntu# cat /var/lib/kubelet/config.yaml | grep staticPod
+    staticPodPath: /etc/kubernetes/manifests
+    root@ip-10-0-11-44:/home/ubuntu# ls -la /etc/kubernetes/manifests
+    total 24
+    drwxr-xr-x 2 root root 4096 Dec 11 15:41 .
+    drwxr-xr-x 4 root root 4096 Dec 11 15:41 ..
+    -rw------- 1 root root 2029 Dec 11 15:41 etcd.yaml
+    -rw------- 1 root root 3182 Dec 11 15:41 kube-apiserver.yaml
+    -rw------- 1 root root 2964 Dec 11 15:41 kube-controller-manager.yaml
+    -rw------- 1 root root 1051 Dec 11 15:41 kube-scheduler.yaml
+
+
+    root@ip-10-0-11-44:/home/ubuntu# ls -la /etc/kubernetes/pki
+    total 68
+    drwxr-xr-x 3 root root 4096 Dec 11 15:41 .
+    drwxr-xr-x 4 root root 4096 Dec 11 15:41 ..
+    -rw-r--r-- 1 root root 1090 Dec 11 15:41 apiserver-etcd-client.crt
+    -rw------- 1 root root 1679 Dec 11 15:41 apiserver-etcd-client.key
+    -rw-r--r-- 1 root root 1099 Dec 11 15:41 apiserver-kubelet-client.crt
+    -rw------- 1 root root 1679 Dec 11 15:41 apiserver-kubelet-client.key
+    -rw-r--r-- 1 root root 1269 Dec 11 15:41 apiserver.crt
+    -rw------- 1 root root 1675 Dec 11 15:41 apiserver.key
+    -rw-r--r-- 1 root root 1025 Dec 11 15:41 ca.crt
+    -rw------- 1 root root 1679 Dec 11 15:41 ca.key
+    drwxr-xr-x 2 root root 4096 Dec 11 15:41 etcd
+    -rw-r--r-- 1 root root 1038 Dec 11 15:41 front-proxy-ca.crt
+    -rw------- 1 root root 1679 Dec 11 15:41 front-proxy-ca.key
+    -rw-r--r-- 1 root root 1058 Dec 11 15:41 front-proxy-client.crt
+    -rw------- 1 root root 1675 Dec 11 15:41 front-proxy-client.key
+    -rw------- 1 root root 1679 Dec 11 15:41 sa.key
+    -rw------- 1 root root  451 Dec 11 15:41 sa.pub
+
+The flags:
+
+    $ cat /var/lib/kubelet/kubeadm-flags.env
+    KUBELET_KUBEADM_ARGS=--cgroup-driver=cgroupfs --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf

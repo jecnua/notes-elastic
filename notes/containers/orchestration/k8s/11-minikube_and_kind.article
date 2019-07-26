@@ -1,7 +1,15 @@
-Minikube
-|| Last update: 6 Mar 2017
+Minikube and Kind
+|| Last update: 16 Apr 2019
 
-* Intro
+* Kind
+
+- [[https://www.loodse.com/blog/2019-03-12-running-kubernetes-in-the-ci-pipeline-/]]
+
+You can create a cluster in a couple of minutes with:
+
+    kind create cluster
+
+* Minikube
 
 Minikube is a tool you can sue to install a local cluster (one node) of k8s.
 

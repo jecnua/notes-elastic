@@ -1,0 +1,29 @@
+CRD - Custom Resource Definitions
+|| Last update: 25 Jul 2019
+
+* Intro
+
+- [[https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md]]
+- [[https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/]]
+- [[https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/]]
+
+A resource is an endpoint in the api server and that stores a collection of
+object of that type a custom resource is an extension of that api
+that represent a customisation of that installation
+
+in 1.15 (ALPHA) the added defeating and pruning for them.
+now you can ensure api compatibility when you upgrade version
+so now you can specify defaults.
+these needs to support
+[[https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md][OpenAPI v3 schema]]
+validation schemas in the manifest.
+this will also allow pruning. they force consistency.
+behind feature gate.
+
+it helps security and consistency.
+
+in BETA 1.15 they added web-hook converted.
+
+* Re/Sources
+
+- VIDEO [[https://www.youtube.com/watch?v=eq7dgHjPpzc][What's New in Kubernetes 1.15]] (1h) - 23 Jul 2019

@@ -280,31 +280,6 @@ metrics) or just to have a less cluttered view of what's out there.
 They are just json so you can just pull from the grafana.net website or any
 github repo. You can use the api to push them on the app or do it manually.
 
-* Persistance
-
-Well... that's one of the sad points. Prometheus *by*choice* does not cluster.
-
-** Possible solutions?
-
-- Only one node
-- Long term storage of metrics (kafka + elasticsearch)
-- persistange storage in k8s (statelass)
-- VM vsan plugin
-
-Some Prometheus from inside the cluster and one from outside in a VM
-In AWS 9090 in /metrics
-
-*** Long term storage
-
-- [[https://github.com/improbable-eng/thanos][Thanos]]
-- [[https://github.com/weaveworks/cortex][Cortex]]
-
-Thanos videos
-
-- [[https://www.youtube.com/watch?v=IpGfmmJ2hcw][Declarative Multi-Cluster Monitoring with Prometheus - Matthias Loibl, Loodse & Frederic Branczyk]]
-
-*
-
 ** Monitoring nodes (OBSOLETE - 2016)
 
 You may (_will_) have many exporter on a single node, each of them exposing the

@@ -1,0 +1,129 @@
+Thanos
+||
+
+* Intro
+
+- [[https://thanos.io/]]
+- [[https://github.com/thanos-io/thanos]]
+- [[https://improbable.io/blog/thanos-prometheus-at-scale]]
+
+Created at improbable is a way to extend prometheus and have long term storage
+in s3.
+
+- [[https://thanos.io/getting-started.md/]]
+
+* Components
+
+- Sidecar: connects to Prometheus and exposes it for real time queries by the Query Gateway and/or upload its data to cloud storage for longer term usage
+- Query Gateway: implements Prometheus’ API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
+- Store Gateway: exposes the content of a cloud storage
+- Compactor: compacts and down-samples data stored in cloud storage
+- Receiver: receives data from Prometheus’ remote-write WAL, exposes it and/or upload it to cloud storage
+- Ruler: evaluates recording and alerting rules against data in Thanos for exposition and/or upload
+
+** Global query view
+
+    Prometheus encourages a functional sharding approach. Even single Prometheus
+    server provides enough scalability to free users from the complexity of
+    horizontal sharding in virtually all use cases.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+    With Thanos, on the other hand, you can query and aggregate data from
+    multiple Prometheus servers, because all of them are available from a single
+    endpoint.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+You can run more than one query node (one per cluster??) not to have a POF.
+
+* Historical data
+
+    Prometheus 2.0 helps a lot in this area, as a total number of time series no
+    longer impact overall server performance (See Fabian’s KubeCon keynote about
+    Prometheus 2). Still, Prometheus stores metric data to its local disk. While
+    highly-efficient data compression can get significant mileage out of a local
+    SSD, there is ultimately a limit on how much historical data can be stored.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+
+* Downsampling
+
+    The usual solution to that problem is called downsampling, a process of
+    reducing the sampling rate of the signal. With downsampled data, we can
+    “zoom out” to a larger time range and maintain the same number of samples,
+    thus keeping queries responsive.
+    Downsampling old data is an inevitable requirement of any long-term storage
+    solution and is beyond the scope of vanilla Prometheus.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+* Architecture
+
+Thanos uses a system of sidecars. Sidecars are added a each prometheus node and
+allow to communicate.
+
+*NOTE*: The gossip protocol has been [[https://thanos.io/proposals/201809_gossip-removal.md/][deprecated]]!
+
+The sidecar watch for new files being created by prometheus (all metrics in a
+time-range) and upload in a storage system like s3.
+You can then, optionally, reduce the retention of the prometheus node and keep
+it light (basically becoming a scraper).
+
+Part of the cluster is the *store*, a component that will read the data
+from s3 and cache it. it exposes a store API and is treated like any other
+sidecar.
+
+    Store Gateway knows how to deal with the data format of the Prometheus storage
+    engine. Through smart query planning and by only caching the necessary index
+    parts of blocks, it can reduce complex queries to a minimal amount of HTTP
+    range requests against files in the object storage. This way it can reduce
+    the number of naive requests by four to six orders of magnitude and achieve
+    response times that are, in the big picture, hard to distinguish from queries
+    against data on a local SSD.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+Another component is the compactor, that will take the data from s3, compact it
+(also doing downsampling) and push it to s3. It allows better performance.
+This job can run as a cron. It is not necessary. This decrease latency.
+
+    To produce downsampled data, the Compactor continuously aggregates series
+    down to five minute and one hour resolutions. For each raw chunk, encoded
+    with TSDB’s XOR compression, it stores different types of aggregations, e.g.
+    min, max, or sum in a single block. This allows Querier to automatically
+    choose the aggregate that is appropriate for a given PromQL query.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+** Thanos sidecar
+
+- [[https://github.com/thanos-io/thanos/blob/master/docs/components/sidecar.md]]
+
+    runs alongside each Prometheus container that together form a cluster.
+    Instead of querying directly to the Prometheis (this is the official plural
+    according to Prometheus) you query the Thanos Query component.
+    Source: https://medium.com/uswitch-labs/making-prometheus-more-awesome-with-thanos-fbec8c6c28ad
+
+* Helm chart
+
+** Prometheus integration
+
+- [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]]
+- [[https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#thanosspec]]
+
+The official Prometheus chart support installing Thanos sidecar.
+
+** Thanos elements
+
+- [[https://github.com/arthur-c/thanos-helm-chart]]
+
+UNOFFICIAL
+
+* Possible ISSUES
+
+- [[https://github.com/thanos-io/thanos/issues/631]]
+
+* Alternatives
+
+- [[https://github.com/cortexproject/cortex]]
+
+* Re/Sources
+
+- [[https://medium.com/uswitch-labs/making-prometheus-more-awesome-with-thanos-fbec8c6c28ad]] - 21 Nov 2018
+- [[https://github.com/AICoE/prometheus-anomaly-detector]]

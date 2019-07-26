@@ -1,21 +1,53 @@
-External dns
-|| Last update: 24 Jul 2019
+ExternalDNS
+|| Last update: 26 Jul 2019
 
 * Intro
 
-- [[https://github.com/kubernetes-incubator/external-dns]]
-- [[https://github.com/helm/charts/tree/master/stable/external-dns]]
+- [[https://github.com/kubernetes-incubator/external-dns]] - Repo
+- [[https://github.com/helm/charts/tree/master/stable/external-dns]] - Helm chart
 
-A kubernetes cluster can manages route53 via external-dns.
-The app manage a route53 hosted zone by adding/removing record sets.
-When a new ingress is created, external-dns checks if the record set for it
-already exists.
-If it already exists checks if the record was created by itself or not.
-External-dns controls this by checking if there is a TXT entry with the same
-name.
-When it creates a record set it also create a TXT entry.
-If yes the record will be update. If not it will be ignored.
-There is nothing in the logs that says the route was created in another way and
-needs to be ignored.
-External-dns is also able to remove a route if the ingress is deleted (only if
+ExternalDNS allows you to create a new DNS entry for each ingress/service
+you create automatically on kubernetes.
+The application manage a route53 hosted zone by adding/removing record sets
+by listening to events on k8s.
+
+* Workflow
+
+When a new ingress is created, ExternalDNS checks if the record set for it
+already exists. If it already exists checks if the record was created by itself
+or not.
+ExternalDNS controls this by checking if there is a TXT entry with the same
+name. When it creates a record set it also create a TXT entry.
+If yes the record will be update. If not it will be ignored. There is nothing in
+the logs that says the route was created in another way and needs to be ignored.
+ExternalDNS is also able to remove a route if the ingress is deleted (only if
 it was created by itself).
+
+* Multiple ExternalDNS per hosted zone
+
+If you have more than one external DNS to manage a single domain, you NEED to
+set the value:
+
+    --txt-owner-id
+
+This will allow you to add in the TXT entry the unique id:
+
+    external-dns/owner=<unique_id>
+
+This way each ExternalDNS will only manage the entries it created.
+
+    # Example
+    time="2018-06-20T12:41:40Z" level=debug msg="Skipping endpoint
+    echo-server.company.tld.io 0 IN TXT \"heritage=external-dns,
+    external-dns/owner=delivery-platform,
+    external-dns/resource=service/core-system/echo-server-service\" because
+    owner id does not match, found: \"another-id\", required: \"my-id\""
+
+Don't use the same id twice, or you will create a race condition:
+
+- [[https://github.com/kubernetes-incubator/external-dns/issues/992#issuecomment-487817338]]
+
+* Best practice
+
+ALWAYS put *--txt-owner-id* even if you have only one ExternalDNS because this
+will allow you to be more flexible later.

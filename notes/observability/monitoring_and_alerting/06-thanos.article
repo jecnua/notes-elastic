@@ -12,13 +12,13 @@ in s3.
 
 - [[https://thanos.io/getting-started.md/]]
 
-* Components
+Have:
 
 - Sidecar: connects to Prometheus and exposes it for real time queries by the Query Gateway and/or upload its data to cloud storage for longer term usage
-- Query Gateway: implements Prometheus’ API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
+- Query Gateway: implements Prometheus API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
 - Store Gateway: exposes the content of a cloud storage
 - Compactor: compacts and down-samples data stored in cloud storage
-- Receiver: receives data from Prometheus’ remote-write WAL, exposes it and/or upload it to cloud storage
+- Receiver: receives data from Prometheus remote-write WAL, exposes it and/or upload it to cloud storage
 - Ruler: evaluates recording and alerting rules against data in Thanos for exposition and/or upload
 
 ** Global query view
@@ -44,7 +44,6 @@ You can run more than one query node (one per cluster??) not to have a POF.
     SSD, there is ultimately a limit on how much historical data can be stored.
     Source: https://improbable.io/blog/thanos-prometheus-at-scale
 
-
 * Downsampling
 
     The usual solution to that problem is called downsampling, a process of
@@ -57,10 +56,13 @@ You can run more than one query node (one per cluster??) not to have a POF.
 
 * Architecture
 
+- [[https://fosdem.org/2019/schedule/event/thanos_transforming_prometheus_to_a_global_scale_in_a_seven_simple_steps/]] - 3 Feb 2019
+
 Thanos uses a system of sidecars. Sidecars are added a each prometheus node and
 allow to communicate.
 
-*NOTE*: The gossip protocol has been [[https://thanos.io/proposals/201809_gossip-removal.md/][deprecated]]!
+*NOTE*: The gossip protocol has been
+[[https://thanos.io/proposals/201809_gossip-removal.md/][deprecated]] in 0.5.0!
 
 The sidecar watch for new files being created by prometheus (all metrics in a
 time-range) and upload in a storage system like s3.
@@ -91,21 +93,117 @@ This job can run as a cron. It is not necessary. This decrease latency.
     choose the aggregate that is appropriate for a given PromQL query.
     Source: https://improbable.io/blog/thanos-prometheus-at-scale
 
+* Components
+
 ** Thanos sidecar
 
 - [[https://github.com/thanos-io/thanos/blob/master/docs/components/sidecar.md]]
 
     runs alongside each Prometheus container that together form a cluster.
-    Instead of querying directly to the Prometheis (this is the official plural
+    Instead of querying directly to the Prometheus (this is the official plural
     according to Prometheus) you query the Thanos Query component.
     Source: https://medium.com/uswitch-labs/making-prometheus-more-awesome-with-thanos-fbec8c6c28ad
 
+You need to add a sidecar to each prometheus
+you are adding a separate gprc service called store API on each sidecar
+it is for matching the data
+it access the promethes directly for local data
+add a lable to promethes called
+
+    thanos-store-api=true
+
+
+special service that will gather all the store api
+a service that expose storeapi under same domain
+
+add some flags to allow variable substitution and another container.
+
+THANOS 0.3.0
+
+now you can do rollling update because is sae
+
+we need to mae sure all metrics are unique
+so:
+
+    external_labels:
+      replica: ${POD_NAME} # new
+
+also alerting you need to remove uniqueness
+to allow to alert manager to deocuple alert
+
+alert relabel conigs
+regex replica
+action labeldrop
+
+SPACE
+
+you can add here the config to use the bucket.
+You need to DISABLE the compaction when you use an external bucket because
+you will have an external compation.
+
+thanos sidecar synchs all xx
+prometheus generate a file every two hours
+and it will synch every two hours
+
+** Gateway
+
+to access object in the object storage
+you need a thanos gateway
+
+expose store api
+and need access to the storage
+
+** Thanos compactor
+
+does not expose any api
+works on only one thing
+and also downsampled
+
+** Querier
+
+querier is stateless
+
+then you need to add the Querierusing the store api
+you need to add a special servuce to select the label we added before
+this app will be set to discover local store with the dnssrv
+and then take some remote store via IP and PORT
+
+queries have the dediplication button to not show all labels
+in new one version 0.3.0 the added the stores page in which the show all the
+stores they have access to. they have a min and max time
+
+thanos ueries have the same api as prometheus
+
+** Thanos ruler
+
+metamonitoring is important
+monitor your monitoring
+
+** Service discovery
+
+- [[https://thanos.io/service-discovery.md/]]
+
+*NOTE*: The gossip protocol has been
+[[https://thanos.io/proposals/201809_gossip-removal.md/][deprecated]] in
+[[https://github.com/thanos-io/thanos/releases/tag/v0.5.0][0.5.0]]!
+
+Three options are now available:
+
+- Static Flags
+- [[https://thanos.io/service-discovery.md/#file-service-discovery][File SD]]
+- [[https://thanos.io/service-discovery.md/#dns-service-discovery][DNS SD]]
+
 * Helm chart
+
+There are three chart of interest to manage prometheus with thanos:
+
+- [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]]
+- [[https://github.com/coreos/prometheus-operator]] - DON'T USE
+- [[https://github.com/coreos/kube-prometheus]] - ???
 
 ** Prometheus integration
 
 - [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]]
-- [[https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#thanosspec]]
 
 The official Prometheus chart support installing Thanos sidecar.
 

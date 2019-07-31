@@ -1,0 +1,84 @@
+Prometheus operator
+|| Last update: 26 Jan 2018
+
+* Spin the cluster and install helm
+
+    kind create cluster
+    export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"\nkubectl cluster-info
+
+Wait
+
+    watch kubectl get all --all-namespaces
+    # ... or wait for 10
+    k get pods --all-namespaces | wc -l
+
+Install helm with RBAC
+
+    helm-kind-rbac
+
+* Install full Prometheus operator
+
+    helm repo update
+    helm install stable/prometheus-operator --name prom --namespace monitoring
+    watch kubectl get all --all-namespaces
+
+Get the grafana pass:
+
+    k get secrets -n monitoring prom-grafana -o=jsonpath='{.data.admin-password}' | base64 --decode
+
+Proxy the port:
+
+    export GRAFANA_NAME=$(kubectl get pods --namespace monitoring \
+      -l "app=grafana" -o jsonpath="{.items[0].metadata.name}")
+    kubectl port-forward $GRAFANA_NAME 8080:3000
+
+Delete
+
+    helm delete prom --purge
+
+* Installed CRD
+
+    $ k get crd
+    NAME                                    CREATED AT
+    alertmanagers.monitoring.coreos.com     2019-07-29T15:50:34Z
+    podmonitors.monitoring.coreos.com       2019-07-29T15:50:36Z
+    prometheuses.monitoring.coreos.com      2019-07-29T15:50:36Z
+    prometheusrules.monitoring.coreos.com   2019-07-29T15:50:37Z
+    servicemonitors.monitoring.coreos.com   2019-07-29T15:50:38Z
+
+* Install minimum
+
+    nano /tmp/kube-values.yaml
+
+alertmanager:
+  enabled: false
+grafana:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheusOperator:
+  enabled: true
+prometheus:
+  enabled: true
+
+    helm install stable/prometheus-operator --name prom --namespace monitoring -f /tmp/kube-values.yaml
+
+* Add thanos
+
+alertmanager:
+  enabled: false
+grafana:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheusOperator:
+  enabled: true
+prometheus:
+  enabled: true
+thanos:
+  baseImage: improbable/thanos
+  version: v0.2.1
+  peers: thanos-peers.monitoring.svc:10900
+  objectStorageConfig:
+    key: thanos.yaml
+    name: thanos-objstore-config

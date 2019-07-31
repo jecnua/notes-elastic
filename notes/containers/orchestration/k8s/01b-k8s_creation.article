@@ -38,6 +38,8 @@ CON:
 - Horrible infrastructure
 - Beta
 
+Images for a k8s cluster in China can be found here [[https://github.com/nwcdlabs/kops-cn]]
+
 ** kubeadm
 
 PRO:

@@ -48,9 +48,6 @@ anymore, it will leave it there. HELM instead removes it.
 - Release
 - Template
 
-Tiller is what applies the
-
-
 ** Charts
 
 They consist of a YAML configuration files and templates that are rendered into
@@ -199,13 +196,72 @@ the cluster.
 
 You can rollback to another release.
 
+** Advices
+
+One trick to autodeploy every time a config map changes is to add:
+
+    spec:
+      template:
+        metadata:
+          annotations:
+            checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+
+or use:
+
+    helm upgrade --recreate-pods
+
 * Templating
 
-Templating uses the go templating language:
+Helm chart files can make use of the go templating language.
+For example, to access data in the _value_file_ of a chart, you can use:
 
     {{ .Values.service.name }}
 
-Comes from a value file.
+** Flow control
+
+- [[https://github.com/helm/helm/blob/master/docs/chart_template_guide/control_structures.md]]
+
+There are way to impose flow control:
+
+- If/else
+- with
+- range
+- variables (in range)
+- nested templates
+- files inside a template
+- glob patterns and encoding
+
+However inside a loop, you won't have access to the global scope.
+To avoid this issue you can save the scope in a variable before starting the loop.
+For example:
+
+- [[https://github.com/helm/helm/issues/1311#issuecomment-252536380]]
+
+    {{ $myChartName := "FooBar" }}
+     {{- range $key, $value := .Values.secrets }}
+     - name: $key
+       valueFrom:
+         secretKeyRef:
+           name: {{ $myChartName }}
+           key: $value
+     {{- end }}
+    Source: https://github.com/helm/helm/issues/3684#issuecomment-373195562
+
+** Concatenate strings
+
+- [[https://stackoverflow.com/a/48451109]]
+
+You can print a concatenated string with _printf_:
+
+    {{ define "makeServiceNamespace" }}
+        {{- if .Values.serviceTag }}
+        {{- printf "%s-%s" .Values.serviceNamespace .Values.serviceTag -}}
+        {{- else }}
+        {{- print .Values.serviceNamespace }}
+        {{- end }}
+    {{- end }}
+
+** Helper files
 
 There can be helpers file. The all begin with _ and they WON'T be rendered.
 They contain helpers can are reused in multiple places inside the charts.
@@ -278,30 +334,6 @@ To apply a local chart, point to the path:
 You can see all the generated yaml before applying:
 
       helm template mytest | less
-
-* Flow control and advanced capabilities
-
-There are way to impose flow control:
-
-- If/else
-- with
-- range
-- variables (in range)
-- nested templates
-- files inside a template
-- glob patterns and encoding
-
-One trick to autodeploy every time a config map changes is to add:
-
-    spec:
-      template:
-        metadata:
-          annotations:
-            checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-
-or use:
-
-    helm upgrade --recreate-pods
 
 ** Hooks
 

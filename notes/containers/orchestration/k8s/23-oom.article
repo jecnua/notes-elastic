@@ -1,0 +1,27 @@
+OOM killer in k8s
+|| Last update: 1 Aug 2019
+
+* Resource reservation
+
+- [[https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/]]
+
+* OOM killer
+
+be carefulk with fs, cpu, MemorytargetRAM is useful (avoid OOM)
+
+limits too low will trigger cgrup oom
+requests too low (or 0) will trigger system oom
+defnitely put limits in cgroup
+don't allow people to take everything
+
+** kubelet flags
+
+- [[https://labs.consol.de/devops/2019/04/16/aws_eks_oom.html]]
+
+    --kube-reserved mapStringString
+    A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=500Mi,
+    ephemeral-storage=1Gi,pid=1000) pairs that describe resources reserved for
+    kubernetes system components. Currently cpu, memory, pid, and local
+    ephemeral storage for root file system are supported. See
+    http://kubernetes.io/docs/user-guide/compute-resources for more detail.
+    [default=none]

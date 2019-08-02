@@ -1,5 +1,5 @@
 Helm 2
-|| Last update: 13 Jul 2019
+|| Last update: 1 Aug 2019
 
 * Intro
 
@@ -216,6 +216,12 @@ Helm chart files can make use of the go templating language.
 For example, to access data in the _value_file_ of a chart, you can use:
 
     {{ .Values.service.name }}
+
+Helm is namespace aware. You don't need to add the namespace in your charts
+since it will injected automatically depending on what you use to call the
+install command:
+
+    helm install <name> --name test --namespace <namespace_that_will_be_used>
 
 ** Flow control
 

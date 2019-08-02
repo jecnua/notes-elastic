@@ -108,8 +108,6 @@ voyager ingress controller, map sort bug lead to continos pod creation. https://
 
 for 100 nodes to 1000
 
-be carefulk with fs, cpu, MemorytargetRAM is useful (avoid OOM)
-
 controller schedule run them in different nodes because they will conflix for resources
 and only way it to scale them vertically (the node)
 they compete for CPU
@@ -166,12 +164,6 @@ https://github.com/krallin/tini
 
 complex process trees and many open files are very hard
 on the runtime so beware when porting monolith from servers into containers
-
-OOM killer
-limits too low will trigger cgrup oom
-requests too low (or 0) will trigger system oom
-defnitely put limits in cgroup
-don't allow people to take everything
 
 InitContainers
 limit rangers are enforced on int containers

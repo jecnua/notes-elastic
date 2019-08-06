@@ -56,6 +56,9 @@ And these:
     kubectl get deployment <name> --export -o yaml # export will remove the unique parameters
     kubectl create deployment <name> --image <image_name> --dry-run
 
+NOTE: The export flag is going to be deprecated.
+NOTE2: The export flag does not export the namespace.
+
 Recap:
 
 - Use the notepad in there (2)

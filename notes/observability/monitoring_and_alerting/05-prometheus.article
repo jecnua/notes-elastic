@@ -75,20 +75,6 @@ It doesn't scale in the sense that it doesn't shard. Every instance is self
 contained and autonomous. Run 1 or more, but they should be all the same if you
 want HA.
 
-** Decision
-
-*** The opinions
-
-label data model NOT hierarchical data model
-
-- more flexible (cross cutting)
-- more efficient
-- explicit dimension
-
-What you have to do with grafite is like this:
-
-    api-server.*.*.post.*
-
 ** Query language
 
 not a sql style query language
@@ -288,6 +274,48 @@ However, one exporter you want for sure is the *node-exporter*.
 
 The node-exporter _exports_ the metrics of the node and is indeed something
 you want to have on any of your machine.
+
+* Labels
+
+- [[https://prometheus.io/docs/practices/naming/#labels]]
+- [[https://prometheus.io/docs/practices/instrumentation/#use-labels]]
+
+Prometheus embrace the _label_data_model_ and NOT the _hierarchical_data_model_.
+It is:
+
+- more flexible (allow cross cutting)
+- more efficient
+- explicit dimension
+
+What you have to do with grafite is like this:
+
+    api-server.*.*.post.*
+
+Unique combinations of key-value creates new time series in Prometheus.
+Prometheus doesn't like is high-cardinality labels.
+
+    Prometheus considers each unique combination of labels and label value as a
+    different time series. As a result if a label has an unbounded set of
+    possible values, Prometheus will have a very hard time storing all these
+    time series. In order to avoid performance issues, labels should not be used
+    for high cardinality data sets (e.g. Customer unique ids).
+    Source: https://blog.pvincent.io/2019/05/prometheus-workshops-follow-up-frequently-asked-questions/
+
+You should be careful with label and do not exaggerate with them:
+
+    CAUTION: Remember that every unique combination of key-value label pairs
+    represents a new time series, which can dramatically increase the amount of
+    data stored. Do not use labels to store dimensions with high cardinality
+    (many different label values), such as user IDs, email addresses, or other
+    unbounded sets of values.
+    Source: https://prometheus.io/docs/practices/naming/#labels
+
+- [[https://prometheus.io/docs/practices/instrumentation/#do-not-overuse-labels]]
+
+** Best practices
+
+- Labels should rarely have more than 100 possible values
+- The set of label values should be bounded (think of them as enums, and not open ended sets of strings)
 
 * Prometheus on k8s
 

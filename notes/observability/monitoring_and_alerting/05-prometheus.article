@@ -1,38 +1,26 @@
 Prometheus (OBSOLETE - TO BE CLEANED)
-|| Last update: 13 Feb 2019
-
-* Disclaimer
-
-While this article is highly opinionated, it's based on a LOT of reading
-(+ conferences) and by following this specific technology a lot.
+|| Last update: 6 Aug 2019
 
 * Intro
 
 .image images/prometheus.png 100 _
 
 Prometheus is a cloud aware monitoring and alerting tool.
-Before docker and k8s, Soundcould had a sort of heroku infrastructure.
-They used nagios, statsd and the sort but finding all the usual limitations we
-all find when using these tools.
-
-** Backing
-
-Prometheus is the second project in [[https://www.cncf.io/][CNCF]] after k8s.
+Prometheus was the second project in [[https://www.cncf.io/][CNCF]] after k8s.
 There is a lot of investments and backing behind it, being supported out of the
 box by k8s, cAdvisor and other mainstream technologies.
+It _focus_ on operation system monitoring.
 
 ** What it is
 
-Prometheus is a time based monitoring ecosystem that pulls metrics out of
-your systems *to* give:
+Prometheus is a time based monitoring ecosystem based on a pulls system.
+It aims *to* give:
 
 - instrumentation
 - storage
 - querying
 - alerting (via alert manager)
 - dashboards
-
-It _FOCUS_ on operation system monitoring but can be used in other contexts.
 
 ** What it's not
 
@@ -148,17 +136,18 @@ fewer step as possible
 - open port in firewll/router
 - open VPN tunnel
 
-** Uber exportors or per process exporters
+** Uber exporters or per process exporters
 
 main uber exporter
 
 not only one (for them)
+
 - operation bottleneck
 - spof, no isolation
 - can't scrape selectively (not because is only us)
 - harder to associate metadaat
 
-phtometeus by discovering your node
+Prometheus by discovering your node
 with auto-discovery
 so can put metadata from this process
 they advice: *one*exporter*per*process*

@@ -196,7 +196,9 @@ the cluster.
 
 You can rollback to another release.
 
-** Advices
+** Deploy on configmap changes
+
+- [[https://github.com/helm/helm/blob/master/docs/charts_tips_and_tricks.md#automatically-roll-deployments-when-configmaps-or-secrets-change]]
 
 One trick to autodeploy every time a config map changes is to add:
 
@@ -206,9 +208,18 @@ One trick to autodeploy every time a config map changes is to add:
           annotations:
             checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 
-or use:
+Example in the grafana chart:
 
-    helm upgrade --recreate-pods
+- [[https://github.com/helm/charts/blob/39c93f97f2fdcc0fb7087c672828cfd2790c0d87/stable/grafana/templates/deployment.yaml#L31]]
+
+** Deploy every time
+
+- [[https://github.com/kubernetes/kubernetes/issues/27081#issuecomment-238078103]]
+
+You may want to deploy every time. In this case you can use this workaround:
+
+    kubectl patch deployment web -p \
+      "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 
 * Templating
 

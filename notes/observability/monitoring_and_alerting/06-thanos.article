@@ -107,11 +107,10 @@ This job can run as a cron. It is not necessary. This decrease latency.
 You need to add a sidecar to each prometheus
 you are adding a separate gprc service called store API on each sidecar
 it is for matching the data
-it access the promethes directly for local data
-add a lable to promethes called
+it access the Prometheus directly for local data
+add a label to Prometheus called
 
     thanos-store-api=true
-
 
 special service that will gather all the store api
 a service that expose storeapi under same domain
@@ -120,7 +119,7 @@ add some flags to allow variable substitution and another container.
 
 THANOS 0.3.0
 
-now you can do rollling update because is sae
+now you can do rolling update because is sae
 
 we need to mae sure all metrics are unique
 so:
@@ -129,9 +128,9 @@ so:
       replica: ${POD_NAME} # new
 
 also alerting you need to remove uniqueness
-to allow to alert manager to deocuple alert
+to allow to alert manager to decouple alert
 
-alert relabel conigs
+alert relabel configs
 regex replica
 action labeldrop
 
@@ -139,7 +138,7 @@ SPACE
 
 you can add here the config to use the bucket.
 You need to DISABLE the compaction when you use an external bucket because
-you will have an external compation.
+you will have an external compaction.
 
 thanos sidecar synchs all xx
 prometheus generate a file every two hours
@@ -168,7 +167,7 @@ you need to add a special servuce to select the label we added before
 this app will be set to discover local store with the dnssrv
 and then take some remote store via IP and PORT
 
-queries have the dediplication button to not show all labels
+queries have the decuplication button to not show all labels
 in new one version 0.3.0 the added the stores page in which the show all the
 stores they have access to. they have a min and max time
 

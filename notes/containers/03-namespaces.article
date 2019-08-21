@@ -9,11 +9,10 @@ Namespaces
 - MNT
 - UTS
 - NET
--
 
-* PID namespaces
+* PID
 
-- [[https://github.com/kubernetes/kubernetes/issues/1615]]
+Process namespace.
 
 * UNIX Time Sharing namespaces (UTS)
 

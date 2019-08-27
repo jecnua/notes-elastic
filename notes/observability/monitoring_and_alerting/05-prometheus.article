@@ -264,13 +264,13 @@ However, one exporter you want for sure is the *node-exporter*.
 The node-exporter _exports_ the metrics of the node and is indeed something
 you want to have on any of your machine.
 
-* Labels
+* Labels and cardinality
 
 - [[https://prometheus.io/docs/practices/naming/#labels]]
 - [[https://prometheus.io/docs/practices/instrumentation/#use-labels]]
 
 Prometheus embrace the _label_data_model_ and NOT the _hierarchical_data_model_.
-It is:
+It is considered:
 
 - more flexible (allow cross cutting)
 - more efficient
@@ -280,8 +280,55 @@ What you have to do with grafite is like this:
 
     api-server.*.*.post.*
 
-Unique combinations of key-value creates new time series in Prometheus.
-Prometheus doesn't like is high-cardinality labels.
+What is cardinality:
+
+    Cardinality in the context of monitoring systems is defined as the number of
+    unique metric time series stored in your monitoring system’s time series
+    database (TSDB). Generally, a metric time series (MTS) is the unique
+    combination of a metric name and any number of key-value pairs known as
+    dimensions or labels.
+    Source: https://www.signalfx.com/blog/high-cardinality-monitoring-is-a-must-have-for-microservices-and-containers/
+
+Having a high cardinality is dangerous:
+
+    High cardinality is hard to manage because it increases both the number of
+    time series that need to be stored by your time series database, and the
+    size of queries that have to be made to it on a regular basis. Queries to
+    the database become more computationally expensive, because there are now
+    more time series, and any significant event (e.g. a code push, burst of user
+    traffic) will result in a flood of simultaneous writes to the database as
+    well.
+    The documentation for many monitoring systems actually warns users not to
+    send in dimensions with a high number of potential values, or to keep
+    dimension values below a hard limit to avoid performance penalties.
+    Source: https://www.signalfx.com/blog/high-cardinality-monitoring-is-a-must-have-for-microservices-and-containers/
+
+To know which metrics are using the most resources it'd be good to count how
+many time series each has:
+
+    topk(10, count by (__name__)({__name__=~".+"}))
+    # aggregate by jobs
+    topk(10, count by (__name__, job)({__name__=~".+"}))
+    # which job have more time series
+    topk(10, count by (job)({__name__=~".+"}))
+    Source: https://www.robustperception.io/which-are-my-biggest-metrics
+
+A more complex query (and heavier is):
+
+    sort_desc(label_replace( count by(__name__) ({__name__!="", __name__!="card_count"}), "metric_name", "$1", "__name__", "(.+)" ))
+
+Another possible approach is to use two prom metrics:
+
+- scrape_samples_scraped: It reports the numbers of samples that the target produced, before metric_relabel_configs is applied.
+- scrape_samples_post_metric_relabeling
+
+For example:
+
+    topk(10, scrape_samples_post_metric_relabeling)
+    Source: https://www.robustperception.io/which-targets-have-the-most-samples
+
+For each *metric* any unique combinations of key-value creates new *time*series*
+in Prometheus. Prometheus doesn't like is high-cardinality labels.
 
     Prometheus considers each unique combination of labels and label value as a
     different time series. As a result if a label has an unbounded set of
@@ -301,34 +348,124 @@ You should be careful with label and do not exaggerate with them:
 
 - [[https://prometheus.io/docs/practices/instrumentation/#do-not-overuse-labels]]
 
+So the question is what is the right number for cardinality. It depends, but there
+are some guidelines:
+
+    As a general guideline, try to keep the cardinality of your metrics below 10,
+    and for metrics that exceed that, aim to limit them to a handful across your
+    whole system. The vast majority of your metrics should have no labels.
+    If you have a metric that has a cardinality over 100 or the potential to
+    grow that large, investigate alternate solutions such as reducing the number
+    of dimensions or moving the analysis away from monitoring and to a
+    general-purpose processing system.
+    Source: https://prometheus.io/docs/practices/instrumentation/#do-not-overuse-labels
+
+    For very simple applications with little logic that only do one thing, I'd
+    expect on the order of 100 time series.
+    [...]
+    For complex applications with lots of moving parts, I'd expect on the order
+    of 1000 time series.
+    [...]
+    When an application exposes more than that, getting up towards 10,000 time
+    series that's an indication that you may have a cardinality issue and might
+    want to cut back on labels a bit. This is however unavoidable sometimes for
+    cases such as reverse proxies where there's many many backend services, or
+    databases where there's many many tables and you need information for each.
+    Be wary of going too much above 10,000, Prometheus is designed for many
+    small scrapes, not a handful of massive ones.
+    Source: https://www.robustperception.io/how-many-metrics-should-an-application-return
+
+- [[https://www.robustperception.io/how-many-metrics-should-an-application-return]]
+
+Some max cardinality from monitoring systems:
+
+- Datadog : 1000 tag/dimension values per metric - specifically warning that exceeding this limit will incur performance penalties
+- Datadog APM: Infinite cardinality (LOL)
+- [[https://docs.newrelic.com/docs/agents/manage-apm-agents/agent-data/collect-custom-metrics][New relic]]: 2000
+- SignalFx: 50000
+
+Cardinality is the reason why
+[[https://www.robustperception.io/why-are-prometheus-histograms-cumulative][histogram are cumulative]].
+
+You can calculate how much memory they use for cardinality and ingestion here
+[[https://www.robustperception.io/how-much-ram-does-prometheus-2-x-need-for-cardinality-and-ingestion]]
+
+To be sure your application is not killed by an explosion of cardinality, you
+can use a tool like
+[[https://blog.freshtracks.io/bomb-squad-automatic-detection-and-suppression-of-prometheus-cardinality-explosions-62ca8e02fa32][bomb squad]].
+
+- [[https://github.com/open-fresh/bomb-squad]]
+
+or use sample limit [[https://www.robustperception.io/using-sample_limit-to-avoid-overload]].
+
+- [[https://www.robustperception.io/using-tsdb-analyze-to-investigate-churn-and-cardinality]]
+
 ** Best practices
 
 - Labels should rarely have more than 100 possible values
 - The set of label values should be bounded (think of them as enums, and not open ended sets of strings)
 
+* Profiling prometheus usage
+
+- [[https://www.robustperception.io/optimising-go-allocations-using-pprof]] 2017
+- [[https://www.robustperception.io/optimising-startup-time-of-prometheus-2-6-0-with-pprof]] 2019
+- [[https://www.robustperception.io/optimising-prometheus-2-6-0-memory-usage-with-pprof]] 2019
+
 * Prometheus on k8s
 
-You can use:
+** Helm charts
 
-- [[https://github.com/coreos/prometheus-operator][Operator]]
-- Helm chart
-- Manually
+There are three chart of interest to manage prometheus with operators:
 
-** Helm chart
+- [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]]
+- [[https://github.com/coreos/prometheus-operator]] - DON'T USE
+- [[https://github.com/coreos/kube-prometheus]] - ???
 
-- [[https://github.com/helm/charts/tree/master/stable/prometheus]]
+The correct prometheus operator chart to use it the one in charts/stable and
+not the one on the coreos github account. The stable one is based on the one
+from coreos.
 
 You can install prometheus simply by running:
 
     helm install stable/prometheus
 
-Some possible options:
+*** First installation
 
-    helm upgrade <name-generated> stable/prometheus \
-    --set server.ingress.enabled=true \
-    --set server.ingress.hosts='{prom-URI}' \
-    --set alertmanager.ingress.enabled=true \
-    --set alertmanager.ingress.hosts='{am-URI}' \
-    -f values.yaml
+However there are some things to consider when running it for the first time.
+First disable the TLS proxy:
 
-*NOTE*: Array are passed via [[https://github.com/kubernetes/helm/blob/master/docs/using_helm.md#the-format-and-limitations-of---set][curly braces]].
+    tlsProxy:
+      enabled: false # NOTE: Default to true
+      image:
+        repository: squareup/ghostunnel
+        tag: v1.4.1
+        pullPolicy: IfNotPresent
+      resources: {}
+
+If you don't Prometheus installation will fail since it expects a secret
+with the SSL cert already present on the system.
+
+    8s          Warning   FailedMount         Pod          MountVolume.SetUp
+    failed for volume "tls-proxy-secret" : secrets "prometheus-operator-admission" not found
+
+- [[https://github.com/helm/charts/search?q=tls-proxy-secret&unscoped_q=tls-proxy-secret]]
+
+Unless you plan to have that extra step first, set the enabled to false.
+
+Also when you run the first time, you can run only prometheus and the operator
+without any of the other functionalities.
+To do so disable all the components:
+
+    enabled: false
+
+With the exception of:
+
+- prometheusOperator
+- prometheus
+
+Also this fail in our setup:
+
+    admissionWebhooks:
+      failurePolicy: Fail
+      # enabled: true
+      enabled: false

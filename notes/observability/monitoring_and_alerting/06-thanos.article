@@ -200,6 +200,10 @@ There are three chart of interest to manage prometheus with thanos:
 - [[https://github.com/coreos/prometheus-operator]] - DON'T USE
 - [[https://github.com/coreos/kube-prometheus]] - ???
 
+The correct prometheus operator chart to use it the one in charts/stable and
+not the one on the coreos github account. The stable one is based on the one
+from coreos.
+
 ** Prometheus integration
 
 - [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]]

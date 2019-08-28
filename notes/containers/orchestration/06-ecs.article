@@ -142,6 +142,21 @@ There are two types of launch type:
 
 *NOTE*: Many task definition parameters are _not_valid_ in fargate.
 
+** SWAP
+
+- [[https://aws.amazon.com/about-aws/whats-new/2019/08/amazon-ecs-now-supports-per-container-swap-space-parameters/]]
+
+    With per-container swap configuration in ECS, customers can control each
+    container's use of swap. Different containers can have swap enabled or
+    disabled, and for those that have it enabled, the maximum amount of swap
+    used can be limited per container. This means, for example, that latency-critical
+    containers can have swap disabled, whereas containers with high transient
+    memory demands can have swap turned on in order to reduce the likelihood of
+    out-of-memory errors under load. ECS will ensure that each container runs
+    with the desired swap configuration, even if those containers are running on
+    the same EC2 instance.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/08/amazon-ecs-now-supports-per-container-swap-space-parameters/
+
 * Fargate for ECS
 
 Some things to keep in consideration:

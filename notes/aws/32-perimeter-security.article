@@ -1,5 +1,5 @@
 AWS perimeter security - WAF, Shield and Firewall Manager
-|| Last update: 9 Apr 2019
+|| Last update: 11 Sep 2019
 
 * Intro
 
@@ -95,25 +95,25 @@ on volume.
 
 If more than one condition is set in the rule, ALL (logical AND) needs to apply.
 
-If you add the rate limit rule multiple times, it effectively reduces the
-number of requests each time. Basically what happens is each time you add
-the rule, it counts an extra request for each IP. So say an IP makes a
-single request. If you have 2 rate limit rules applied, the request is
-counted twice. So basically, instead of 2000 requests, the IP only has to
-make 1000 before it gets blocked. If you add 3 rules, it will count each
-request 3 times - so the IP will be blocked at 667 requests.
-The other thing they clarified is that the "window" is 5 minutes, but if the
-total is breached anywhere in that window, it will be blocked. I thought the
-WAF would only evaluate the requests after a 5 minute period. So for example.
-Say you have a single rule for 2000 requests in 5 minutes. Say an IP makes
-2000 requests in the 1st minute, then only 10 requests after that for the
-next 4 minutes. I initially understood that the IP would only be blocked
-after minute 5 (because WAF evaluates a 5 minute window). But apparently,
-if the IP exceeds the limit anywhere in that window, it will be locked
-immediately. So if that IP makes 2000 requests in minute 1, it will actually
-be blocked from minute 2, 3, 4 and 5. But then will be allowed again from
-minute 6 onward.
-Source: https://www.reddit.com/r/aws/comments/9zuh7w/why_does_ip_rate_limiting_in_waf_have_a_minimum/ (support ticket?)
+    If you add the rate limit rule multiple times, it effectively reduces the
+    number of requests each time. Basically what happens is each time you add
+    the rule, it counts an extra request for each IP. So say an IP makes a
+    single request. If you have 2 rate limit rules applied, the request is
+    counted twice. So basically, instead of 2000 requests, the IP only has to
+    make 1000 before it gets blocked. If you add 3 rules, it will count each
+    request 3 times - so the IP will be blocked at 667 requests.
+    The other thing they clarified is that the "window" is 5 minutes, but if the
+    total is breached anywhere in that window, it will be blocked. I thought the
+    WAF would only evaluate the requests after a 5 minute period. So for example.
+    Say you have a single rule for 2000 requests in 5 minutes. Say an IP makes
+    2000 requests in the 1st minute, then only 10 requests after that for the
+    next 4 minutes. I initially understood that the IP would only be blocked
+    after minute 5 (because WAF evaluates a 5 minute window). But apparently,
+    if the IP exceeds the limit anywhere in that window, it will be locked
+    immediately. So if that IP makes 2000 requests in minute 1, it will actually
+    be blocked from minute 2, 3, 4 and 5. But then will be allowed again from
+    minute 6 onward.
+    Source: https://www.reddit.com/r/aws/comments/9zuh7w/why_does_ip_rate_limiting_in_waf_have_a_minimum/ (support ticket?)
 
 *IMPORTANT*: Rules that do not meet ALL conditions will not be counted towards
 the rate limit and would not be blocked by the rule.
@@ -140,7 +140,7 @@ configurable).
 It helps to protect against DoS attack from a single IP.
 
 Rate based rules only works with _high_volume_of_traffic_.
-The lower number you can set for rate limit is *2000* (not configurable).
+The lower number you can set for rate limit is *100*.
 
 With rate it will block the connections until the 5 minutes passes and that rate
 is no more firing.
@@ -312,7 +312,7 @@ What it can do for you:
 
 What this template CAN’T do for you:
 
-- Protect you from an http flood attack from multiple IPs if a single IP do not reach the 2000req/5min rate.
+- Protect you from an http flood attack from multiple IPs if a single IP do not reach the x req/5min rate.
 - Protect you from an http flood from multiple IPs even if they have the same user agent.
 
 For the log parser consider [[https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html#access-logs-timing]]
@@ -750,20 +750,6 @@ to protect DDoS
 put on us-east-1
 go where the attacks are
 you want more overhead
-
-** why minimum is 2000?
-
-you can't change the number of minutes 5
-and the minimum is 2000
-
-** how to get lower than 2000
-
-use the same match condition
-like /
-then you can put than  everywhere
-you can get all the way down to 20
-???
-CHECK
 
 ** rate page rules intelligence
 

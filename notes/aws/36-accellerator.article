@@ -1,0 +1,23 @@
+AWS Global accelerator
+|| Last update: 11 Sep 2019
+
+* Intro
+
+- [[https://aws.amazon.com/global-accelerator/]]
+- [[https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works-client-ip.html][Documentation]]
+
+    AWS Global Accelerator improves the availability and performance of
+    applications designed to reach a global user base. A single accelerator can
+    support multiple Application Load Balancers, Network Load Balancers, and
+    Amazon EC2 instances running in multiple AWS Regions. Global Accelerator
+    provides you with static IP addresses that are advertised globally, supports
+    both TCP and UDP traffic, and routes your user traffic to the optimal AWS
+    Region.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/08/aws-global-accelerator-now-supports-client-ip-address-preservation-for-application-load-balancer-endpoints/
+
+GA can front internal load balancer.
+
+Global Accelerator supports Client IP address preservation for Application Load
+Balancer Endpoints.
+This will allow the use of WAF rules at the ALB level.
+It is set by default on every new GA but _can_ be disabled.

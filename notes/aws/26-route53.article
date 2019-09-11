@@ -1,5 +1,5 @@
 AWS Route53
-|| Last update: 10 May 2019
+|| Last update: 11 Sep 2019
 
 * Aliases
 
@@ -42,3 +42,9 @@ has 2 CNAME records when they are weighted and not 1.
     53 will treat all these as different records. You cannot have a CNAME of the
     same name due to the limitation discussed.
     Source: AWS support
+
+* Metrics
+
+- [[https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-public-viewing-query-metrics.html]]
+
+On CloudWatch you can now get the Query Metrics for a public hosted zone.

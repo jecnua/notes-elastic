@@ -1,25 +1,15 @@
-Thanos
-|| Last update: 26 Jul 2019
+Thanos - [WIP]
+|| Last update: 18 Sep 2019
 
 * Intro
 
 - [[https://thanos.io/]]
 - [[https://github.com/thanos-io/thanos]]
 - [[https://improbable.io/blog/thanos-prometheus-at-scale]]
+- [[https://thanos.io/getting-started.md/]]
 
 Created at improbable is a way to extend prometheus and have long term storage
 in s3.
-
-- [[https://thanos.io/getting-started.md/]]
-
-Have:
-
-- Sidecar: connects to Prometheus and exposes it for real time queries by the Query Gateway and/or upload its data to cloud storage for longer term usage
-- Query Gateway: implements Prometheus API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
-- Store Gateway: exposes the content of a cloud storage
-- Compactor: compacts and down-samples data stored in cloud storage
-- Receiver: receives data from Prometheus remote-write WAL, exposes it and/or upload it to cloud storage
-- Ruler: evaluates recording and alerting rules against data in Thanos for exposition and/or upload
 
 ** Global query view
 
@@ -95,11 +85,25 @@ This job can run as a cron. It is not necessary. This decrease latency.
 
 * Components
 
+- [[https://quay.io/repository/thanos/thanos?tab=info]]
+
+.image images/thanos_components.jpg
+
+- Sidecar: connects to Prometheus and exposes it for real time queries by the Query Gateway and/or upload its data to cloud storage for longer term usage
+- Query Gateway: implements Prometheus API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
+- Store Gateway: exposes the content of a cloud storage
+- Compactor: compacts and down-samples data stored in cloud storage
+- Receiver: receives data from Prometheus remote-write WAL, exposes it and/or upload it to cloud storage
+- Ruler: evaluates recording and alerting rules against data in Thanos for exposition and/or upload
+
 ** Thanos sidecar
 
 - [[https://github.com/thanos-io/thanos/blob/master/docs/components/sidecar.md]]
 
-    runs alongside each Prometheus container that together form a cluster.
+NOTE: This is the only place where I found a guide on how to create the secret
+[[http://polarpoint.io/index.php/2019/06/17/devops-global-monitoring-using-prometheus-and-thanos/]]
+
+    [it] runs alongside each Prometheus container that together form a cluster.
     Instead of querying directly to the Prometheus (this is the official plural
     according to Prometheus) you query the Thanos Query component.
     Source: https://medium.com/uswitch-labs/making-prometheus-more-awesome-with-thanos-fbec8c6c28ad
@@ -119,10 +123,11 @@ add some flags to allow variable substitution and another container.
 
 THANOS 0.3.0
 
-now you can do rolling update because is sae
+now you can do rolling update because is safe
 
-we need to mae sure all metrics are unique
-so:
+** Integration with alert manager
+
+All metrics needs to be *unique* so:
 
     external_labels:
       replica: ${POD_NAME} # new
@@ -133,16 +138,6 @@ to allow to alert manager to decouple alert
 alert relabel configs
 regex replica
 action labeldrop
-
-SPACE
-
-you can add here the config to use the bucket.
-You need to DISABLE the compaction when you use an external bucket because
-you will have an external compaction.
-
-thanos sidecar synchs all xx
-prometheus generate a file every two hours
-and it will synch every two hours
 
 ** Gateway
 
@@ -157,6 +152,18 @@ and need access to the storage
 does not expose any api
 works on only one thing
 and also downsampled
+
+*** Manage space
+
+When using s3 bucket make sure to use a lifecyle policy to manage the blocks.
+
+you can add here the config to use the bucket.
+You need to DISABLE the compaction when you use an external bucket because
+you will have an external compaction.
+
+thanos sidecar synchs all xx
+prometheus generate a file every two hours
+and it will synch every two hours
 
 ** Querier
 
@@ -194,35 +201,177 @@ Three options are now available:
 
 * Helm chart
 
+- [[https://github.com/banzaicloud/banzai-charts/tree/master/thanos]]
+
 There are three chart of interest to manage prometheus with thanos:
 
-- [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]]
+- [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]] - USE THIS ONE
 - [[https://github.com/coreos/prometheus-operator]] - DON'T USE
 - [[https://github.com/coreos/kube-prometheus]] - ???
-
 The correct prometheus operator chart to use it the one in charts/stable and
 not the one on the coreos github account. The stable one is based on the one
 from coreos.
 
-** Prometheus integration
+Create a file called create thanos-test.yaml
 
-- [[https://github.com/helm/charts/tree/master/stable/prometheus-operator]]
 
-The official Prometheus chart support installing Thanos sidecar.
+The create the secret:
 
-** Thanos elements
+    kubectl create secret generic thanos-storage-config \
+      --from-file=thanos.yaml=PATH_TO_FILE/thanos-test.yaml --namespace monitoring
 
-- [[https://github.com/arthur-c/thanos-helm-chart]]
+And check:
 
-UNOFFICIAL
+    k get secrets thanos-storage-config -o jsonpath='{.data.thanos\.yaml}' | base64 --decode
 
-* Possible ISSUES
+Now add the file to the prometheus operator:
 
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#thanosspec
+    thanos:         # add Thanos Sidecar
+      image: quay.io/thanos/thanos:v0.7.0
+      # version:
+      # tag: v0.6.0
+      # sha:
+      # resource:
+      objectStorageConfig: # blob storage to upload metrics
+        key: thanos.yaml
+        name: thanos-storage-config
+
+NOTE: Beware. When you are no using dockerhub you can't use _tag_. Define the
+version in the image line itself.
+
+The real important piece of information here is the config file.
+
+Inside the prometheus pod you will find now new file on disk:
+
+    -rw-rw-r--    1 1000     2000         20001 Sep 16 10:44 queries.active
+    drwxr-sr-x    3 1000     2000          4096 Sep 16 10:01 thanos
+    -rw-r--r--    1 1000     2000            68 Sep 16 10:46 thanos.shipper.json
+    drwxrwsr-x    4 1000     2000          4096 Sep 16 10:35 wal
+
+And:
+
+    /prometheus $ cat thanos.shipper.json
+    {
+            "version": 1,
+            "uploaded": [
+                    "01DMWMSNS0KTRM2HEQEKPY18HH"
+            ]
+    }
+
+If you are adding Thanos to an existing prometheus the sidecar won't pick up new
+data. Connected to:
+
+- [[https://github.com/thanos-io/thanos/issues/206]]
+
+You will need to edit the sidecar flags and add:
+
+    --shipper.upload-compacted
+    Source: https://github.com/thanos-io/thanos/issues/348#issuecomment-524289341
+
+This is not written anywhere.
+After it finished
+
+    /prometheus $ ls -la  | grep 01D | grep -av '.tmp'
+    drwxrwsr-x    3 1000     2000          4096 Sep  6 15:05 01DM3HNZ4101MQXD9D01ACHWZ3
+    drwxrwsr-x    3 1000     2000          4096 Sep  7 09:59 01DM5JHHB4X62BRSJGM7VRCKV0
+    drwxrwsr-x    3 1000     2000          4096 Sep  8 03:01 01DM7D1B3BD2GMW7R453PRTK5E
+    drwxrwsr-x    3 1000     2000          4096 Sep  8 21:00 01DM9ATTQZWGCF7NKHNMA5PFG7
+    drwxrwsr-x    3 1000     2000          4096 Sep  9 15:00 01DMB8MHDSQJ04NG726Q0WRFD1
+    drwxrwsr-x    3 1000     2000          4096 Sep 10 09:00 01DMD6E0HA8Q062BGK6WXP9SWY
+    drwxrwsr-x    3 1000     2000          4096 Sep 11 03:00 01DMF47GTP9EC7N7MNXRX8NYTM
+    drwxrwsr-x    3 1000     2000          4096 Sep 11 21:00 01DMH2147ARS1AQ38J60F9EPVM
+    drwxrwsr-x    3 1000     2000          4096 Sep 12 15:00 01DMJZTQB457QKN4KH3K3A30D4
+    drwxrwsr-x    3 1000     2000          4096 Sep 13 09:00 01DMMXM5XSMP3V4JP06DE631E0
+    drwxrwsr-x    3 1000     2000          4096 Sep 14 03:00 01DMPVDQJAZ3BQW0PAAZ30D9SQ
+    drwxrwsr-x    3 1000     2000          4096 Sep 14 21:00 01DMRS78ECMKEWT368PSW47ZQZ
+    drwxrwsr-x    3 1000     2000          4096 Sep 15 15:00 01DMTQ0SYD8RX0PBPXQPMP8JV4
+    drwxrwsr-x    3 1000     2000          4096 Sep 16 09:00 01DMWMSNS0KTRM2HEQEKPY18HH
+    drwxrwsr-x    3 1000     2000          4096 Sep 16 10:51 01DMWMTB37C5N1JK666FX05V1E
+    drwxrwsr-x    3 1000     2000          4096 Sep 16 11:00 01DMWVND10T5K7Y6NHWT3V0T95
+    /prometheus $ ls -la  | grep 01D | grep -av '.tmp' | wc -l
+    16
+
+And you see the right number of elements on s3, you can remove the flag.
+
+next add banzaicloud to your repo:
+
+    - name: banzaicloud-stable
+      url: https://kubernetes-charts.banzaicloud.com
+
+Exemple of something that does nothing!
+
+      image:
+        repository: quay.io/thanos/thanos
+        tag: v0.7.0
+      store:
+        enabled: false
+      query:
+        enabled: false
+      compact:
+        enabled: false
+      bucket:
+        enabled: false
+      sidecar:
+        enabled: false
+      objstore:
+        type: s3
+        config:
+          bucket: prometheus-data-thanos-dev
+          endpoint: s3.eu-west-1.amazonaws.com
+
+You can use the thanos service in the chart to point to the operator.
+
+Add sidecar to tother container
+
+- [[https://github.com/helm/charts/blob/c7e31361a28a10e30b4143b73439080d5e9f7d8b/stable/prometheus/templates/server-deployment.yaml#L138]]
+
+    sidecarContainers:
+      - args:
+        - sidecar
+        - --prometheus.url=http://127.0.0.1:9090/
+        - --tsdb.path=/prometheus
+        - --grpc-address=[$(POD_IP)]:10901
+        - --objstore.config=$(OBJSTORE_CONFIG)
+        - --log.level=info
+        - --log.format=logfmt
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: OBJSTORE_CONFIG
+          valueFrom:
+            secretKeyRef:
+              key: thanos.yaml
+              name: thanos-storage-config
+        image: quay.io/thanos/thanos:v0.7.0
+        imagePullPolicy: IfNotPresent
+        name: thanos-sidecar
+        ports:
+        - containerPort: 10902
+          name: http
+          protocol: TCP
+        - containerPort: 10901
+          name: grpc
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /prometheus
+          name: storage-volume
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: prometheus-operator-prometheus-token-2k4hr
+          readOnly: true
+
+BE CAREFUL OF THE VOLUME WHERE THE DATA IS.
+
+- [[https://github.com/thanos-io/thanos/issues/1492]]
 - [[https://github.com/thanos-io/thanos/issues/631]]
 
-* Alternatives
-
-- [[https://github.com/cortexproject/cortex]]
+.image images/thanos_ha.png
 
 * Re/Sources
 

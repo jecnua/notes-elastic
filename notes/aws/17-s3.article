@@ -1,5 +1,5 @@
 S3
-|| Last update: 12 Apr 2019
+|| Last update: 19 Sep 2019
 
 * Intro
 
@@ -85,3 +85,17 @@ in CloudFormation is:
     moves objects that have not been accessed for 30 consecutive days to the
     infrequent access tier. If the data is accessed later, it is automatically
     moved back to the frequent access tier.
+
+* Replication
+
+- S3 Same-Region Replication (SRR)
+- S3 Cross-Region Replication (CRR): replicates data across different AWS Regions
+
+    With SRR, new objects uploaded to an Amazon S3 bucket are configured for
+    replication at the bucket, prefix, or object tag levels. Replicated objects
+    can be owned by the same AWS account as the original copy or by different
+    accounts, to protect from accidental deletion.
+    [...]
+    SRR makes another copy of S3 objects within the same AWS Region, with the
+    same redundancy as the destination storage class.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/09/amazon-s3-introduces-same-region-replication/

@@ -96,9 +96,9 @@ This job can run as a cron. It is not necessary. This decrease latency.
 - Receiver: receives data from Prometheus remote-write WAL, exposes it and/or upload it to cloud storage
 - Ruler: evaluates recording and alerting rules against data in Thanos for exposition and/or upload
 
-** Thanos sidecar
+** Sidecar
 
-- [[https://github.com/thanos-io/thanos/blob/master/docs/components/sidecar.md]]
+- [[https://thanos.io/components/sidecar.md/]]
 
 NOTE: This is the only place where I found a guide on how to create the secret
 [[http://polarpoint.io/index.php/2019/06/17/devops-global-monitoring-using-prometheus-and-thanos/]]
@@ -259,10 +259,20 @@ And:
             ]
     }
 
-If you are adding Thanos to an existing prometheus the sidecar won't pick up new
-data. Connected to:
+** PROB 1: Be aware of the Prometheus compactor
 
-- [[https://github.com/thanos-io/thanos/issues/206]]
+If you are adding Thanos to an existing prometheus the sidecar won't pick up the
+old compacted data.
+
+- [[https://github.com/thanos-io/thanos/issues/206][GITHUB ISSUE sidecar: Allow Thanos backup when local compaction is enabled]]
+
+    Early on we hardcoded the sidecar to only upload blocks of comapction level
+    0, i.e. those that never got compacted.
+    With the garbage collection behavior the compactor has nowadays, it should
+    be safe though to also upload historic data and potentially double-upload
+    some data without lasting consequences. Just didn't get to changing the
+    bahavior yet.
+    Source: https://github.com/thanos-io/thanos/issues/206
 
 You will need to edit the sidecar flags and add:
 
@@ -322,56 +332,116 @@ Exemple of something that does nothing!
 
 You can use the thanos service in the chart to point to the operator.
 
-Add sidecar to tother container
+Add sidecar to the other container
+
+You will need to disable prometheus compaction before adding the sidecar with
+shipping functionality:
+
+    # In the prometheus chart (not operator)
+    # Disable compaction
+    extraArgs:
+      storage.tsdb.min-block-duration: 2h
+      storage.tsdb.max-block-duration: 2h
+
+The best value is *2h*.
+
+- [[https://github.com/coreos/prometheus-operator/issues/2196]]
+- [[https://github.com/coreos/prometheus-operator/issues/1375]]
+
+This example is obsolete:
+
+- [[https://github.com/thanos-io/thanos/tree/master/tutorials/kubernetes-helm]]
+
 
 - [[https://github.com/helm/charts/blob/c7e31361a28a10e30b4143b73439080d5e9f7d8b/stable/prometheus/templates/server-deployment.yaml#L138]]
 
-    sidecarContainers:
-      - args:
-        - sidecar
-        - --prometheus.url=http://127.0.0.1:9090/
-        - --tsdb.path=/prometheus
-        - --grpc-address=[$(POD_IP)]:10901
-        - --objstore.config=$(OBJSTORE_CONFIG)
-        - --log.level=info
-        - --log.format=logfmt
-        env:
-        - name: POD_IP
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: status.podIP
-        - name: OBJSTORE_CONFIG
-          valueFrom:
-            secretKeyRef:
-              key: thanos.yaml
-              name: thanos-storage-config
-        image: quay.io/thanos/thanos:v0.7.0
-        imagePullPolicy: IfNotPresent
-        name: thanos-sidecar
-        ports:
-        - containerPort: 10902
-          name: http
-          protocol: TCP
-        - containerPort: 10901
-          name: grpc
-          protocol: TCP
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /prometheus
-          name: storage-volume
-        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-          name: prometheus-operator-prometheus-token-2k4hr
-          readOnly: true
+    server:
+      sidecarContainers:
+        - args:
+          - sidecar
+          - --prometheus.url=http://127.0.0.1:9090/
+          - --tsdb.path=/prometheus
+          - --grpc-address=[$(POD_IP)]:10901
+          - "--objstore.config={type: s3, config: {bucket: xyz, endpoint: s3.eu-west-1.amazonaws.com}}"
+          - --log.level=debug
+          - --log.format=logfmt
+          - --shipper.upload-compacted # DISABLE PROMETHEUS COMPACTOR FIRST
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          image: quay.io/thanos/thanos:v0.7.0
+          imagePullPolicy: IfNotPresent
+          name: thanos-sidecar
+          ports:
+          - containerPort: 10902
+            name: http
+            protocol: TCP
+          - containerPort: 10901
+            name: grpc
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /prometheus
+            name: storage-volume
 
 BE CAREFUL OF THE VOLUME WHERE THE DATA IS.
+
+NOTE: If you not disable the compactor you give you an error:
+
+- [[https://github.com/thanos-io/thanos/blob/a07e91e05583a5002118f243d3f69a26f7035939/cmd/thanos/sidecar.go#L55]]
+
+known issue: store after the compactor runs did not see old historical data! restart it
 
 - [[https://github.com/thanos-io/thanos/issues/1492]]
 - [[https://github.com/thanos-io/thanos/issues/631]]
 
 .image images/thanos_ha.png
+
+
+** PROB 2: Labels
+
+- [[https://github.com/thanos-io/thanos/blob/973876f170032ecd38e2ac88f05ab38e5ed7f78b/docs/getting-started.md#external-labels]]
+
+    Every Prometheus instance must have a globally unique set of identifying labels.
+    Source: https://github.com/thanos-io/thanos/blob/973876f170032ecd38e2ac88f05ab38e5ed7f78b/docs/getting-started.md#external-labels
+
+If you don't the sidecar will reject Prometheus servers without any external
+labels all together. Otherwise you will see this:
+
+    prometheus-server-7764c6fb85-x9gzz thanos-sidecar level=error ts=xxx
+    caller=main.go:213 msg="running command failed" err="no external labels
+    configured on Prometheus server, uniquely identifying external labels must
+    be configured"
+
+Add global labels
+
+    serverFiles:
+      prometheus.yml:
+        global:
+          external_labels:
+            environment: {{ .Environment.Values | getOrNil "envname" | default "UNDEFINED" }}
+            region: {{ .Environment.Values | getOrNil "region" | default "UNDEFINED" }}
+            cluster: {{ .Environment.Values | getOrNil "cluster" | default "UNDEFINED" }}
+            account: {{ .Environment.Values | getOrNil "account" | default "UNDEFINED" }}
+
+** Process to move from old Prometheys
+
+- create thanos secret manually with bucket (for now manually)
+- create a prometheus operator instance with sidecar
+- install thanos components: enable all BUT NOT COMPACTOR
+
+- add sidecar to existing prometheus
+- upload all data (also old with flag)
+- redeploy without flag
+
+
+
+
 
 * Re/Sources
 

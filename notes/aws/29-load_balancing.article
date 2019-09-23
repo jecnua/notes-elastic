@@ -1,5 +1,5 @@
 Load Balancing
-|| Last update: 28 Jan 2019
+|| Last update: 19 Sep 2019
 
 * NLB
 
@@ -51,6 +51,9 @@ makes no sense for something like that. I would define now an NLB as an hybrid
 Layer4/5 LB.
 
 SSL termination is managed via [[https://github.com/awslabs/s2n]].
+
+NLB supports multiple TLS certificates on Network Load Balancers using Server
+Name Indication (SNI).
 
 It does integrate with ACM.
 

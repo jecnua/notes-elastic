@@ -5,22 +5,437 @@ DynamoDB
 
 Based on the DynamoDB document like Cassandra.
 
+* From the AWS talk
+
+document or key/value
+
+the id is the partition key
+unordered hash index
+allow to be partitioned for scale
+
+fast, consistent performance
+
+mongodb and cassandra are the same
+
+DynamoDB is a wide column database
+gives you a *sort*key?
+
+NoSQL instantiated views
+os denormalised/hierarchical
+
+
+configuration router that caches where data is
+to speed up ???
+
+mandatory key-value access
+
+they add a sort key
+Optional
+
+it because the partition key a folder
+now you can do range query
+allows model 1:N relationship
+
+allows test on
+and you can use begins with, between, contains, etc
+
+you can hit a single partition to get a collection of items
+and use the sort key to get a subset of it
+
+PARTITION key
+SORT KEY
+
+* Index
+
+they have two types of indexes
+
+** LSI
+
+local secondary index (LSI)
+alternate sort key attribute
+Index is local to a partition key
+
+10GB max per partition key
+LSIs limit the # of range key
+
+allow to resort the data
+
+they are consistent with the table
+when you write to the table
+the other thing will be updated before it is acknowledge
+
+** GSI
+
+global secondary indexes
+alternate partition and/or sort key
+
+10ms seconds, p99
+
+Index is across all partition keys
+use composite sort keys for compound indexes
+
+different aggregation
+and different grouping of the data
+
+RCUs/WCUs provisioned separately for GSI
+
+they allow projection
+you can create a keys only index
+you can project some or all of the attribute
+you will increase the storage cost but optimize the read
+
+you can query he GSI and have all the data
+don't need to to both
+
+* Performance
+
+you can get an heatmap
+so you can check if you key map is well allocate
+AWS can separate the hot keys and reallocate them
+but if you wrote it wrong then make no sense
+
+like having a counter and update the same counter all
+the time
+
+to get the most you need to be sure
+create tables where the partition key element has a large number
+of distinct values and are requested fairly uniformly
+as randomly as possible.
+
+create a table that satisfies your primary access patters
+and index for the secondary
+
+SPACE: access is evenly spread over key-spaces
+TIME: request arrive evenly paced
+
+* Autoscaling
+
+It will automatically adapt fo your traffic.
+
+autoscaling can take 15m/30m to react.
+for workload more event driven.
+when it comes up back available? is not available.
+
+* Data modeling
+
+SQL have a normalised data structure.
+NOSQL you won't denormalise all. something that is highly mutable
+you don't want to do it. only for stuff that doesn't change much.
+
+when you create a GSI you can swap the SK and PK
+
+so what you would fo with joins in SQL you do it with
+indexes in NOSQL to simplify the query and model a different
+access patterns.
+
+* colum database versus document
+
+wide colums vs document
+
+document
+you can have a secondary index on a vlaue
+and a PK where the index support
+a K/V pattern
+
+wide column
+
+there is no different on how
+
+they are index object storage
+use index on keys to query data
+
+a different is NOSQL they don't support Ad-hoc joins
+
+* Indexing efficiently in nosql
+
+how do you index efficiently
+
+query planner selects the index in the document store
+while in the wide columns use specifies the index
+
+in the document include shard key or suffer
+while in the other the partition key value always required
+
+in the document is optimized with compound indexes (no way to add addition data
+only to add it in the compound index - it will scan each document)
+in the other use projection to "pre-load" the index with the attributes you need
+to go back to the document.
+
+* Data modeling
+
+get right partition/shard key
+create compound indexes
+model 1:n and n:n relationship
+is a denormalised database
+
+efficient/selective patterns (query multiple entities)
+leverage range queries
+
+be very careful with the read/write workload
+you need to define query and write patterns
+document all workflow
+you need to understand all of that in NoSQL
+you can't do it later
+
+use *one* table only
+1 application service is one table
+reduce round trips and simplify access pattern
+
+identify indexes for secondary patterns
+
+* Complex queries
+
+velocity of the query and shape of the query
+is what you need to look at
+
+* how to manage counters
+
+asynchonous store procedure
+
+every time an operation on a table
+it will appear on the stream to be processed
+by your own or a lambda
+
+this is to avoid keeping something like a counter
+in DynamoDB
+top level metrics or create summary metrics
+counter/total/etc
+
+this queries will be complex in nosql
+
+don't write query with aggregation queries
+it will kill the system if you run at scale
+
+stream guarantees at least once
+code it to be idempotent
+
+* write sharding - write overload
+
+DynamoDB uses smallpartition
+10gb 1k write capacity or 3k read <---
+reads are cheaper than writes
+
+1k writes a second so to avoid overload a partition
+how to avoid?
+
+option1 : not good
+add a queu over the table
+if you don't need it to be fast should be ok.
+you can't have real time
+
+you can use write sharding
+when dometing comes in add a random value
+at the end of the key
+id_rand(x,y)
+
+then you can have a process thta sum all the values from
+all the partitions and store it in 1 partition
+
+7million req per second
+when you read
+you don't have to worry about spinning many threads
+so you can read a lot of partition in parallel
+
+scatter/gather
+
+summary data
+is good for this type of partition.
+
+don't use rand if you need to read the data selectively
+add something like the userid
+
+be careful of this is you will have to scale later
+
+increase throughput with concurrency
+consider RCU/WCU per key, item size and request rate
+
+your write workload is not horizontally scalable
+
+they use small partitions to add easily capacity
+because the smaller they are the faster they are to copy
+
+* Composite keys
+
+two types of key
+
+sort key
+order condition are applied before it is read
+
+filter condition are applied later
+so you pay for all
+
+
+you can create a new key
+compountd two key
+status_date
+now this becomes a new column
+
+yo can use BEGINS_WITH
+
+all composite keys needs to be strings
+and string sortable
+
+INTERESTING
+
+* Index sharding
+
+GSI can be used to create a table in which
+you can use the random key to sort
+
+is the GSI table maintained with lambda <---
+
+is to void to do a table scan
+
+
+use TTL to archive
+query GSI for expired table and move it to another table?
+
+create lambda sotred procedure to process itemas
+
+there is aneed to query all items on the table selectively
+
+* Vertical partitioning
+
+is to avoid big blog
+
+when you change a single line
+you need to read all the doc and write all the doc
+
+don't use big document in DynamoDB
+
+by default is eventually consistent
+write is replicated but
+sub 1ms the p99
+if you make consistent it will cost doubel the money
+
+make the big body an id
+and then reate a table with the id as key
+
+so the query is fast
+
+then when one choose one you can go get the data
+
+think about the email
+it doesn't get all the bodies all the time
+
+to avoid big read cost
+you want to have small items
+
+distribuite large items to reduce one-to-many item size
+configure secondey index projection
+
+* ACID transaction
+
+conditional updates
+create v3 if v3 doesn't exist
+compy me to v0 unless the copy is minor that v3
+
+you can add breadcrumbs on v0
+or you can lock it
+
+optimisting locking and conditional update
+
+read commited and read uncommited
+
+* transaction API
+
+non blocking api framework
+
+you give all items to one request
+synchonous uodate, put, delete and check
+- atomic
+- automated rollbacks
+
+it won't wait or deadlock
+fail or succeed
+
+up to 10 items per transaction
+support multiple tables
+cimplex additional checks
+
+transact read too
+
+*  hierarchical data
+
+contain cannot be used in a sort key
+
+push decision to the client if it's small data
+don't make it to do the database or server
+
+is the opposite of graphql
+
+* What I don't like about DynamoDB
+
+DynamoDB locks you to access patterns and they can't be abstrated.
+SQL databses allow you to abstract from the underlying technology instead.
+
+*
+
+a table ca  have multiple different things in one table
+is not the same table
+
+key is to identify access pattern
+if you change it in the future
+if you have new access patterns you will need to add new index, annotate with
+new data or adding new partition types.
+
+* Advices
+
+if you have to put a number in a sort key
+use the exadecimal because is string sortable
+then keep a copy of the reral integer in an attribute
+so you don't have to translate during read
+
+if you denormalise, start looking at NoSQL
+
+=
+if you capy the data of a gourp and you are copying all the group data on each row
+you can create a direct type of graph
+group partition and user partition
+try to put there
+best way to do it
+=
+
+all updates in DynamoDB are upsert
+
+there is no batch update
+
+you don't want any access pattern that works on both tables
+but you can have two tables
+
+weekly partitions?
+
+every app should use one table
+
+thing of the table like a catalog. if something would be
+in the same catalago in SQL, is one table.
+
+is a storage container the DynamoDB table.
+is not like data goes here and this data there. this is a normalised view.
+highly organised.
+
+work on denormalised data.
+
+*
+
+Use NoSQL for OLTP or DSS at scale
+
 * Global table
 
-You are not charged from streams while using DynamoDB glabal table.
+You are not charged from streams while using DynamoDB global table.
 
 * Local environment
 
-- [[https://hub.docker.com/r/amazon/dynamodb-local/]]
+- [[https://hub.docker.com/r/amazon/DynamoDB-local/]]
 
-You can run a docker image with a dynamodb server using the AWS docker image.
+You can run a docker image with a DynamoDB server using the AWS docker image.
 Example:
 
-    docker run -p 8000:8000 amazon/dynamodb-local
+    docker run -p 8000:8000 amazon/DynamoDB-local
 
 It supports the new transaction API and "as many as 20 global secondary indexes
 per table".
 
 * Re/Sources
 
-- [[https://aws.amazon.com/about-aws/whats-new/2018/08/use-amazon-dynamodb-local-more-easily-with-the-new-docker-image/]]
+- [[https://aws.amazon.com/about-aws/whats-new/2018/08/use-amazon-DynamoDB-local-more-easily-with-the-new-docker-image/]]

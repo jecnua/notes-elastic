@@ -1,0 +1,17 @@
+KOPS
+|| Last update: 25 Sep 2019
+
+* Kops
+
+- [[https://github.com/kubernetes/kops]][kubernetes/kops (github)]
+
+* Installation
+
+** MacOS
+
+    brew update
+    brew install kops
+    export KOPS_STATE_STORE=s3://<name>-k8s-resources-qa
+    export CLUSTER_NAME=k8s.qa.me.co.uk
+    kops create cluster ${CLUSTER_NAME} --zones us-west-1c
+    kops update cluster ${CLUSTER_NAME} --target=terraform

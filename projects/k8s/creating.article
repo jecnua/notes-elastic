@@ -1,4 +1,4 @@
-Create a K8S from scratch
+Create a K8S from scratch - OBSOLETE
 || Last update: 24 Jan 2017
 
 * Intro
@@ -65,10 +65,6 @@ you can find it here how it work
 ensure load balancer
 - https://github.com/kubernetes/kubernetes/blob/release-1.5/pkg/cloudprovider/providers/aws/aws.go#L2502
 
-KOPS WAS NOT DOING THIS!!!
-no setting
-only two subntes
-
 you can find load balancer by searching TagNameKubernetesService
 
 - https://github.com/kubernetes/kubernetes/search?utf8=%E2%9C%93&q=TagNameKubernetesService
@@ -78,13 +74,15 @@ you can find load balancer by searching TagNameKubernetesService
 the load bl don't point!
 
 STILL OPEN
-https://github.com/kubernetes/kubernetes/issues/11883
+
+- [[https://github.com/kubernetes/kubernetes/issues/11883]]
 
 This explains
-https://github.com/kubernetes/kubernetes/issues/11543
-https://github.com/kubernetes/kubernetes/issues/11543#issuecomment-143775483
 
-Is all about the kublet flags (this is kops)
+- [[https://github.com/kubernetes/kubernetes/issues/11543]]
+- [[https://github.com/kubernetes/kubernetes/issues/11543#issuecomment-143775483]]
+
+Is all about the kubelet flags (this is kops)
 
     /usr/local/bin/kubelet \
       --allow-privileged=true \
@@ -221,10 +219,6 @@ https://medium.com/@canthefason/kube-up-i-know-what-you-did-on-aws-93e728d3f56a#
 
     kubectl get nodes --show-labels
 
-** Subnets
-
-[[https://github.com/kubernetes/kops/issues/428][Support for private subnet instance groups with NAT Gateway (kops)]]
-
 ** Public subnets
 
 https://github.com/kubernetes/kubernetes/issues/29298
@@ -333,4 +327,4 @@ What I was thinking
 - https://www.eastbanctech.com/tech-insights/blog/reliable-kubernetes-cluster-in-the-amazon-cloud.html
 
 
-https://github.com/kubernetes/kubernetes/blob/master/cluster/aws/util.sh
+- https://github.com/kubernetes/kubernetes/blob/master/cluster/aws/util.sh

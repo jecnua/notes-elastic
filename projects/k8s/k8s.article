@@ -1,5 +1,7 @@
-k8s (OBSOLETE)
-#FIXME
+k8s - OBSOLETE
+FIXME
+REMOVE
+CLEAN
 
 * Intro
 
@@ -19,27 +21,6 @@ There are many approach to the problem:
 
 - https://github.com/Capgemini/kubeform
 - http://kubernetes.io/docs/getting-started-guides/aws/
-
-TBD
-
-* Kops
-
-[[https://github.com/kubernetes/kops]][kubernetes/kops (github)]
-
-** CON
-
-  - [[https://github.com/kubernetes/kops/issues/1055][Not a module]]
-
-[[https://github.com/kubernetes/kops/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20terraform][Open ISSUE terraform]]
-
-** Install (on mac)
-
-    brew update
-    brew install kops
-    export KOPS_STATE_STORE=s3://<name>-k8s-resources-qa
-    export CLUSTER_NAME=k8s.qa.me.co.uk
-    kops create cluster ${CLUSTER_NAME} --zones us-west-1c
-    kops update cluster ${CLUSTER_NAME} --target=terraform
 
 * Dashboard
 

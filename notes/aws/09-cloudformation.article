@@ -42,6 +42,12 @@ Be careful with DependOn not to create loop between resources.
 Use NotificationARNs.member.N with CreateStack to push stack events into SNS in
 real-time.
 
+* Import existing resources
+
+- [[https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-import.html]]
+
+You can now import existing resources in CloudFormation.
+
 * Share modules
 
 The best practices to share modules is to pull them on s3 and allow people to

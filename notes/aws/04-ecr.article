@@ -1,5 +1,31 @@
 ECR
-|| Last update: 2 Jul 2018
+|| Last update: 15 Nov 2019
+
+* Intro
+
+ECR is a very basic image repository for docker containers.
+
+* Features
+
+* Image scanning
+
+- [[https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html]]
+
+    Image Scanning for Amazon ECR is available at no additional charge
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/10/announcing-image-scanning-for-amazon-ecr/
+
+ECR now support image scanning.
+
+    When scan on push is enabled, images are scanned after being pushed to a
+    repository. If scan on push is disabled on a repository then you must
+    manually start each image scan to get the scan results.
+    Source: https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html
+
+* Lack of cross region replication
+
+ECR does not support cross region replication
+
+- [[https://github.com/aws/containers-roadmap/issues/140]]
 
 * Possible issues
 
@@ -19,15 +45,15 @@ Actually, you will also see the layers!
         {
             "imageIds": [
                 {
-                    "imageDigest": "sha256:5e6ac35b762b287aa4c4fab37d5a8d9eccdc7df85af7fe88e907412575979954",
+                    "imageDigest": "sha256:xxx",
                     "imageTag": "latest"
                 },
                 {
-                    "imageDigest": "sha256:5e6ac35b762b287aa4c4fab37d5a8d9eccdc7df85af7fe88e907412575979954",
+                    "imageDigest": "sha256:xxx",
                     "imageTag": "jenkins_build_24"
                 },
                 {
-                    "imageDigest": "sha256:5e6ac35b762b287aa4c4fab37d5a8d9eccdc7df85af7fe88e907412575979954",
+                    "imageDigest": "sha256:xxx",
                     "imageTag": "jenkins_build_23"
                 }
             ]
@@ -49,7 +75,7 @@ But you will have this error:
 But it will be stuck THERE. At pulling. Until it gets into timeout!
 
 
-        error pulling image configuration: Get 
+        error pulling image configuration: Get
         https://prod-eu-west-1-starport-layer-bucket.s3.eu-west-1.amazonaws.com/xxx:
         dial tcp 52.218.84.34:443: i/o timeout
 
@@ -65,7 +91,7 @@ You will notice the issue if you use traceroute:
         5  * * *
         [...]
 
-And so on. 
+And so on.
 
 When you see that error you may have a VPC s3 endpoint!
 

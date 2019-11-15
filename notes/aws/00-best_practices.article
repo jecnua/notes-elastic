@@ -1,0 +1,21 @@
+Best practices AWS
+|| Last update: 15 Nov 2019
+
+* Rotate keys daily
+
+- [[https://github.com/rhyeal/aws-rotate-iam-keys]]
+
+Take the bash scripts from here and rotate keys daily.
+
+* ACM
+
+Renew ACM certs via DNS not email.
+
+- [[https://aws.amazon.com/about-aws/whats-new/2017/11/aws-certificate-manager-easier-certificate-validation-using-dns/]]
+
+* Protect s3 bucket
+
+Replicate it in another region under another account with different IAM accounts. The source cannot control it anymore.
+
+- [[https://aws.amazon.com/about-aws/whats-new/2017/11/amazon-s3-adds-new-features-for-data-security-and-compliance/]]
+ 

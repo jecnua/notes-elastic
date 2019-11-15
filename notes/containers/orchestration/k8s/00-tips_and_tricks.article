@@ -1,0 +1,28 @@
+Kubernetes - Tips and tricks
+|| Last update: 05 Jan 2018
+
+* Manage spot nodes
+
+- [[https://github.com/aws/aws-node-termination-handler]]
+- [[https://github.com/pusher/k8s-spot-termination-handler]]
+
+You can use a deamonset to check when a spot instance is going to be terminates
+and cordon + drain it.
+
+* Stop all Deployments
+
+    kubectl get deploy | cut -f 1 -d ' ' | grep -v 'NAME'  > /tmp/deployments.txt
+    while read line; do kubectl scale deployment $line --replicas=0; done < /tmp/deployments.txt
+
+* Tools
+
+- Kubectx: [[https://github.com/ahmetb/kubectx]]
+- Kube-shell: [[https://github.com/cloudnativelabs/kube-shell]]
+
+* kompose
+
+- [[https://github.com/kubernetes-incubator/kompose]]
+
+* Resources
+
+- [[https://www.youtube.com/watch?v=U1zR0eDQRYQ][Kubernetes Day 2: Cluster Operations [I] - Brandon Philips, CoreOS]] 10 Apr 2017

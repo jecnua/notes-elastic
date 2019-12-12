@@ -1,21 +1,5 @@
 CKA notes
-|| Last update: 21 Aug 2019
-
-* To clarify
-
-- k8s ports
-- k8s HA
-- cgroup drivers
-- no need for cni package
-- https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/
-- CRI https://github.com/kubernetes/community/blob/master/contributors/devel/container-runtime-interface.md
-- vx-lan
-- externalIP
-- env from
-- how can the pod see in the env pod name and other info
-- pod presets
-- are pod ip in statefulset static?
-- Search for QUESTION
+|| Last update: 12 Dec 2019
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -1920,9 +1904,32 @@ dynamic PV creation, which gets wired to the StorageClass resource.
 While creating a PersistentVolumeClaim, a user can specify the size and access
 mode.
 
+** Storage class
+
+You can't change the reclaimPolicy of a storage class after it's creation:
+
+    $ kubectl patch storageclass gp2 -p '{"reclaimPolicy":"Retain"}'
+    The StorageClass "gp2" is invalid: reclaimPolicy: Forbidden: updates to
+    reclaimPolicy are forbidden.
+
+Create instead a new gp2 class and make it the new default.
+
+- [[https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/]]
+
+You can change the reclaimPolicy of an existing volume however:
+
+- [[https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims]]
+- [[https://kubernetes.io/docs/tasks/administer-cluster/change-pv-reclaim-policy/]]
+
+You can set a storage class to create a PV only after the pod has been scheduled
+with the option *volumeBindingMode* set to *WaitForFirstConsumer* instead of
+_immediate_.
+
+- [[https://kubernetes.io/docs/concepts/storage/storage-classes/#volume-binding-mode]]
+
 *** CSI
 
-CSI was created to standardize the Volume interface; a volume plugin built using
+CSI was created to standardise the Volume interface; a volume plugin built using
 a standardized CSI would work on different container orchestrator.
 
 Kubernetes 1.9 added alpha support for CSI

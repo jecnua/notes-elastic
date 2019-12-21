@@ -1,5 +1,5 @@
-Autoscaling
-|| Last update: 10 Jan 2019
+AWS Autoscaling
+|| Last update: 21 Dec 2019
 
 * Intro
 
@@ -16,6 +16,36 @@ Autoscaling
     can’t be modified. If needs modification, a new launch configuration can be
     created and attached to the existing Auto Scaling Group
     Source: http://jayendrapatil.com/aws-blue-green-deployment/
+
+* Weighted autoscaling
+
+- [[https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-weighting.html]]
+
+    Amazon EC2 Auto Scaling now lets you include instance weights in Auto Scaling
+    groups (ASGs) that are configured to provision and scale across multiple
+    instance types. Instance weights define the capacity units that each instance
+    type would contribute to your application's performance, providing greater
+    flexibility for instance type selection that can be included in your ASG.
+    [...]
+    When you use instance weights, you set the desired capacity for the ASG in the
+    units of your choice, such as virtual CPUs, memory, storage, throughput, or
+    relative performance for an instance type. The weight you specify for an instance
+    type is the number of units that the instance type represents towards the
+    desired capacity.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/amazon-ec2-auto-scaling-supports-instance-weighting/
+
+* Max lifetime
+
+- [[https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html]]
+
+    Amazon EC2 Auto Scaling now lets you safely and securely recycle instances
+    in an Auto Scaling group (ASG) at a regular cadence. The Maximum Instance
+    Lifetime parameter helps you ensure that instances are recycled before
+    reaching the specified lifetime, giving you an automated way to adhere to
+    your security, compliance, and performance requirements. You can either
+    create a new ASG or update an existing one to include the Maximum Instance
+    Lifetime value of your choice between seven and 365 days.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/amazon-ec2-auto-scaling-supports-max-instance-lifetime/
 
 * Lifecycle
 

@@ -42,7 +42,7 @@ You can specify an IP address or an interface name
 You can also specify a port number (otherwise, the default port 2377 will be used)
 
     docker swarm join \
-    --token SWMTKN-1-4tt24pq4ygv0ovzkiwhobmbfdw02fot9hi4iz0x6eljoto8wa2-do7kzvb1scz6ytdovweik
+    --token SWMTKN-1-xyz
 sxd4 \
     10.1.22.2:2377
 

@@ -451,7 +451,6 @@ with the SSL cert already present on the system.
 - [[https://github.com/helm/charts/search?q=tls-proxy-secret&unscoped_q=tls-proxy-secret]]
 
 Unless you plan to have that extra step first, set the enabled to false.
-
 Also when you run the first time, you can run only prometheus and the operator
 without any of the other functionalities.
 To do so disable all the components:

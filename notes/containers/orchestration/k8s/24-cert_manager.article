@@ -1,0 +1,19 @@
+Cert Manager
+|| Last update: 5 Nov 2019
+
+* Let's encrypt
+
+Can be used in AWS CHINA where there is no SSL cert support.
+
+** Challenges
+
+- [[https://letsencrypt.org/docs/challenge-types/]]
+
+DNS-01 challenge is similar to the DNS method of AWS.
+
+    It also allows you to issue wildcard certificates.
+    Source: https://letsencrypt.org/docs/challenge-types/
+
+    kubectl get orders,challenges,certificates --all-namespaces
+    ##
+    kubectl get events -n cert-manager --sort-by=.metadata.creationTimestamp

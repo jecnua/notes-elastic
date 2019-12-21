@@ -446,6 +446,321 @@ it will uyse the service name identification
 is the injection of envoy that rewrite he iptables
 and not istio
 
+* Destination Rule
+
+- [[https://istio.io/docs/reference/config/networking/v1alpha3/destination-rule/]]
+
+    DestinationRule defines policies that apply to traffic intended for a
+    service after routing has occurred. These rules specify configuration for
+    load balancing, connection pool size from the sidecar, and outlier detection
+    settings to detect and evict unhealthy hosts from the load balancing pool.
+    [...]
+    Version specific policies can be specified by defining a named subset and
+    overriding the settings specified at the service level.
+    [...]
+    Policies specified for subsets will not take effect until a route rule
+    explicitly sends traffic to this subset.
+    Source: https://istio.io/docs/reference/config/networking/v1alpha3/destination-rule/
+
+You can also use subset to test different versions of an app.
+
+* Notes in 2019
+
+- [[https://itnext.io/understanding-application-routing-in-istio-aade30d594f4]]
+
+kubectl create namespace test
+kubectl label namespace test istio-injection=enabled
+
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      ports:
+      - port: 80
+        name: http
+      selector:
+        app: nginx
+    ---
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    metadata:
+      name: nginx-v1
+    spec:
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: nginx
+            version: v1
+        spec:
+          containers:
+          - name: nginx
+            image: nginx
+            imagePullPolicy: IfNotPresent
+            ports:
+            - containerPort: 80
+    ---
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    metadata:
+      name: nginx-v2
+    spec:
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: nginx
+            version: v2
+        spec:
+          containers:
+          - name: nginx
+            image: nginx
+            imagePullPolicy: IfNotPresent
+            ports:
+            - containerPort: 80
+
+Istio specific:
+
+    ---
+    # https://istio.io/docs/reference/config/networking/v1alpha3/destination-rule/
+    apiVersion: networking.istio.io/v1alpha3
+    kind: DestinationRule
+    metadata:
+      name: fab-destination
+    spec:
+      host: fab-nginx
+      subsets:
+      - name: v1
+        labels:
+          version: v1
+      - name: v2
+        labels:
+          version: v2
+    ---
+    apiVersion: networking.istio.io/v1alpha3
+    kind: Gateway
+    metadata:
+      name: fab-gateway
+    spec:
+      selector:
+        istio: ingressgateway # use istio default controller
+      servers:
+      - port:
+          number: 80
+          name: http
+          protocol: HTTP
+        hosts:
+        - "*"
+    ---
+    apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: fab-vs
+    spec:
+      hosts:
+      - "*"
+      gateways:
+      - fab-gateway
+      http:
+      - route:
+        - destination:
+            host: fab-nginx
+            subset: v1
+          weight: 100
+    #    - destination:
+    #        host: webapp
+    #        subset: v2
+    #      weight: 50
+
+        Once our deployment is up and running we have to add a destination
+        rule so Istio knows about our application. Istio will now internally
+        assign a DNS name to the application. The name will be made up of the
+        application name, hostname (taken from our deployment below) and
+        namespace. It will be appended like so <namespace>.svc.cluster.local.
+        [...]
+        Now we will create the Istio gateway. This will define the inbound
+        port the application will be listening on and the hosts we will route
+        to. In our case, it will be port 80 and we will use a * to hit any host.
+        We are also going to tie our gateway to the default Istio ingress
+        gateway.
+        [...]
+        Lastly, we will create our Istio virtual service. This defines how we
+        are going to route the traffic on weight.
+
+
+
+NOTE
+Gateway configure the edge
+VirtualService configure the routing
+
+
+
+          To configure Istio’s Gateway to allow traffic into the cluster and through the service mesh, we’ll start by exploring two concepts: Gateway and VirtualService. Both are fundamental, in general, to getting traffic to flow in Istio, but we’ll look at them only within the context of allowing traffic into the cluster.
+          Source: https://freecontent.manning.com/istio-gateway/
+
+The Istio Gateway is what tells the
+istio-ingressgateway pods which ports to open up and for which hosts.
+
+    To configure a Gateway in Istio, we use the Gateway resource and specify which ports we wish to open on the Gateway, and what virtual hosts to allow for those ports
+    This Gateway definition is intended for the istio-ingressgateway which was created when we set up Istio initially, but we could have used our own definition of Gateway. We can define to which gateway the configuration applies by using the labels in the selector section of the Gateway configuration. In this case, we’re selecting the gateway implementation with the label istio: ingressgateway which matches the default istio-ingressgateway. The Gateway for istio-ingressgateway is an instance of Istio is service proxy (Envoy)
+    Source: https://freecontent.manning.com/istio-gateway/
+
+
+Investigating and poking around reveals that the first gateway from bookinfo above is swallowing all traffic.
+beware of using *
+Better to avoid using *.domain in hosts, unless you have only a single gateway.
+So this has opened up a port on our ingress gateway in Istio, but when traffic
+hits this gateway, it will have no idea where to send it
+
+Now that our Gateway is ready to receive traffic, we have to inform it where
+traffic should go when it does receive it. Istio configures this with a type
+called “VirtualService”. By including a list of gateways a virtual service
+config should be applied to, Istio then configures those gateways with the
+routes defined in the VirtualService configuration.
+
+The http block then defines all of the matches on URI
+prefixes that should then be routed to the given destination. When we apply
+this, we can use the Envoy admin to see this take affect again. Open up
+http://localhost:15000/config_dump and
+look for the “routes” portion of the printed JSON
+
+So Istio has taken our VirtualService definition and applied it to our gateway
+pod that it matched on the name. Success!
+
+
+    The Gateway: Istio Gateway’s are responsible for opening ports on relevant
+    Istio gateway pods and receiving traffic for hosts. That’s it. However, they’re
+    the critical link between received traffic and routing.
+    The VirtualService: Istio VirtualService’s are what get “attached” to
+    Gateways and are responsible defining the routes the gateway should implement.
+    You can have multiple VirtualServices attached to Gateways. But not for the
+    same domain.
+
+The Ingress controller is, basically, a reverse-proxy that runs in a cluster and configures routing rules according to Ingress resources. Istio provides two ways of ingressing traffic into your cluster.
+
+    First one, istio-ingress, is a traditional ingress controller like nginx-ingress, traefik or controur. This controller runs in your cluster and listens to all the changes to Ingress resources from the Kubernetes API and sends incoming traffic according to these rules. You can easily swap one ingress controller to another
+    Istio documentation discourages use of this method as a “legacy way” and suggests using the second one.
+    The second one, istio-ingressgateway, is also an ingress controller, but unlike traditional ones, it does not rely on native Kubernetes Ingress objects. It uses its own custom resources: Gateway, VirtualService, DestinationRule, etc. Using custom resources provides more flexibility in configuring network policies
+    Source: https://blog.lwolf.org/post/switching_to_istio_as_the_primary_ingress/
+
+To expose a service using ingressgateway you have to create at least 2 objects - Gateway and a VirtualService.
+
+    port naming is important, it is used in some routing logic inside the istio.
+    The port names must be of the form protocol-suffix with grpc, http, http2, https, mongo, redis, tcp, tls or udp as the protocol in order to take advantage of Istio’s routing features.
+    For example, name: http2-foo or name: http are valid port names, but name: http2foo is not. If the port name does not begin with a recognized prefix or if the port is unnamed, traffic on the port will be treated as plain TCP traffic (unless the port explicitly uses Protocol: UDP to signify a UDP port).
+    Source: https://blog.lwolf.org/post/switching_to_istio_as_the_primary_ingress/
+
+You don't really need a routexxx
+
+example with http bin
+https://github.com/istio/istio/blob/master/samples/httpbin/httpbin-gateway.yaml
+
+problem with certs https://github.com/istio/istio/issues/13113 https://github.com/istio/istio/issues/15148
+
+
+    Before the 0.8 release, Istio used Kubernetes Ingress resources to configure external traffic. Kubernetes Ingress provides a single entrance for external traffic, but it also has some significant shortcomings：
+    Kubernetes Ingress can’t be managed by the Istio control plane. It needs to be configured with the Kubernetes Ingress rules. As a result, there are two sets of independent routing configurations in the system, one for the entrance and one for the sidecar proxies inside the mesh. The operations of the service mesh are much more complicated in this way.
+    Kubernetes Ingress can only provide very basic layer 7 capabilities. It doesn’t have the same functionalities as mesh sidecars including advanced routing rules, distributed tracing, policy checking and metrics collections.
+    Source: https://medium.com/@zhaohuabing/which-one-is-the-right-choice-for-the-ingress-gateway-of-your-service-mesh-21a280d4a29c
+
+    To address these concerns, Istio Gateway resource has been introduced in the 0.8 release to replace Kubernetes ingress.
+
+Advanced traffic routing
+fault injection
+others
+
+    This far, all we’ve done is configure the Istio Gateway to expose a specific port, expect a specific protocol on that port, and define specific hosts to serve from the port/protocol pair. When traffic comes into the gateway, we need a way to get it to a specific service within the service mesh, and to do that we’ll use the VirtualService resource. In Istio, a VirtualService resource defines how a client talks to a specific service through its fully qualified domain name, which versions of a service are available, and other routing properties (like retries and request timeouts). It’s sufficient to know that VirtualService allows us to route traffic from the ingress gateway to a specific service.
+    Source: https://freecontent.manning.com/istio-gateway/
+
+    The first issue is that the Kubernetes Ingress is a simple specification geared toward HTTP workloads. Each implementation of Kubernetes Ingress (like NGINX, Heptio Contour, etc) is geared toward HTTP traffic. In fact, Ingress specification only considers port 80 and port 443 as ingress points. This severely limits the types of traffic a cluster operator can allow into the service mesh. For example, if you’ve Kafka or NATS.io workloads, you may wish to expose direct TCP connections to these message brokers. Kubernetes Ingress doesn’t allow for that.
+    [...]
+    Second, the Kubernetes Ingress resource is severely underspecified. It lacks a common way to specify complex traffic routing rules, traffic splitting, or things like traffic shadowing. The lack of specification in this area causes each vendor to re-imagine how best to implement configurations for each type of Ingress implementation (HAProxy, Nginx, etc).
+    Lastly, because things are underspecified, the way most vendors choose to expose configuration’s through bespoke annotations on deployments. The annotations between vendors varied and aren’t portable, and if Istio continues this trend there will be many more annotations to account for all the power of Envoy as an edge gateway.
+    Ultimately, Istio decided on a clean slate for building ingress patterns and specifically separating out the layer 4 (transport) and layer 5 (session) properties from the layer 7 (application) routing concerns. Istio Gateway handles the L4 and L5 concerns, and VirtualService handles the L7 concerns.
+    Source: https://freecontent.manning.com/istio-gateway/
+
+Istio has replaced the familiar Ingress resource with new Gateway and VirtualServices resources.
+
+    Inside the cluster the request is routed to the Istio IngressGateway Service which is listening on the port the load balancer forwards to.
+    The Service forwards the request (on the same or a new port) to an Istio IngressGateway Pod (managed by a Deployment).
+    The IngressGateway Pod is configured by a Gateway (!) and a VirtualService.
+    The Gateway configures the ports, protocol, and certificates.
+    The VirtualService configures routing information to find the correct Service
+    The Istio IngressGateway Pod routes the request to the application Service.
+    [...]
+    Now we have reached the most interesting part in this flow, the IngressGateway. This is a fancy wrapper around the Envoy proxy and it is configured in the same way as the sidecars used inside the service mesh (it is actually the same container). When we create or change a Gateway or VirtualService, the changes are detected by the Istio Pilot controller which converts this information to an Envoy configuration and sends it to the relevant proxies, including the Envoy inside the IngressGateway.
+    [...]
+    VirtualService, it works in concert with the Gateway to configure Envoy. If you only add a Gateway nothing will show up in the Envoy configuration, and the same is true if you only add a VirtualService.
+    VirtualServices are really powerful and they enable the intelligent routing that is one of the very reasons we want to use Istio in the first place.
+    Source: https://blog.jayway.com/2018/10/22/understanding-istio-ingress-gateway-in-kubernetes/
+
+Valid ports are, HTTP|HTTPS|GRPC|HTTP2|MONGO|TCP|TLS and more.
+
+    # Port forward to the first istio-ingressgateway pod
+    alias igpf='kubectl -n istio-system port-forward $(kubectl -n istio-system
+    get pods -listio=ingressgateway -o=jsonpath="{.items[0].metadata.name}") 15000'
+
+    # Get the http routes from the port-forwarded ingressgateway pod (requires jq)
+    alias iroutes='curl --silent http://localhost:15000/config_dump |
+    jq '\''.configs.routes.dynamic_route_configs[].route_config.virtual_hosts[]|
+    {name: .name, domains: .domains, route: .routes[].match.prefix}'\'''
+
+    # Get the logs of the first istio-ingressgateway pod
+    # Shows what happens with incoming requests and possible errors
+    alias igl='kubectl -n istio-system logs $(kubectl -n istio-system get pods
+    -listio=ingressgateway -o=jsonpath="{.items[0].metadata.name}") --tail=300'
+
+    # Get the logs of the first istio-pilot pod
+    # Shows issues with configurations or connecting to the Envoy proxies
+    alias ipl='kubectl -n istio-system logs $(kubectl -n istio-system get pods
+    -listio=pilot -o=jsonpath="{.items[0].metadata.name}") discovery --tail=300'
+    Source: https://blog.jayway.com/2018/10/22/understanding-istio-ingress-gateway-in-kubernetes/
+
+https://istio.io/docs/tasks/traffic-management/
+
+Ingress controller is replaced with two components named, Gateway and VirtualService. Gateways are used to configure the istio-proxies (envoys) while the VirtualServices are used to route the traffic.
+
+
+    gateways	string[]
+    The names of gateways and sidecars that should apply these routes. A single VirtualService is used for sidecars inside the mesh as well as for one or more gateways. The selection condition imposed by this field can be overridden using the source field in the match conditions of protocol-specific routes. The reserved word mesh is used to imply all the sidecars in the mesh. When this field is omitted, the default gateway (mesh) will be used, which would apply the rule to all sidecars in the mesh. If a list of gateway names is provided, the rules will apply only to the gateways. To apply the rules to both gateways and sidecars, specify mesh as one of the gateway names.
+    Source: https://istio.io/docs/reference/config/networking/v1alpha3/virtual-service/#VirtualService
+
+** How not to use the ingress in istio
+
+The settings in VirtualService called _gateways_ allows you to do exactly that:
+
+    The names of gateways and sidecars that should apply these routes. A single
+    VirtualService is used for sidecars inside the mesh as well as for one or
+    more gateways. The selection condition imposed by this field can be overridden
+    using the source field in the match conditions of protocol-specific routes.
+    The reserved word mesh is used to imply all the sidecars in the mesh. When
+    this field is omitted, the default gateway (mesh) will be used, which would
+    apply the rule to all sidecars in the mesh. If a list of gateway names is
+    provided, the rules will apply only to the gateways. To apply the rules to
+    both gateways and sidecars, specify mesh as one of the gateway names.
+    Source: https://istio.io/docs/reference/config/networking/v1alpha3/virtual-service/#VirtualService
+
+You can use *mesh* to use your normal ingress system.
+
+    The reserved word mesh is used to imply all the sidecars in the mesh.
+    Source: https://istio.io/docs/reference/config/networking/v1alpha3/virtual-service/#VirtualService
+
+** configuration
+
+.image images/isti-configuration.png
+.caption Source: https://rinormaloku.com/istio-practice-routing-virtualservices/
+
+        There should be a note as to what host is referring to. Why is host used in this manner? I am guessing because the virtual service could also be used for accessing resources outside a kb cluster? Since sa-frontend is really a service why is it selected via the term host? Also why port is mentioned at all since the service already defines the port?
+        From istio docs on virtual service: Host - The address used by a client when attempting to connect to a service. Could you clarify more about this. Thanks.
+
+        Update: Here are some more notes on this:Destination indicates the network addressable service to which the request/connection will be sent after processing a routing rule. The destination.host should unambiguously refer to a service in the service registry. Istio’s service registry is composed of all the services found in the platform’s service registry (e.g., Kubernetes services, Consul services), as well as services declared through the ServiceEntry resource.
+
+        Note for Kubernetes users: When short names are used (e.g. “reviews” instead of “reviews.default.svc.cluster.local”), Istio will interpret the short name based on the namespace of the rule, not the service. A rule in the “default” namespace containing a host “reviews will be interpreted as “reviews.default.svc.cluster.local”, irrespective of the actual namespace associated with the reviews service. To avoid potential misconfigurations, it is recommended to always use fully qualified domain names over short names.
+        Source: https://rinormaloku.com/istio-practice-routing-virtualservices/
+
 * Resources
 
 - Me: Notes from a webinar

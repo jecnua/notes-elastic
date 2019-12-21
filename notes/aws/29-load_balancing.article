@@ -1,5 +1,29 @@
 Load Balancing
-|| Last update: 19 Sep 2019
+|| Last update: 21 Dec 2019
+
+* ALB
+
+Application Load Balancers support *Weighted*Target*Groups* routing.
+
+    [...] able to do weighted routing of the traffic forwarded
+    by a rule to multiple target groups. This enables various use cases like blue-green,
+    canary and hybrid deployments without the need for multiple load balancers. It
+    even enables zero-downtime migration between on-premises and cloud or between
+    different compute types like EC2 and Lambda.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/application-load-balancer-simplifies-deployments-support-for-weighted-target-groups/
+
+    [...] you can register multiple target groups with the forward
+    action of a rule and associate weights on them. The weights can be set in
+    integer range from 0-999 and can be changed up or down as often as desired. All
+    the target group types - instance, IP and Lambda are supported. Additionally,
+    you can set target group stickiness to ensure clients get served from a specific
+    target group for a configurable duration of time to ensure consistent experience.
+    You can continue using AWS Global Accelerator for blue-green deployments that
+    involve Application Load Balancers across regions.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/application-load-balancer-simplifies-deployments-support-for-weighted-target-groups/
+
+Enables you to distribute traffic between multiple versions of your application
+simultaneously.
 
 * NLB
 

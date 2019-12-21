@@ -72,9 +72,9 @@ turns it on by default and you can wrap certain calls
 
 * External advices
 
-** CPU is throttled via Cgroups
+** CPU is throttled via cgroups
 
-You can verify that AWS Lambda uses Cgroups for CPU throttling by reading the contents of the special file /proc/self/cgroup and see your function is assigned to specific control groups such as "2:cpu:/sandbox-root-UXXIp3/sandbox-023d01", but you cannot directly see the imposed limits.
+You can verify that AWS Lambda uses cgroups for CPU throttling by reading the contents of the special file /proc/self/cgroup and see your function is assigned to specific control groups such as "2:cpu:/sandbox-root-UXXIp3/sandbox-023d01", but you cannot directly see the imposed limits.
 
 - [[https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt][cgroup-v1]]
 

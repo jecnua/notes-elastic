@@ -1,17 +1,269 @@
 KOPS
-|| Last update: 25 Sep 2019
+|| Last update: 16 Oct 2019
 
 * Kops
 
 - [[https://github.com/kubernetes/kops]][kubernetes/kops (github)]
 
-* Installation
+* Best practices
 
-** MacOS
+- IAM policies in Terraform only and not in KOPS
 
-    brew update
-    brew install kops
-    export KOPS_STATE_STORE=s3://<name>-k8s-resources-qa
-    export CLUSTER_NAME=k8s.qa.me.co.uk
-    kops create cluster ${CLUSTER_NAME} --zones us-west-1c
-    kops update cluster ${CLUSTER_NAME} --target=terraform
+We want to be able to modify the Instance role of the master/nodes without using
+kops. By referring in KOPS just to the IAM role we are also able to attach this
+role on multiple clusters (blue/green / recovery).
+Having the role in terraform will also avoid hardcoding of resources and divide
+the policy in manageable chunks. 
+
+- Subnets, NAT and routing should be defined in Terraform and not left to KOPS
+
+* VPC and Subnets
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/run_in_existing_vpc.md]]
+
+** Tags
+
+When we use kops to create Subnets, one of the tag added is:
+
+    KubernetesCluster
+
+This tag however is deprecated and should not be used if you are actually
+sharing the subnets.
+
+- [[https://github.com/kubernetes/kops/issues/5606#issuecomment-412915506]]
+- [[https://github.com/kubernetes/kops/issues/4767]]
+
+Another of this deprecated tags is:
+
+    AssociatedNatgateway
+
+Is added only on the utility subnets.
+
+- [[https://github.com/kubernetes/kops/issues/3000][AssociatedNatgateway tag applied to utility subnets but not private ones #3000]]
+
+Also, if you are sharing the subnets you will need to tag them as _shared_:
+
+    // ResourceLifecycleOwned is the value we use when tagging resources to indicate
+    // that the resource is considered owned and managed by the cluster,
+    // and in particular that the lifecycle is tied to the lifecycle of the cluster.
+    ResourceLifecycleOwned = "owned"
+    // ResourceLifecycleShared is the value we use when tagging resources to indicate
+    // that the resource is shared between multiple clusters, and should not be destroyed
+    // if the cluster is destroyed.
+    ResourceLifecycleShared = "shared"
+    - [[https://github.com/kubernetes/kubernetes/blob/103e926604de6f79161b78af3e792d0ed282bc06/staging/src/k8s.io/legacy-cloud-providers/aws/tags.go#L51]]
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/run_in_existing_vpc.md#subnet-tags]]
+
+Kops will add some tags to your subnets when it starts up.
+This tags will be dependent on the name of the cluster and it will conflict with
+the ones you created in terraform.
+
+- [[https://github.com/hashicorp/terraform/blob/master/website/docs/configuration/resources.html.md#lifecycle-lifecycle-customizations]]
+
+For example:
+
+    ~ tags                            = {
+          "Description"                                      = "dev k8s public subnet 0"
+          "Name"                                             = "utility-cn-northwest-1a.k8s.public"
+          "SubnetType"                                       = "Utility"
+          "environment"                                      = "dev"
+        - "kubernetes.io/cluster/k8s.kops-test.k8s.local"    = "shared" -> null
+          "kubernetes.io/role/elb"                           = "1"
+      }
+    }
+
+You can tell terraform to ignore tags with:
+
+    lifecycle {
+      ignore_changes = [
+        tags,
+      ]
+    }
+
+*NOTE*: For some reasons kops won't remove the tag it added from the subnet when you
+destroy the cluster but it won't complain either when you create it again.
+
+- [[https://github.com/terraform-providers/terraform-provider-aws/issues/5974]]
+- [[https://github.com/kubernetes/kubernetes/issues/73190]]
+
+* IAM
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md]]
+- [[https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md#use-existing-aws-instance-profiles]]
+
+It is a good ides to move the instance profile for master and nodes to terraform
+to be able to be configurable and managed outside of kops.
+This will avoid hardcoding of resources (the need to add ids and arn hardcoded
+via kops) and it will make it easy to split the credentials by application.
+When kops runs it will be able to tell you if there is any difference between
+the role it was trying to generate and yours, and this will help with upgrades.
+
+This old type of syntax will need to be removed:
+
+    spec:
+      iam:
+        allowContainerRegistry: true
+        legacy: false
+
+To become:
+
+    spec:
+      iam:
+        profile: arn:aws:iam::1234567890108:instance-profile/kops-custom-node-role
+
+*NOTE*: This goes into EVERY instance group you create, with the exception of
+the bastion.
+
+In china assume policy changes:
+
+- [[https://docs.amazonaws.cn/en_us/general/latest/gr/rande.html]]
+
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Action": "sts:AssumeRole",
+                "Principal": {
+                   "Service": "ec2.amazonaws.com.cn" # HERE
+                },
+                "Effect": "Allow",
+                "Sid": ""
+            }
+        ]
+    }
+
+It will e required when using external IAM profiles to use this flag with EVERY
+update command:
+
+    --lifecycle-overrides IAMRole=ExistsAndWarnIfChanges,IAMRolePolicy=ExistsAndWarnIfChanges,IAMInstanceProfileRole=ExistsAndWarnIfChanges
+
+If you don't put the flags you will receive an error like this:
+
+    W1017 15:38:57.876383   95664 executor.go:130] error running task "IAMInstanceProfileRole/dev-k8s-node-5kadxa" (9m45s remaining to succeed): error cr
+    eating IAMInstanceProfileRole: LimitExceeded: Cannot exceed quota for InstanceSessionsPerInstanceProfile: 1
+
+* ETCD backup
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/etcd/backup-restore.md]]
+- [[https://hub.docker.com/u/kopeio]]
+
+* Addons
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/addons.md]]
+
+Addons are available but please don't use it.
+They are not really manageable.
+
+* China
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/aws-china.md]]
+
+** AMIs
+
+I tried to search for them
+
+    aws ec2 describe-images --owners 383156758163 | ag '"Name": "k8s-1.14'
+    "Name": "k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-14",
+    "Name": "k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26",
+    "Name": "k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-15",
+    "Name": "k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16",
+    "Name": "k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-06-21",
+
+
+* Networking
+
+- https://github.com/kubernetes/kops/blob/master/docs/networking.md
+
+This is where you can find the config to pass
+
+- https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/cluster.go#L145
+- https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go#L248
+
+* China mirrors
+
+- [[https://github.com/Azure/container-service-for-azure-china/blob/master/aks/README.md#22-container-registry-proxy]]
+
+Docker mirror only works for dockerhub images.
+
+Docker does not support that
+
+- [[https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file]]
+
+Cri-o does:
+
+- [[https://github.com/containerd/cri/issues/1138]]
+
+    [plugins.cri.registry]
+      [plugins.cri.registry.mirrors]
+        [plugins.cri.registry.mirrors."gcr.io"]
+          endpoint = ["https://gcr.azk8s.cn"]
+
+And with kops we can't use cri-o:
+
+- ask for gvidor support - https://github.com/kubernetes/kops/issues/7342 - open
+- ask for cri-o support - https://github.com/kubernetes/kops/issues/5524 - open
+
+** Alternatives
+
+This one wants certificates:
+
+- https://github.com/rpardini/docker-registry-proxy
+
+without certs you will need to threat the repos as insecure
+
+    {
+      "insecure-registries": [
+        "k8s.gcr.io",
+        "quay.io",
+        "gcr.io"
+      ],
+      "registry-mirrors": [
+        "http://192.168.66.72:5000"
+      ]
+    }
+
+
+** Limitations from the tool
+
+You can't really modify the images used in addons or in many other parts of
+the code. This really forces you along the way of the proxy.
+
+** Modify the state manually
+
+    diff -r state state2 | grep image
+
+    aws s3 cp --region cn-northwest-1 s3://mystate state --recursive
+    find state -type f -exec sed -i -e 's#kopeio/etcd-manager#dockerhub.azk8s.cn/kopeio/etcd-manager#g' {} \;
+    find state -type f -exec sed -i -e 's#quay.io/calico/cni#quay.azk8s.cn/calico/cni#g' {} \;
+    find state -type f -exec sed -i -e 's#quay.io/calico/node#quay.azk8s.cn/calico/node#g' {} \;
+    find state -type f -exec sed -i -e 's#k8s.gcr.io/coredns#gcr.azk8s.cn/google_containers/coredns#g' {} \;
+    aws s3 sync state --region cn-northwest-1 s3://mystate
+
+you will need to keep this in sync
+
+TODO: Do a lambda to check this VERY often
+
+Calling kops update WILL override the changes so they need to be applied again.
+
+I would use the local state but it doesn't work.
+
+* Manipulate user data
+
+- https://github.com/kubernetes/kops/blob/master/docs/instance_groups.md#additional-user-data-for-cloud-init
+
+But it doesn't work on coreos
+
+- [[https://github.com/kubernetes/kops/issues/6863][Can't create Mixed Policy instance groups with CoreOS due to lack of userdata multi-part support #6863]]
+
+* to see
+
+create addon
+
+https://github.com/kubernetes/kops/pull/6100/files
+
+* Future plans
+
+kops is planning to move away from protokube to kubeadm
+
+- [[https://github.com/kubernetes/kops/issues/1842]]

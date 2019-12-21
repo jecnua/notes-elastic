@@ -1,47 +1,57 @@
 SQS
-|| Last update: 9 Jan 2019
+|| Last update: 21 Dec 2019
 
 * Intro
 
 If you need to process long-running jobs once and only once, use an SQS queue
 and set the visibility timeout to long enough for jobs to process.
 
-You are getting a lot of empty receive requests when using Amazon SQS. This is making a lot of unnecessary network
-load on your instances. What can you do to reduce this load?
+* Types of queue
 
-* Queues
+- [[https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html]]
 
 Two types:
 
 - Standard
-- FIFO: Less throughput
+- FIFO: Less throughput but order guaranteed and exactly-once delivery
 
-    Amazon SQS offers standard as the default queue type. Standard queues support a nearly unlimited
-    number of transactions per second (TPS) per action. Standard queues support at-least-once message
-    delivery. However, occasionally (because of the highly distributed architecture that allows nearly
-    unlimited throughput), more than one copy of a message might be delivered out of order. Standard
-    queues provide best-effort ordering which ensures that messages are generally delivered in the same
-    order as they're sent.
+    Amazon SQS offers standard as the default queue type. Standard queues support
+    a nearly unlimited
+    number of transactions per second (TPS) per action. Standard queues support
+    at-least-once message
+    delivery. However, occasionally (because of the highly distributed architecture
+    that allows nearly
+    unlimited throughput), more than one copy of a message might be delivered
+    out of order. Standard
+    queues provide best-effort ordering which ensures that messages are
+    generally delivered in the same order as they're sent.
     Source: Docs
 
-
-    FIFO (First-In-First-Out) queues are designed to enhance messaging between applications when the
-    order of operations and events is critical, or where duplicates can't be tolerated
+    FIFO (First-In-First-Out) queues are designed to enhance messaging between
+    applications when the
+    order of operations and events is critical, or where duplicates can't be
+    tolerated
     [...]
-    FIFO queues also provide exactly-once processing but have a limited number of transactions per second
+    FIFO queues also provide exactly-once processing but have a limited number
+    of transactions per second
     (TPS)
     Source: Docs
 
-In addition, FIFO queues support message groups that allow multiple ordered message groups within a
-single queue.
+AWS Lambda supports both types as an event source.
 
-NOTE: Every message sent to a FIFO queue requires a message group ID. If you don't need multiple ordered
-message groups, specify the same message group ID for all your messages.
+In addition, FIFO queues support *message*groups* that allow multiple ordered
+message groups within a single queue.
 
-Each message receives a system-assigned message ID that Amazon SQS returns to you in the
-SendMessage response.
+*NOTE*: Every message sent to a FIFO queue requires a message group ID. If you
+don't need multiple ordered message groups, specify the same message group ID
+for all your messages.
 
-* Message Deduplication ID
+Each message receives a system-assigned message ID that Amazon SQS returns to
+you in the SendMessage response.
+
+* Internals
+
+** Message Deduplication ID
 
     The token used for deduplication of sent messages. If a message with a particular message
     deduplication ID is sent successfully, any messages sent with the same message deduplication ID are
@@ -52,7 +62,7 @@ SendMessage response.
     message is received and deleted.
     Source: Docs
 
-* GroupID
+** GroupID
 
     You can't request to receive messages with a specific message group ID.
     When receiving messages from a FIFO queue with multiple message group IDs, Amazon SQS first

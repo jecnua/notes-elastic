@@ -28,9 +28,31 @@ simultaneously.
 ** Weighted target groups
 
 - [[https://aws.amazon.com/blogs/aws/new-application-load-balancer-simplifies-deployment-with-weighted-target-groups]]
+- [[https://aws.amazon.com/quickstart/architecture/blue-green-deployment/]]
 
 ALB now support weighted target groups and this opens possibilities to do
 blue/green or canary if you want to maintain the same LB.
+
+    [...] use traffic weights for your ALB target groups; this will be very
+    helpful for blue/green deployments, canary deployments, and hybrid
+    migration/burst scenarios. You can register multiple target groups with any
+    of the forward actions in your ALB routing rules, and associate a weight
+    (0-999) with each one.
+    [...]
+    You can use this feature in conjunction with group-level target stickiness
+    in order to maintain a consistent customer experience for a specified duration
+    Source: https://aws.amazon.com/blogs/aws/aws-load-balancer-update-lots-of-new-features-for-you/
+
+** Algorithm
+
+*** Least Outstanding Requests for ALB
+
+    You can now balance requests across targets based on the target with the
+    lowest number of outstanding requests. This is especially useful for workloads
+    with varied request sizes, target groups with containers & other targets that
+    change frequently, and targets with varied levels of processing power,
+    including those with a mix of instance types in a single auto scaling group.
+    Source: https://aws.amazon.com/blogs/aws/aws-load-balancer-update-lots-of-new-features-for-you/
 
 * NLB
 

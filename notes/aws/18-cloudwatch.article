@@ -1,5 +1,5 @@
 Cloudwatch
-|| Last update: 4 Apr 2019
+|| Last update: 20 Jan 2020
 
 * CloudWatch Logs
 
@@ -18,3 +18,10 @@ You can tag CloudWatch resources.
 ** CloudWatch Logs Insights
 
 - [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html]]
+
+* Tracing
+
+- [[https://aws.amazon.com/blogs/aws/visualize-and-monitor-highly-distributed-applications-with-amazon-cloudwatch-servicelens/]]
+
+AWS runs it's own version of tracing with x-ray and does a metric aggregation
+via ServiceLens.

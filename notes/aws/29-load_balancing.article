@@ -25,6 +25,13 @@ Application Load Balancers support *Weighted*Target*Groups* routing.
 Enables you to distribute traffic between multiple versions of your application
 simultaneously.
 
+** Weighted target groups
+
+- [[https://aws.amazon.com/blogs/aws/new-application-load-balancer-simplifies-deployment-with-weighted-target-groups]]
+
+ALB now support weighted target groups and this opens possibilities to do
+blue/green or canary if you want to maintain the same LB.
+
 * NLB
 
 An hybrid layer4/5 load balancer.

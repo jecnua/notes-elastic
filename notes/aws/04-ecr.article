@@ -7,6 +7,10 @@ ECR is a very basic image repository for docker containers.
 
 * Features
 
+- [[https://aws.amazon.com/blogs/aws/eventbridge-support-in-amazon-elastic-container-registry/]]
+
+Supports events.
+
 * Image scanning
 
 - [[https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html]]

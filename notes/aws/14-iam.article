@@ -1,6 +1,10 @@
 IAM strategy (this article needs to be cleaned)
 || Last update: 18 Sep 2018
 
+* Access via Identity Federation
+
+- [[https://aws.amazon.com/blogs/aws/new-for-identity-federation-use-employee-attributes-for-access-control-in-aws/]]
+
 * TDB
 
 Private user account

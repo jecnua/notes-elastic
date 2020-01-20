@@ -211,9 +211,10 @@ $69.12.
 * Logs
 
 - [[https://aws.amazon.com/blogs/aws/announcing-firelens-a-new-way-to-manage-container-logs]]
+- [[https://aws.amazon.com/blogs/containers/under-the-hood-firelens-for-amazon-ecs-tasks/]]
 
 The new firelens service allows you to redirect logs, also from FARGATE, to
-a fluentd or fluentdbit endpoint.
+any fluentd or fluentdbit endpoint.
 
 * Limitations
 

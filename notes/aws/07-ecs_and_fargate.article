@@ -208,6 +208,12 @@ $69.12.
 - [[https://aws.amazon.com/fargate/pricing/]]
 - [[https://www.ec2instances.info/?selected=m5.large]]
 
+** Fargate spot
+
+- [[https://aws.amazon.com/blogs/aws/aws-fargate-spot-now-generally-available/]]
+
+You can run containers in fargate spot.
+
 * Logs
 
 - [[https://aws.amazon.com/blogs/aws/announcing-firelens-a-new-way-to-manage-container-logs]]

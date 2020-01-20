@@ -19,9 +19,16 @@ You can tag CloudWatch resources.
 
 - [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html]]
 
-* Tracing
+* x-ray (tracing) and ServiceLens
 
 - [[https://aws.amazon.com/blogs/aws/visualize-and-monitor-highly-distributed-applications-with-amazon-cloudwatch-servicelens/]]
 
 AWS runs it's own version of tracing with x-ray and does a metric aggregation
 via ServiceLens.
+
+    CloudWatch ServiceLens ties together CloudWatch metrics and logs, as well as
+    traces from AWS X-Ray.
+    Source: Docs
+
+X-ray have a trace maps, which enables you to visually map the end to end path
+of a single request.

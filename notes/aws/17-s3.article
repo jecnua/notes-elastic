@@ -99,3 +99,9 @@ in CloudFormation is:
     SRR makes another copy of S3 objects within the same AWS Region, with the
     same redundancy as the destination storage class.
     Source: https://aws.amazon.com/about-aws/whats-new/2019/09/amazon-s3-introduces-same-region-replication/
+
+* s3 Access Points
+
+- [[https://aws.amazon.com/blogs/aws/easily-manage-shared-data-sets-with-amazon-s3-access-points/]]
+
+You can have multiple access point for bucket.

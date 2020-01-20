@@ -468,3 +468,28 @@ Also this fail in our setup:
       failurePolicy: Fail
       # enabled: true
       enabled: false
+
+** Gotchas
+
+Be careful when installing Prometheus Operator with the chart because in the
+default behaviour prometheus will only scrape for service monitors with
+specific labels.
+
+- [[https://github.com/helm/charts/blob/cfde3c4834960be2a605ec09f3668236b928e720/stable/prometheus-operator/templates/prometheus/prometheus.yaml#L96]]
+
+    {{ toYaml .Values.prometheus.prometheusSpec.serviceMonitorSelector | indent 4 }}
+    {{ else if .Values.prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues  }}
+      serviceMonitorSelector:
+        matchLabels:
+          release: {{ $.Release.Name | quote }}
+    {{ else }}
+      serviceMonitorSelector: {}
+    {{- end }}
+
+To avoid this you will need to set this flag to false (default true):
+
+- [[https://github.com/helm/charts/blob/cfde3c4834960be2a605ec09f3668236b928e720/stable/prometheus-operator/values.yaml#L1484]]
+
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+- [[https://github.com/coreos/prometheus-operator/issues/2515]]

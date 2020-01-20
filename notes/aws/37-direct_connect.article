@@ -1,0 +1,88 @@
+AWS Direct Connect
+|| Last update: 3 Jan 2020
+
+* Intro
+
+- [[https://aws.amazon.com/directconnect/faqs/]]
+
+NOTE: Transit gateways and Transit virtual interfaces are not present in AWS
+CHINA.
+
+AWS’s private connection model is called Direct Connect.
+Direct Connect supports access to public and private AWS cloud services.
+
+* Connections
+
+    aws directconnect describe-connections
+
+* Direct connect virtual interfaces
+
+- [[https://docs.aws.amazon.com/directconnect/latest/UserGuide/WorkingWithVirtualInterfaces.html]]
+
+* Direct connect gateway
+
+- [[https://www.slideshare.net/AmazonWebServices/aws-direct-connect-deep-dive-net403-aws-reinvent-2018]]
+- [[https://aws.amazon.com/blogs/aws/new-aws-direct-connect-gateway-inter-region-vpc-access/]]
+
+    You can use an AWS Direct Connect Gateway to connect your AWS Direct Connect
+    connection to a private virtual interface to one or more VPCs in your account
+    that are located in the same or different regions. You can attach multiple
+    private virtual interfaces. NOTE: A previous limitation on using AWS Direct
+    Connect Gateway for single accounts only has been lifted and multiple accounts
+    sharing a common billing entity is now supported.
+    [...]
+    A private virtual interface allows you to connect to your VPC resources (for
+    example, EC2 instances, load balancers, RDS DB instances, etc.) on your
+    private IP address space. A private virtual interface can connect to a Direct
+    Connect gateway, which can be associated with one or more virtual private
+    gateways in any AWS Regions. A virtual private gateway is associated with a
+    single VPC, so you can connect to multiple VPCs in any AWS Regions using a
+    private virtual interface. For a private virtual interface, AWS only advertises
+    the entire VPC CIDR over the Border Gateway Protocol (BGP) neighbor.
+    Source: https://knowledgebase.megaport.com/cloud-connectivity/aws-direct-connect-private-virtual-interface/
+
+The VPCs that reference a particular Direct Connect Gateway must have IP address
+ranges that do not overlap.
+
+    You can use the new Direct Connect Gateway to establish connectivity that
+    spans Virtual Private Clouds (VPCs) spread across multiple AWS Regions. You
+    no longer need to establish multiple BGP sessions for each VPC
+    Source: https://aws.amazon.com/blogs/aws/new-aws-direct-connect-gateway-inter-region-vpc-access/
+
+    Virtual interfaces per AWS Direct Connect gateway
+    30
+    [...]
+    If you want to use load balancing with multiple public VIFs, all the VIFs
+    must be in the same Region.
+    Source: https://docs.aws.amazon.com/directconnect/latest/UserGuide/limits.html
+
+* HA
+
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/active-passive-direct-connect/]]
+- [[https://docs.aws.amazon.com/directconnect/latest/UserGuide/getting_started.html#RedundantConnections]]
+- [[https://aws.amazon.com/answers/networking/aws-single-data-center-ha-network-connectivity/]]
+
+    The default AWS configuration for redundant Direct Connect connections is
+    ‘Active/Active’. BGP multipath is used for load-balancing to multiple Virtual
+    Interfaces (VIF) within the same AWS regional location – traffic load-share
+    between interfaces is based on flow. BGP multipath enables your router to have
+    multiple internal and external BGP paths in their forwarding table, and to
+    automatically load balance across them.
+    Source: https://www.megaport.com/blog/network-redundancy-aws-direct-connect/
+
+A *connection* is a single cable to/from a port so it doesn't have hardware
+redundancy. You need two connections on two different hardware to have it.
+
+    VPC::VGW ==> [one to one]
+
+You can only have one VGW per VPC, but you can have multiple VPN connections to
+the VGW/VPC.
+
+You can have multiple VPN connection to the same VPN gateway (virtual private
+gateway).
+
+- [[https://aws.amazon.com/answers/networking/aws-single-data-center-ha-network-connectivity/]]
+
+* Re/Sources
+
+- [[https://aws.amazon.com/premiumsupport/knowledge-center/direct-connect-types/]]

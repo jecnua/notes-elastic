@@ -1,5 +1,5 @@
 ECS and FARGATE for ECS
-|| Last update: 24 Sep 2018
+|| Last update: 20 Jan 2020
 
 * ECS
 
@@ -208,9 +208,15 @@ $69.12.
 - [[https://aws.amazon.com/fargate/pricing/]]
 - [[https://www.ec2instances.info/?selected=m5.large]]
 
+* Logs
+
+- [[https://aws.amazon.com/blogs/aws/announcing-firelens-a-new-way-to-manage-container-logs]]
+
+The new firelens service allows you to redirect logs, also from FARGATE, to
+a fluentd or fluentdbit endpoint.
+
 * Limitations
 
 - Fargate only support awsvpc network mode
-- Fargate only support awslogs as log configurations
 - Fargate doesn't allow you to mount EBS. It has only 10GB of docker layer storage and 4GB volume mount to share data with other containers
 - A task definition can contain up to 10 containers.

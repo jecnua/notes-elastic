@@ -217,3 +217,23 @@ Reduce IP allocation overhead:
 
 AWS is hiding system pods and master nodes.
 kubectl doesn't show them to you.
+
+* Fargate
+
+- [[https://aws.amazon.com/blogs/aws/amazon-eks-on-aws-fargate-now-generally-available/]]
+
+Fargate for EKS exists but it's crazy.
+You will need to run and pay also for pods like coredns and the pricing is high.
+Plus will need time to spin up the nodes:
+
+    With AWS Fargate, you pay only for the amount of vCPU and memory resources
+    that your pod needs to run. This includes the resources the pod requests in
+    addition to a small amount of memory needed to run Kubernetes components
+    alongside the pod. Pods running on Fargate follow the existing pricing model.
+    vCPU and memory resources are calculated from the time your pod’s container
+    images are pulled until the pod terminates, rounded up to the nearest second.
+    A minimum charge for 1 minute applies. Additionally, you pay the standard
+    cost for each EKS cluster you run, $0.20 per hour.
+    Source: https://aws.amazon.com/blogs/aws/amazon-eks-on-aws-fargate-now-generally-available/
+
+You also pay the control plane.

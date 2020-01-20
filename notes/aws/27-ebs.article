@@ -1,7 +1,14 @@
 EBS
-|| Last update: 9 Jan 2019
+|| Last update: 20 Jan 2020
 
-* Snapshot restritions
+* Fast snapshot restore
+
+- [[https://aws.amazon.com/blogs/aws/new-amazon-ebs-fast-snapshot-restore-fsr/]]
+
+You can have pre-warmed EBS on AWS for a very high price via  Amazon EBS Fast
+Snapshot Restore (FSR). It just does that.
+
+* Snapshot restrictions
 
 - [[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modifying-snapshot-permissions.html]]
 

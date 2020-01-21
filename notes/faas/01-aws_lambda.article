@@ -100,9 +100,7 @@ You can't use python wheel and egg to package python program. You need to use th
 
 Lambda share the same infra with a LOT of other functions.
 
-* Failure Handling
-
-** Asynch
+* Asynch
 
 - [[https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html]]
 - [[https://aws.amazon.com/blogs/compute/new-aws-lambda-controls-for-stream-processing-and-asynchronous-invocations/]]
@@ -135,6 +133,18 @@ For Asynch invocations:
     and/or Lambda destinations when one of these two conditions is met: Retry
     Attempts reaches its maximum value, or Event Age reaches its maximum value.
     Source: https://aws.amazon.com/about-aws/whats-new/2019/11/aws-lambda-supports-max-retry-attempts-event-age-asynchronous-invocations/
+
+You can also set up *destinations* for Asynch invocations that allows to gain
+visibility to asynchronous invocation result and route the result to an AWS.
+
+A function execution result includes version, timestamp, request context, request
+payload, response context, and response payload. For each execution status (i.e.
+Success and Failure), you can choose one destination from four options:
+
+- Lambda function
+- SNS topic
+- SQS standard queue
+- EventBridge.
 
 * Synch or asynch
 

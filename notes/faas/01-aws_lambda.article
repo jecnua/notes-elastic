@@ -1,5 +1,5 @@
 AWS Lambda - OUTDATED
-|| Last update: 21 Sep 2020
+|| Last update: 21 Jan 2020
 
 * Runtimes
 
@@ -54,10 +54,16 @@ More:
 
 - [[https://www.datadoghq.com/blog/monitoring-lambda-functions-datadog/]]
 
-Of course, you can employ both approaches in your architecture and use the appropriate one for each situation:
+    For functions on the critical path (that will directly impact the latency
+    your users experience), choose the approach of publishing metrics as special
+    log messages;
+    For other functions (cron jobs, kinesis processors, etc.) where invocation
+    duration doesn’t significantly impact a user’s experience, publish metrics as
+    part of the invocation
+    Source: ???
 
-for functions on the critical path (that will directly impact the latency your users experience), choose the approach of publishing metrics as special log messages;
-for other functions (cron jobs, kinesis processors, etc.) where invocation duration doesn’t significantly impact a user’s experience, publish metrics as part of the invocation
+You can monitor and alert on lambda metrics on percentile (plus the usual
+average, minimum and maximum).
 
 * Tracing
 

@@ -19,3 +19,15 @@ Replicate it in another region under another account with different IAM accounts
 
 - [[https://aws.amazon.com/about-aws/whats-new/2017/11/amazon-s3-adds-new-features-for-data-security-and-compliance/]]
  
+* TAGS
+
+Enforce tags with Tag Policies
+
+- [[https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html]]
+- [[https://aws.amazon.com/blogs/aws/new-use-tag-policies-to-manage-tags-across-multiple-aws-accounts/]]
+
+    With Tag Policies, you have a simple way to ensure your developers apply
+    consistent tags, audit tagged resources, and maintain proper resource
+    categorization. Using Tag Policies, you can define tag keys, including how
+    they should be capitalized, and their allowed values.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/aws-launches-tag-policies/

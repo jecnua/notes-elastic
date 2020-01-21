@@ -1,5 +1,5 @@
-AWS Lambda
-|| Last update: 10 Dec 2018
+AWS Lambda - OUTDATED
+|| Last update: 21 Sep 2020
 
 * Runtimes
 
@@ -94,9 +94,41 @@ You can't use python wheel and egg to package python program. You need to use th
 
 Lambda share the same infra with a LOT of other functions.
 
-** Failures
+* Failure Handling
 
-In lambda you don't know it failed you need to know when you fail - wait timeout.
+** Asynch
+
+- [[https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html]]
+- [[https://aws.amazon.com/blogs/compute/new-aws-lambda-controls-for-stream-processing-and-asynchronous-invocations/]]
+
+For Asynch invocations:
+
+- Maximum Event Age
+
+    When a function returns an error before execution, Lambda returns the event to
+    the queue and attempts to run the function again for up to 6 hours by default.
+    With Maximum Event Age, you can configure the lifetime of an event in the queue
+    from 60 seconds to 6 hours. This allows you to remove any unwanted events based
+    on the event age
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/aws-lambda-supports-max-retry-attempts-event-age-asynchronous-invocations/
+
+- Maximum Retry Attempts
+
+    When a function returns an error after execution, Lambda attempts to run it
+    two more times by default. With Maximum Retry Attempts, you can customize
+    the maximum number of retries from 0 to 2. This gives you the option to
+    continue processing new events with fewer or no retries.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/aws-lambda-supports-max-retry-attempts-event-age-asynchronous-invocations/
+
+    When you invoke a function asynchronously, Lambda sends the event to a queue.
+    A separate process reads events from the queue and runs your function. These
+    two new features provide ways to control how events are retried and how long
+    they can remain in the queue.
+    [...]
+    With these two features, events are discarded, or sent to a dead-letter queue
+    and/or Lambda destinations when one of these two conditions is met: Retry
+    Attempts reaches its maximum value, or Event Age reaches its maximum value.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/aws-lambda-supports-max-retry-attempts-event-age-asynchronous-invocations/
 
 * Synch or asynch
 

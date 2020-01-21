@@ -1,5 +1,5 @@
 AWS VPC
-|| Last update: 10 Dev 2018
+|| Last update: 21 Jan 2020
 
 * Sharing
 
@@ -20,3 +20,7 @@ VPC and subnets can be shared.
     they cannot modify VPC-level resources including route tables, network ACLs,
     or subnets.
     https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html
+
+* Transit Gateway
+
+- [[https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html]]

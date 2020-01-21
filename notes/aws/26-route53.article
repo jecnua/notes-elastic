@@ -48,3 +48,11 @@ has 2 CNAME records when they are weighted and not 1.
 - [[https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-public-viewing-query-metrics.html]]
 
 On CloudWatch you can now get the Query Metrics for a public hosted zone.
+
+* Private domains
+
+** Overlapping
+
+- [[https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-private-considerations.html#hosted-zone-private-considerations-private-overlapping]]
+
+Is possible to have overlapping dns domains for private zones.

@@ -105,3 +105,12 @@ in CloudFormation is:
 - [[https://aws.amazon.com/blogs/aws/easily-manage-shared-data-sets-with-amazon-s3-access-points/]]
 
 You can have multiple access point for bucket.
+
+    3 Access Points are unique hostnames that you can create to enforce distinct
+    permissions and network controls for any request made through the access point.
+    S3 Access Points policies allow enforcing permissions by prefixes and object
+    tags, allowing limits on the object data that can be accessed. Any S3 Access
+    Points can be restricted to a Virtual Private Cloud (VPC) to firewall S3 data
+    access within your private networks, and AWS Service Control Policies can be
+    used to ensure all access points in an organization are VPC restricted.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/12/amazon-s3-access-points-manage-data-access-at-scale-shared-data-sets/

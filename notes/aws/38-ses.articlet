@@ -1,0 +1,7 @@
+SES
+
+* Reputation list
+
+- [[https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-email-suppression-list.html]]
+
+You can define YOUR own suppression list.

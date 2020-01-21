@@ -129,6 +129,43 @@ Then define the function:
             Payload=bytes(json.dumps(event))
         )
 
+* Specials for kinesis and dynamodb
+
+** Failure Handling
+
+AWS Lambda supports four failure-handling features for processing Kinesis
+and DynamoDB streams: Bisect on Function Error, Maximum Record Age, Maximum
+Retry Attempts, and Destination on Failure.
+
+    Bisect on Function Error
+    With Bisect on Function Error enabled, Lambda breaks the impacted batch of
+    records into two when a function returns an error, and retries them
+    separately. This allows you to easily separate the malformed data record
+    from the rest of the batch, and process the rest of data records successfully.
+    Maximum Record Age
+    Your Lambda function can skip processing a data record when it has reached
+    its Maximum Record Age, which can be configured from 60 seconds to 7 days.
+    Maximum Retry Attempts
+    Your Lambda function can skip retrying a batch of records when it has reached
+    the Maximum Retry Attempts, which can be configured from 0 to 10,000.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/aws-lambda-supports-failure-handling-features-for-kinesis-and-dynamodb-event-sources/
+
+Destination on Failure
+Now your Lambda function can continue processing a shard even when it returns an error. When a data record reaches the Maximum Retry Attempts or Maximum Record Age, you can send its metadata like shard ID and stream ARN to one of these two destinations for further investigation: an SQS queue or SNS topic.
+
+** Parallelization factor
+
+- [[https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html]]
+
+    Lambda supports Parallelization Factor that allows you to process one shard of
+    a Kinesis or DynamoDB data stream with more than one Lambda invocation
+    simultaneously.
+    [...]
+    By default, Lambda invokes a function with one batch of data records from one
+    shard at a time. For a single event source mapping, the maximum number of
+    concurrent Lambda invocations is equal to the number of Kinesis or DynamoDB shards.
+    Source: https://aws.amazon.com/about-aws/whats-new/2019/11/aws-lambda-supports-parallelization-factor-for-kinesis-and-dynamodb-event-sources/
+
 * Use it with terraform
 
 Something like this:

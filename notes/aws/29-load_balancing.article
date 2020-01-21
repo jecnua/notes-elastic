@@ -47,6 +47,11 @@ blue/green or canary if you want to maintain the same LB.
 
 *** Least Outstanding Requests for ALB
 
+- [[https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#modify-routing-algorithm]]
+
+The load balancer will send it to the target with least number of outstanding
+requests.
+
     You can now balance requests across targets based on the target with the
     lowest number of outstanding requests. This is especially useful for workloads
     with varied request sizes, target groups with containers & other targets that

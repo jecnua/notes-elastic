@@ -1,5 +1,5 @@
 ECS and FARGATE for ECS
-|| Last update: 7 Jun 2019
+|| Last update: 21 Jan 2020
 
 * Intro
 
@@ -15,9 +15,11 @@ A cluster _can_ contain both ec2 and fargate workload.
 
 ** Events
 
-- [[https://aws.amazon.com/about-aws/whats-new/2016/11/amazon-ec2-container-service-now-sends-state-changes-to-cloudwatch-events/]]
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_cwe_events.html]]
 
-ECS sends state changes to CloudWatch Events.
+ECS sends state changes and publishes ECS Service Action events to Amazon
+CloudWatch Events. CloudWatch Events delivers a near real-time stream of system
+events that describe changes in AWS resources.
 
     [...] it is now possible to retrieve near real-time, event-driven updates
     on the state of your Amazon ECS tasks and container instances. Events are

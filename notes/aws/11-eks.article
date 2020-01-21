@@ -3,9 +3,7 @@ EKS
 
 * Intro
 
-EKS is AWS managed k8s offer.
-
-It has some integrations:
+EKS is AWS managed k8s. It has some integrations:
 
 - Load balancing with ELB
 - ECR for storing images
@@ -34,6 +32,12 @@ They released a quickstart and these are the links:
 * Architecture
 
 - [[https://learn.hashicorp.com/terraform/aws/eks-intro]]
+
+** Private Endpoints
+
+- [[https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html]]
+
+EKS private endpoints can be resolved from inside the VPC and peered VPC.
 
 ** VPC CNI
 
@@ -215,8 +219,7 @@ Reduce IP allocation overhead:
 
 ** Reduced visibility
 
-AWS is hiding system pods and master nodes.
-kubectl doesn't show them to you.
+AWS is hiding system pods and master nodes (kubectl doesn't show them).
 
 * Fargate
 

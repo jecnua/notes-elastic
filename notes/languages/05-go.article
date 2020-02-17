@@ -124,3 +124,184 @@ no memory AFTER the the active frame is VALID
 everything below the active frame
 memory is no loger valid
 going down will cause problems
+
+
+we don't have contractor in in go
+but we have factory functions
+
+creates a value and initialise it for you and returns it
+
+
+the compiler does something called
+escape analysis
+- [[https://www.ardanlabs.com/blog/2017/05/language-mechanics-on-escape-analysis.html]]
+or first priority is that something stays on the stacks
+stacks is self cleaning
+
+or escapes to the heap
+compiler
+allocation in go
+escape analysis realises that a value cannot be created in the stack but needs
+to be on the heap
+and now the gc is involved
+
+we really want to try to leverage the stack
+
+the compiler will construct immediately on the heap
+
+if you want to access any type of memory that is not on the active frame you
+can do it with a pointer
+
+don't mix semantics
+NEVER use pointing semantics during constraction
+don't do
+
+u := &user
+
+so don't assign it to a variable
+
+[[https://www.ardanlabs.com/blog/2018/01/escape-analysis-flaws.html]]
+[[https://docs.google.com/document/d/1CxgUBPlx9iJzkz9JWkb6tIpTe5q32QDmz8l0BouG0Cw/edit#]]
+
+when you use the -gcflags "-m -m"
+you will get the escape analysis report
+
+profiler tells you ony what is allocating not why
+
+
+
+if the compilers doesn't know the size of something at compile time
+it will need to put it on the heap
+things like collations doesn't know
+this causes automatic allocation
+
+go run -gcflags '-m -l'  ??
+
+integrity first
+minimize resources second
+
+
+when we run out of stack state
+we need new stacks
+
+contiguos stack
+allocate a larger stacks2
+25% of the original one
+then copy all to the other one
+will get a little of latency hit
+and it will
+
+we take this hit to ensure consistency and minimize resources
+
+values in the stack can be moved around
+
+
+go engineering choices
+NO STACK can have a pointer to another stack
+otherwise they could not grow
+the only pointers to a stack is to your stack
+
+you need to use the heap to share values between goroutirng
+
+goroutings cannot share pointers
+
+what goes on the heap
+- what escape
+- sharing data between goroutings
+- we don't know the size beforehand
+
+* GC
+
+latency etwork and disk io
+second is allocation and garbage collector
+
+tri color
+mark and sweep
+concurrent collector
+
+is not a compacting garbage colletor
+it doesn't moved
+
+they still have some stop the world latency
+reduced to the bare minimum
+
+pacing algorith try to balance 3 things
+- smallest heap size
+- run at a reasable pace to do it
+- no more than 1000microseconnd per run
+
+the total gc time will be longer but the stop the worls will be lower
+
+CAN take 25% of the CPU capacity
+the gc is allowd to use?
+
+the gc uses goroutines as well
+
+** Pace algorith
+
+go prefer consistent pace over a QUICK gc
+
+size of the heap and live heap
+the moment you get close enough to the top
+
+when the heap reach the top it will need to grow and go have something called
+GOGC 100% growth
+
+if a gorouting starts to go rogue during a gc
+the gc can reallocated the goroutine
+and do other things
+
+** Stop the world
+
+2 ones
+
+the right barrier one should be relly quck
+his go routing need to report in what are doing
+to keep the scheduler and gc intellingent
+
+all the Ps they need to bring all of them to a save point
+bring them somewhere and set a flag
+wait for a gorouting to do a functioncall
+1.10
+
+only way to do a fucntion call
+waiting for a gorotuing to do a funciton calls
+this is because we don't have a preemptive schedulerbut cooperative scheduler
+cooperation
+
+if you do any high level mahematics you need to do function call
+they are working to do it at static level
+but is complicated.
+
+we need to have goroutines make function call.
+
+maybe 10 microseconds tops o do the right barrier
+
+the heap is a very large graph
+all starts
+
+let's not use global variable
+testability
+hide costs
+etc
+
+tri color
+we turn all of the values stack and xxx as WHITE
+as you scan them you paint them black
+and root values are painted gray
+placed in a queue
+paint it black if...
+
+iterate over the entire three
+when we are done there are only balck and white
+black needs to stay
+anything that is white is deleted in the NEXT phase
+
+this marking is done concurrently
+
+xxx
+
+search for a papers
+
+we should try to balance our pointer semantincs
+less work for the compiler the better

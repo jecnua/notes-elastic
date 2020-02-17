@@ -119,3 +119,8 @@ but you have side effects
 you can have race in multi threaded
 so some languages won't allow you to
 but there is a cost to it too
+
+no memory AFTER the the active frame is VALID
+everything below the active frame
+memory is no loger valid
+going down will cause problems

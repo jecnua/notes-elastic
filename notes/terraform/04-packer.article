@@ -1,0 +1,34 @@
+Packer
+|| Last update: 7 Feb 2020
+
+* Intro
+
+Shell script provider
+
+    {
+    "type": "shell",
+    "script": "script.sh",
+    }
+
+* Run it
+
+To run it with a variable file:
+
+    packer build --var-file variables.json ubuntu-1804-amd64.json
+
+* Test
+
+You can test it with goss.
+
+    "provisioners": [
+      {
+        "type": "shell",
+        "script": "scripts/install.sh"
+      },
+      {
+        "type": "goss",
+        "tests": [
+          "goss.yaml"
+        ]
+      }
+    ]

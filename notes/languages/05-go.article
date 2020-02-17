@@ -1,0 +1,121 @@
+GO
+|| Last update: 17 Feb 2020
+
+* TO BE SORTED
+
+var in go allows us to 0 value the variables and is very important to avoid
+corrupt state
+
+string is a 2 words data structure
+first parr is a pointer the rest the nukber of bytes
+
+:= pre initialise a variable so you don't need to zero it before (and don't need
+var)
+
+pascal had a lot of influence  in go
+
+is more for productivity productivity operator
+go is struct based typing
+
+go doesn't have type casting it only have conversion.
+the value will be copied in the new type.
+
+alignment: to make reading and writing from memory efficient. a struct size is
+not the sum of the xomponents. is because of hardware.
+
+since boundaries are at word level you don't want a type to cross the coundary
+of two words
+
+the hardware will need two operations to read and 2 to write
+
+
+struct is a user defined value
+we don't create classes in go, we declare values
+
+optimize for correctness
+order fields from largest to smallest
+struct must align on the largest field
+
+the language doesn't go behind your back and rearrange so you don't lose view of the impact
+alignment and padding
+
+{} literal constraction
+return or function calls are a good place for empty literal constructuin
+
+literals are unonimous struct
+unnamed type
+
+you can declare and assign one after the other for non zero anonymous struct
+
+used for unmarshaling. naming something used only in one place would be pollution
+
+go have no implicit conversion
+
+in go you don't need to convert with unamed types. if it's litera you ca assign
+to something else. this is used with function
+
+function is a literal in go not a type
+
+so to recap
+with name types there is no implicit conversion
+
+all in go is pass by value
+
+each go applization gets a P (logical processor - one core) for each core it can
+see. this P gets a M (real operating system threads) and the M is scheduled a
+real core ln the system called C. P also have goroutines. (g).
+
+threads M are path of execution at operating system level
+g are a  is in the path of execution at go level.
+
+there are 3 areas of memory
+- data segment - global values
+- stack (every thread is given)
+- heap
+
+a stack is given to any real thread
+usually 1Mb of contiguous memory
+
+g have a stack of memory too. now is 2k (before was 4k).
+this is because we want to have a lot of goroutines or path of execution in go.
+integrity and minimizing the memory impact
+
+at a certain point it says I want to execute the main()
+each time it need to execute a function it tales memory off the stack
+this is called "frame of memory"
+
+the go routing have only direct access of memory
+on the frame is working on
+this mean that if you need to work on data you need to have the data in that memory frame
+
+mechanics how things work
+semantics how things behave
+
+active frame is which part (isolated) of the stack it's working on
+
+data semantics
+pointer semantic
+
+pointers are used to share data between function stacks
+
+pointers is literal types
+you can take any existing type and put a star on it
+
+the reason why you can't just say * but you have to say *int is because you will
+need to manipulate the data structure in memory and you need to know how the
+structure IS. size and all.
+
+*inc++
+indirect data access
+pointer indirection
+
+only direct memory access in the active frame
+so you need to pass the pointer to do so
+
+there is a huge cost to pointers
+there is no more immutability
+but you have side effects
+
+you can have race in multi threaded
+so some languages won't allow you to
+but there is a cost to it too

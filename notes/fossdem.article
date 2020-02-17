@@ -1,0 +1,530 @@
+FOSSDEM 2020
+
+dnat after same sort ip and sedt ip
+iptable does source natting on the reverse ip???
+you could do persistency (affinity)
+all traffic from same source ip to the same desbut doing that with iptables is hard
+
+use recent module
+and ard rules at the start of the chain
+hacky
+difficult to expire connection
+
+every time thete is a change
+need to recalculate all
+and do an atomic replace
+interesting!!
+timeout erros while reloading rules
+
+ipvs
+fornwqch service you have a virtual swrver
+ipvs conntrack
+when a pod is delete is released ???
+what happens in kernel and trafficninnthe kernel will be dropped
+
+they us3d a expire nidest conn option
+
+limits
+no graceful termination
+as soon as a pod is terminating connection are destroyed
+iptables eas better
+fixed in 1.12
+
+ipvs connection traking
+default timeout is high
+udp timeout is 5 min
+
+very bad for dns
+solutioj disable graceful termination for udp
+
+they want to change the timeout of udp to 5 s
+but to do that they need to change endpoint api???
+
+is not 100% feaute parity with iptabkes
+and tuning iovs takes time
+
+teh full endpoint object is recomputed everybpod changes
+and thisnis sent to all kubeproxy
+
+5000 nodes will be 3tb of traffic
+
+beta in 1.17 is endpoint slices
+maximum 100 endpoint in each slice
+nit recalculate all endpoints
+
+size of conntrack is another issue
+eapecially bad for dns
+if you fill the conntrack you can drop dns query
+youncould run a dns cache on every node
+
+kernel 5.0 very good
+optimization of conntracking for udp
+
+in 1.16 kube pixy added dual-stack
+alpha 1.17 topology aware routing
+
+iptables and iovs are not designed fot client side load balancing
+
+ebpf cilium alternative is very promisjng
+no need for iptabkes and ipvs
+works withiut conntrack
+
+cilium was buikd for k8s???
+
+=== PODMAN
+
+criu checkpoint restore
+podman
+
+give pid of the main process of the pod
+it stops the process and collects and write to disk
+criu checkpoint restoee in userspace
+
+==== BACKUPS
+
+ebfs??
+velero
+
+speak to k8s api server
+not etcd
+speak with the cpoud provider
+and take the backup of the storage volume
+you can add a plugin to velero for more storage engine
+
+you can filter what to save
+like pods only
+and you can pass a label selector
+and only select that
+
+select snapshot ane backup location
+object storage
+
+when you are restoring you can set
+the s3 to read only
+
+how to migrate to a new cluster?
+or replicate the cluster
+
+check how velero moves ebs
+
+====
+
+secxomps runs before running the number in the kernel
+seccomps runs bedorr3 lookup
+secxlmo never block
+
+support landend in 5.0
+userspace requires unreleas3d libseccomp
+
+allor less priviledged container
+
+it's safere than priviledged container
+unrpiviledge won't allow to mount???? or to cheate inode??? like /memfs?
+
+previously no nice way to delegate this to the container engine
+load a second profile
+stops a process before it makes a syscall
+sends you a message
+and a userspace process can inpect the argument and make an informed decision
+
+secxomp notify
+
+then hou can deny or allow
+
+gets a second id
+called notfier id
+and it can registerd in a epoc loop???
+supervisoer get an event on the notifier id
+
+pro s3lf uid map
+and guid map
+
+mknod bbb c 5 1    console
+
+make me a device node
+
+you could create any device!!!
+
+secxp profiles can be reload3d automatically
+
+seccomo notfier. lxd is able to do it
+males the syscall tor you
+
+allows fakeroo5 and stuff
+you can mount stuff in a container about it
+before no way ,to mount
+
+you can intercept the mount syscall
+
+findmnt
+
+only safe via fuse
+you can rewrite via fuse
+safe userspace implementation
+
+in 5.5 you xan conrinue syscall
+kernel never contued syscall from userspace
+you need
+ah after you stop the kernel would not allow it
+now you can but be sure it's dangerous
+
+netflix syscall retrieve fd
+in 5.6
+pretry cool feature
+
+at the time seccomp is running
+nothing is copied still
+value may still change
+
+you run before
+is hooked up in the syscall table
+
+you could invent syscall!!!
+
+=====
+
+kata container can run firecrackers
+fc containerd
+
+going aorund the oci
+cri-o
+bypassing the oci
+
+
+katacontainer firecrakers 15ms
+runc is like 10
+quemu kvm is 100ms
+
+they use runc and kata containers at the same time depending on the workload
+
+blabla containers - not much used
+
+===== FACEBOOK TALK
+
+memory in the kernel
+
+cgroupv2
+balncance memory,cpu and io
+
+psi from facebook
+pagecan
+free mem
+mem???
+
+oomd
+bit.ly fboomd
+
+bit.ly/fbtax2 interesting
+
+hadolint
+atomic dockerfile_lint
+
+kubesec.io
+static analisis
+
+dynamic
+insoec
+serverspec
+goss
+
+* Tanka
+
+YAML is data.
+you need to duplicate entire dirs.
+
+helm templating too distant from what matters
+
+jsonnet is good - have functions among other stuff
+PATCHING!
+You can extend something that exists
+modiying down the three without effecting others
+jsonnet have imports
+you also have packages and you can share jsonnet files
+
+    jb install
+
+https://github.com/sh0rez/awesome-libsonnet
+
+https://github.com/grafana/jsonnet-libs/tree/master/memcached-mixin for example
+
+extendability on what is built
+is the best functionality
+
+* XXX
+
+last year nova 2019 fossdem pattern
+
+*
+
+cloud native infrastructure book
+
+prevention
+
+detection
+kris nova/public speaking <-- all slides here
+
+seccomp bpf - what syscall to call
+cgroups
+
+
+check
+https://github.com/kris-nova/public-speaking
+check
+https://github.com/kris-nova/public-speaking/tree/master/slides/clusterfuck-fosdem-2020
+check
+
+*
+
+rest api namespaces
+/apis/<api-group>/<version>/namespaces/<namespace>/<resource>/<name>
+go struct is the api rousource
+
+unifirm verbs for all resources (7)
+get
+list
+creare
+update
+PATCH
+delete
+watch
+
+you don't poll in k8s
+you create a watch
+infinite http connection
+watches are everywhere
+
+to create new resouces you use custom resource definition
+
+it has a schema
+the schema is not typed!!!!
+
+GOOD IMAGE IN THIS TALK
+
+
+is decoded into json
+json representation in golang
+
+you have admissing controllers next
+
+then there is the rest logic
+for etcd
+
+there is one key for the resourfcre
+and then the json representation of it
+
+cdr have no type or list of objects????
+
+you can generate a client for a new type automatically
+
+you can store everything
+becaus in the cdr ther eis a schema
+and in the schema there is a preserve unknown field.
+
+you can update iwth a type????
+
+you can define types and description
+
+all the rest is pruned
+even if the object in etcd have them in the past
+so it'signored from now now
+interesting
+
+json drops floating point precision
+so you can say don't store json
+store string
+
+so if you later add a new thing in the resource
+it will take the value back XD
+
+if there is a value that doesn't comply anumore
+it is gonna tell you
+
+informers is a concept in k8s to istet for events
+informers watch
+it will generate some code somehow
+
+a lot of generators
+
+you can listen and react on that
+snapshot
+
+sdk for k8s ??
+create go struct automatically
+see links!!!! snapshots
+
+access-kubernetes-api
+
+* Delve
+
+starlark https://github.com/bazelbuild/starlark <-- ?
+originally created for bazel
+pythone-ish language
+create new command in delve??
+
+deterministic debugging
+recording
+everything is exactly the same
+to allow to reproduce all the envs that create a bug
+1/100 runs if it happens once you can reproduce it
+
+memory layout
+threads
+syscalls
+signals
+
+record and replay
+record execution of a process
+all the different types
+all result of nondeterministic operations
+
+interesting!!
+
+vm recording - doesn't work very well
+- revirt
+- vmware workstation  (no longer supported)
+- simics
+
+user space recording
+- undoDB
+- totalview replayengine
+- mozillarr <----
+
+problem not recording kernel execugion
+requires codes instrumentation
+
+solution is mozillaRR
+
+doesn't do code instruicmentation
+relatively performant
+best solution right now
+
+sorce of non-deterministic
+
+- certain cpu instruiction
+timestamp counter (trap and record) info on what uses cores
+- thread scheduling (very important) - RR runs all single threaded
+for large go program this will slow down
+- systemcalls (trap and replay)
+- memory layout
+- shared memory
+- signal handling (replay signal execution and delivery - using hardware performance counting)
+
+we can't control
+what happens outside user space
+hardware failures
+
+YOU NEED LINUX (no osx)
+
+*
+
+knative or openfaas
+
+jx-staging
+
+why running something when you are not using it
+
+serverless strategy
+
+recreate is bad
+
+rolling updates is bad
+
+
+canary good
+
+
+
+* Classifier the go
+
+https://gocv.io/
+
+https://github.com/weaveworks/flagger
+
+* Histograms
+
+prometheus histograms past present and future
+in fossdem 2019
+
+automatic binging for protobus
+and exposition format
+
+Summary
+observe call???
+
+rate of a count qps
+rate of sum is latency?
+there is an optional quantile
+
+promethues wants low level metrics
+and aks question later
+
+you cannot aggregate quantile
+
+histogram addeds in 2015
+the have buckets
+upper bound
+and cumuative bound
+
+bucket and histrogram
+
+all the buckets ahve all the counter of the ones beofre
+
+sample count
+sample sum
+bucket
+
+and bucket
+have
+...
+
+_count
+_sum
+they become metrics
+
+and the label
+is the value in the metrics
+even if you don't aggregate on le
+
+le is upperbound
+
+it creates a lot of metrics
+for each metrics
+
+it's very verbose and big
+becaus et the start the idea was that was usied only in protobuf
+
+prometheus danitized all the kabel away
+to avoid problems between bpythhon and java
+they decode it into protobuf
+
+flat data model is
+
+but prometheus due have no protobuf
+so no more translation
+
+so the detour become the reality
+
+but openmetrics happened
+prometheus
+
+openmetrics protobuf bs text
+
+normalising floats
+
+each buckets it's own metric it's expensive
+spots bucket????
+
+text format is bad for changes
+
+
+
+
+
+
+
+
+
+
+
+
+remove the strawberry

@@ -1,0 +1,19 @@
+SOPS
+|| Last update: 18 Feb 2020
+
+* SOPS: Secrets OPerationS
+
+- [[https://github.com/mozilla/sops]] Mozilla SOPS github
+
+* Terraform provider
+
+To use SOPS files with terraform you can use this terraform provider:
+
+- [[https://github.com/carlpett/terraform-provider-sops]]
+
+The terraform provider for sops is not able to manage ALIAS in the sops file.
+It will fail with an error like this:
+
+    Error: Error getting data key: 0 successful groups required, got 0
+
+- [[https://github.com/carlpett/terraform-provider-sops/issues/37]] My ISSUE

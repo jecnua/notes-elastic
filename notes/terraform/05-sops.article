@@ -17,3 +17,12 @@ It will fail with an error like this:
     Error: Error getting data key: 0 successful groups required, got 0
 
 - [[https://github.com/carlpett/terraform-provider-sops/issues/37]] My ISSUE
+
+* Helm provider
+
+- [[https://github.com/futuresimple/helm-secrets]]
+
+If you create a file with secrets for SOPS to use with the helmfile plugin,
+as a convention starts the secret file with secrets.*.
+
+    secrets.*.yaml

@@ -90,8 +90,8 @@ This job can run as a cron. It is not necessary. This decrease latency.
 .image images/thanos_components.jpg
 
 - Sidecar: connects to Prometheus and exposes it for real time queries by the Query Gateway and/or upload its data to cloud storage for longer term usage
-- Query Gateway: implements Prometheus API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
-- Store Gateway: exposes the content of a cloud storage
+- Query: implements Prometheus API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
+- Store: exposes the content of a cloud storage
 - Compactor: compacts and down-samples data stored in cloud storage
 - Receiver: receives data from Prometheus remote-write WAL, exposes it and/or upload it to cloud storage
 - Ruler: evaluates recording and alerting rules against data in Thanos for exposition and/or upload
@@ -121,9 +121,25 @@ a service that expose storeapi under same domain
 
 add some flags to allow variable substitution and another container.
 
-THANOS 0.3.0
+** Thanos Store
 
-now you can do rolling update because is safe
+Thanos store is knows to be memory hungry.
+
+- [[https://github.com/thanos-io/thanos/issues/448]]
+
+If you need to check the usage of memory:
+
+    container_memory_usage_bytes{namespace="monitoring",container="thanos-store”}
+
+Using the experimental flag:
+
+- [[https://github.com/thanos-io/thanos/blob/b3ba9a49138b4a5fafb452c935a55d9bce975e1c/cmd/thanos/store.go#L81]]
+
+That is giving us a much lighter memory footprint.
+
+In case you need to cleanup a lot of evicted pods ;)
+
+    kubectl get pods | grep Evicted | awk '{print $1}' | xargs kubectl delete pod
 
 ** Integration with alert manager
 

@@ -7,6 +7,104 @@ Istio (NEEDS UPDATE)
 - [[https://github.com/istio/istio][Istio github]]
 - [[https://discuss.istio.io/]]
 
+Istio is a open-source service mesh, which is architected similar to other
+service-mesh implementations with a control plane and a data plane. The data
+plane consists of the proxies that live with each application instance and is in
+the request path. The control plane lives outside of the request path and is
+used to administer and control the behavior of the data plane.
+
+** Components
+
+From 1.5+:
+
+- Istiod
+
+Before 1.5:
+
+- Pilot - the core data-plane config (xDS) server
+- Galley - configuration watching, validation, forwarding
+- Injector - responsible for auto-injecting the data plane and setting up bootstrap
+- Citadel - certificate signing, secret generation, integration with CAs, etc
+- Telemetry - a “mixer” component responsible for aggregating and syndicating telemetry to various backends
+- Policy - a request-path “mixer” component responsible for enforcing policy
+
+* Istio 1.5+
+
+Instead of mixer adapters in 1.5 they moved towards a model that enables
+extension directly in the proxies instead.
+
+- [[https://istio.io/docs/reference/config/telemetry/metrics]]
+
+Allows you to send telemetry to Prometheus and Stackdriver.
+
+    [...] the new telemetry model reduces our latency dramatically and gives us
+    industry-leading performance, with 50% reductions in both latency and CPU
+    consumption.
+    Source: https://istio.io/blog/2020/tradewinds-2020/
+
+    The model that replaces Mixer uses extensions in Envoy to provide even more
+    capability. The Istio community is leading the implementation of a
+    WebAssembly (Wasm) runtime in Envoy, which lets us implement extensions that
+    are modular, sandboxed, and developed in one of over 20 languages. Extensions
+    can be dynamically loaded and reloaded while the proxy continues serving
+    traffic. Wasm extensions will also be able to extend the platform in ways
+    that Mixer simply couldn’t. They can act as custom protocol handlers and
+    transform payloads as they pass through Envoy — in short they can do the same
+    things as modules built into Envoy.
+    [...]
+    By changing the extension model, we were also able to remove dozens of CRDs.
+    You no longer need a unique CRD for every piece of software you integrate
+    with Istio.
+    Source: https://istio.io/blog/2020/tradewinds-2020/
+
+To be retrocompatible you can still install mixer in 1.5:
+
+    Installing Istio 1.5 with the ‘preview’ configuration profile won’t install
+    Mixer. If you upgrade from a previous release, or install the ‘default’
+    profile, we still keep Mixer around, to be safe. When using Prometheus or
+    Stackdriver for metrics, we recommend you try out the new mode and see how
+    much your performance improves.
+    Source: https://istio.io/blog/2020/tradewinds-2020/
+
+** The new control plane
+
+.image images/istiod.png 600 _
+.caption Source: [[https://istio.io/blog/2020/tradewinds-2020/]]
+
+They combined several of the control plane components into a single component:
+*Istiod*. It includes the features of Pilot, Citadel, Galley, and the sidecar
+injector.
+
+    To reduce the per-node footprint, we are getting rid of the node-agent, used
+    to distribute certificates, and moving its functionality to the istio-agent,
+    which already runs in each Pod.
+    Source: https://istio.io/blog/2020/tradewinds-2020/
+
+In the istiod approach, functionality previously assigned to various microservices
+deployments will be coalesced into a single daemon.
+
+    Note that the services that made up the previous control planes are still
+    implemented as sub-modules within the project (complete with boundary and
+    contracts, etc) but the operational experience is improved. An operator now
+    needs to worry about running and upgrading a single binary vs a collection
+    of them.
+    Source: https://blog.christianposta.com/microservices/istio-as-an-example-of-when-not-to-do-microservices/
+
+** Updates
+
+    To improve Istio’s life-cycle management, we moved to an operator-based
+    installation. We introduced the IstioOperator CRD and two installation modes:
+    Human-triggered: use istioctl to apply the settings to the cluster.
+    Machine-triggered: use a controller that is continually watching for changes
+    in that CRD and affecting those in real time.
+    In 2020 upgrades will getting easier too. We will add support for “canarying”
+    new versions of the Istio control plane, which allows you to run a new version
+    alongside the existing version and gradually switch your data plane over to
+    use the new one.
+    Source: https://istio.io/blog/2020/tradewinds-2020/
+
+* Istio before 1.5
+
 Istio is a:
 
 - Network mesh
@@ -73,7 +171,11 @@ The following is instead a visual of the communication proxies have with the con
 
 * What is Istio
 
-Istio is a distribuited control plane to configure envoy system records to achieve a service mesh.
+Istio is a distribuited control plane to configure envoy system records to
+achieve a service mesh.
+
+.image images/old_istio.png _ 750
+.caption Source: [[https://istio.io/blog/2020/tradewinds-2020/]]
 
 .image images/istio_arch.svg _ 750
 .caption Source: [[https://istio.io/]]
@@ -235,14 +337,16 @@ Plus, it has a plugging api for routing and other stuff like:
 .caption Source: [[https://istio.io/]]
 
 Is the policy engine: telemetry, billing, quota and so on.
-
-If you want an API gateway you usually will put on something like Kong. *Mixer*
-is the component of Istio that takes decisions.
-
+*Mixer* is the component of Istio that takes decisions.
 Mixer has plugins for tracing, prometeus and much more.
 
-Unfortunately (as of 2.9), you still need to fork, build and maintain the code
-yourself if you want to add a new functionality to mixer. They are working on modularity.
+    Mixer necessarily added overhead to requests because it required extensions
+    to be out-of-process.
+    Source: https://istio.io/blog/2020/tradewinds-2020/
+
+Modularity via adapters is possible.
+
+- [[https://istio.io/docs/reference/config/policy-and-telemetry/mixer-overview/#adapters]]
 
 There is a lot of metadata that is aggregated and send it to mixer so you can do
 rules and so on.
@@ -763,8 +867,10 @@ You can use *mesh* to use your normal ingress system.
 
 * Resources
 
-- Me: Notes from a webinar
-- Me: Notes from London Kubernetes Meetup -  October 2017
+- [[https://istio.io/blog/2020/tradewinds-2020/]] - March 2020
+- [[https://blog.christianposta.com/microservices/istio-as-an-example-of-when-not-to-do-microservices/]] - March 2020
+
+
 - Video: [[https://www.youtube.com/watch?v=wq1nlJNvy1w][Setting Sail with Istio [B] - Lachlan Evenson, Microsoft]]
 - Video: [[https://www.youtube.com/watch?v=Bh7sWtrkijY][Istio 0.2 automatic sidecar injection using Kubernetes Initializers]] - 6 Oct 2017
 - [[https://www.youtube.com/watch?v=s4qasWn_mFc][Youtube: Istio and Kubernetes - Kelsey Hightower]] Jul 2017

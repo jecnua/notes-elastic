@@ -1,0 +1,46 @@
+Working in CHINA
+|| Last update: 30 Mar 2020
+
+* Pushing images from AWS to AWS-CN
+
+Is not possible to directly push/mirror an ECR images from one AWS account
+to an AWS-CN account.
+
+If you have a tunnel in place with dedicated bandwidth and a CICD pipeline in
+the AWS account you can put a reverse proxy in CHINA with the following
+settings.
+
+Helm chart:
+
+    - name: ecr-proxy
+      namespace: misc
+      chart: bitnami/nginx
+      version: 5.1.10
+      values:
+        - value.yaml
+
+The server block in the value file should be:
+
+    serverBlock: |-
+      resolver 1.1.1.1 valid=30s;
+
+      server {
+          listen 0.0.0.0:8080;
+          server_name ecr.foo.com
+          client_max_body_size 0; # disable any limits to avoid HTTP 413 for large image uploads
+          location / {
+            set $upstream           https://<account_id>.dkr.ecr.cn-northwest-1.amazonaws.com.cn;
+            proxy_pass              $upstream;
+            proxy_redirect          $upstream https://$host;
+            proxy_set_header        X-Real-IP            $remote_addr;
+            proxy_set_header        X-Forwarded-For      $remote_addr;
+            proxy_set_header        X-Forwarded-User     $http_authorization;
+            proxy_set_header        Authorization        $http_authorization;
+            proxy_pass_header       Server;
+            client_max_body_size    0;
+            proxy_connect_timeout   300s;
+            proxy_read_timeout      300s;
+            proxy_send_timeout      300s;
+            send_timeout            300s;
+          }
+      }

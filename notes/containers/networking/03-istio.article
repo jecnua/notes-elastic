@@ -197,6 +197,32 @@ Like:
 
 From the business code itself.
 
+* Upgrade from 1.4.x to 1.5
+
+I didn't find a not destructive path.
+
+ONLY in case you have an older (pre-operator) version of istio installed using
+the old charts, please purge everything with the following (let's say you called
+them istio and istio-init):
+
+    $ helm delete --purge istio
+
+Wait for everything to terminate: kubectl get pods -n istio-system
+
+    $ helm delete --purge istio-init
+
+Remove all old istio custom resource definition:
+
+    $ kubectl get customresourcedefinitions.apiextensions.k8s.io | grep istio | cut -f1 -d' ' | xargs kubectl delete customresourcedefinitions.apiextensions.k8s.io
+
+Delete istio-system namespace:
+
+    $ kubectl delete ns istio-system
+
+You should have no namespace called istio:
+
+    $ kubectl get ns | grep istio
+
 * Installing Istio (This section needs to be updated and may be obsolete)
 
 ** Requirements
@@ -204,6 +230,8 @@ From the business code itself.
 Requires kubernetes *1.7.4+* (this information may be obsolete)
 
 Istio uses a CRD (CustomResourceDefinitions) so it needs k8s 1.7.4+.
+
+
 
 ** Helm
 

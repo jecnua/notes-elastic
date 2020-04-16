@@ -1,5 +1,5 @@
 ElasticSearch
-|| Last update: 11 Apr 2019
+|| Last update: 1 Apr 2020
 
 * Intro
 
@@ -9,6 +9,207 @@ AWS articles:
 
 - [[https://aws.amazon.com/blogs/aws/new-open-distro-for-elasticsearch/]]
 - [[https://aws.amazon.com/blogs/opensource/keeping-open-source-open-open-distro-for-elasticsearch/]]
+
+* Versions recap
+
+5.5.0/5.5.3 July 2017
+5.6.0/5.6.16 ???
+[...]
+6.0.0/6.0.1 ???
+6.1.0/6.1.4 ???
+6.2.0/6.2.4 April 2018
+6.3.0/6.3.2 June 2018
+    X-Pack features will now be bundled into the default distribution. All free features are included and enabled by default and will never ‘expire’, and commercial features are opt-in via a trial license. The license for free features never expires, you no longer need to register to use these capabilities.
+    java 10
+    Rolling upgrades from Elasticsearch 5.6.10 to 6.3.0 were broken when a synced flush was performed prior to upgrade. 6.3.1 includes the fix.
+6.4.0/6.4.3 August 2018
+6.5.0/6.5.4 Nov 2018
+    Cross-cluster replication - a new, self-contained mechanism to replicate indices from one cluster to another
+    Java 11 support
+    G1 Garbage Collector (G1GC) is now supported by Elasticsearch
+    Rollups support in Kibana includes a new management UI to configure and manage your rollup jobs, and the ability to visualize your rolled up indices in Kibana
+    https://www.elastic.co/blog/elasticsearch-6-5-0-released
+    Visualize infrastructure and logs https://www.elastic.co/blog/kibana-6-5-0-released
+6.6.0/6.6.2 Jan 2019
+    https://www.elastic.co/blog/elastic-stack-6-6-0-released
+6.7.0/6.7.2 March 2019
+    Cross cluster replication https://www.elastic.co/blog/elasticsearch-6-7-0-released
+    Elasticsearch 6.7 is the Upgrade Release, meaning if you want to do a rolling upgrade from 6.x to 7.x, you will need to upgrade your cluster to 6.7.0 or higher first. Besides being the only 6.x release that will allow rolling upgrades to 7.x, Elasticsearch 6.7.0 comes with the latest deprecation logging to warn you about deprecated features you are using that will need to be replaced before migrating to 7.0. Even if you’re planning to do a full cluster restart to get to 7.x, we highly recommend first going to 6.7.0 or higher to look at the deprecation logs and ensure that your application is ready for the upgrade.
+    upgrade API
+    pluggable auth https://www.elastic.co/guide/en/elasticsearch/reference/6.7/custom-realms.html#using-custom-realm
+    index lifecycle management https://www.elastic.co/blog/kibana-6-7-0-released
+6.8.0/6.8.8
+...
+7.0.0/7.0.1 April 2019
+    New lcuster coordination https://www.elastic.co/blog/elastic-stack-7-0-0-released
+    default to 1 shard
+    pre bundled jabva
+    adaptive replica selection
+NO 7.1.0/7.1.1 May 2019
+    SECURITY IS FREE
+7.2.0/7.2.1 June 2019
+    SIEM
+    Replicated close indices
+7.3.0/7.3.2 July 2019
+    removal of the minimum_master_nodes setting https://www.elastic.co/blog/a-new-era-for-cluster-coordination-in-elasticsearch
+    gui have snapshot resgtore and retention
+7.4.0/7.4.2 October 2019
+    Snapshot lifecycle management
+7.5.0/7.5.2 December 2019
+    Snapshot lifecycle management retention
+    Improvements to upgrades with Cross-Cluster Replication (CCR)
+7.6.0/7.6.2 Feb 2020
+    ILM users now have the ability to utilize a `wait_for_snapshot` action.
+    Snapshots are now more efficient and faster to restore
+    Snapshots are now more efficient and faster to restore
+    With Elasticsearch 7.6, we've made major improvements to how snapshot metadata is stored within a snapshot repository to reduce API requests. Elasticsearch now uses cluster state to store pointers for valid snapshot metadata — saving on cloud provider requests and improving resiliency.
+    We've also made snapshot restores faster by parallelizing restore operations for each shard.
+    These enhancements to snapshot and restore are being released under the Apache 2.0 license.
+    Proxy mode for cross-cluster replication and cross-cluster search
+
+
+
+
+Frozen indices
+https://www.elastic.co/blog/elastic-stack-6-6-0-released
+https://www.elastic.co/blog/creating-frozen-indices-with-the-elasticsearch-freeze-index-api
+
+Java 11 support
+G1 Garbage Collector (G1GC) is now supported by Elasticsearch
+Rollups support in Kibana includes a new management UI to configure and manage your rollup jobs, and the ability to visualize your rolled up indices in Kibana
+https://www.elastic.co/blog/elasticsearch-6-5-0-released
+Visualize infrastructure and logs https://www.elastic.co/blog/kibana-6-5-0-released
+
+Metricbeat and filebeat autodiscover
+- [[https://www.elastic.co/blog/monitor-kubernetes-with-beats-autodiscover-feature-and-elasticsearch]]
+- https://www.elastic.co/guide/en/beats/filebeat/6.3/configuration-autodiscover.html
+- https://www.elastic.co/blog/monitoring-kubernetes-and-docker-containers-with-beats-logs-metrics-and-metadata
+
+syslog files in filebeat
+
+adaptive replica selection
+https://www.elastic.co/blog/improving-response-latency-in-elasticsearch-with-adaptive-replica-selection
+
+look at kibana spaces
+https://www.elastic.co/blog/introducing-kibana-spaces-for-organization-and-security
+
+
+
+apm for go
+- https://www.elastic.co/blog/elastic-apm-agent-go-beta-released
+https://www.elastic.co/blog/how-to-instrument-your-go-app-with-the-elastic-apm-go-agent
+
+interesging filebeat for k8s at pod level
+- https://www.elastic.co/blog/docker-and-kubernetes-hints-based-autodiscover-with-beats
+
+beat on lambda to ingest cloudwatch logs
+- https://www.elastic.co/blog/functionbeat-serverless-ingestion-for-elasticsearch
+- https://www.elastic.co/beats/functionbeat
+
+
+cross cluster replications
+https://www.elastic.co/blog/follow-the-leader-an-introduction-to-cross-cluster-replication-in-elasticsearch
+https://www.elastic.co/blog/cross-datacenter-replication-with-elasticsearch-cross-cluster-replication
+https://www.elastic.co/blog/bi-directional-replication-with-elasticsearch-cross-cluster-replication-ccr
+
+
+read This
+https://www.elastic.co/blog/elasticsearch-6-7-0-released
+
+index lyfecycle management
+https://www.elastic.co/blog/kibana-6-7-0-released
+
+read ElasticSearch logs https://www.elastic.co/blog/elastic-logs-app-released
+
+read elasticsearch infrastructure https://www.elastic.co/blog/elastic-infrastructure-app-released
+
+https://www.elastic.co/blog/elastic-stack-6-7-0-released
+
+check beat uptime
+https://www.elastic.co/blog/elastic-uptime-monitoring-solution-released
+https://www.elastic.co/blog/elastic-uptime-monitoring-7-2-0-released
+
+AWS beat
+https://www.elastic.co/blog/monitoring-aws-ec2-using-metricbeat-and-the-elastic-stack
+https://www.elastic.co/blog/monitoring-aws-services-using-the-cloudwatch-metricset
+
+hot and warm https://www.elastic.co/blog/implementing-hot-warm-cold-in-elasticsearch-with-index-lifecycle-management
+
+new cluster coordination
+https://www.elastic.co/blog/elastic-stack-7-0-0-released
+https://www.elastic.co/blog/a-new-era-for-cluster-coordination-in-elasticsearch
+
+Adaptive replica selection
+https://www.elastic.co/blog/elasticsearch-7-0-0-released
+
+Connect es to prometheus
+https://www.elastic.co/blog/elasticsearch-observability-embracing-prometheus-and-openmetrics-standards-for-metrics
+https://www.elastic.co/blog/prometheus-monitoring-at-scale-with-the-elastic-stack
+
+es on k8s??
+https://www.elastic.co/blog/introducing-elastic-cloud-on-kubernetes-the-elasticsearch-operator-and-beyond
+https://github.com/elastic/cloud-on-k8s
+https://www.elastic.co/blog/getting-started-with-elastic-cloud-on-kubernetes-data-ingestion
+https://www.elastic.co/blog/getting-started-with-elastic-cloud-on-kubernetes-deployment
+https://www.elastic.co/blog/elastic-cloud-on-kubernetes-ECK-is-now-generally-available
+
+
+metrics exporters in infrastructure apps
+
+use frozen instead of closed
+
+read siem https://www.elastic.co/blog/introducing-elastic-siem
+
+es logs https://www.elastic.co/blog/elastic-logs-7-2-0-released
+
+es infrastructure https://www.elastic.co/blog/elastic-infrastructure-7-2-0-released
+
+new cluster coordination
+https://www.elastic.co/blog/a-new-era-for-cluster-coordination-in-elasticsearch
+
+Generic
+https://www.elastic.co/blog/demystifying-authentication-and-authorization-in-elasticsearch
+
+authorization
+https://www.elastic.co/blog/a-deep-dive-into-elasticsearch-authentication-realms
+
+ingest node
+https://www.elastic.co/blog/introducing-the-enrich-processor-for-elasticsearch-ingest-nodes
+
+
+Lyfecycle management
+https://www.elastic.co/guide/en/elasticsearch/reference/7.5/getting-started-snapshot-lifecycle-management.html
+
+lifecycle retention
+https://www.elastic.co/blog/elasticsearch-7-5-0-released
+
+s3 logs on filebeat
+https://www.elastic.co/blog/getting-aws-logs-from-s3-using-filebeat-and-the-elastic-stack
+
+save money practices
+https://www.elastic.co/blog/cost-saving-strategies-for-the-elasticsearch-service-data-storage-efficiency
+
+Monitoring via Kafka
+https://www.elastic.co/blog/elastic-stack-monitoring-with-metricbeat-via-logstash-or-kafka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 * Node types
 

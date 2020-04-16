@@ -305,3 +305,707 @@ search for a papers
 
 we should try to balance our pointer semantincs
 less work for the compiler the better
+
+* Constant
+
+two types
+
+- constant of a kind they are unamed constant
+- constant of a type
+
+Constants only exists at compile time
+
+const are of a "kind" in go
+choosen during assignment
+
+they are not read only var like in other languages
+
+constant of a type
+constant of a kind give flexibility
+
+
+constant of a kind have no type at delcaration
+typed constant do
+
+Kind promotion???
+tells you how things promote
+
+const of a kind they ar enot type based
+they are technically bot bound by precision
+
+you can have inplicti conversion between type
+
+technically unamed constant of a kind
+
+if you use a typed int you can trick the system to promete a number to the type
+you need.
+
+constant of a kind can be implicitly converted
+
+constant can only be build in type
+vecause they only exist at compile time
+
+there is no enumeration in go??
+
+
+iota?
+
+inside a const block
+iota will increment each variable by 1
+
+* Data oriented design
+
+- [[https://en.wikipedia.org/wiki/Data-oriented_design]]
+
+Every problem you solve is a data problem.
+Decouple functions from the data because data will change
+
+deal with change
+
+mechanical sympathy
+
+Only types:
+
+- arrays
+- slice
+- maps (creates contigues memory)
+
+** Array
+
+No data structure
+
+list/queue/stacks
+
+linked list package in go
+there is the package
+
+slices is everywhere in the language
+build in in the standard library
+core data structure of the language
+
+_tets.go
+
+Benchmark
+*testing.B
+find the benchmark function
+and you need to put it in a function
+and call is b.N
+you should run it in a idle machine
+
+the go complirer to recompile the code
+assign to a local and a global
+so the copiler doesn't throw it away
+
+    go test -run none -bench . - benchtime 3s
+
+test run test functions
+
+cpu caches matter
+
+if performances matter
+main memory is too slow
+so we have to fix everything in xmb (l1+l2+l3) of memory
+(your memory)
+total amount of memory you have
+i the total cache
+
+small is better
+need to fit in the cache and stay there
+
+
+cache lines
+64 bytes of memory
+when you have to load all the memory
+if will be split that way
+
+when you move a cache in you will move something out
+we would like to have this information in cache BEFORE we need it
+
+how can we create a situation
+so that a cache-line stays inside l1 and l2
+we need code that have "predictable access pattern to memory"
+mecahnical sympathy
+
+if you allocate contigue memory
+and access is predictable patter
+
+pre-fetcher can pick this
+
+array is the best way to do it
+
+pre-fetcher and hardware loves array
+
+the slice however is the most important
+structure in go (underline is a vector)
+slices is actually a vector
+
+vector
+
+linear iteration
+predictable access pattern in memory
+
+OS access memory based in pages
+
+tlb cache is important too
+it does creates a cache
+of virtual addresses
+to pages and physical location
+
+when you say get this virtual address
+tlb makes a lookup
+for where is physically located in memory
+
+tlb is small
+in a tlb miss you need to search for it
+traversal of paging tables
+tlb miss is heavy
+
+predictable access helps the tlb
+
+no linked list, stacks, queue and so on
+because you can't have mechanical sympathy
+the JVM is helping you to do this
+
+in go you don't have a vm
+so you are the one responsible for it
+
+
+* Array
+
+size of an array needs to be knows at compile time
+
+go only uses for
+normally - for range (4 semantics)
+like a while
+
+our job is to identify and balance
+to minimize the allocation
+string is focalised on that
+
+
+for i = works on the array
+for i, v <= value sematic, works on a copy of the array
+
+the data drive the semantic
+
+don't do this for i, v   &array NO!
+
+* Slices
+
+make()
+3 of the reference type
+
+make(string[],5,8)
+
+until now built in and our
+third one is the reference type
+
+maps
+channels
+interface
+functions
+
+they are data structure with a pointer
+
+when they are 0 values they are a nil
+
+they are similar to how string gets created
+they are formed by 3 things
+- a pointer
+- the length
+- and capacity
+
+capacity is the number of element you can access from that array
+capactity can be as much or more than lenght (not less)
+
+capacity is for efficient growth
+
+is supposed to be used with value semantic
+
+len()
+cap()
+
+slice []string
+
+two operations:
+we append things
+and we slice them
+
+zero slice var data []string
+empty slice data := []string{}
+
+there is also another thing
+called the empty struct
+
+var es struct{}
+is a zero allocation struct
+
+there is a 8bit value in the architecture this thing is pointing to!!!!
+they all have the same address
+
+append(data,value) value semantic mutation api
+
+
+if append needs to raise the capacity of a slice
+then it will create a copy of the slice and the old one will be GC
+if nobody is poiting at it
+
+when you use append make sure you are saving the same slice you are appending
+
+    test = append(test, value)
+
+append will double the capacity of the slice if there is no space
+
+after you reach 1024 bytes append won't double anymore but grow of 25%
+
+** what is a memory leak in go
+
+here escape analysis
+
+a memory leak in go is when you keep a reference to a memory in the heap and this
+never goes away
+you can't instrument for memory leak when is reference based
+
+check the GC trace
+
+you don't want to see the memory go up in every GC run
+
+possible issues:
+
+- go routing that don't close
+- maps (usade for caches. you need to drop them. delete keys)
+
+** slice
+
+[a:b]
+
+they share the same backing array
+
+if you don't know your lenght
+you should not be slicing
+
+better to think
+
+[a:a+lenght]
+
+the "capacity" of the new array is calculated based on the old one (remaining slots)
+
+also append changes will reflect in both slices
+if you are sharing them
+
+if append needs to EXTEND the slice, it will create a copy
+so no changes on the old one
+copy on write
+
+slice(2,3,2)
+
+* copy slice
+
+copy(slice1,slice2)
+
+
+be careful with append
+because it could be a smeel
+and can cause a lot of side effect
+
+** for with ranges
+
+for range
+with value semantic
+will make a copy of what you are working on
+
+for _, v :=
+
+pointer semantic of for
+
+for i :=
+
+* Maps
+
+key value place
+
+convention over configuration (go)
+
+maps are randomised
+every time you pick value form it is random (if you use dfor)
+on purpose not to make you base your code on order
+
+delete()
+
+allow to remove a key from a map
+
+u, found := user["test"]
+#found is boolean
+
+to validate if a key exists or not
+
+key can be something they can hash
+like something you can use in a IF
+
+go added the sort library
+
+* Decoupling
+
+Deecoupling is done with behaviours
+design architecture
+
+go has functions and method
+method are functions with a reciever
+
+func (u user) notify () {}
+
+u user is the reciever
+
+when should a piece of data have behaviour???
+should be the exception not the rule
+
+functions first choice
+
+but when use a method?
+
+you can use value reciever or pointer recievers
+
+this and self???? are the java version of recievers?
+
+when using a method go only cares of the data type
+doesn't care if is a value or pointer
+
+NOTE: don't start with pointer semantic on construction
+
+* When use pointer semantic and when value semantic
+
+3 classes of types (of data)
+
+built in
+- numeric
+- string (immutable and)
+- bool
+USE VALUE SEMANTIC (copy) - including fields in a struct
+exception: marshalling and unmarshalling data when working with DB
+
+
+reference:
+- slices
+- map
+- channels
+- interface values
+- functions
+VALUE SEMANTIC for all
+don't take the address of a reference
+exception (slice and map): only if you sharing down the call stack to a function
+decode and unmarshal
+
+
+user defined types:
+- struct
+choose what is in play for your struct
+if not use use pointer semantic
+but if you can use VALUE SEMANTIC
+
+
+keep the heap clean with value semantic
+
+
+
+a method can return a copy of the value
+so you can use value semantic for reference type
+this allows changes in isolation
+
+possible question to ask:
+
+- if I give you a simple of the data and need to mutate, is the new one
+a different value or the same one?
+when mutation doesn't create a new piece of data
+
+
+Factory function (function that return the Type)
+always come before the type
+and tell you the semantic is in play
+
+if something is shared, so the factory returns a pinter
+start  y thiking that it could be dangeours to share!
+
+if you type choose a semantic stick with it
+so if you choose pointer smentic for a type
+keep it for functions
+EVEN if you don't mutate
+
+
+
+when data needs behavior?
+the less as possible
+
+setter and getter are not an API
+bloat and gives no benefits
+not providing anything good
+
+methods internally gets translated in go
+
+d is a user
+d.changeName()
+becomes
+user.changeName(d)
+
+
+functions in go are types
+you can assign them
+and pass them around
+
+
+two word fata structure
+point to the code of display name
+and the second point to the data (copy or address)
+
+
+when you have double indirection
+the escape analysis
+will allocate the data\
+because he can't know if he can leave it on the stack
+so decoupling have a cost
+
+
+
+
+
+* Interfaces (DO BETTER)
+
+Allow us to implement polymorphism.
+
+a piece of code changes it's behaviour
+depending on the concrete data
+
+one good reason for a pice of data to have behaviour
+is when you need to implement polymorphism
+
+or a stateful api
+
+type reader interface {}
+
+interface is a type
+you can create a var interface
+
+interfaces are not real
+there is nothing concrete
+only define a method set of behaviour
+a contract of behaviour
+
+interfaces are about behaviour
+they are not classes
+not THINGS they are behaviour
+
+don't allocate on the heap every time you
+make a call
+so don't return an byte[]
+so avoid allocation
+because you need to use a make() inside the function
+and "return" it back
+because you can't have a pointer back to the stack
+or use a MAKE depending on the size
+
+instead create an array and pass it!
+
+go is convention over configuration:
+
+func (file) read(x,y) (z, error){}
+
+interface method set
+all the function of an interface
+
+data oriented design
+
+interface types are values
+
+when interface is set ot zero value
+is nil,nil
+
+there is a relationship
+we store data inside the interface value
+and make it concrete
+
+is the second word that is storing the value
+
+the first work of an interface
+pint internally
+to a table called
+iTable (is like a vTable)
+matric of function pointers
+it will always describe the type of value
+we are storing
+the rest of the itable it the function pointer
+concrete implementation of the method
+
+interface give a level of de coupling
+when you call a method on an interface
+it does a lookup in the iTable
+to find where the implementation of that method
+
+indirection and allocation
+this is what polymorphism costs us
+
+you can implement via pointer semantic
+or concrete
+func (*file)
+
+methodsets
+
+set of rules in the specification
+
+only this method using value reciviers
+implement the interface
+
+all the method you declare for that
+
+the value data -> have value reciever
+pointers have -> pointer reciveres and value recievers
+
+
+------------------
+T | NOTHING | value recievers
+------------------
+*T | pointer recievers | value recievers
+------------------
+
+we can't include pointer recievers for value
+just for pinters
+
+MINOR INTEGRITY ISSUE
+not every value have an address
+(something can't be shared)
+like CONST (they only exists at compile time) - no stack or heap
+
+MAJOR INTEGRITY ISSUE
+if yopu choose pointer semantics
+sharing is the ony safe things to do
+
+sometimes you can share a value semantic - exceptions (like unmarshal)
+
+you cannot assume is sage
+is never safe to copy
+of a value that a pointer points to
+
+decoupling comes at the cost of indirection and allocation
+
+mechanics -> semantics -> code
+
+when you use value semantic in an interfsace you have
+User and * to a copy of User
+wih pointer semantic you hvae
+*User and * to the original User
+
+interface needs to be looped
+in value semantic
+because interfaces uses value semantic
+
+* EMBEDDING
+
+inner type and outer type
+inner type promotion
+
+anything in the inner type
+can be promoted to the outer type
+
+you access via che inner type name
+or not
+
+ad.user.notify
+ad.notify
+
+embedding will allow the outer class
+to respect the interface
+because it satisfies the interface
+
+is not a subtype relation
+
+outer class IS NOT the inner class
+and cannot be used as much
+
+what if the outer type implement the interface?
+in this case there is not promotion
+the outer type will override the inner type
+implementation
+
+you can still access the inner type implementation
+via the inner class.
+
+only during compile type this implementation are
+accessed
+
+so if you two inner types
+implements the same function
+nothing hppens unless you try to call it
+
+* Composition
+
+Basic unit is a packge
+packacge is a folder
+a folder is a static library
+
+smalles unit of compilation
+
+the directory inside is should be the namespace
+and there should be at leasrt one file inside
+with the same name as the dir
+
+symbols are exported or unexported
+the exported is available outside
+
+match the folder name and the package name
+because wer expect this to match
+
+all the code in the dir should use the the package
+
+type Start with the Capital letter
+all that starts with a capital caase
+and is exporter
+
+import points to your gopath location
+
+IS ALREADY a relative path
+
+
+very coomon to have factory function with the
+name New
+
+the linter will tell you if something is not good
+
+this also works inside the struct
+if you have two capital and one lower
+
+if a exported struct uses an inner struct that is unexported
+
+beware
+
+things are promoted and is strange
+you can access it if the inner struct types are capital
+BUT you won't be able to initialise
+
+JUST BE CONSISTENT
+
+is not a public/private like other languages
+is just about is it accessible or not
+
+* Composition
+
+** Grouping
+
+there is no subtyping and not subclass
+embedding doesn't link two types
+
+go is convention over configuration
+
+group things about the behaviour not what they are
+
+avoid a generic type added only for
+reusable state
+
+do not use struct instead to avoid copy-oasting
+avoid Decoupling
+just copy paste
+
+create struct that is something new or unique
+don't alias
+don't abstract a concept like int
+
+don't abstract or alias what the data IS
+
+---> embed for behaviour not for state

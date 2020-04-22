@@ -197,9 +197,96 @@ Almost production ready:
 Jaeger is newer in respect of Zipkin, but allow dynamic sampling and has a lower
 footprint.
 
-* Roadmap
+* Jaeger backend on ECS
 
-- [[https://www.jaegertracing.io/docs/roadmap/]]
+** UDP load balancing in AWS (not)
+
+Sorry for the link but I didn't find it on the new repo
+
+- https://github.com/jpkrohling/jaeger/blob/5567f02b285329ea40caecdaa6a723eb626a24f1/docs/deployment.md
+
+    The agents can connect point to point to a single collector address, which
+    could be load balanced by another infrastructure component (e.g. DNS) across
+    multiple collectors. The agent can also be configured with a static list of
+    collector addresses.
+    On Docker, a command like the following can be used:
+    docker run \
+      --rm \
+      -p5775:5775/udp \
+      -p6831:6831/udp \
+      -p6832:6832/udp \
+      -p5778:5778/tcp \
+      jaegertracing/jaeger-agent \
+      /go/bin/agent-linux --collector.host-port=jaeger-collector.jaeger-infra.svc:14267
+
+- [[https://www.reddit.com/r/aws/comments/8tirpw/udp_load_balancing_in_aws/]]
+- [[https://www.reddit.com/r/aws/comments/82pvuf/udp_load_balancing_in_aws/]]
+
+The only solution I can find it to use dns.
+Since I can use dns, I will invest in that direction, I don't want to work with
+lambda and floating ip.
+
+- [[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-service-discovery.html]]
+
+NLB doesn not support UDP
+
+There is no support for discovery systems:
+
+- [[https://github.com/jaegertracing/jaeger/issues/213]]
+
+** Elasticsearch and disk limit
+
+- https://github.com/jaegertracing/jaeger/blob/master/plugin/storage/es/README.md
+
+I’ve been looking at similar ways of splits to allow you to manipulate DNS
+outside of other CF templates
+
+    * aws_elasticsearch_domain.es: LimitExceededException: Volume size must be
+    between 10 and 35 for t2.small.elasticsearch instance type and
+    elasticsearch version 6.3
+    status code: 409, request id: x-x-x-x-x
+
+** Don't use host port
+
+also this:
+
+    service jaeger-agent was unable to place a task because no container
+    instance met all of its requirements. The closest matching
+    container-instance x-x-x-x-x is already using a
+    port required by your task. For more information, see the Troubleshooting
+    section.
+
+if you are exposing a port the old task is locked in an INACTIVE status and you
+can't release
+
+Unless you put 0% availability during releases
+
+** Agent
+
+for lack of UDP routing capabilities I can't run an agent behind a lb in aws
+this means I will run the agent as deamon on each node and use a normal lb over
+it.
+
+however still you have no way to route the traffic there at all
+
+** No load balancers
+
+so you have to ignore load balancers if you are using udp and agent
+
+** Collector
+
+I decided to run it as daemon to get performance (is tcp) and avoid using
+another ENI. this will allow to use lower sizes as boxes
+
+** Agent connection to collector
+
+Agent needs to run on docker ip
+
+    "command": [
+        "--collector.host-port=172.17.0.1:14267"
+    ],
+
+- [[https://stackoverflow.com/questions/51184501/aws-ecs-containers-are-not-connecting-but-works-perfectly-in-my-local-machine]]
 
 * Re/Sources
 

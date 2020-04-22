@@ -1,4 +1,4 @@
-GO
+happensboundarynumberinterfacesGO
 || Last update: 17 Feb 2020
 
 * TO BE SORTED
@@ -995,7 +995,7 @@ go is convention over configuration
 
 group things about the behaviour not what they are
 
-avoid a generic type added only for
+avoid a generic type added only forz
 reusable state
 
 do not use struct instead to avoid copy-oasting
@@ -1009,3 +1009,346 @@ don't abstract a concept like int
 don't abstract or alias what the data IS
 
 ---> embed for behaviour not for state
+
+
+do no start from Interfaces
+and abstarction
+start from the concrete
+
+we decouple later
+first implemente the problem
+
+create a layer api
+payer approach
+3 layers at start
+
+- primitive layer + unit tests [often unexported] (write to be testable - unit test) data in needs to be testable and so way out - give a set of data and get a set of data out
+- lower layer + unit tests
+- high level api (ease of use) (more integration type of tests)
+
+
+data oriented api
+
+primitive layer is not smart
+solves the issue in the most correct simple way
+not performant
+
+use function first then method
+a function is always more precise
+because you need to explicitly pass all the parameters
+with method when not written correctly
+they can hide things
+
+
+you don't want to have a struct that fails at runtime because it was not
+initialised correctly
+
+a function that only takes a struct is nothing more than a method
+AVOID IT
+so break the api if you need to expand a function
+having 12 parameters is OK
+don't abstract input
+is gonna hurt with readability and impact
+
+we should use pointer semantics with data
+
+after you finish ask yourself:
+what can come to this problem
+understanding the business
+
+the concrete implementation now is a guideline
+to see what you can abstract
+
+when you compose two interfaces
+is common practice in go to merge the name of the
+two interfaces
+
+be careful with interfsaces
+because they ask for any concrete piece of data that knows how to do something specific
+a function
+
+if you piece of data, even another interface, knows how to do it it's ok
+
+
+* type assertion
+
+runs at runtime
+if it fails you have a panic
+
+b := m.(bike)
+where bike is an interface
+
+one of the way this is used in the standard library
+is to help override functions
+
+so for example if in a function you ask for a reader and you have a default
+implementation of the function
+you could check if the type passed ALSO implement a function you
+expect and if that happesn you can ignore your default
+implementation and use that one instead
+
+this only works if you pass the pointer to it
+and not the value
+
+it allows you do have a standard implementation
+but allow the user to override it
+
+* Interfaces advices
+
+interfaces should describe behaviours
+
+interfaces add the cost of indirection
+and allocation
+
+factory function
+should return concrete type values
+NEVER interfaces
+
+SMELLS:
+- the package declares an interface that matches the entire api of the concrete
+- the interface is exported but the concrete type is not
+- the factory function returns the interface value with the unexported concrete inside
+- the interface can be removed and nothing changes for the user
+- the interface is not decoupling the API from change
+
+
+mocking a database is worthless
+
+* Mocking
+
+Don't use interface just to help testing
+
+you can define your interface to test and mock
+and use a library that has none
+it's gonna work anyway
+
+
+
+interfaces are good to decouple things
+give program structure
+encourage design by Composition
+
+
+keep interfaces small
+compose them as you need
+
+* Errors
+
+Handle when it happens
+Exception hides the context
+enough context to make an informed decisioin
+
+recover or shut down
+
+os.exit(code): fast
+panic: gives you a stack trace
+
+error is decoupled
+interface error is built in
+
+also errorString package
+unexported in th errors packade
+Error() return
+whatever comes out of this function is logging only
+it should not be parsed to understand
+
+it has a constructor that return the error object
+
+we always work with errors
+at interface level
+
+ADVICE
+if there is a failure handle it and return
+we can have multiple exit points
+DON'T USE ELSE
+no else, if and return if fail
+
+not really one single exit point
+
+
+NAKED SWITCH
+with boolean login
+so no if else if else
+negative path always indented and on the return
+
+you can declare a variable inside the if and the scope
+of that variable is only there
+
+nil is the zero value
+for pointer and reference type
+since error is an interface value
+nil is an empty error interface
+(no concrete value store inside the interface)
+
+
+errors.New()
+
+ErrXxxYyy
+
+idiomatic efinition
+
+you want the error variable
+at the top of the source file
+you are working on
+and if it's global
+in the file named like the package
+
+switch a case and check the type that returned
+
+use variable for error
+to identify the concrete type that return
+go give context to make informed decision
+
+but don't pollute with too may string type
+use string an vars instead
+
+** Custom error types
+
+an error variable won't be enough at this point
+
+type UnmarshallTypeError struct
+
+as an example
+
+all the fields of the custom error type should be
+in the logggin line
+or what is the point
+
+empty interface as second parameters?????
+DON'T use it to write generic
+use it only form
+- pass data around that can be hidden with no problem
+- or use the reflect type (use for model validation) - l
+
+rv.Kind()
+reflect.ValueOf()
+
+reflect.Ptr
+
+go gives special mechanism
+
+switch e := err.(type) # type is a keyword
+
+case *xyz
+case *dbd
+
+type assertion give you a copy of what is there?????
+
+beware because this reduce decoupling
+
+** behaviour as context
+
+use custom error type but stay decoupled
+
+e.Temporary() method
+errors can be all we need
+
+however this is very coupled
+if you change the concrete type
+will be a cascading changes issue
+
+type OpError
+naming conventio for custom error type
+they end in Error
+
+they all have Error implementaioin using the pointer semantic
+
+if your custome error type
+can have at leave
+
+unexported with unexported error field
+you can't type assert to the concrete
+so you are available to change things in the future
+
+- temporary
+- timeout
+- not found
+- not authorized
+
+don't export the type
+fix temporary to be more accurate
+
+this code doesn't change if we change the implementation
+of the method
+
+json package have custom error type
+they need to be exported
+because ????? they have to???? why???
+
+unexported with unexported error field
+use method instead
+
+** whao
+
+if you in a fuction say that you retunr a value type
+of an error and retunr nil
+the returned value is nil BUT have a type so is not nil!!!
+
+if you used the error interface it would have been connect
+but if you use the custom type it won't work!!!
+wao
+is a mess
+
+always return the error type
+not a custom type
+
+if you use struct don't use value semantic??
+don't use value semantic with struct
+because beware with equality
+interface values are values
+if you compare two interface value you are comapring
+the interface values inside it
+so if you use value sematinc
+
+for example if they have two interfsace
+are different interface
+but have the same sting value inside
+
+so when you use pointer semantic
+this way when you compare
+you compare the pointers
+and they are never gonna be the same
+
+* Logging consistency / Pattern
+
+you can't separate error and logging
+we write application that logs a lot of thing
+to be able to find bugs when an error occurs
+logging too much have a lot of costs
+
+a lot of allocation on the heap
+
+we need to balance signal to noise
+if you log but never read or use
+
+log errors with enough context to actualluy debug
+the issue
+
+day chaining error package????
+consistent way to apply error handling
+and Logging
+
+who manage the error have the responsability to log it
+
+am I handling the error here or not?
+if not wrap the error with context
+and retgurn it
+
+the lower you handle the error the better
+
+errors.Wrap()
+
+context:
+- call stack context (where we are when this error occurred)
+- user context
+
+errors.Cause(err).(type)
+
+the Cause function
+knows how to unwind the error and get the root error
+fmt.Println
+%+v in the formatting the full stack trace and context
+all of this get logged
+%v only the user context
+
+- [[https://blog.golang.org/go1.13-errors]]

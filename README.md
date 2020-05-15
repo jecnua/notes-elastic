@@ -33,7 +33,6 @@
 - [notes/rabbitmq/02-export_import](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/rabbitmq/02-export_import.article)
 - [notes/observability/tracing/04-opentracing_in_python](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/04-opentracing_in_python.article)
 - [notes/observability/tracing/02-zipkin](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/02-zipkin.article)
-- [notes/observability/tracing/05-jaeger_on_ecs](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/05-jaeger_on_ecs.article)
 - [notes/observability/tracing/03-jaeger](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/03-jaeger.article)
 - [notes/observability/tracing/01-tracing](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/01-tracing.article)
 - [notes/observability/tracing/00-opentracing_merge_opencensus](http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/observability/tracing/00-opentracing_merge_opencensus.article)

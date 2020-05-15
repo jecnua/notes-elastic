@@ -1,4 +1,4 @@
-happensboundarynumberinterfacesGO
+GO
 || Last update: 17 Feb 2020
 
 * TO BE SORTED
@@ -1352,3 +1352,128 @@ all of this get logged
 %v only the user context
 
 - [[https://blog.golang.org/go1.13-errors]]
+
+* Packages
+
+package oriented design find it link
+design philosophy on packages link?? find it
+
+basic unit of compilation
+
+every folder in your repo
+is a static library for go
+
+ardanlabs/service
+
+we build software
+by separating it in static libraries
+
+C a file so file
+windows have dll
+java has jar files
+ruby has gem
+
+in go every folder end up being a static library
+
+packaging component level api
+
+each dir should have program boundaries
+like microservices
+
+there is no concept of subpackages
+al packages are built and compiler and laid out
+for the compiler linker is all the same
+
+be careful of exporting and exporting
+
+two packages cannot import each other
+
+- purpose (provide and not contain) - it's own type system
+- usability
+- portability
+
+is ok to duplicate type system
+
+each package needs to have a clear api
+and the name should describe the intent
+
+"coupling created constraints"
+the more policy a package is, the less reusable it is
+
+one way to do it is this:
+
+kit project? as decoupled as possible
+this packegs should not be logging
+this foundational packages should not be Logging
+and if one of this have goroutings that logs
+you should ask for a handler function
+so the user can implement in the handler funcrtion
+and the packages use that. you don't nees interfaces for this
+CONTRIBUTORS
+LICENSE
+README.md
+cfg/
+examples/
+log/
+pool/
+tcp/
+timezone/
+udp/
+web/
+
+Application (project) can have multiple binaries
+cmd/ : binaries of the application. one to many. all dir have a main.go. folder to organize
+internal/ : business logic. reusable between binaries. files to organize
+  internal/platform: for foundation packages not inside in kit.
+vendors/
+
+use the internal name
+the compiler will protect you
+from people using it outside
+
+use dep for dependencies
+
+    dep init
+    dep ensure
+
+kit would be a third party
+you maintain a copy of all the source code
+and sorce code and dependencies
+
+now playing with vego
+
+since importing/using an external package will create
+binding be sure it's worth it
+DON'T import a package just to use it's models
+create your own models
+
+in /internal
+try not to make them import each other
+keep them at the same level
+try to minimize dependencies
+
+every package we have inside of cmd
+you
+
+down is good up is bad
+import down
+import up bad
+
+cmd
+internal -> cannot import from cmd
+vendor -> cannot import from cmd/internal
+
+policy create coupling
+kit, internal and platform should not be allowed to log,trace,etc
+if needed use configuration changed at runtime
+metrics/telemetry decouple
+
+the application can set policy
+
+kit and internal should not
+wrapping error is a policy
+panic is a policy
+
+https://github.com/ardanlabs/gotraining
+
+https://github.com/ardanlabs/service

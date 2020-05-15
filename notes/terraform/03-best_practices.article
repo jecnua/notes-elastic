@@ -9,12 +9,22 @@ Totally opinionated :)
 
 * Latest version considered
 
-- Terraform: [[https://github.com/hashicorp/terraform/releases]] - 0.11.13
-- AWS: [[https://github.com/terraform-providers/terraform-provider-aws/releases]] - 2.0.0
-- Random: [[https://github.com/terraform-providers/terraform-provider-random/releases]] - 2.0.0
-- Template: [[https://github.com/terraform-providers/terraform-provider-template/releases]] - 2.1.0
-- Null: [[https://github.com/terraform-providers/terraform-provider-null/releases]] - 2.1.0
-- Archive: [https://github.com/terraform-providers/terraform-provider-archive/releases] - 1.1.0
+- Terraform: [[https://github.com/hashicorp/terraform/releases]]
+- AWS: [[https://github.com/terraform-providers/terraform-provider-aws/releases]]
+- Random: [[https://github.com/terraform-providers/terraform-provider-random/releases]]
+- Template: [[https://github.com/terraform-providers/terraform-provider-template/releases]]
+- Null: [[https://github.com/terraform-providers/terraform-provider-null/releases]]
+- Archive: [[https://github.com/terraform-providers/terraform-provider-archive/releases]]
+
+* Policy with terraform not HEREDOC
+
+When creating policies use the data source policy document over the HEREDOC
+the policy doc can be formatted by fmt for example.
+
+* Locals or variables
+
+Don't use locals for static data but use variables.
+Locals should be used for dynamic stuff (like printf).
 
 * Tags
 
@@ -46,10 +56,10 @@ The other are _not_ very useful:
 Will result in:
 
     tags.TfCodePath:   "my-terraform-repo/development/my-module"
-    tags.TfPathCwd:    "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
-    tags.TfPathModule: "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module/
+    tags.TfPathCwd:    "/Users/xyz/git/my-terraform-repo/development/my-module"
+    tags.TfPathModule: "/Users/xyz/git/my-terraform-repo/development/my-module/
       .terraform/modules/a3eda4daf706c9875a23dc8a678dd035"
-    tags.TfPathRoot:   "/Users/fabrizio.sabatini/git/my-terraform-repo/development/my-module"
+    tags.TfPathRoot:   "/Users/xyz/git/my-terraform-repo/development/my-module"
 
 ** Name and/or Description
 
@@ -532,15 +542,6 @@ The in _01-main_blue.tf_:
     }
 
 This 'export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"' it is used to cache plugins.
-
-* Terraform 0.12 compatibility
-
-    The filemd5, filesha1, etc functions from Terraform v0.12 are backported
-    primarily to allow writing modules that can work in both Terraform 0.11 and
-    0.12, since the sha1(file("...")) pattern in 0.12 works only for files
-    containing valid UTF-8 text; sha1file("...") must be used instead. Both
-    forms are equivalent in Terraform 0.11.
-    Source: https://github.com/hashicorp/terraform/releases/tag/v0.11.12
 
 * Resources
 

@@ -180,9 +180,9 @@ fill up disk space from downloading docker images.
 
 * FARGATE for ECS
 
-You can't use EFS or EBS with Fargate. There is no option to mount EFS volumes on
-Fargate. Fargate allow to use any
-[[https://aws.amazon.com/about-aws/whats-new/2018/09/aws-fargate-now-supports-private-registry-authentication/][private repo]].
+- [[https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_EFSVolumeConfiguration.html]]
+
+You can mount an EFS to and ECS Fargate container.
 
 ** More info
 

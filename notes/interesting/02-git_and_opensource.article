@@ -1,7 +1,24 @@
-Git and opensource
-|| Last update: 23 Oct 2018
+Git
+|| Last update: 15 May 2020
 
 * Synch a fork
 
 - [[https://help.github.com/articles/merging-an-upstream-repository-into-your-fork/]]
 - [[https://help.github.com/articles/syncing-a-fork/]]
+
+* Truck-based development
+
+- [[https://paulhammant.com/2013/04/05/what-is-trunk-based-development/]]  - 2013
+
+* Branch by abstraction
+
+Branch by abstraction: a pattern for making large-scale changes to your
+application incrementally on mainline.
+
+- [[https://martinfowler.com/bliki/BranchByAbstraction.html]] - 2014
+- [[https://continuousdelivery.com/2011/05/make-large-scale-changes-incrementally-with-branch-by-abstraction/]] - 2011
+- [[https://paulhammant.com/blog/branch_by_abstraction.html]]
+
+- Feature toggle
+
+- [[https://martinfowler.com/bliki/FeatureToggle.html]] - 2010

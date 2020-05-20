@@ -277,7 +277,7 @@ The apiVersion field in the object's configuration file define the API
 endpoint to connect the API server.
 
 The v1 API group is a collection of groups (there are eight at the moment).
-Among them:
+For example:
 
 - v1
 - storage.k8s.io/v1
@@ -2103,17 +2103,17 @@ Among the modules, the most common will be:
 
 - Role-Based Access Control (RBAC) Authorizer
 
-With RBAC we can regulate access to resources based on the role of users. When
+With RBAC access to resources can be regulated based on the role of users. When
 a role is created, access to a resource can be restricted to operations (verbs).
 There are two kinds of role:
 
-- Role: Grant access to specific namespace
-- ClusterRole: Grant permission cluster wide
+- *Role*: Grant access to specific namespace
+- *ClusterRole*: Grant permission cluster wide
 
-Once the role is created it can be bound. There are two types of binding.
+Once the role is created it can be _bound_. There are two types of binding.
 
-- RoleBinding: Bind user at the same namespace of the Role.
-- ClusterRoleBinding: Grant access to resources in ALL namespaces
+- *RoleBinding*: Bind user at the same namespace of the Role.
+- *ClusterRoleBinding*: Grant access to resources in ALL namespaces
 
 This authorizer is enabled by passing --authorization-mode=RBAC to the api
 server.

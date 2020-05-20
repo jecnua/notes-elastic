@@ -1,4 +1,4 @@
-Istio - Installation guide on k8s 1.9.0
+Istio 1.4.x - Installation guide on k8s 1.9.0
 || Last update: 26 Jan 2018
 
 * Install Helm

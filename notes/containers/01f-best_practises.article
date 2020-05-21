@@ -20,7 +20,6 @@ tells to the Docker CLI to automatically issue a docker rm command once the cont
 
     https://puppet.com/blog/building-agreement-around-docker-labels
     https://medium.com/microscaling-systems/new-for-the-image-conscious-container-label-schema-org-78654a270f07#.7b241ympw
-    http://label-schema.org/rc1/
 
 * Init inside a docker container
 
@@ -35,13 +34,6 @@ The Dockerfile Explosion and the need for higher level tools - Wild Card Track
 Gareth
 
 https://nathanleclaire.com/blog/2014/09/29/the-dockerfile-is-not-the-source-of-truth-for-your-image/
-
-* Labels
-
-- [[http://label-schema.org/rc1/]]
-
-Useful in prometheus too!!
-A lot
 
 *** Alteranatives
 

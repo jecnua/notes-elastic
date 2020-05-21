@@ -1,0 +1,31 @@
+* RBAC access
+
+You can test it this way:
+
+  kubectl get clusterrolebindings.rbac.authorization.k8s.io
+  kubectl get roles.rbac.authorization.k8s.io -A
+
+
+  ╰─ ./bin/temp-lab-access.sh jecnua k8s.dev-01.cn-northwest-1.lab.viooh.com.cn.k8s.local
+  + set -e
+  + '[' 2 -ne 2 ']'
+  + cat
+  + cfssl genkey -
+  + cfssljson -bare jecnua
+  2020/05/20 09:59:42 [INFO] generate received request
+  2020/05/20 09:59:42 [INFO] received CSR
+  2020/05/20 09:59:42 [INFO] generating key: ecdsa-256
+  2020/05/20 09:59:42 [INFO] encoded CSR
+  + cat
+  + kubectl --context k8s.dev-01.cn-northwest-1.lab.viooh.com.cn.k8s.local create -f -
+  ++ cat jecnua.csr
+  ++ base64
+  ++ tr -d '\n'
+  certificatesigningrequest.certificates.k8s.io/jecnua created
+  ╭─  ~/git/infra-helmfiles  ☸ k8s.dev-01.cn-northwest-1.lab.viooh.com.cn.k8s.local:istio-system     feature/SRE-2627-give-olivier-acces-to-china                                                                      09:59:45 
+  ╰─ k get csr
+  NAME       AGE   REQUESTOR   CONDITION
+  jecnua   7s    admin       Pending
+
+
+users do not have an associated Kubernetes API Object

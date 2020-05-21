@@ -2118,6 +2118,11 @@ Once the role is created it can be _bound_. There are two types of binding.
 This authorizer is enabled by passing --authorization-mode=RBAC to the api
 server.
 
+You can list both type of roles in this way:
+
+    kubectl get clusterrolebindings.rbac.authorization.k8s.io
+    kubectl get roles.rbac.authorization.k8s.io -A
+
 * ETCD
 
 ETCD is a key-value store based on the Raft Consensus Algorithm. Nodes in the

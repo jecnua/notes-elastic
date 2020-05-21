@@ -108,15 +108,9 @@ one Prometheus that pulls every x minues
 
 ** Alerts
 
-Prometheus implements alerting via an aplication called alert manager.
+Prometheus implements alerting via an application called alert manager.
 
 - [[https://prometheus.io/docs/alerting/overview/]]
-
-In this context an alert is a query that return a timeseries.
-When you add a query this way you can have two results:
-
-- no timeseries: all ok
-- some timeseries: an alert for each one of them
 
 Alert manager is a different service but part of the same binary.
 
@@ -126,7 +120,84 @@ id/name) in Helm you need to set the option _baseURL_:
     server:
       baseURL: https://prometheus.mydomain.com
 
-- [[https://github.com/helm/charts/tree/master/stable/prometheus]]
+In the alerts definition, you can use labels to add contextual information
+to send together with the alert (for example slack or pagerduty):
+
+    - "name": "jaeger_alerts"
+      "rules":
+        - "alert": "JaegerHTTPServerErrs"
+          "annotations":
+            "message": |
+              {{ $labels.job }} {{ $labels.instance }} is experiencing
+              {{ printf "%.2f" $value }}% HTTP errors.
+          "expr": "100 * sum(rate(jaeger_agent_http_server_errors_total[5m]))
+          by (instance, job, namespace) / sum(rate(jaeger_agent_http_server_total[5m]))
+          by (instance, job, namespace)> 1"
+          "for": "15m"
+          "labels":
+            "severity": "warning"
+            "runbook_url": "https://myrunbook.com"
+            "confluence_page": "https://mydoc.com"
+
+In this example you can see how runbook and confluence link are added to
+the alert.
+
+When you alert you need a route and a receiver. A receiver looks like this:
+
+    - name: 'a-channel-receiver'
+      slack_configs:
+        - channel: '#a-channel'
+          send_resolved: true
+          title: |
+            *| {{ some gotmpl stuff }} |*
+            *| Alert: {{ some gotmpl stuff }} |*
+          text: {{ some gotmpl stuff }}
+
+In the case above the target is slack. You can define a title and a text.
+I would advice to look online for some templating example about it.
+
+The you need a route. Something that capture alerts and send it to a reciever.
+
+      - receiver: 'a-channel-receiver
+        group_wait: 1m
+        group_interval: 1m
+        repeat_interval: 1h
+        group_by: [ job, alertname ]
+        match_re:
+          alertname: '(Jaeger).*'
+
+This one for example will "capture" all the alert that match the match_re and send
+it to a receiver.
+
+NOTE IMPORTANT: BE CAREFUL ABOUT THE ORDERING.
+
+The route will capture the alerts so you can't put it AFTER a catch all like the
+following.
+
+      - receiver: 'notify'
+        group_wait: 10m
+        group_interval: 30m
+        repeat_interval: 1d
+        group_by: [ name, alertname ]
+        match_re:
+          severity: 'notify'
+      - receiver: 'warning'
+        group_wait: 5m
+        group_interval: 30m
+        repeat_interval: 30m
+        group_by: [ name, alertname ]
+        match_re:
+          severity: 'warning'
+      - receiver: 'critical'
+        group_wait: 30s
+        group_interval: 1m
+        repeat_interval: 10m
+        group_by: [ name, alertname ]
+        match_re:
+          severity: 'critical'
+
+This will match basically all your alerts so you need them AT THE END of
+your config.
 
 ** Pull method
 

@@ -73,11 +73,11 @@ does only read
 
 ** Pull vs push
 
-- automatic upness monitoring
+- automatic up-ness monitoring
 - horizontal monitoring (tell to push to different things) WRONG
-- more flexyble (production monitoring on your laptop ? ) NO, NOT SG
+- more flexible (production monitoring on your laptop ? ) NO, NOT SG
 - simple HA - two Prometheus server pulling in the same one (many of the same configured service)
-- less configuration (tell my mornitoring service - do that in any case) NO. zk
+- less configuration (tell my monitoring service - do that in any case) NO. zk
 - scales
 
 From version 2.0 Prometheus DOES NOT SUPPORT PROTOBUF anymore.
@@ -95,16 +95,16 @@ bosun didn't take it
 
 ** Storage
 
-Local storage is epehemerial.
-They don't reccomend keeping it for years
+Local storage is ephemeral.
+They don't recommend keeping it for years
 
 problem: not enough disk space
 
 you can't dump and you can't redeploy
 
-one workaroud:
+one workaround:
 many prometheus server that federates on a single ...
-one Prometheus that pulls every x minues
+one Prometheus that pulls every x minutes
 
 ** Alerts
 
@@ -216,7 +216,7 @@ not only one (for them)
 - operation bottleneck
 - spof, no isolation
 - can't scrape selectively (not because is only us)
-- harder to associate metadaat
+- harder to associate metadata
 
 Prometheus by discovering your node
 with auto-discovery

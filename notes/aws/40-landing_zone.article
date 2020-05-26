@@ -1,0 +1,380 @@
+AWS Landing Zone and Control Tower
+|| Last update: 26 May 2020
+
+* xxx
+
+- AWS SSO
+- Security HUB
+-
+
+Multi account environment based on best practices.
+
+* Intro
+
+- [[https://aws.amazon.com/solutions/implementations/aws-landing-zone/]]
+
+Way to isolate resources and accounts. Blast radius limited.
+Accounts is the best way to achieve it.
+
+AWS control tower is an AWS service version of AWS Landing Zone.
+They implemented as a managed services.
+
+Guardrails not blockers. Auditable.
+
+
+AWS Landing Zone solution was launched in June 2018, while AWS Control Tower
+was announced in November 2018 and launched in June 2019.
+
+AWS Landing Zone is a solution that helps customers more quickly set up a secure,
+multi-account AWS environment based on AWS best practices.
+
+    The AWS Landing Zone solution deploys an AWS Account Vending Machine (AVM)
+    product for provisioning and automatically configuring new accounts. The AVM
+    leverages AWS Single Sign-On (SSO) for managing user account access. This
+    environment is customizable to allow customers to implement their own account
+    baselines through a Landing Zone configuration and update pipeline.
+    Source: https://aws.amazon.com/solutions/implementations/aws-landing-zone/
+
+    AWS Landing Zone is a solution that helps customers more quickly set up a
+    secure, multi-account AWS environment based on AWS best practices. With the
+    large number of design choices, setting up a multi-account environment can
+    take a significant amount of time, involve the configuration of multiple
+    accounts and services, and require a deep understanding of AWS services.
+    This solution can help save time by automating the set-up of an environment
+    for running secure and scalable workloads while implementing an initial
+    security baseline through the creation of core accounts and resources.
+    AWS Landing Zone deploys an AWS Account Vending Machine (AVM) product for
+    provisioning and automatically configuring new accounts. The AVM leverages
+    AWS Single Sign-On for managing user account access. This environment is
+    customizable to allow customers to implement their own account baselines
+    through a Landing Zone configuration and update pipeline.
+    Source: https://aws.amazon.com/about-aws/whats-new/2018/06/introducing-aws-landing-zone/
+
+Lock credentials for root
+CloudTrail
+guardduty
+Federation via identify provider
+LDAP/ActiveDir
+
+s3 bucket encryption
+ebs encrypted
+
+* Concepts
+
+AWS Organization account
+service control policy
+consolidate billing
+almost no resources
+
+Where to store our logs?
+
+CORE ACCOUNT:
+isolation depending on the team who manages it
+cross account access
+
+LOGGING ACCOUNT
+services and common thing.
+extremely reduces access
+alert on logging
+- Logging account
+
+SECURITY ACCOUNT
+cross account roles (audit)
+shutdown resources
+send segurity logs to logging account
+owned by infosec or centralised security
+
+SHARED SERVICES
+common tooling
+ldap or active director
+scanning instances
+golden ami
+shared services group
+DNS
+
+DEVELOPERS ACCOUNTS
+- spending limit
+- DEVELOPER SANDBOX
+
+BU/Product/Account
+could be repeated
+- like dev/pre-prod (connected to datacenter)/ account
+- connect to shared services and send logs to logging
+
+AWS SSO federation
+multi account cross login
+Config rules baseline
+Network baseline
+
+* Implementation
+
+There is a cloudformation template.
+
+The AWS Landing Zone solution includes four accounts, and add-on products that
+can be deployed using the AWS Service Catalog.
+
+** Organizations account
+
+The AWS Landing Zone is deployed into an AWS Organizations account
+This becames the master account.
+
+- No connection to DC
+- Service control Policies
+- Consolidated billing
+- Volume discount
+- Minimal resources
+- Limited access
+
+Rules superseed all the local access to the account
+even the root account
+policies to stop remove cloudtrail or create internet gateway.
+
+    The AWS Landing Zone is deployed into an AWS Organizations account. This
+    account is used to manage configuration and access to AWS Landing Zone
+    managed accounts. The AWS Organizations account provides the ability to
+    create and financially manage member accounts. It contains the AWS Landing
+    Zone configuration Amazon Simple Storage Service (Amazon S3) bucket and
+    pipeline, account configuration StackSets, AWS Organizations Service Control
+    Policies (SCPs), and AWS Single Sign-On (SSO) configuration.
+    Source: https://aws.amazon.com/solutions/implementations/aws-landing-zone/
+
+account provisionin, ue aws organization api to create account
+pipeline for configurating landing zone, endpoint for providinr single sign on
+to provide full access
+
+
+    From the Master account, you can set up an AWS Control Tower that allows you to create:
+    Two Organizations Units (OUs), Core Unit and Custom Unit, (AWS Login and Audit are linked with Core Unit and AWS Custom Account are linked with Custom Unit, you can create as you need them)
+    Guardrails –Control Tower by default create the rules that are part of the baseline and applied in each AWS Account, you can extend them as well.
+    AWS Service Catalog allows you to provision new AWS accounts and assign this account to your favorite Organization Unit.
+    Source: https://www.mobiquity.com/insights/setting-up-aws-landing-zone-with-aws-control-tower
+
+** Four core account
+
+*** Shared Services account
+
+They are not provisioned by Service Catalog, but during Control Tower set up.
+
+microsoft ad, shared services network, optionally ???
+
+    The Shared Services account is a reference for creating infrastructure
+    shared services such as directory services. By default, this account hosts
+    AWS Managed Active Directory for AWS SSO integration in a shared Amazon
+    Virtual Private Cloud (Amazon VPC) that can be automatically peered with new
+    AWS accounts created with the Account Vending Machine (AVM).
+    Source: https://aws.amazon.com/solutions/implementations/aws-landing-zone/
+
+- Connect to DC
+- DNS
+- LDAP/Active directory
+- Shared services VPC
+- Deployment tools (golden ami, pipeline)
+- Scanning infrastructure (inactive instances, improper tags, snapshot lifecyle)
+- Monitoring
+
+*** Log Archive account:
+
+What it has inside:
+- Versioned s3 bucket
+- resticted
+- MFA delete
+- cloudtrail
+- security logs
+
+read only access from outside to manipulate it
+alarm on access to the account
+
+They are not provisioned by Service Catalog, but during Control Tower set up.
+
+cloud trail, aws config logs (audit or forensic) control - indipendend copy of
+api logs and changes - local copy or cloudtrain within each account
+
+    The Log Archive account contains a central Amazon S3 bucket for storing
+    copies of all AWS CloudTrail and AWS Config log files in a log archive
+    account.
+    Source: https://aws.amazon.com/solutions/implementations/aws-landing-zone/
+
+*** Security account
+
+What it has inside:
+- optional data server connectivity
+- security tools and audit
+- amazon GuardDuty master
+- cross account read/write (automated tooling): failsafe. not the main way to login. change the policies.
+- limited access
+
+read only to everything to do audit, black glass scenario
+
+    The Security account creates auditor (read-only) and administrator
+    (full-access) cross-account roles from a Security account to all AWS Landing
+    Zone managed accounts. The intent of these roles is to be used by a company's
+    security and compliance team to audit or perform emergency security operations
+    in case of an incident.
+    This account is also designated as the master Amazon GuardDuty account. Users
+    from the master account can configure GuardDuty as well as view and manage
+    GuardDuty findings for their own account and all of their member accounts.
+    Source: https://aws.amazon.com/solutions/implementations/aws-landing-zone/
+
+account vending machine
+aws catalog product???
+
+aws catalog ui, can create new account
+it will automatically go though a pipeline and apply
+what you decided to do
+
+lauch constrains: restrict amount of permission to run the job
+
+Apply account baseline stack set
+
+you can keep versions
+of the baseline
+so you can deploy account that are baselined at different version
+
+delete default vpc
+
+by default after cloudtrail send logs to the audit
+security policy that won't allow cloudtrail to be disabled
+
+Account baseline:
+- CloudTrail (send all logs to centralised s3 bucket for bucket and local cloudwatch logs 14 days)
+- Config : 7 rules (EBS/RDS/S3 encryption, IAM passowrd policy, root FMA, s3 public read/write permission)
+- IAM password policy (user password change, password complexity/reuse/age/minimum lenght)
+- VPC: Delete default vpc, (optional create VPC)
+
+Optional products:
+- AWS elasticsearch service intergration
+- Kibana based log reporting and analisys (cloud trail, VPC flow log, CWlogs)
+
+*** Network account
+
+managed by network team
+network services
+limited access
+
+- AWS Direct connect
+- Transit gateway
+
+* Options
+
+Give each dev an account
+50/100 dollars a month
+disconneted
+- No connection to DC
+- Innovative space
+- Fixed spending limit
+- Autonomous
+
+Team/product account
+Think small
+Match the development lifecyle
+
+team shared services
+
+>>>> They reccoment a QA and Staging for the landing zone.
+
+Landing SNS topics
+policy deployments
+
+* Control Tower
+
+Enable governance at scale.
+
+Set up an AWS Landing zone, establish guardrails for governance, centralise indentity
+and ac cess, automate compliant account provisioning.
+
+    As of time of writing, AWS Control Tower doesn’t support existing setups for
+    AWS Organization or AWS SSO, although official FAQ claims it will be added in
+    the future, as well as ability to migrate from AWS Landing Zone solution to
+    AWS Control Tower service.
+    Source: https://www.linkedin.com/pulse/my-architecture-aws-control-tower-vs-landing-zone-eugene-istrati?trk=related_artice_My%20Architecture%3A%20AWS%20Control%20Tower%20vs%20AWS%20Landing%20Zone_article-card_title
+
+    AWS Control Tower is an AWS managed service able to control all the resources
+    that are part of: AWS Organizations, Identity and Access Management, Guardrails,
+    Service Catalog and multi AWS accounts. Through the Service Catalog, you can
+    create as many accounts as you want and apply to them the rules based on the
+    requirements. Control Tower setup a Landing zone in easy and secure way.
+    Source: https://www.mobiquity.com/insights/setting-up-aws-landing-zone-with-aws-control-tower
+
+ we decided to build a managed solution for the landing zone when clients don't
+ want to own the code and the complexity or do it themselves, and that’s what
+ control tower is
+
+ create log archive
+ create security account - called audit
+ no shared services
+
+ account service machine is called account factory
+
+starts with 30 guardrails
+
+needs to be launched on new account
+no enabled organisations
+
+managed version of AWS Landing Zone
+
+manage SSO
+landing zone sets it up with active directory - SSO
+for now only support SSO
+
+for now does not create the shared services accounts
+
+Tower allows you to create a blueprint around checks.
+
+Tower creates an org for you
+created 2 organisation unit
+
+is a container to group account
+you can organise by team, env (dev/uat), any way you want
+
+- Core OU: accounts that control tower create
+- Custom OU
+
+Create Audit account and  Log archive
+
+centralises identity and access is managed for you
+AWS SSO create a directory to manage your user
+and provides federated access management
+all account you create will be federated with this one
+for all the one you want
+
+control tower will pre-create a lot of groups automatically
+
+audit write
+audit read
+service-catalog xxx
+
+preconfigured permission sets
+admin
+read only
+write
+
+then it establishes guardrails
+preconfigured governance rules
+curated AWS governance rules
+
+it comes with 2 behaviours
+
+guardrail setting (all accounts heredity it)
+
+- preventive - prevent configuration from drifting. prevent thorough enforcement.
+implemented using cloud formation and SCPs
+- detective - build using config rule - sns notification
+
+control tower will give you
+default or mandatory
+
+26 guardrails in Jun 2019
+
+IP address management - configurable
+
+
+
+
+
+
+
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=2t-VkWt0rKk][AWS re:Inforce 2019: Using AWS Control Tower to Govern Multi-Account AWS Environments]] 26 Jun 2019
+- [[https://www.youtube.com/watch?v=nNy5UjzejNc]] 26 Jun 2019

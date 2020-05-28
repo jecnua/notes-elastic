@@ -1,0 +1,119 @@
+AWS Landing Zone and Control Tower
+|| Last update: 27 May 2020
+
+* Intro
+
+** AWS Accounts
+
+Compartment for AWS resources.
+Access them with IAM users and roles.
+
+When use one or many?
+
+Group resources for categorisation or discovery
+Improve your security posture with a logical boundary
+Limit blast radius in case of unauthorised access
+more easily manager user access to different envs
+
+if team a can't support team b at 2am in the morning, use different account.
+
+** AWS Organization
+
+Service providing central governance and management across AWS accounts.
+
+features:
+
+- manage and define org accounts
+- control access and permission
+- Monitoring for compliance
+- share resources across account
+- centralise cost and billing
+
+AWS control tower.
+
+migrate from consolidated billing to xxx
+if you receive a single bill you are using organisation
+you can migrate your organisation to use advanced governance and management capabilities
+
+Account strategies in organisations:
+
+- Master account
+
+Account used to create an org (payer account)
+central management and governance hub
+
+Organisational units OU
+logically group AWS accounts
+
+Policy
+document describing controls to be a applied to a selected group of account
+
+you can first segment applications and workloads into aws accounts
+group accounts into OUs to simplify management
+create multiple OUs within a single organisation
+Nest OUs inside other OUs to form a hierarchical infrastructure
+Tag AWS accounts
+
+** capabilities
+
+- create new AWS accounts programmatically - console/cli/api
+- accounts created inside organisation
+- group accounts into OUs for management
+- centrally provision account via cloudformation stacksets
+- manage service quotas (limits) for new accounts (service quotas)
+
+/servicequotas/
+
+** SSO
+
+control access and permission
+with SSO
+
+- console and cli access with single sign on
+- enable service
+- connecting to identity store
+
+you can use an external or internal AD
+
+you can manage access from there
+
+you can define permissions based on membership in an organisation
+(aws:PrincipalOrgID condition key)
+
+you can use this filter in the condition of AWS IAM policies.
+mmm but is too invasive?
+
+*** SCP
+
+you can use service control policies to create fine-grained permissions guardrails
+across accounts. SCP supports resource and conditional elements (only in blacklist policies).
+
+SCP define the maximum available permission for IAM entities in an account.
+you can attach them to root/OU/or simple accounts.
+
+You can whitelist or blacklist, depends on which approach you want to take.
+
+They are evaluated in this order:
+
+- explicit deny
+- implicit deny
+- explicti allow
+
+When you enable it you already have an allow * in the organisation.
+
+You can also do something like, you can't do something outside this reason.
+
+centrally define critical resources and make them available to your logically
+isolated workloads in accounts.
+
+** RAM
+
+Create a name for resource share
+you can share license configuration???
+select which account you want to share it with
+
+
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=fxo67UeeN1A][AWS re:Inforce 2019: Managing Multi-Account AWS Environments Using AWS Organizations]] 26 Jun 2019

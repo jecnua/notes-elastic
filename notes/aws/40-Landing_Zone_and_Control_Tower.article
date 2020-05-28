@@ -1,13 +1,22 @@
-AWS Landing Zone and Control Tower
-|| Last update: 26 May 2020
+AWS Landing Zone and AWS Control Tower
+|| Last update: 27 May 2020
 
 * xxx
 
 - AWS SSO
 - Security HUB
--
+- Service catalog - central place for prepared resources to configure and provision
+- https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards.html
+- cloud custodian
+- SDLC tier
 
 Multi account environment based on best practices.
+
+- Isolation by SDLC tier
+- Administrative isolation
+- Limited visibility and discoverability of workload
+- Minimize blast radius
+- Strong isolation for auditing data
 
 * Intro
 
@@ -216,7 +225,9 @@ read only to everything to do audit, black glass scenario
     Source: https://aws.amazon.com/solutions/implementations/aws-landing-zone/
 
 account vending machine
-aws catalog product???
+it uses aws catalog product and lambda
+to define what each account should have
+
 
 aws catalog ui, can create new account
 it will automatically go though a pipeline and apply
@@ -270,7 +281,7 @@ Match the development lifecyle
 
 team shared services
 
->>>> They reccoment a QA and Staging for the landing zone.
+>>>> They reccomend a QA and Staging for the landing zone.
 
 Landing SNS topics
 policy deployments
@@ -279,8 +290,15 @@ policy deployments
 
 Enable governance at scale.
 
-Set up an AWS Landing zone, establish guardrails for governance, centralise indentity
+Set up an AWS Landing zone, establish guardrails for governance, centralise identity
 and ac cess, automate compliant account provisioning.
+
+It will create (from demo)
+
+- 2 OU, one for shared accounts and one for account provisioned for users
+- 3 shared accounts: master account and isolated accounts for log archive and security audit
+- A native cloud directory with preconfigured groups and sso
+- 17 preventive guardrails (Jun 2019) to enforce policies and 2 detective guardrails to detect configuration vuolations
 
     As of time of writing, AWS Control Tower doesn’t support existing setups for
     AWS Organization or AWS SSO, although official FAQ claims it will be added in
@@ -358,23 +376,149 @@ guardrail setting (all accounts heredity it)
 
 - preventive - prevent configuration from drifting. prevent thorough enforcement.
 implemented using cloud formation and SCPs
-- detective - build using config rule - sns notification
+- detective - build using config rule - SNS notification
 
 control tower will give you
 default or mandatory
 
-26 guardrails in Jun 2019
-
 IP address management - configurable
 
 
+network factory???
+
+via this users can configure and provision AWS account and resources without
+needing full privileges to AWS services (AWS Ec2, dynamo, etc)
+
+on going governance.
+
+>>> guardrails are applied at the OU level! any account under that OU
+
+guardrail is a stack set
+in the background
+aws SSO log into the account and see the CF template
+
+there are 6 base signle sign on access
+and ~10groups
+
+* Terraform implementation
+
+- providers
+- components
+- tfvars (they think configurations to be immutable)
+
+they intentionally diddn't want to call them modules
+but components
+1 module provider === 1 aws accounts + region
+
+landing zone provider have a default which is the master account
+need to be there and needs account id and region
+
+then there are (the key names are used later into the TVAR files)
+
+core_account_security
+core_account_logging
+core_account_*
+
+each of them needs a different account number
+
+what are the components
+
+they want only one resource per component
+immutable terraform configuration
+only change in the variable
+
+landing_zone_components
+  landing_zone_vpc
+  landing_zone_subnet
+  [...]
+
+You can have one or more tfvars file
+
+inside a tfvar you can define the provider
+in the module you define all the providers you can use inside
+the component
+and inside you choose one
+
+they have baselines of each vpc
+
+--> constraints
+
+default_provider
+provider key name _provider
+need to be this way
+
+<landing_zone_vpc>_resource
+*_resource is the conventions
+
+then config_0
+you can have multiple vpc
+they iterate through all the variables
+the count make sure it goes through all of them and picks it up
+
+inside there are all the variables
+
+--
+
+they are iterating through providers
+since natively you can't iterate though provider
+they are going around it - hack
+when you define the component you run it only once
+but it will generate once for each tfvar for the component????
 
 
 
+if you do changes in the tfvars
+the module won't be able to pick it up
+and a lot of shell calls
 
+they also a build in house automation tool
+functionality 1
+allow to iterate for each provider
+instead of write the same resource for the same provider
+functionality 2
+pick up tfvars not only from local but also s3
+functionality 3
+make connection between components
+functionality 4
+run all in parallel. like 8 threads
+functionality 5
+when it picks up an error from s3 will retry that step
+also terraform plan is retried
+
+for example crete subnets
+but you need the VPC
+here since you consider them immutable and independent
+they need to say to the tools
+create the VPC first and subnet second
+
+what to do with the existing one?
+like import?
+
+the cloudformation is not build in a microservice way
+so is very difficult to remove SSO
+for example
+but yes is gets the functionality CF provide and is written
+in
+
+this module for landing zone in terraform is very opaque in
+how it works. I am not sure there are alternatives
+[[https://youtu.be/KIoc-Lv554I?t=234]]
+
+to see the demo
+[[https://youtu.be/KIoc-Lv554I?t=980]]
+
+* Terraform enterprise TLZ
+
+- [[https://www.hashicorp.com/resources/aws-terraform-landing-zone-tlz-accelerator/]]
+
+AWS TLZ
+
+based on terraform enterprise
+they are looking to support terraform cloud
 
 
 * Re/Sources
 
+- [[https://www.youtube.com/watch?v=KIoc-Lv554I][Hands-On Terraform Module for AWS Landing Zone]] 9 Mar 2020
 - [[https://www.youtube.com/watch?v=2t-VkWt0rKk][AWS re:Inforce 2019: Using AWS Control Tower to Govern Multi-Account AWS Environments]] 26 Jun 2019
 - [[https://www.youtube.com/watch?v=nNy5UjzejNc]] 26 Jun 2019

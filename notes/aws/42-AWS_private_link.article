@@ -1,0 +1,332 @@
+AWS Private Link
+|| Last update: 2 Jun 2020
+
+* more
+
+- hyperplane
+
+* Intro
+
+- [[https://d1.awsstatic.com/whitepapers/aws-privatelink.pdf]]
+
+    Prior to the availability of AWS PrivateLink, services residing in a single
+    Amazon VPC were connected to multiple Amazon VPCs either (1) through public
+    IP addresses using each VPC’s internet gateway or (2) by private IP addresses
+    using VPC peering. With AWS PrivateLink, service connectivity over Transmission
+    Control Protocol (TCP) can be established from the service provider’s VPC to
+    the service consumers’ VPCs in a secure and scalable manner.
+    [...]
+    A Transit VPC connects multiple Amazon Virtual Private Clouds that might be
+    geographically disparate or running in separate AWS accounts, to a common
+    Amazon VPC that serves as a global network transit center. This network
+    topology simplifies network management and minimizes the number of connections
+    that you need to set up and manage. It is implemented virtually and does not
+    require any physical network gear or a physical presence in a colocation
+    transit hub.
+    Source: https://d1.awsstatic.com/whitepapers/aws-privatelink.pdf
+
+Private connectivity between VPC (no public IP, compliance or not)
+Access AWS services through private IP addresses
+Remove the needs for an IGW
+
+Bringing a service in a vpc
+
+provder vpc
+consumer vpc
+
+you need an NLB in the provider VPC
+called vpc endpoint (vpce)
+a vpce is represented by a collection of ENI
+
+software as a service
+
+service specific link between a consure VPC and provider VPC
+comprised by one or more ENI in the consumer VPC
+dns name at regional or zonal level
+
+NLB as a service frontend in the provider VPC
+
+Users *hyperplane* to link VPCE to NLB
+
+no need for nat, vpn, proxy devices
+can operate across vpc that have overlapping IPs spaces
+
+works with 3 type of services:
+- AWS services
+- customer hosted internal services
+- 3rd party services
+
+there is no way for the service vpc to get back to the consumer vpc
+
+You could run different services
+on idifferent ports
+by using target groups
+
+20 base limits that can be increases
+
+network load balancer can use
+IP target groups
+
+transit gateway can do layer 3 routing
+
+
+    without transit vpc
+    you can use a route53 resolver in this vpc
+    hyperdns??? do dns resolution?
+    outbound vpc endpoint. .2 dns resolver????
+    before you needed bind9
+    unbound?
+
+It can be used to allow to access a service via multi region
+you do inter region peering and then private link.
+
+pricate link cost is GB processed, number of ENI and cross zone data transfer, NLB
+private link per se costs no money
+
+ENI based model not like the peering
+also allow loose coupling
+no informations on the actual structure
+
+Greenfield
+- loose coupling - private link as a glue
+- micro segmentation/micro-services
+
+service provider
+service consumer
+
+extending the nlb in another VPC
+
+there are many consumptiob model
+
+- AWS service - private link allow to use aws services internally
+- SaaS or endpoint services
+
+public dns name
+with internal IP (you can search outside)
+they use it for healthcheck
+if you wasn you can use one single eni but not a good idea
+
+you can create a private hosted zone now for it ????
+
+you need cross zone load balancer on the nlb
+or make sure you have servers in each AZ
+but then you won't have HA!
+
+** Endpoint Policies
+
+for example for api gateway
+you can for example say
+you can only call this two apis
+
+interesting
+and you can also further lock into action
+
+** Sg
+
+you can add a sg to a ENI
+
+you can control traffic control in
+if you don't chose anything is just the default
+
+** Tagging
+
+You can now tag the endpoints
+
+you can now apply policies and security wrapping
+to avoid devs to touch it
+
+
+
+* VPC endpoints
+
+A VPC endpoint enables customers to privately connect to supported AWS services and
+VPC endpoint services powered by AWS PrivateLink. Amazon VPC instances do not
+require public IP addresses to communicate with resources of the service. Traffic
+between an Amazon VPC and a service does not leave the Amazon network.
+VPC endpoints are virtual devices. They are horizontally scaled, redundant, and highly
+available Amazon VPC components that allow communication between instances in an
+Amazon VPC and services without imposing availability risks or bandwidth constraints
+on network traffic. There are two types of VPC endpoints: (1) interface endpoints and
+(2) gateway endpoints.
+Source: https://d1.awsstatic.com/whitepapers/aws-privatelink.pdf
+
+VPC endpoint is an entity
+but is a collection of ENI (1 or more/max 1 for AZ)
+at least for HA and no SPOF
+
+Out of box each ENI is 10Gbit and more if you need (and ask)
+
+** Interface endpoint
+
+List of services that supports it:
+
+- [[https://docs.aws.amazon.com/vpc/latest/userguide/vpc-endpoints.html]]
+
+An interface endpoint is a collection of one or more elastic network interfaces with a
+private IP address that serves as an entry point for traffic destined to a supported
+service.
+
+** Gateway endpoint
+
+A gateway endpoint targets specific IP routes in an Amazon VPC route table, in
+the form of a prefix-list, used for traffic destined to Amazon DynamoDB or Amazon
+Simple Storage Service (Amazon S3). Gateway endpoints do not enable AWS
+PrivateLink.
+
+https://docs.aws.amazon.com/vpc/latest/userguide/vpce-gateway.html
+
+* How it works
+
+** DNS side
+
+you can enable private dns
+for endpoint
+enabled by default
+
+it is round robin
+if you query DNS again it changes
+each ENI have also a DNS name
+if you want to use the same one in your zone
+
+private hosted zone??? for it???
+
+** ??
+
+AWS PrivateLink uses Network Load Balancers to connect interface endpoints to
+services. A Network Load Balancer functions at the network transport layer (layer 4)
+and can handle millions of requests per second. In the case of AWS PrivateLink,
+it is represented inside the consumer Amazon VPC as an endpoint network interface.
+
+Span multiple AZs
+
+It can be used via
+
+When an interface endpoint is created, endpoint-specific Domain Name System (DNS)
+hostnames are generated that can be used to communicate with the service. After
+creating the endpoint
+Customers generate an endpoint-specific DNS hostname which includes all zonal DNS
+hostnames generated for the interface endpoint.
+vpce-0fe5b17a0707d6abc-29p5708s.ec2.us-east1.vpce.amazonaws.comCustomers generate
+a zonal specific DNS hostname for each Availability Zone in which
+the endpoint is available
+vpce-0fe5b17a0707d6abc-29p5708s-us-east-1a.ec2.us-east1.vpce.amazonaws.com
+If enabled, customers can use a private DNS hostname to alias the automatically-created
+zonal-specific or regional-specific DNS hostnames into a friendly hostname
+
+Traditionally, workloads inside Amazon VPCs use VPC peering to access the common
+services in the Shared Services VPC. Customers can implement VPC peering
+effectively, however, there are caveats. VPC peering allows instances from one
+Amazon VPC to talk to any instance in the peered VPC. Customers are responsible for
+implementing fine grained network access controls to ensure that only the specific
+resources intended to be consumed from within the Shared Services VPC are accessible
+from the peered VPCs. In some cases, a customer running at scale can have hundreds
+of Amazon VPCs, and VPC peering has a limit of 125 peering connections to a single
+Amazon VPC.
+
+* best practices
+
+** 1
+
+zonality of private link (like network NLB - hyperplane)
+use original DNS name and do round robin between ENI
+run the NLB is all the zone you need it
+carefully check if to enable cross zone load balancer
+
+traffic will never go trough different availability zone, so if you don't
+round robin the ENI on consumer side you may suffer from AZ down
+
+the zonality means each ENI will only send to the NLB in THAT zone
+you can round robin only at ENIU side (client) or service one (via NLB)
+but not between ENI and NLB
+
+You can't deploy a ENI in a zone where the NLB is not :D
+
+** 2
+
+whitelist principle
+you need to whitelist accounts
+they can find your service ???
+then you need to accept it
+you can create the auto-accept
+
+** limits of vpc peering
+
+peering limits
+route table spral
+sg sprawl
+nacl sprawl
+
+touching peering configuration is dangerous
+
+you risk to expose everything in the vpc peering way
+nacl and sg is the only protection
+
+* Hyperplane
+
+is a multitenant env
+
+NAT gatewat and NLB
+take flow and scale them out
+performance and availability
+
+fleet of servers where you direct traffic to
+scale and
+
+hyperplane makes transaction deicsion and share state in tens of microservice
+all within an availability zone
+it "shuffle sharding"
+nodes are choose at random and there is a lot of spare capacity
+
+theoretically is very low prob that one customer will use the same node
+of another one
+
+* PrivateLink endpoint and Route53
+
+- [[https://aws.amazon.com/blogs/networking-and-content-delivery/integrating-aws-transit-gateway-with-aws-privatelink-and-amazon-route-53-resolver/]]
+
+    Since the DNS entries for the VPC endpoint are public, you just need
+    layer-three connectivity between a VPC and its destination using either VPC
+    peering, transit gateway, or a VPN.
+    [...]
+    [...] you can enable Private DNS. When enabled, the setting creates an AWS managed
+    Route 53 private hosted zone (PHZ) for you. The managed PHZ works great for
+    resolving the DNS name within a VPC however, it does not work outside of the
+    VPC. This is where PHZ sharing and Route 53 Resolver come into play to help
+    us get unified name resolution for shared VPC endpoints.
+    Source: https://aws.amazon.com/blogs/networking-and-content-delivery/integrating-aws-transit-gateway-with-aws-privatelink-and-amazon-route-53-resolver/
+
+
+
+the route53 resolver (.2 resolver old name)
+is a recurvice dns server
++2 IPs from VPC CIDR
+build in redundancy
+
+provides the ability to give the same view you have in the cloud to prem
+or the opposite
+using conditional forwarder for private hosted zone
+
+you can create an outbound route53 resolver endpoint
+
+named.conf in linux ????
+
+the private hosted zone is hosted outside the customer vpc
+so they cannot extend it to another vpc
+
+you can disable the public dns
+create a hosted zone (private) in route53
+you can put the service name in
+and you can add vpc (also you can put different vpc in there)
+from there you can create a A record
+and you can use an alias
+to go around the limit with the apex record issue of not having a name
+
+* xx
+
+you pay by ENI per hour
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=abOFqytVqBU][AWS re:Invent 2019: AWS PrivateLink deployments: DNS mechanisms for routing & resiliency]] 9 Dec 2019
+- [[https://aws.amazon.com/blogs/networking-and-content-delivery/integrating-aws-transit-gateway-with-aws-privatelink-and-amazon-route-53-resolver/]] 24 Jul 2019
+- [[https://www.youtube.com/watch?v=85DbVGLXw3Y][AWS re:Invent 2018: Best Practices for AWS PrivateLink]] 29 Nov 2018

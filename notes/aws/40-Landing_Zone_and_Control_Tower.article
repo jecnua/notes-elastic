@@ -30,7 +30,6 @@ They implemented as a managed services.
 
 Guardrails not blockers. Auditable.
 
-
 AWS Landing Zone solution was launched in June 2018, while AWS Control Tower
 was announced in November 2018 and launched in June 2019.
 
@@ -90,7 +89,7 @@ alert on logging
 SECURITY ACCOUNT
 cross account roles (audit)
 shutdown resources
-send segurity logs to logging account
+send security logs to logging account
 owned by infosec or centralised security
 
 SHARED SERVICES
@@ -515,6 +514,18 @@ AWS TLZ
 
 based on terraform enterprise
 they are looking to support terraform cloud
+
+
+* Alternatives
+
+- [[https://github.com/MitocGroup/terraform-aws-landing-zone]] OS but uses a tool they created that yu need to pay by account - Not good
+- gruntworks.io module (paid)
+
+** Gruntwork Landing Zone
+
+- [[https://gruntwork.io/guides/foundations/how-to-configure-production-grade-aws-account-structure/]]
+
+
 
 
 * Re/Sources

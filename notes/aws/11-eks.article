@@ -1,5 +1,5 @@
 EKS
-|| Last update: 9 May 2019
+|| Last update: 5 Jun 2020
 
 * Intro
 
@@ -39,9 +39,12 @@ They released a quickstart and these are the links:
 
 EKS private endpoints can be resolved from inside the VPC and peered VPC.
 
+* CNI
+
 ** VPC CNI
 
-- [[https://aws.amazon.com/blogs/opensource/vpc-cni-plugin-v1-1-available/]]
+- [[https://docs.aws.amazon.com/eks/latest/userguide/pod-networking.html]]
+- [[https://docs.aws.amazon.com/eks/latest/userguide/cni-upgrades.html]]
 
 VPC CIDR choice is:
 
@@ -80,6 +83,32 @@ Beware in some tutorial you may find the old link to the plugin, but this one
 doesn't work:
 
     go get -u -v github.com/heptio/authenticator/cmd/heptio-authenticator-aws
+
+** Alternative CNI
+
+- [[https://docs.aws.amazon.com/eks/latest/userguide/alternate-cni-plugins.html]]
+
+You could use other VPC CNI in EKS via some "hacks". You can install
+[[https://github.com/cni-genie/CNI-Genie/][cni-genie]] and multiple cni:
+
+- [[https://www.shogan.co.uk/kubernetes/definitive-guide-to-using-weave-net-cni-on-aws-eks-kubernetes/]] Sept 2019
+
+... or use calico for you _nodes_ only:
+
+- [[https://docs.projectcalico.org/getting-started/kubernetes/managed-public-cloud/eks]]
+
+However there is the problem that the masters are on a different network
+and can't speak with the application directly:
+
+    In theory, you could replace the CNI on worker nodes, but is that something
+    that is practically useful (when it can't be done on master nodes in EKS) and
+    supported? How would the kube-apiserver, for example, communicate to the
+    metrics-server if it is not connected to the Calico network?
+    [...]
+    You are correct that the API server is only aware of the VPC network, and
+    not any overlays. One solution to the metrics-server or other webhooks is to
+    use host-networking mode so the API server can have connectivity.
+    Source: https://news.ycombinator.com/item?id=20683451
 
 * Usage
 
@@ -240,3 +269,7 @@ Plus will need time to spin up the nodes:
     Source: https://aws.amazon.com/blogs/aws/amazon-eks-on-aws-fargate-now-generally-available/
 
 You also pay the control plane.
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=7LRtytR6ZbA][Kubernetes pod networking on AWS]] 10 Oct 2019

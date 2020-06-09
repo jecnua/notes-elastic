@@ -1,4 +1,4 @@
-AWS Private Link
+AWS Private Link (TO BE CLEANED)
 || Last update: 2 Jun 2020
 
 * more
@@ -324,6 +324,21 @@ to go around the limit with the apex record issue of not having a name
 * xx
 
 you pay by ENI per hour
+
+* ff
+
+- [[https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html]]
+
+Source IP Preservation
+
+If you specify targets using an instance ID, the source IP addresses of the clients are preserved and provided to your applications.
+
+If you specify targets by IP address, the source IP addresses are the private IP addresses of the load balancer nodes. If you need the IP addresses of the clients, enable Proxy Protocol and get the client IP addresses from the Proxy Protocol header.
+
+If you have micro services on instances registered with a Network Load Balancer, you cannot use the load balancer to provide communication between them unless the load balancer is internet-facing or the instances are registered by IP address. For more information, see Connections time out for requests from a target to its load balancer.
+
+https://medium.com/tenable-techblog/lessons-from-aws-nlb-timeouts-5028a8f65dda 
+
 
 * Re/Sources
 

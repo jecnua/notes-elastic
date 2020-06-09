@@ -1,0 +1,29 @@
+AWS Guardduty (TO BE CLEANED)
+|| Last update: 8 Jun 2020
+
+* Intro
+
+- [[https://docs.aws.amazon.com/guardduty/latest/ug/guardduty-ug.pdf]]
+
+GuardDuty is a regional service.
+
+    Amazon GuardDuty is a continuous security monitoring service that analyzes and processes thefollowing data sources: VPC Flow Logs, AWS CloudTrail event logs, and DNS logs.
+    [...]
+    include issues like escalations of privileges, uses of exposed credentials, or communication with maliciousIP addresses, URLs, or domains
+    To detect unauthorized and unexpected activity in your AWS environment, GuardDuty analyzes andprocesses data from AWS CloudTrail event logs, VPC Flow Logs, and DNS logs. While in transit from thesedata sources to GuardDuty, all of the log data is encrypted. GuardDuty extracts various fields from theselogs for profiling and anomaly detection, and then discards the logs.
+
+* Suppression rule
+
+    Suppression rules allow you to create very specific combinations of attributes to suppress findings.
+    [...]
+    his section describes the permissions that the GuardDuty service itself requires to function and performoperations on your behalf, such as generating findings.
+
+Amazon GuardDuty Amazon GuardDuty User GuideEnable Amazon GuardDutySetting Up GuardDutyYou must have an AWS account in order to enable Amazon GuardDuty. If you don't have an account, usethe following procedure to create one.To sign up for AWS1.Open https://portal.aws.amazon.com/billing/signup.2.Follow the online instructions.Part of the sign-up procedure involves receiving a phone call and entering a verification code on thephone keypad.Topics•Enable Amazon GuardDuty (p. 21)•Amazon GuardDuty Free Trial (p. 23)Enable Amazon GuardDutyTo use GuardDuty, you must first enable it. When GuardDuty is enabled a GuardDuty detector is createdin that region
+
+    To manage multiple accounts in Amazon GuardDuty, you must choose a single AWS account to be themaster account for GuardDuty. You can then associate other AWS accounts with the master account asmember accounts. There are two ways to associate accounts with a GuardDuty master account: eitherthrough an AWS Organizations organization that both accounts are members of, or by sending aninvitation through GuardDuty.GuardDuty recommends using the AWS Organizations method.
+    [...]
+    If the account that you want to specify as the GuardDuty master account is part of an organization inAWS Organizations, then you can specify that account as the organization's delegated administrator forGuardDuty. The account that is registered as the delegated administrator automatically becomes theGuardDuty master account.
+    You can use the master account to enable GuardDuty for any account in the organization and then addthat account as a member account.
+    [...]
+    When you use GuardDuty with an AWS Organizations organization, you designate an account to be theGuardDuty delegated administrator for the organization. Only the organization master account candesignate GuardDuty delegated administrators.
+    The Organization master can be the delegated administrator, but this is not recommendedbased on AWS Security best practices following the principle of least of privilege.

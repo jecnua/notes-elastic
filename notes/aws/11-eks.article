@@ -39,6 +39,18 @@ They released a quickstart and these are the links:
 
 EKS private endpoints can be resolved from inside the VPC and peered VPC.
 
+** Managed worker nodes
+
+- [[https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html]]
+
+    With Amazon EKS managed node groups, you don’t need to separately provision
+    or register the Amazon EC2 instances that provide compute capacity to run
+    your Kubernetes applications. You can create, update, or terminate nodes for
+    your cluster with a single operation. Nodes run using the latest Amazon
+    EKS-optimized AMIs in your AWS account while node updates and terminations
+    gracefully drain nodes to ensure that your applications stay available.
+    Source: https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html
+
 * CNI
 
 ** VPC CNI

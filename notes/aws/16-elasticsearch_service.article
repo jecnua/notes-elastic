@@ -1,11 +1,13 @@
 Amazon Elasticsearch Service
-|| Last update: 17 Jul 2019
+|| Last update: 9 Jun 2020
 
-* Intro
+* Ultraworm nodes
 
-It allows external (internet access and internal).
-If you want it internal you need to define security groups and subnets.
-Enables you to deploy your instances across three Availability Zones (AZs).
+- [[https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/ultrawarm.html]]
+
+AWS created a new set of nodes, called ultrawarm, that are basically s3 backed.
+When you migrate data to that set of nodes you can afford to have only one shard.
+The nodes will manage the calls to s3 and caching.
 
 * Open Distro for Elasticsearch
 
@@ -22,7 +24,7 @@ AWS started it's own distro.
 
 - [[https://www.terraform.io/docs/providers/aws/r/elasticsearch_domain.html]]
 
-Spinning 1 up takes ~10 minutes.
+Spinning a cluster up takes ~10 minutes.
 
 * Access control
 
@@ -34,7 +36,7 @@ Spinning 1 up takes ~10 minutes.
     security group to control IP-based access.
         status code: 409, request id: da98b8f0-cbd3-11e8-b8d1-015806106f26
 
-If you use a SG don't use the policy.
+If you use a SG don't use this policy.
 
 * Server size
 

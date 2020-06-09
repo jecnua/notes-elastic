@@ -1,7 +1,48 @@
 AWS Landing Zone and AWS Control Tower (TO BE CLEANED)
 || Last update: 27 May 2020
 
-* xxx
+* Important notes
+
+*Error*: ACCOUNT_NUMBER_LIMIT_EXCEEDED
+
+The LZ "completely automatic" solution has a default limit of 2 accounts.
+There is a complex and manual method of enrollment which is totally detached
+from the rest of the process.
+No documentation about the process itself anywhere in their docs,
+and the support ticket itself to raise the limit is not under the limits section.
+
+    This is a sales team-owned process, and therefore I cannot resolve it for you.
+    According to the internal policy, the request must be directed to your Sales
+    rep for further assistance, I have fill out the sales contact form, a Sales
+    rep will reach out to the customer in about 72 hours.
+    Source: Support tickets
+
+*Issue*: Deleting accounts
+
+If you create an account by error and want to delete it, you would imagine
+this is automated, so it can be destroyed and recreated (under the ORG)
+HOWEVER
+Apparently you have to sign in into the account MANUALLY once at least before
+deleting it
+OR
+You need to sign in via a IAM role that it’s automatically created for you from
+the org.
+[[https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html#orgs_manage_accounts_access-cross-account-role]]
+
+    By default, if you create a member account as part of your organization,
+    AWS automatically creates a role in the account that grants administrator
+    permissions to delegated IAM users in the master account. By default, that
+    role is named OrganizationAccountAccessRole.
+    [...]
+    However, member accounts that you invite to join your organization do not
+    automatically get an administrator role created. You have to do this
+    manually, as shown in the following procedure. This essentially duplicates
+    the role automatically set up for created accounts. We recommend that you
+    use the same name, OrganizationAccountAccessRole, for your manually created
+    roles for consistency and ease of remembering.
+    Source: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html#orgs_manage_accounts_access-cross-account-role
+
+* To check
 
 - AWS SSO
 - Security HUB

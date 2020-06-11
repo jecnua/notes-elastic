@@ -1,97 +1,62 @@
-IAM strategy (this article needs to be cleaned)
-|| Last update: 18 Sep 2018
+IAM strategy - (this article needs to be cleaned)
+|| Last update: 11 Jun 2020
+
+* SAML Federated access to AWS from GSuite
+
+- single-sign on and more secure management of users
+
+Once you have that in place, to authenticate you can use a tool like
+aws-google-auth:
+
+- [[https://github.com/cevoaustralia/aws-google-auth/]]
+
+You will need some information like IDP_ID and SP_ID. You also need to create
+a profile beforehand on ~/.aws/credentials.
+The you use it this way:
+
+    aws-google-auth \
+      --idp-id xxx \
+      --sp-id 12345 \
+      --duration 14400 \
+      --region eu-west-1 \
+      --profile my-profile
+
+*10 JUN 2020*: There is a bug at the moment with the tool. If you install it via
+pip you won’t be able to login.
+
+- [[https://github.com/cevoaustralia/aws-google-auth/issues/179#issuecomment-641439606]]
+
+Until the fix is merged please install the tool from the repository.
+
+    $ git clone https://github.com/brunodasilvalenga/aws-google-auth.git
+    $ cd aws-google-auth
+    $ git checkout fix-google-captcha
+    $ pip install -e . --user
+
+* TO BE CLEANED AFTER THIS POINT
+
+Best practices is at the moment to have users and roles in a security account
+and once authenticated there assume role in another.
+
+This allows to have a single place to manage users.
 
 * Access via Identity Federation
 
 - [[https://aws.amazon.com/blogs/aws/new-for-identity-federation-use-employee-attributes-for-access-control-in-aws/]]
 
-* TDB
-
-Private user account
-
-it's not just a deployment
-who has accent to what
-who have access to do significant damage
-
-user in prod account
-and assume account in dev
-
-* have a single place to manage the user
-
-On deployment one of the deploy pipeline
-the node have a limited set of permission
-when you need to do something more
-it needs to get more permission
-
-then there is another one that have access to everything
-
-* fff
-
-one account for each developer
-is not the right forward
-
-- How to reduce blast radius?
-
-federated sso account?
-each have their own aws user
-
-* user management
-
-- each dev an iam account
-- link to AD
-
-segregate via team?
-
-instead of binding
-they were just creating roles for servers
-they are not using their personal IAM roles
-
-every day
-you create another use in the dev account
-and use that key
-
-access free for all
 you cannot have a free open system and talk about security
 
-do we want that any xxx
-working around something
-
-*
-
-policy from day one
+* Policy from day one
 
 use federated access
-to look on access
-every machine can login via ssh on a machine via AD
+every machine can login via ssh on a machine via AWS SSM
 
-everyone is using federtated access
+everyone is using federated access
 
-using saml
+using SAML
 or
-amazon single signe on
+amazon single sign on
 
-use sts
-
-answers page
-aws multi account security stragegy
-
-aws secondary AD in the cloud
-
-federated how does it work
-
-aws config and insoector
-to write policy to validate
-before the rest
-like unit tests
-
-cloud trail?
-
-everything should be done via pipeline
--> when everything goes down
-looking down on what how deployed
-
-==
-
-inspect
+AWS Inspect
 you can define what people can do
 and if it's blocked you can review the rule

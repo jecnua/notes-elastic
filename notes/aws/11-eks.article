@@ -3,7 +3,7 @@ EKS
 
 * Intro
 
-EKS is AWS managed k8s. It has some integrations:
+EKS is AWS managed k8s service. It has some integrations:
 
 - Load balancing with ELB
 - ECR for storing images
@@ -13,13 +13,7 @@ For Ingress you can use nginx:
 
 - [[kubernetes.github.io/ingress-nginx/deploy/#aws]]
 
-Updates are still problematic for nodes.
-
-- You will need to update DNS plugin and worker nodes
-
 The control plane on AWS is completely opaque.
-
-NOTE: Azure k8s managed service does not support calico and network plugin is still preview
 
 * Quickstart
 
@@ -62,7 +56,7 @@ VPC CIDR choice is:
 
 - [[https://aws.amazon.com/about-aws/whats-new/2019/05/amazon-eks-adds-support-for-public-ip-addresses-within-cluster-v/][no longer]]
 
-restricted to [[https://en.wikipedia.org/wiki/Private_network][RFC1918]] only.
+Restricted to [[https://en.wikipedia.org/wiki/Private_network][RFC1918]] only.
 Before you used to receive something like this:
 
     * aws_eks_cluster.demo: error creating EKS Cluster (terraform-eks-demo):
@@ -80,7 +74,7 @@ The CIDR blocks supported by Amazon VPC are
 
 * Deploy time
 
-It takes 10 minutes to be deployed.
+It takes ~12 minutes to be deployed.
 
 * Authentication
 
@@ -148,9 +142,9 @@ the normal EKS, so they need to be added after.
 
 Have subnets tagged correctly.Subnets tagged with:
 
-    kubernetes.io/cluster/clusterName: owned
+    kubernetes.io/cluster/<clusterName>: owned
     or
-    kubernetes.io/cluster/clusterName: shared
+    kubernetes.io/cluster/<clusterName>: shared
 
 where clusterName is what you specified in controller flags via:
 
@@ -161,11 +155,12 @@ external subnet. Tags need to have value 1 and not "true".
 
 - [[https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/controller/config/#subnet-auto-discovery]]
 
-Tag the subnets.
-
 You need to add kubernetes.io/role/elb tag onto public subnets instead of
 kubernetes.io/role/internal-elb to let controller auto-discovery it for
 internet-facing ingresses.
+
+    kubernetes.io/role/internal-elb 1
+    kubernetes.io/role/elb          1
 
 To enable an ALB ingress on EKS you need to download and use the templates
 for the ingress-controller and RBAC.
@@ -174,7 +169,6 @@ for the ingress-controller and RBAC.
 
 NOTE: You will need to change the cluster name inside the ingress-controller
 template.
-
 
 QUESTIONS:
 
@@ -224,10 +218,9 @@ Control plane logs are shipped to CWLogs since Apr 2019.
 
 * Costs
 
-EKS is .20/hour.
-150 dollars per cluster per month.
+~75 dollars per cluster per month.
 
-* Lack of advanced LB support
+* Lack of advanced LB support - NEED TO CHECK
 
 It doesn't support ALB/NLB yet.
 

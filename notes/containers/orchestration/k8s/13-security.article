@@ -1,7 +1,0 @@
-k8s security
-|| Last update: 13 Feb 2019
-
-* Isolate workload
-
-- [[https://medium.com/@chrismessiah/docker-and-kubernetes-in-high-security-environments-d851645e8b99]]
-- [[http://kth.diva-portal.org/smash/record.jsf?pid=diva2%3A1231856&dswid=-1687]] and [[http://kth.diva-portal.org/smash/get/diva2:1231856/FULLTEXT01.pdf]]

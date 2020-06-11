@@ -1436,9 +1436,10 @@ HPA can scale Deployments, ReplicSets or ReplicationControllers by default at
 50% CPU usage.
 
 - Kubelet checks every 30s
-- Heapster retrieve every minute
-- HPA checks heapster every 30s
+- HPA checks every 30s (to check)
 - After any action HPA waits 180s before any further action
+
+NOTE: Heapster is deprecated
 
 The autoscaler do not collect the metrics, just act on them.
 It can scale on two policies:

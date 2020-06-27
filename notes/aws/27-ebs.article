@@ -30,3 +30,73 @@ zero read write IO, with pending IO in the queue.
 
 Snapshots taken from encrypted volumes are always encrypted.
 Volumes that are created from encrypted snapshots are also always encrypted.
+
+* Formatting and Partitions
+
+Unfortunately is not possible to just extend an EBS volume to more than 2TB with
+MBR (is a hard limit), and instead GPT (GUID Partition Table) needs to be used.
+
+    GPT has some advantages, including support for larger disks (MBR tops out at
+    2TiB), partition names, no confusing or limiting primary/extended/logical
+    partition distinctions, on-disk backups of partition table data, and CRC
+    values to help spot corrupt partition tables.
+    Source: https://ubuntuforums.org/showthread.php?t=1457901
+
+When using new EBS:
+
+  GPT + xfs + mounted with noatime
+
+is a standard database partition setup, especially if need to deal with lot of
+small(ish) files and dirs.
+
+Normally if you format an EBS with xfs (without GPT), this is what you see
+mounted in the system (-T will show the filesystem):
+
+    $ df -hT
+    [...]
+    /dev/nvme1n1   xfs        10G  105M  9.9G   2% /var/lib/cassandra
+
+And when you try to see the device information:
+
+    ubuntu@cassandra-1:~$ sudo parted /dev/nvme1n1 print
+    Model: Amazon Elastic Block Store (nvme)
+    Disk /dev/nvme1n1: 10.7GB
+    Sector size (logical/physical): 512B/512B
+    Partition Table: loop
+    Disk Flags:
+
+    Number  Start  End     Size    File system  Flags
+     1      0.00B  10.7GB  10.7GB  xfs
+
+Notice the partition table! Defined as *loop*.
+What needs to be done is first formatting the EBS with GPT.
+You can do it with *parted*:
+
+    $ sudo parted /dev/nvme1n1 --script mklabel gpt
+    $ sudo parted -a optimal /dev/nvme1n1 mkpart primary 0% 100%
+    $ sudo parted /dev/nvme2n1 print
+    Model: Amazon Elastic Block Store (nvme)
+    Disk /dev/nvme2n1: 8590MB
+    Sector size (logical/physical): 512B/512B
+    Partition Table: gpt
+    Disk Flags:
+
+    Number  Start   End     Size    File system  Name     Flags
+     1      17.4kB  8590MB  8590MB               primary
+
+Now as it can be seen the partition table is GPT and a new partition taking ALL
+the available space as been created.
+
+Finally you can format the partition you created by using the "p1" device:
+
+    $ mkfs.xfs -L data /dev/nvme1n1p1 -f
+
+NOTE: If you problems mounting the volume after, you can debug mount issue with
+strace:
+
+    strace mount /dev/nvme2n1 /var/log/cassandra
+
+You can at any moment find the UUID of the partition (you will need it to mount)
+with the following command:
+
+    sudo lsblk -o NAME,FSTYPE,LABEL,UUID,MOUNTPOINT

@@ -5,10 +5,12 @@ VPN
 
 Openswan/Strongswan to build the VPN solution.
 
-Both OpenSwan and StrongSwan are forks for continued development after FreeS/WAN project closed up shop.
-
+Both OpenSwan and StrongSwan are forks for continued development after FreeS/WAN
+project closed up shop.
 
 Red Hat 6 has moved away from IPSec-Tools and uses OpenSwan now.
 Looks like Ubuntu is moving from IPsec-Tools to StrongSwan in 14.04
 
 which one?
+
+amazon vpn now supports SAML

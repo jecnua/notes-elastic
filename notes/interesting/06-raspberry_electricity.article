@@ -1,0 +1,101 @@
+RaspberryPi 4B Clusters
+||
+
+* Intro
+
+These are information I gathered to build my RaspberryPi cluster at home while
+learning a little about how to aliment them.
+
+* Generic ampere and volt
+
+The ampere can change depending on how many endpoints you power (like usb):
+
+    # This example is for a smaller PI (40 of them)
+    So at max load the cluster will draw 40*1.3A = 52A. The input Voltage for
+    each Pi is 5V. So total input required is 5*1.3A = 260W.
+
+VOLT is the force
+AMPERE is the amount
+WATTS is the power rating USED
+
+Watts = Volts x Amptere
+
+Or put it another way:
+
+    Ampere requires power (watts) and voltage (volts)
+
+* How to power a RaspberryPi
+
+The pi I am using, 4B, use:
+
+    3A / 5.1V
+
+Voltage is FIXED at 5V and needs to be precise because when you aliment a pi
+via pins, there is no protection.
+
+- [[https://www.pidramble.com/wiki/benchmarks/power-consumption]]
+
+The power after the PSU have polarity and is direct (DC).
+
+We can also divide the problem of powering the pi cluster in 3 parts.
+
+- Power supply unit
+- Between the main and the PSU
+- Between the PSU and the pis
+
+** Power supply unit
+
+As power switch I am using a MEAN WELL RS-100-5.
+
+- [[https://www.mouser.co.uk/ProductDetail/MEAN-WELL/RS-100-5?qs=pqZ7J9Gt%2FmqsRyM0rv5ghQ==]]
+
+PSU are already set to a specific value (like 5V) however decimals can be
+set (ex: 5.2/4.8)
+For the PI you need to have EXACTLY 5V.
+
+It is important because if you power  by pins, you are going to bypass the
+voltage regulator.
+
+You can use a multimeter to check there are exactly 5V.
+
+** Between the main and the PSU
+
+This is a video guide I found on how to create the cable to connect the PSU
+to the main.
+
+- [[https://www.youtube.com/watch?v=ETbgiXe8o58][How to hook up Mean Well Regulated power supply to Sure Amp Board]]
+
+The cable you need to buy is any normal power cable you can find anywhere (for
+example to power a cattle or a monitor).
+
+Input is 220AC, alternated current (mains)
+Output of the PSU will be 5V DC
+
+The cable that use mains are all usually 18AWG.
+
+You may need ‘spade terminals’ on PSU side to make a clean job.
+
+** Between the PSU and the PIs
+
+- [[https://www.amazon.co.uk/sourcingmap-Extension-Parallel-Plated-Copper/dp/B07F5XGT98/][Sourcing map Red Black Wire 2pin Extension Cable Cord 26 AWG Parallel Wire]]
+
+You can use 22 AWG for longer than 1m power wires, and 26 AWG for shorter.
+
+You can then create the cable as a "chain" or as a "star" (all starting from
+the PSU).
+The chain method occupies less space.
+
+Then you need dupont connectors.
+You can close the dupont connect with the correct tool or using a plier.
+
+- [[https://www.youtube.com/watch?v=ARAm0fJLib0][Dupont Connectors - the Easy Way]]
+
+* Others (to check)
+
+Vgencmd measure_temp
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=kjSGCSwNuAg][Tutorial: How to crimp connectors, strip wire and use heat shrink.]] - very good video
+- [[https://www.youtube.com/watch?v=6gxz8YhA35U][How to Crimp 2.54mm DuPont connectors (macro view)]]
+- [[https://www.youtube.com/watch?v=ARAm0fJLib0][Dupont Connectors - the Easy Way]]

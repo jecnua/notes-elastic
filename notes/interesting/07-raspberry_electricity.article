@@ -1,24 +1,24 @@
-RaspberryPi 4B Clusters
-||
+RaspberryPi 4B Power
+|| Last update: 21 Jul 2020
 
 * Intro
 
 These are information I gathered to build my RaspberryPi cluster at home while
 learning a little about how to aliment them.
 
-* Generic ampere and volt
+* Generic notes on ampere and volt
 
-The ampere can change depending on how many endpoints you power (like usb):
-
-    # This example is for a smaller PI (40 of them)
-    So at max load the cluster will draw 40*1.3A = 52A. The input Voltage for
-    each Pi is 5V. So total input required is 5*1.3A = 260W.
-
-VOLT is the force
-AMPERE is the amount
+VOLT is the *force* (fixed)
+AMPERE is the *amount* (variable)
 WATTS is the power rating USED
 
-Watts = Volts x Amptere
+    Watts = Volts x Ampere
+
+The ampere absorption can change depending on how many endpoints you power (like usb):
+
+    # This example is for a smaller PI (but 40 of them) using 1.3A each
+    So at max load the cluster will draw 40*1.3A = 52A. The input Voltage for
+    each Pi is 5V. So total input required is 5*1.3A = 260W.
 
 Or put it another way:
 
@@ -26,18 +26,19 @@ Or put it another way:
 
 * How to power a RaspberryPi
 
-The pi I am using, 4B, use:
+The pi I am using (4B), uses:
 
-    3A / 5.1V
+    3A minimum & 5.1V
 
 Voltage is FIXED at 5V and needs to be precise because when you aliment a pi
-via pins, there is no protection.
+via pins, there is no protection against power fluctuations.
 
 - [[https://www.pidramble.com/wiki/benchmarks/power-consumption]]
 
-The power after the PSU have polarity and is direct (DC).
+The power after the PSU (Power source unit) have polarity and is direct current
+(DC).
 
-We can also divide the problem of powering the pi cluster in 3 parts.
+We can divide the problem of powering the pi cluster in 3 parts:
 
 - Power supply unit
 - Between the main and the PSU
@@ -45,13 +46,13 @@ We can also divide the problem of powering the pi cluster in 3 parts.
 
 ** Power supply unit
 
-As power switch I am using a MEAN WELL RS-100-5.
+The power switch I am using is a MEAN WELL RS-100-5.
 
 - [[https://www.mouser.co.uk/ProductDetail/MEAN-WELL/RS-100-5?qs=pqZ7J9Gt%2FmqsRyM0rv5ghQ==]]
 
-PSU are already set to a specific value (like 5V) however decimals can be
-set (ex: 5.2/4.8)
-For the PI you need to have EXACTLY 5V.
+PSUs are already set to a specific value (like 5V) however decimals can be
+set via a small thing you can change with a screw (ex: 5.2/4.8)
+For the PI you need to have *EXACTLY*5V*.
 
 It is important because if you power  by pins, you are going to bypass the
 voltage regulator.
@@ -68,12 +69,18 @@ to the main.
 The cable you need to buy is any normal power cable you can find anywhere (for
 example to power a cattle or a monitor).
 
-Input is 220AC, alternated current (mains)
-Output of the PSU will be 5V DC
+- Input is 220AC, alternated current (mains)
+- Output of the PSU will be 5V DC
 
 The cable that use mains are all usually 18AWG.
 
-You may need ‘spade terminals’ on PSU side to make a clean job.
+You may need ‘spade terminals’ on PSU side to cleanly connect cables.
+
+The colour codes for the difference cables inside a power cable are:
+
+- black/brown is live - L
+- white/blue is netural - N
+- green/yellow is ground (protective hearth) - ground simbol
 
 ** Between the PSU and the PIs
 
@@ -90,9 +97,11 @@ You can close the dupont connect with the correct tool or using a plier.
 
 - [[https://www.youtube.com/watch?v=ARAm0fJLib0][Dupont Connectors - the Easy Way]]
 
-* Others (to check)
+* Tools
 
-Vgencmd measure_temp
+A multimeter will be useful to make sure the PSU is set at exactly 5V.
+Both the ampere and the mA/V have fuses on a multimeter.
+There is the limit you can put through before the fused is broken.
 
 * Re/Sources
 

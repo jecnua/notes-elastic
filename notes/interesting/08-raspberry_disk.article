@@ -1,0 +1,220 @@
+RaspberryPi 4B Clusters Disks and USB boots
+|| Last update: 11 Jul 2020
+
+* Intro
+
+You can boot your RaspberryPi from:
+
+- MicroSD
+- USB3 powered SSD
+
+* MicroSD
+
+Booting from MicroSD is the default way to boot a raspberry pi and the only way
+until this year.
+
+The speed and quality of the MicroSD is important.
+
+The best SD card is Samsung EVO+
+
+- [[https://www.amazon.co.uk/Samsung-Mobile-UK-MicroSD-Adapter/dp/B06XFSZGCC/]]
+
+* Boot from USB
+
+To boot from USB we need to first update the FIRMWARE on the PI
+and then prepare the USB with the OS.
+
+** Update the firmware (only once)
+
+There is a good step by step guide here.
+
+- [[https://peyanski.com/stable-raspberry-pi-4-usb-boot/]]
+
+First format the SD card with raspbian.
+Enable ssh:
+
+  touch /Volumes/boot/ssh
+
+Start and login on the pi. Then run:
+
+  sudo apt-get update
+  sudo apt-get upgrade -y
+  sudo rpi-update
+  sudo reboot
+
+Check you bootloader version:
+
+  $ vcgencmd bootloader_version
+  Apr 16 2020 18:11:26
+  version a5e1b95f320810c69441557c5f5f0a7f2460dfb8 (release)
+  timestamp 1587057086
+
+and your configs:
+
+  $ vcgencmd bootloader_config
+  [all]
+  BOOT_UART=0
+  WAKE_ON_GPIO=1
+  POWER_OFF_ON_HALT=0
+  DHCP_TIMEOUT=45000
+  DHCP_REQ_TIMEOUT=4000
+  TFTP_FILE_TIMEOUT=30000
+  TFTP_IP=
+  TFTP_PREFIX=0
+  BOOT_ORDER=0x1
+  SD_BOOT_MAX_RETRIES=3
+  NET_BOOT_MAX_RETRIES=5
+  [none]
+  FREEZE_VERSION=0
+
+Update:
+
+  $ sudo rpi-update
+   *** Raspberry Pi firmware updater by Hexxeh, enhanced by AndrewS and Dom
+   *** Performing self-update
+   *** Relaunching after update
+   *** Raspberry Pi firmware updater by Hexxeh, enhanced by AndrewS and Dom
+   *** We're running for the first time
+   *** Backing up files (this will take a few minutes)
+   *** Backing up firmware
+   *** Backing up modules 4.19.118-v7l+
+  #############################################################
+  WARNING: This update bumps to rpi-5.4.y linux tree
+  See: https://www.raspberrypi.org/forums/viewtopic.php?f=29&t=269769
+  'rpi-update' should only be used if there is a specific
+  reason to do so - for example, a request by a Raspberry Pi
+  engineer or if you want to help the testing effort
+  and are comfortable with restoring if there are regressions.
+  DO NOT use 'rpi-update' as part of a regular update process.
+  ##############################################################
+  Would you like to proceed? (y/N)
+   *** Downloading specific firmware revision (this will take a few minutes)
+    % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                   Dload  Upload   Total   Spent    Left  Speed
+  100   168  100   168    0     0     32      0  0:00:05  0:00:05 --:--:--    37
+  100  115M  100  115M    0     0  1812k      0  0:01:05  0:01:05 --:--:-- 2082k
+   *** Updating firmware
+   *** Updating kernel modules
+   *** depmod 5.4.50+
+   *** depmod 5.4.50-v7l+
+   *** depmod 5.4.50-v8+
+   *** depmod 5.4.50-v7+
+   *** Updating VideoCore libraries
+   *** Using HardFP libraries
+   *** Updating SDK
+   *** Running ldconfig
+   *** Storing current firmware revision
+   *** Deleting downloaded files
+   *** Syncing changes to disk
+   *** If no errors appeared, your firmware was successfully updated to
+   bafd743eeb3e8a2a863936594cd7201a0af136fa
+   *** A reboot is needed to activate the new firmware
+
+Reboot again. After restart run:
+
+  sudo apt install rpi-eeprom -y
+
+Update the config:
+
+  $ cat /etc/default/rpi-eeprom-update
+  FIRMWARE_RELEASE_STATUS="critical"
+  $ sudo sed -i 's/critical/stable/g' /etc/default/rpi-eeprom-update
+  $ cat /etc/default/rpi-eeprom-update
+  FIRMWARE_RELEASE_STATUS="stable"
+
+Actually update the eeprom:
+
+  $ sudo rpi-eeprom-update -d -f /lib/firmware/raspberrypi/bootloader/stable/pieeprom-2020-06-15.bin
+  BCM2711 detected
+  VL805 firmware in bootloader EEPROM
+  BOOTFS /boot
+  *** INSTALLING /lib/firmware/raspberrypi/bootloader/stable/pieeprom-2020-06-15.bin  ***
+  BOOTFS /boot
+  EEPROM update pending. Please reboot to apply the update.
+
+Reboot. Now check it completed successfully:
+
+  $ vcgencmd bootloader_version
+  Jun 15 2020 14:36:19
+  version c302dea096cc79f102cec12aeeb51abf392bd781 (release)
+  timestamp 1592228179
+  $ vcgencmd bootloader_config
+  [all]
+  BOOT_UART=0
+  WAKE_ON_GPIO=1
+  POWER_OFF_ON_HALT=0
+  DHCP_TIMEOUT=45000
+  DHCP_REQ_TIMEOUT=4000
+  TFTP_FILE_TIMEOUT=30000
+  ENABLE_SELF_UPDATE=1
+  DISABLE_HDMI=0
+  BOOT_ORDER=0xf41
+
+** Prepare a USB3 SSD disk
+
+You can find a good guide step by step here for Ubuntu 20.04:
+
+- [[https://www.raspberrypi.org/forums/viewtopic.php?f=131&t=278791]]
+
+* SSD Disks
+
+- [[https://ssd.userbenchmark.com/]]
+
+In my case I choose to use:
+
+- [[https://ssd.userbenchmark.com/Crucial-MX500-250GB/Rating/3951]]
+- [[https://www.amazon.co.uk/dp/B0781VSXBP?tag=userbenchmark-21&linkCode=ogi&th=1]]
+
+USB3 SSD disks are ~10x faster than a sd card
+
+- [[https://www.jeffgeerling.com/blog/2020/uasp-makes-raspberry-pi-4-disk-io-50-faster]]
+- [[https://www.youtube.com/watch?v=t0kYcM1E5fY]]
+
+With UASP ("USB Attached SCSI Protocol") enabled.
+Without UASP you usually mount the disk as mass storage device using the old
+protocol BOT (Bulk-Only Transport).
+
+  USB2.0 speed is up to 480Mbps
+
+  USB BOT gets to 5000Mbps
+  400x normal usb
+
+With the USB3 UASP you get:
+
+- > data copy in parallelism
+- > buffer
+- > caching
+
+** Check your drive
+
+Run:
+
+  lusb -t
+
+And check what you are using.
+
+  UAS
+  usb-storage - BOT
+
+Using UAS is 20 to 40% faster and it consumes less power than BOT.
+
+* NVMe
+
+- [[https://www.tomshardware.com/news/raspberry-pi-nvme-support-coming]] 15 Jul 2020
+- [[https://www.youtube.com/watch?v=3yTyhR0Adao]] 16 Jul 2020
+
+Soon it could come the support for NMVE in the compute module.
+Using a single lane PCI express channel (PCIe 1x).
+In the current model it is used to provide the USB3.
+
+If you want to use NVMe you will lose usb3 ports in the current modules.
+
+Some context. The SATA SSD drives works with serial ATA from 2000.
+
+NVMe (non volatile memory express) is from 2011 and directly attach to PCI express
+bus which removes the overhead of the SATA protocol.
+
+Theoretical limits:
+
+- NVMe - 32000 MB/s (32GB/s)
+- SATA III - 600 MB/s

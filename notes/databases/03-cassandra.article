@@ -1,5 +1,47 @@
-Cassandra workshop
-|| 28 Mar 2019
+Cassandra
+|| 21 July 2020
+
+* Monitoring
+
+For metrics you can export the node metrics with node exporter and cassandra
+metrics via cassandra exporter:
+
+- [[https://github.com/criteo/cassandra_exporter]]
+
+The metrics are scraped via prometheus.
+Instead of using static targets it uses the ec2_sd_configs type.
+This allows to avoid coupling this prometheus config with the node number and
+dns.
+
+- job_name: 'cassandra'
+  scrape_timeout: 10s
+  ec2_sd_configs:
+    - region: eu-west-1
+      port: 7070
+      filters:
+        - name: tag:application
+          values:
+          - cassandra
+
+** JMX Autentication
+
+Enabling JMX to be contacted from outside the node and to enable authentication
+we will need to change the main config file at /etc/cassandra/cassandra-env.sh.
+I didn't find any nice way to do it since it looks like the config file
+is expected to be modified instead of flags to be injected from outside.
+
+- [[https://docs.datastax.com/en/ddacsecurity/doc/ddacsecurity/secureJmxAuthentication.html]]
+
+An explanation of all the steps is defined here.
+
+    # Disable local JMX
+    sudo sed -i "/LOCAL_JMX=/s/=.*/=no/" /etc/cassandra/cassandra-env.sh
+    echo "cassandra readwrite" | sudo tee -a /etc/cassandra/jmxremote.access
+    echo "cassandra cassandra" | sudo tee -a /etc/cassandra/jmxremote.password
+    sudo chown cassandra:cassandra /etc/cassandra/jmxremote.access
+    sudo chown cassandra:cassandra /etc/cassandra/jmxremote.password
+
+* OLD NOTES from Workshop - TO CLEAN
 
 - [[https://docs.datastax.com/en/cassandra/3.0/cassandra/architecture/archTOC.html]]
 

@@ -1,0 +1,243 @@
+Fluentd & FluentBit
+|| Last update: 19 Aug 2020
+
+* Fluentd
+
+- [[https://github.com/fluent]]
+- [[https://github.com/fluent/fluentd]]
+- [[https://www.fluentd.org/]]
+- [[https://www.fluentd.org/architecture]]
+
+In April 2019 FluentD
+[[https://www.cncf.io/announcement/2019/04/11/cncf-announces-fluentd-graduation/][graduated]]
+as a CNCF project.
+
+FluentD have support for Loki.
+
+** Fluentd and Kinesis
+
+- [[https://docs.fluentd.org/how-to-guides/kinesis-stream]]
+
+While fluentd can output to kinesis:
+
+- [[https://github.com/awslabs/aws-fluent-plugin-kinesis]]
+
+There is no input plugin:
+
+- [[https://www.fluentd.org/plugins/all]]
+- [[https://github.com/awslabs/aws-fluent-plugin-kinesis/issues/153]]
+
+There is this but is abandoned (2017):
+
+- [[https://github.com/yusukeyamatani/fluent-plugin-in-kinesis]]
+
+This means that if a lambda needs to be created, how to manage bulk indexes?
+
+Logstash on the contrary can read form kinesis:
+
+- [[https://www.elastic.co/guide/en/logstash/current/plugins-inputs-kinesis.html]]
+
+but the last release is from 15 Feb 2019 (at the time of this writing):
+
+- [[https://github.com/logstash-plugins/logstash-input-kinesis]]
+
+Using firehose is not really a solution since it can only write to AWS ES and
+I don't remember it being super configurable.
+
+*** Reading from kinesis using aggregators
+
+This could be an option but I didn't had time to investigate:
+
+- [[https://read.acloud.guru/deep-dive-into-aws-kinesis-at-scale-2e131ffcfa08]]
+- [[https://github.com/awslabs/amazon-kinesis-aggregators]]
+- [[https://github.com/awslabs/kinesis-aggregation]]
+- [[https://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-concepts.html]]
+
+** Signals
+
+Is important to understand how fluntd supports signals:
+
+- [[https://docs.fluentd.org/deployment/signals]]
+- [[https://docs.fluentd.org/deployment/high-availability]]
+
+* Fluntbit
+
+Fluentbit is a faster and lighter alternative to fluentd initially started to
+work on embedded systems.
+
+* Difference with fluentd
+
+- Fluentd is better for aggregation
+- Fluentbit is better for deamonset
+
+they both:
+
+- support forward protocol
+- have buffering(memory or disk) + retries
+- have tail and filter for k8s
+
+.image images/pipeline.png  _ 800
+.caption Source [[https://youtu.be/oL6WovwwxrY]]
+
+The buffer allows to manage backpressure, wildcard or regex on the tag.
+These are some comparison articles.
+
+- [[https://docs.fluentbit.io/manual/about/fluentd-and-fluent-bit]]
+- [[https://logz.io/blog/fluentd-vs-fluent-bit/]]
+
+** Fluentbit and AWS
+
+- [[https://github.com/aws/aws-for-fluent-bit]]
+- [[https://github.com/aws-samples/amazon-ecs-fluent-bit-daemon-service]]
+- [[https://github.com/aws/amazon-kinesis-streams-for-fluent-bit]]
+- [[https://aws.amazon.com/about-aws/whats-new/2019/11/aws-for-fluent-bit-now-supports-amazon-kinesis-data-streams/]]
+
+It was in go, rewrote in C in 1.5 (in C it has better performance).
+fluentbit started to support kinesis only from 26 Nov 2019.
+In version 1.5 they added enterprise connector like:
+
+- AWS ES service
+- Amazon CloudWatch Logs
+- Amazon Kinesis Data Firehose
+- Amazon Kinesis Data Streams (from 2.0.0) - [[https://github.com/aws/amazon-kinesis-streams-for-fluent-bit]]
+
+    Kinesis Data Streams can serve as a scalable buffer between log source and log
+    destination. Additionally, AWS for Fluent Bit version 2.0.0 provides support for
+    SSM Parameters which can be queried to find the image URI.
+
+Amazons3 is still not supported.
+All these plugins are installed in the image/repo called *aws-for-fluentd-bit*.
+Support Sigv4 signing - oauth for api of AWS. Now basically you can assume role.
+
+Interesting: "aws" has to come first for legal reason!
+
+FireLens for amazon ECS is a managed way to do it - not available for k8s.
+
+** Stream processing
+
+- [[https://www.youtube.com/watch?v=xKbVBUMnJH0]]
+
+Stream processing is basically Data streaming manipulation while the data it's
+still in motion.
+
+.image images/pipeline_with_stream.png  _ 800
+.caption Source: [[https://www.youtube.com/watch?v=xKbVBUMnJH0]]
+
+A stream is a timestamp and message.
+They implemented by choice with:
+
+- no tables
+- no indexing (index free)
+
+And the functionality is integrated in fluentd-core. You can create stream:
+
+.image images/stream.png _ 800
+
+and select:
+
+.image images/select.png _ 800
+
+For FluentBit every input plugin is a stream of data on which to do data
+aggregation.
+Stream processing allows to reduce number of cpu you have to invest on the
+aggregator side by doing filtering and work on edge.
+Similar to KSQL for kafka.
+
+    Exec CREATE STREAM simplestream WITH (tag='test') AS <SQL QUERY>
+
+You can use advance queries like WINDOW TUMBLING, in which you can create a
+window of time to calculate a function (like AVG).
+This is useful for IOT to avoid spamming the backend (you can't send millions of
+datapoints), and you can do projections.
+
+* How does it work
+
+Fluent* receive a message from an input plugin in that specific format.
+The parser transform it to a binary representation and can filter, add metadata
+or remove content as needed.
+
+.image images/bit-workflow.png  _ 800
+.caption Source https://youtu.be/oL6WovwwxrY
+
+Is implemented via messagePack, basically like a binaryJson, that can be
+manipulated inside the app.
+
+All things are grouped by tags, and tags are used to ship the log out somewhere
+else.
+
+.image images/tags.png _ 800
+.caption Source: [[https://www.youtube.com/watch?v=87hFzBY3Bx8]]
+
+* Tooling
+
+** Operator
+
+- [[https://banzaicloud.com/blog/logging-operator-monitoring/]]
+
+* Aggregators
+
+If you need to create an aggregation layer, is better to use fluentd than
+fluntbit.
+During testing it has been found that fluentd is more stable under high load.
+
+.image images/aggregator.png _ 800
+
+The implementation usually sees an NLB over the aggregators.
+
+Each app should have different tags and send them to different destination, even
+if they are centralised to one place. This implementation using also privatelink,
+can aggregate a whole region or whole accounts
+
+If you desire you can also put the file on s3 and you can search it with Athena.
+
+Since in k8s you don't use log drivers for docker, and all is written on file,
+and you can use Fluent(d/bit) to grep the files and forward.
+
+You maybe want to use one fluetbit container per ECS task, and this makes easy
+to tie together the app lifecycle with the log routing.
+If it's decoupled (aggregator or DeamonSet) you will have to redeploy
+all of them when you change something.
+
+* Installation
+
+** On kubernetes
+
+To see one way to setup fluent on kubernetes:
+
+- [[https://github.com/fluent/fluentd-kubernetes-daemonset]]
+
+** Docker (no k8s)
+
+- [[https://docs.docker.com/engine/admin/logging/overview/#fluentd][Docker logging driver]]
+- [[https://docs.docker.com/engine/admin/logging/fluentd/][Docker logging driver: Usage]]
+
+    docker run \
+      --log-driver=fluentd \
+      --log-opt tag="docker.{{.Name}}" \
+      ubuntu echo "Test fluentd"
+
+It will fail if not running:
+
+    docker: Error response from daemon: Failed to initialize logging driver:
+    dial tcp 127.0.0.1:24224: getsockopt: connection refused.
+    ERRO[0000] error getting events from daemon: net/http: request canceled
+
+To avoid that put asynch flag:
+
+    docker run \
+      --log-driver=fluentd \
+      --log-opt tag="docker.{{.Name}}" \
+      --log-opt fluentd-async-connect=true \
+      ubuntu echo "Test fluentd"
+
+    docker run --log-driver=fluentd --log-opt tag="docker.{{.Name}} --log-opt \
+    fluentd-async-connect=true" ubuntu echo "Test fluentd"
+
+Docker should not be blocked just because there is no log.
+
+* Sources
+
+- [[https://youtu.be/8jwvg3vgdZk?t=887]] Webinar: Fluent Bit v1.5 - 20 Jul 2020
+- [[https://www.youtube.com/watch?v=HaT9Yc1g170]] GOOD AWS Container Logging Deep Dive: FireLens, Fluentd, and Fluent Bit - AWS Online Tech Talks - 19 Nov 2019
+- [[https://youtu.be/xKbVBUMnJH0]] Deep Dive Fluent Bit: Logging & Stream Processing - Eduardo Silva, ARM Treasure Data - 23 May 2019
+- [[https://youtu.be/oL6WovwwxrY]] Fluent Bit: Extending Your Logging Pipeline with Go - Warren Fernandes & Jason Keene, Pivotal - 23 May 2019

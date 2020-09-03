@@ -1,5 +1,5 @@
-CKA notes
-|| Last update: 12 Dec 2019
+CKA/CKAD notes
+|| Last update: 3 Sept 2020
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -326,8 +326,8 @@ It will also need a container runtime like:
 - [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/]]
 - [[https://kubernetes.io/docs/concepts/services-networking/service/#the-gory-details-of-virtual-ips]]
 
-kube-proxy is a network proxy in charge of managing the network connectivity.
-Listens (monitor) on the _apiserver_ for changes in Service and Endpoint objects.
+*kube-proxy* is a network proxy in charge of managing the network connectivity.
+Monitor the _apiserver_ for changes in Service and Endpoint objects.
 It reflects these networking changes on each node by managing network rules.
 It will update the rules when new objects are created or removed.
 
@@ -1687,19 +1687,18 @@ with the _targetPort_ is referred to a service *endpoint*.
     kube-system   kube-scheduler            <none>                24s
     kube-system   kubernetes-dashboard      172.17.0.3:9090       16s
 
-Each service is associated with a endpoint object. It is a dynamic list of all
+Each service is associated with an *endpoint*object*. It is a dynamic list of all
 the pods that are selected by a service label selector at any point in time.
-Google has been working on Extensible Service Proxy (ESP) based on nginx.
+An IP is attached to the service in a different CIDR of the Pods and it's called
+ClusterIP.
+The CIDR for services can be set at API server _startup_option_.
+In kubeadm you can select the pods IP range with *--pod-network-cidr* and the
+services ip range with *--service-cidr*.
+
+_NOTE_: Google has been working on Extensible Service Proxy (ESP) based on nginx.
 This is more flexible than endpoint but is not used outside
 [[https://cloud.google.com/endpoints/docs/frameworks/frameworks-extensible-service-proxy][Google App Engine]]
 and GKE.
-
-An IP is attached to the service in a different CIDR of the Pods and it's called
-ClusterIP.
-
-The CIDR for services can be set at API server _startup_option_.
-
-QUESTION: How do you choose this two CIDR sets?
 
 Services can be exposed internally or externally. They ca also connect internal
 resources to external ones. Services can be of the following type:
@@ -1743,6 +1742,32 @@ A service for which Kubernetes does not provide a ClusterIP is called
 [[https://kubernetes.io/docs/concepts/services-networking/service/#headless-services][headless]].
 
 A service can expose multiple ports, but in this case they need to be named.
+
+*** Endpoints object limits and EndpointSlices () - BETA 1.17+
+
+- [[https://kubernetes.io/blog/2020/09/02/scaling-kubernetes-networking-with-endpointslices/]]
+- [[https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/]]
+
+    With the Endpoints API, there was only one Endpoints resource for a Service.
+    That meant that it needed to be able to store IP addresses and ports (network
+    endpoints) for every Pod that was backing the corresponding Service. This
+    resulted in huge API resources. To compound this problem, kube-proxy was
+    running on every node and watching for any updates to Endpoints resources.
+    If even a single network endpoint changed in an Endpoints resource, the whole
+    object would have to be sent to each of those instances of kube-proxy.
+    A further limitation of the Endpoints API is that it limits the number of
+    network endpoints that can be tracked for a Service. The default size limit
+    for an object stored in ETCD is 1.5MB. In some cases that can limit an
+    Endpoints resource to 5,000 Pod IPs. This is not an issue for most users,
+    but it becomes a significant problem for users with Services approaching
+    this size.
+    Source: https://kubernetes.io/blog/2020/09/02/scaling-kubernetes-networking-with-endpointslices/
+
+The solution to the above problem is to slice/shard the endpoint in subsets
+so that you can update this subsets individually and have better performances.
+You can also build on this functionality to have smarter routing.
+
+- [[https://kubernetes.io/docs/concepts/services-networking/service-topology/]]
 
 *** Service LoadBalancer finalizer - ALPHA 1.15
 

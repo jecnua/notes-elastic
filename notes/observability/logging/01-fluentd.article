@@ -198,6 +198,37 @@ to tie together the app lifecycle with the log routing.
 If it's decoupled (aggregator or DeamonSet) you will have to redeploy
 all of them when you change something.
 
+* Fluentd on kubernetes
+
+** Issues
+
+I tried to debug many issue with the fluentd we have running on pods on the masters,
+however I could not find anything conclusive about the cause of the OOM kills.
+The buff/cache memory allocation inside the pod continue to grow constantly until
+it reaches the maximum of the limit and gets killed.
+
+.image images/tmux.png _ 800
+
+I don't think raising the
+limits is a solution since the memory usage make no sense.
+
+.image images/oom.png _ 800
+
+After enabling prometheus metrics and scraping:
+
+- The buffers on the pods does not grow, so I deduce the problem is not that elasticsearch can't keep up
+- There is no log of pushback from elasticsearch (even with verbose debug on)
+
+I personally think is an issue with memory management in Ruby. I searched for
+issues online on github and there are about OOM that people can't understand
+where they come from. Unfortunately it's not easily tuneable way from env
+variables to fix it and the tuning won't have much effect anyway.
+This is the best issue a find on the problem:
+
+- [[https://github.com/fluent/fluentd/issues/1657]]
+
+The solution is probably not to use fluentd on the masters.
+
 * Installation
 
 ** On kubernetes

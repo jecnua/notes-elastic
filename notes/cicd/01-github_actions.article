@@ -1,0 +1,220 @@
+Github actions
+|| Last update: 23 Sep 2020
+
+* Runners
+
+The code for the github runners is here:
+
+- [[https://github.com/actions/runner]]
+
+Runner have tags you can use to target them. The first 3 “self-hosted”,”linux”
+and ”X64” are added automatically by the runner. Others you can add automatically
+by the terraform module like:
+
+- region
+- instance type
+- az
+- spot/on-demand
+
+    REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+    INSTANCE_TYPE=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r .instanceType)
+    AZ=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r .availabilityZone)
+    EC2_TYPE=$(aws ec2 describe-spot-instance-requests \
+      --filters Name=instance-id,Values="$INSTANCE_ID" \
+      --region "$REGION" | jq -r '.SpotInstanceRequests | if length > 0 then "spot" else "on-demand" end')
+
+** Configure for ECR
+
+To allow your runner to pull/push images to ECR, you need to install the helper.
+
+- [[https://github.com/awslabs/amazon-ecr-credential-helper#Configuration]]
+
+And setup the machine:
+
+    # Configure docker to be able to connect to ecr
+    mkdir /home/ubuntu/.docker/
+    cat << EOF > /home/ubuntu/.docker/config.json
+    {
+            "credsStore": "ecr-login"
+    }
+    EOF
+
+** Registration token
+
+To get a token to register the runners you need to call the access token
+endpoint of the github API:
+
+- [[https://docs.github.com/en/rest/reference/apps#create-an-installation-access-token-for-an-app]]
+
+** Refresh tokens
+
+- [[https://docs.github.com/en/developers/apps/refreshing-user-to-server-access-tokens]]
+
+Token automatically expire after a certain amount of time is passed, so remember
+to refresh them often. For example create a script to regen them and run it in
+a cron:
+
+    echo '*/30 * * * * cd /root/ && ./regen_token.sh' > /root/root_crontab
+    crontab /root/root_crontab
+
+* Marketplace
+
+- [[https://github.com/marketplace]]
+
+Actions are listed here. For the ones that don't run on a normal ubuntu:20.04
+image, a new docker image needs to be build (I am against running it directly
+on the runner).
+
+* Context
+
+- [[https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#about-contexts-and-expressions]]
+
+I important to understand the ENV for each resource you use inside a workflow.
+More is defined above.
+
+Values can be passed between steps via outputs. Outputs can be set from inside
+a step using a specific syntax:
+
+- [[https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions]]
+
+There is a limit on the size of these values however, so for big value, save
+on file.
+
+* Actions language
+
+When you see native actions, they are build in nodejs. Keep in mind that to
+implement advanced behaviour you may want to learn octokit to manipulate comment
+and labels (if a normal action doesn't fit your purpose).
+
+- [[https://octokit.github.io/rest.js/v18#usage]]
+
+* Comments
+
+- [[https://docs.github.com/en/rest/guides/working-with-comments]]
+
+Using octokit you can find a comment by content, so usually you will have to
+get all comments of an issue by user (the bot) and find the one with a specific
+comment you can use as id.
+
+I used the approach defined here:
+
+- [[https://github.com/phulsechinmay/rewritable-pr-comment]]
+- [[https://github.com/phulsechinmay/rewritable-pr-comment/blob/347f4a106261e162c241537f50112bf3b0af7705/index.js#L38]]
+
+You can see the logic used in the code above.
+
+* Gotchas
+
+** Container step issue
+
+- [[https://github.com/actions/runner/issues/691][Run the job.container as the same user of the host VM by default #691]]
+
+Unless you define it explicitly, when you run a container step it runs as root
+and not as the runner user.
+Until they fix this issue, force the container to run as the user you are using
+for the runner:
+
+    jobs:
+      configure: # Required - Needed to run the container with the right user in the following steps
+        runs-on: self-hosted
+        outputs:
+          containerUser: ${{ steps.get-user.outputs.containerUser }}
+        steps:
+          - id: get-user
+            run: echo "::set-output name=containerUser::`id -u`:`id -g`"
+          - run: |
+              id # whoami fails
+    [...]
+      foo:
+        needs: configure
+        container:
+          image: xyz:v0.0.1
+          options: --user ${{ needs.configure.outputs.containerUser }}
+
+This is annoying to put everywhere (configure job one per workflow) but is the
+best way I found until now to make it work.
+
+You can read more about this issue here:
+
+- [[https://github.com/actions/checkout/issues/211][Issue 211: Permission denied when "Deleting the contents of"]]
+
+** STRANGE BEHAVIOUR: Git wiping out the credential files
+
+To use the github runner with the GitHub application authentication method,
+we need to generate token that expires after a certain amount of time.
+There is a really strange behaviour when you try to do a git pull with a token
+that is expired.
+If you try, the credential file you were using to authenticated will be wiped
+out completely silently (without any log message or notice).
+
+If you know this is happening before the call you can run git with trace on:
+
+    GIT_CURL_VERBOSE=1 GIT_TRACE=1 git clone https://github.com/xxx/yyy
+
+and see the "erase" command being called.
+
+    erase
+    Remove a matching credential, if any, from the helper’s storage.
+    Source: https://mirrors.edge.kernel.org/pub/software/scm/git/docs/gitcredentials.html
+
+However without trace this is totally silent, and your git init will just stop
+and ask for username and password (after wiping out the credential file).
+
+** Github comment max length
+
+NOTE: Max limit is 65536 characters for all the comment
+
+This means that if you plan to output something very big (like a terraform plan)
+you may need to cut it.
+
+    RequestError [HttpError]: Validation Failed: {"resource":"IssueComment",
+    "code":"custom","field":"body","message":"body is too long (maximum is
+    65536 characters)”}
+
+** Limitations of passing values via github action outputs
+
+Is it possible with workflow to pass values via set-output and env calls, however
+this have limitations. If you for example try to save in such a "variable"
+something too big (like a terraform plan), your next step is gonna fail with
+the error:
+
+    input too big
+
+Instead of using steps output you can save these value on a file that will
+continue to survive for the length of the job.
+
+** Pulling private repositories
+
+The default token github action give to the workflow automatically give you
+access only to the repo you are working on. If as part of your workflow you
+need to pull down other private repositories (for example terraform plan) you
+need to use a different token.
+
+If in your terraform code you are referring to modules source with the "ssh"
+convention you will need to do some work to be able to pull them down via
+github actions.
+Usually you may have the ssh notation because developers authenticate to git via
+ssh key and not user password. However if you generate a token for the github
+action workflow via github applications (or you use a deploy token) you will
+need to authenticate via https. To make sure you can do so AND not change any code
+these are the steps. First, on a file (in our case /tmp/git/.git-credentials)
+you need to have saved the auth string:
+
+    https://x-access-token:v1.<alonglaphanumericid>@github.com
+
+Then, inside the workflow and before you pull, configure git:
+
+    - name: Configure git
+      run: |
+        cp -r /tmp/git/.git-credentials ~/.git-credentials
+        # enable the local store credential helper
+        git config --global --replace-all credential.helper store
+        # tell git to use https instead of ssh whenever it encounters it
+        git config --global url."https://github.com".insteadof ssh://git@github.com
+        # tell git to use https instead of ssh whenever it encounters it
+        git config --global url."https://".insteadof git://
+        git config -l
+
+Solution partially found here:
+
+- [[https://github.com/actions/checkout/issues/14#issuecomment-553383594]]

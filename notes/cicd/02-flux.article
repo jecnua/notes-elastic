@@ -1,0 +1,70 @@
+Flux - NEEDS CLEANING
+|| Last update: 23 Sep 2020
+
+* Flux 2 (WIP)
+
+New version of flux2 and helm operator.
+Uses k8s events.
+
+They used kube-builder to develop the components.
+
+- [[https://github.com/kubernetes-sigs/kubebuilder]]
+
+They also created toolkit.fluxcd.io for a generic "gitops toolkit".
+
+- [[toolkit.fluxcd.io]]
+
+It comes with a CLI called _tk_.
+The githops toolkit allows multiple reconciler to collaborate on the desired
+state:
+
+- kustomize-controller
+- helm-controller
+- image-update-controller (TBA)
+- fleet-controller (TBA)
+
+All will use the Soure API package to acquire artefact.
+The order is:
+
+    source -> kustomize -> helm -> notification
+
+** Source management
+
+There will be a common interface for artefact acquisition (git, helm, etc).
+
+** kustomize-controller
+
+kustomize-controller is a k8s operator, specialised in running continuous
+delivery pipeline.
+Workloads are defined in k8s manifests and assembled by kustomize.
+When it reconciles, it will get the resources, build, validate, apply, do health
+check and push notification.
+
+** helm-controller
+
+Is a full rewrite from scratch.
+It creates a helm release using the helm chart artefacts produced by the source
+controller.
+
+They emit events for during all the process.
+
+** notification-controller
+
+Can forward these events to any destination you want.
+
+* Flagger
+
+Is a specialised controller to reduce the risk of production releases.
+
+- Canary
+- A/B
+- Blues/Green (traffic mirroring)
+- Blues/Green (traffic switch)
+
+* Flux 1
+
+Flux1 is monolithic while v2 will be composable.
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=8v94nUkXsxU][Flux Deep Dive: A GitOps Approach to Progressive Delivery - Stefan Prodan & Hidde Beydals]] 4 Sep 2020

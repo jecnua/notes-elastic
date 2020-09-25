@@ -1,11 +1,11 @@
 EKS
-|| Last update: 5 Jun 2020
+|| Last update: 25 Sep 2020
 
 * Intro
 
 EKS is AWS managed k8s service. It has some integrations:
 
-- Load balancing with ELB
+- Load balancing with ELB/NLB: [[https://docs.aws.amazon.com/eks/latest/userguide/load-balancing.html]]
 - ECR for storing images
 - s3 for helm repos
 
@@ -44,6 +44,8 @@ EKS private endpoints can be resolved from inside the VPC and peered VPC.
     EKS-optimized AMIs in your AWS account while node updates and terminations
     gracefully drain nodes to ensure that your applications stay available.
     Source: https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html
+
+You can use lunch templates to customise the EC2 nodes.
 
 * CNI
 
@@ -117,10 +119,6 @@ and can't speak with the application directly:
     Source: https://news.ycombinator.com/item?id=20683451
 
 * Usage
-
-** Service "LoadBalancer"
-
-On EKS it will create an old ELB!
 
 ** Ingress
 
@@ -260,7 +258,7 @@ AWS is hiding system pods and master nodes (kubectl doesn't show them).
 - [[https://aws.amazon.com/blogs/aws/amazon-eks-on-aws-fargate-now-generally-available/]]
 
 Fargate for EKS exists but it's crazy.
-You will need to run and pay also for pods like coredns and the pricing is high.
+You will need to run and pay also for pods for DNS and the pricing is high.
 Plus will need time to spin up the nodes:
 
     With AWS Fargate, you pay only for the amount of vCPU and memory resources
@@ -274,6 +272,14 @@ Plus will need time to spin up the nodes:
     Source: https://aws.amazon.com/blogs/aws/amazon-eks-on-aws-fargate-now-generally-available/
 
 You also pay the control plane.
+
+Fargate EKS can use EFS.
+
+* App Mesh
+
+- [[https://github.com/aws/eks-charts/blob/master/stable/appmesh-controller/README.md#configuration]]
+
+You can run App Mesh on EKS.
 
 * Re/Sources
 

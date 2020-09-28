@@ -1,29 +1,71 @@
 CRD - Custom Resource Definitions
-|| Last update: 25 Jul 2019
+|| Last update: 28 Sept 2020
 
 * Intro
 
-- [[https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md]]
 - [[https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/]]
 - [[https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/]]
 
-A resource is an endpoint in the api server and that stores a collection of
-object of that type a custom resource is an extension of that api
-that represent a customisation of that installation
+A resource is an endpoint in the api server that stores a collection of
+object of that type. A custom resource is an extension of that api
+that represent a customisation of that installation.
 
-in 1.15 (ALPHA) the added defeating and pruning for them.
-now you can ensure api compatibility when you upgrade version
-so now you can specify defaults.
-these needs to support
-[[https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md][OpenAPI v3 schema]]
-validation schemas in the manifest.
-this will also allow pruning. they force consistency.
-behind feature gate.
+- You can ensure api compatibility when you upgrade version
+- You can specify defaults.
 
-it helps security and consistency.
+It needs to support these specification:
 
-in BETA 1.15 they added web-hook converted.
+- [[https://github.com/OAI/OpenAPI-Specification/tree/master/versions][OpenAPI v3 schema]]
+
+In 1.15 (ALPHA) the added defeating and pruning for them.
+In BETA 1.15 they added web-hook converter.
+
+* CRD
+
+In the CRD definition you can specify *validation*:
+
+.image images/validation.png
+.caption Source: [[https://www.youtube.com/watch?v=2SKJ-L10vuQ]]
+
+You can also define *versions* and if they are served:
+
+.image images/versions.png
+.caption Source: [[https://www.youtube.com/watch?v=2SKJ-L10vuQ]]
+
+You can define a *conversion*strategy* (for example Webhook):
+
+.image images/webhook.png
+.caption Source: [[https://www.youtube.com/watch?v=2SKJ-L10vuQ]]
+
+.image images/convert.png _ 800
+.caption Source: [[https://www.youtube.com/watch?v=2SKJ-L10vuQ]]
+
+** Controllers
+
+CRD by themselves don't do much, you need to add a controller to act on it.
+
+Operator works on a pattern called *level-trigger* (not _edge-trigger_ - that is
+when things are triggered directly by change of values).
+
+In a level-trigger, like in a pulled based system, what is actually important is
+the current state. You always check that and then you compute how to get to the
+desired state from the state you _actually_ have.
+
+This is possible through the *watch* system. The k8s api server exposes the watches
+which is enabled by ETCD.
+
+The flow is:
+
+    state -> feedback -> reconcile
+
+An operator is an application that take the control loop and act on it.
+They try to take imperative systems and make then into controllable, declarative
+ones.
+
+Operator should not leak abstractions!
 
 * Re/Sources
 
+- [[https://github.com/kubernetes-sigs/kubebuilder]]
+- VIDEO [[https://www.youtube.com/watch?v=2SKJ-L10vuQ][Dynamic Configuration with ComponentConfig and the Control Loop]] - 4 Sep 2020
 - VIDEO [[https://www.youtube.com/watch?v=eq7dgHjPpzc][What's New in Kubernetes 1.15]] (1h) - 23 Jul 2019

@@ -1,0 +1,171 @@
+OPA, conftest and Gatekeeper
+|| Last update: 30 Sep 2020
+
+* Intro
+
+Before going into this topic, please read more on admission controllers here:
+
+- [[http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/03-admission_controller.article][notes/containers/orchestration/k8s/03-admission_controller]]
+
+* OPA
+
+- [[https://www.openpolicyagent.org/]]
+
+OPA works on json, so if you have a yaml like in the case of k8s objects,
+first transform it to json.
+
+** Rego
+
+- [[https://play.openpolicyagent.org/]]
+
+Rego is a DSL that allows to query "things" in a json file.
+To put it better, it allows to run assertions over structural data.
+You can think of it as defensive programming.
+Rego it's a language to query and the queries are assertion but is not a general
+purpose language.
+Rego *IS* confusing.
+Since in older versions there are different interpretation of the equal sign
+depending on the context, please now use:
+
+- == instead of = for equality
+- := to assign
+
+For example this is a valid assertion in rego.
+
+    s {
+        x := 16
+        y := 17
+        x > y
+    }
+
+The above returns {} (empty).
+
+    s {
+        x := 16
+        y := 17
+        x < y
+    }
+
+The above returns:
+
+    {
+        "s": true
+    }
+
+Rego doesn't have a concept of allow/deny, it just query and returns structural
+data.
+Each line in each block will be analysed, line by line, until the lines are "true"
+it goes on. If it finds a false it stops and the blocks exists.
+ALL the lines are ANDed
+
+If all the lines are true, the block will result as true.
+
+OPA reply is just a json.
+
+To return something different from just "true", you can use return values:
+
+    foo[msg] {
+        x := 16
+        y := 17
+        x < y
+        msg := "test"
+    }
+
+The reply is:
+
+    {
+        "foo": [
+            "test"
+        ]
+    }
+
+* Conftest
+
+- [[https://conftest.dev]]
+- [[https://github.com/open-policy-agent/conftest]]
+
+Conftest uses Rego language from Open Policy Agent for writing policies.
+However it adds some conventions on top of it.
+It expects policies to be in a directory that you pass to the command line tool,
+and it apply all the rules in the dir to the specified inputs.
+
+conftest looks for specific rules (what we called blocks before):
+
+- deny
+- warn
+- violation
+
+conftest supports yaml.
+
+    deny[msg] {
+        x := 16
+        y := 17
+        x > y
+        msg := "test"
+    }
+
+** Bundle rules
+
+You can write policies and bundle then to be pushed to a registry:
+
+    conftest pull
+    conftest push
+
+* Gatekeeper
+
+- [[https://github.com/open-policy-agent/gatekeeper]]
+
+Bring OPA to k8s in a k8s native way.
+
+rego is a language to validate json and the validation results are json
+documents themselves which can then be interpreted by the admission controller.
+
+There are two component in gatekeeper:
+
+- controller manager
+- audit
+
+Audit check and retroactively check the status of things.
+Audit does not enforce only shows violations.
+
+At the moment gatekeeper can only be used as a validation webhook and not as a
+mutating one. However work is in the backlog to change this.
+
+** Constraint templates
+
+- [[https://github.com/open-policy-agent/gatekeeper#constraint-templates]]
+
+Policies can be loaded into Gatekeeper dynamically via ConfigMaps objects using
+the kube-mgmt sidecar container.
+
+It enables to setup a policy and feed this policy some parameters or data
+during evaluation.
+
+However is DSL nested in DSL!
+
+The constraint templates functionality let you define a new CRD on the fly to
+define a policy that then user can apply.
+The policy can be defined in one place and used in another.
+
+** Libraries
+
+There are some predefined libraries here:
+
+- [[https://github.com/open-policy-agent/gatekeeper-library]]
+
+Where they also created some OPA policies to implement PSP behaviour.
+
+* Real use cases
+
+Often conftests and Gatekeeper are both used just in different part of the
+pipeline.
+
+conftest is used in the CICD to validate early for errors, while gatekeeper is
+used on the k8s cluster to check if anything got through and blocking at the
+last possible moment.
+
+Use conftest in the CI pipeline for extra check before failing in the cluster.
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=ZJgaGJm9NJE][TGI Kubernetes 119: Gatekeeper and OPA]] 22 May 2020

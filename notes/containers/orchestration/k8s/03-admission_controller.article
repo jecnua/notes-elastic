@@ -1,0 +1,124 @@
+Admission controllers
+|| Last update: 29 Sep 2020
+
+* Admission controllers
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/]]
+
+    An admission controller is a piece of code that intercepts requests to the
+    Kubernetes API server prior to persistence of the object, but after the
+    request is authenticated and authorized.
+    Source: https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/
+
+They are basically some additional modules that can modify or reject requests
+based on additional checks. There are many controllers embedded/build-in in the api
+server and can be enabled by the admins at startup.
+
+    The terminology admission was something introduced super early
+    and maybe was present in borg/omega.
+    Source: Joe Beda
+
+    The Kubernetes API server flag enable-admission-plugins takes a comma-delimited
+    list of admission control plugins to invoke prior to modifying objects in the cluster:
+    enable-admission-plugins=NodeRestriction,NamespaceLifecycle,LimitRanger...
+    Source: https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/
+
+For controllers enabled by default, you can disable them with
+_disable-admission-plugins_.
+
+In 1.18 the enabled by defaults are:
+
+    NamespaceLifecycle, LimitRanger, ServiceAccount, TaintNodesByCondition,
+    Priority, DefaultTolerationSeconds, DefaultStorageClass,
+    StorageObjectInUseProtection, PersistentVolumeClaimResize, RuntimeClass,
+    CertificateApproval, CertificateSigning, CertificateSubjectRestriction,
+    DefaultIngressClass, MutatingAdmissionWebhook, ValidatingAdmissionWebhook,
+    ResourceQuota
+
+* Dynamic Admission Control
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks]]
+
+There are two special controllers called *Dynamic*Admission*Controllers*:
+
+- MutatingAdmissionWebhook
+- ValidatingAdmissionWebhook.
+
+These allows to use external code (to the api server) to implement these checks
+(ability to register new admission controller).
+
+Mutating controllers may modify the objects they admit; validating controllers
+may not.
+
+    The admission control process proceeds in two phases. In the first phase,
+    mutating admission controllers are run. In the second phase, validating
+    admission controllers are run. Note again that some of the controllers are
+    both.
+    Source: https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/
+
+    Mutating admission webhooks are invoked first, and can modify objects sent
+    to the API server to enforce custom defaults. After all object modifications
+    are complete, and after the incoming object is validated by the API server,
+    validating admission webhooks are invoked and can reject requests to enforce
+    custom policies.
+    Source: https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks
+
+The dynamic admission controllers instead of having an entry flag use webhook to
+validate. These are called *validating*webhook*controller*, and you can
+imagine them as webservices.
+
+The objective it not to to pack the api server with logic.
+
+An example of a mutating admission controller is the one Istio implements to
+inject the sidecar in evert pod.
+
+** How do they work?
+
+When you register an admission controller, the api server will send an
+AdmissionReview json object. This json can be parsed, validated and then a reply
+sent to the api server in the body of the AdmissionReview.
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#webhook-request-and-response]]
+
+It doesn't matter in what languages the controller is implemented since the
+communication is all in json.
+
+A set of _rules_ is defined when you register the controller which tells the
+API server upon which type of calls the controller needs to be invoked.
+This way you want be executed on every call, just the one you are interested in.
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-rules]]
+
+Two important settings needs to be considered when registering a controller:
+
+- timeouts
+- failurePolicy
+
+Timeout is important because you can't let the api server wait too much on each
+request. So unless your controller is REQUIRED and your workload doesn't work
+without you should have a very low timeout. Default is 10s which is too much.
+
+The second is connected to the first. Unless your controller is REQUIRED register
+it in a way that if the controller don't reply, the workload is still deployed.
+Otherwise you need to make sure your controller is:
+
+- stable (HA)
+- fast
+- scalable
+
+** Pod Security Policies (PSP) - BETA in 1.19
+
+- [[https://kubernetes.io/docs/concepts/policy/pod-security-policy/]]
+
+The Pod Security Policies (PSP) admission controller is one of the embedded
+admission controller in the api server that can be enabled with an flag.
+
+PSP is sometimes overlooked but a necessary security control. It make sure
+certain containers won't run as root, cannot attach to the host network and so
+on.
+
+One of the problem of PSP is that it can block workload silently. When it stops
+PODS from being deployed, the only way yo know what happened is to debug do some
+troubleshooting.
+
+PSP looks likely to be getting deprecated.

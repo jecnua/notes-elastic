@@ -1,5 +1,5 @@
 CKA/CKAD notes
-|| Last update: 3 Sept 2020
+|| Last update: 12 Sept 2020
 
 * Kubernetes course: CKA certified kubernetes administrator
 
@@ -70,7 +70,7 @@ is a flag called:
     The period for syncing NodeStatus in NodeController.
     Source: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
 
-It will also check what percentage of nodes in that zone is unhealty.
+It will also check what percentage of nodes in that zone is un-healty.
 There is an unhealthy zone threshold and there are rules for each AZ.
 
     --unhealthy-zone-threshold float32     Default: 0.55
@@ -109,9 +109,7 @@ From 1.8+ the node controller can *taint* node to respect their status.
 
 Kubernetes made some interesting choices on how networking should be implemented.
 It defines the network model but leaves it to third party plugins a way to
-implement it.
-
-There are three networking problem to think about:
+implement it. There are three networking problem to think about:
 
 - Container to container (in a Pod) communication (solved by sharing network namespace)
 - Pod to Pod communication (left to the CNI plugin to implement)
@@ -151,7 +149,7 @@ Some of the plugins that implement this functionalities are:
     it back to the requested container runtime.
     Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
 
-There can only be one pod network per cluser, but the
+There can only be one pod network per cluster, but the
 [[https://github.com/Huawei-PaaS/CNI-Genie][CNI Genie]] project is trying to
 remove this limitation.
 
@@ -766,6 +764,9 @@ the same mechanism will be used to request an updated certificate.
 
 .image images/cri.png  _ 800
 .caption Source: [[https://kubernetes.io/blog/2016/12/container-runtime-interface-cri-in-kubernetes/]]
+
+.image images/kubelet_cri.png _ 800
+.caption Source: [[https://www.youtube.com/watch?v=ZuXQyAj96FA]]
 
 *NOTE*: This image is not totally correct. You need a CRI shim only if your container
 runtime is not CRI compatible.
@@ -1428,7 +1429,11 @@ the original alive.
     # example
     kubectl label pod nginx-7f6cdb7fd7-c8696 app=debug-mode --overwrite
 
-*** Horizontal Pod Autoscaler (HPA)
+* Autoscalers
+
+- [[https://www.youtube.com/watch?v=Dtr3rR04ekE][Autoscaling and Cost Optimization on Kubernetes: From 0 to 100 - Guy Templeton & Jiaxin Shan]] 4 Sep 2020
+
+** Horizontal Pod Autoscaler (HPA)
 
 - [[https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/]]
 
@@ -1436,35 +1441,239 @@ HPA can scale Deployments, ReplicSets or ReplicationControllers by default at
 50% CPU usage.
 
 - Kubelet checks every 30s
-- HPA checks every 30s (to check)
+- HPA checks every 30s (?)
 - After any action HPA waits 180s before any further action
 
-NOTE: Heapster is deprecated
+It uses metrics on the MetricServer.
+The autoscaler do not collect the metrics, just act on them. It can scale on:
 
-The autoscaler do not collect the metrics, just act on them.
-It can scale on two policies:
+- Resources (metrics.k8s.io): CPU and Memory (what you see in kube-top)
+- Custom metrics (custom.metrics.k8s.io): one is a pod metric (one for each pod of and average it), and object (will expect to find a single value like ingress qps)
+- External (external.metrics.k8s.io)
 
-- CPU Utilization
-- Custom-metrics
+metric server have a way to delegate how to get some metrics to another API
+servers. There is a metric server that is the default. There is another server
+that is the custom or external metric server adapter.
+You can use a prometheus or another server. Need to install the adapter which
+will translate the call for your datasource.
+
+.image images/HPA_custom_metrics.png _ 800
+.caption Source: [[https://www.youtube.com/watch?v=UZ9NYQ-dpdw][Deep Dive into Autoscaling ]] 4 Sep 2020
+
+Calculating the desired scale is:
+
+    (utilization / target) * scale = desired scale
+
+It then keeps a 5 minutes windows to stabilize so it doesn't flap.
 
 To prevent trashing you can set a downscale delay and a upscale delay.
 Define intervals between successive operations of the same kind.
 
-*** Vertical Pod Autoscaler
+When using HPA make sure to:
+
+- Handle SIGTERM correctly
+- Define a readiness and liveness probe
+- Enable Cluster autoscaler
+
+You can scale safely on multiple metrics (from 1.15+). It will always take the safest
+(highest) choice.
+There is an alpha functionality to be able to scale to 0 (in 1.18).
+
+You can tune since 1.18+ how fast to scale it.
+
+.image images/HPA_speed.png
+.caption Source: [[https://www.youtube.com/watch?v=Dtr3rR04ekE]]
+
+HPA have two versions: v1 and v2.
+HPA v2 (beta in 1.18+) is different than v1.
+in v2 is not only 1 top level target in v2 you can provide more than one metric.
+it will write the current metric it observer in the status so you can see in HPA
+what does it see.
+
+in v2 inside the behaviour fields two structure:
+
+- sacle up
+- scale down
+
+relative and absolute policiy to limit the rate.
+there is a voice called
+
+    stabilizationWindowSeconds: 300
+
+in v1 that is a flag called --horizontal-pod-autoscaler-downscale-stabolization=5m
+but can't change for every HPA.
+also you will be able in v2 to change other defaults
+in v2 there are new scale-up scale-down controls.
+
+in v2 status there are also new info called _conditions_ which will tell you
+what actions where taken and why. For examples:
+
+- ScalingActive
+- AbleToScale
+- ScalingLimited
+
+all this new fields are backward compatible but is not the best.
+in v1 most of this info is translated in annotations.
+
+the Pods value you can decide how much scale to. so you can scale faster or slower.
+up or down.
+
+** Vertical Pod Autoscaler (VPA)
 
 - [[https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler]]
 
+Is not part of core k8s like HPA. You need to install it.
+It is use to benchmark pods size.
+It *recommends* pod sizes and can *apply* them for you.
+Monitor real CPU and memory usage based on resource data:
+
+- CPU usage
+- Memory usage
+- OOM events
+
+If requests are too small you get:
+
+- OOM
+- Workload eviction
+- CPU starvation
+
+It has three components:
+
+- Recommender: Responsible for calculation of reccomantations based on historical data
+- Updater: responsible for evictions of pods which are to have their resource modified
+- Admission plugin: A Mutating admission Webhook parsing all pod creationg requests and modifying
+
+It can run in 4 modes:
+
+- Off: Recommendation only: VPA publishes only recommended pod sizes, and doesn't change anything.
+- Initial: Initialisation only: VPA resizes pod only when they are created
+- Recreate/Auto: VPA resizes pods that already exists
+
+It tracks long-term usage pattern and for applications with relatively flat
+usage over lifetime.
+
+You need to create a VPA object and you need to point it to the object you are
+monitoring.
+
+Best practices:
+
+- Start with recommendation-only mode
+- Use pod disruption budget
+- Set minimum and maximum container sizes in VPA object
+- From time to time update recommended container sizes and put it in the deployment spec.
+
+Enable cluster autoscaler, keep metrics server healthy.
+
+Don't use both VPA and HPA togethers. Because you don't have to scale them.
+Alternatively:
+
+- Use custom metrics for HPA
+- Use static number for scaling
+
+Using for singleton or things like prometheus or internal services.
+
 ** Cluster Autoscaler (CA)
 
-- [[https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler]]
+- [[https://github.com/kubernetes/autoscaler/]]
+- [[https://www.youtube.com/watch?v=UZ9NYQ-dpdw][Deep Dive into Autoscaling ]] 4 Sep 2020
+
+.image images/CA_schema.png
+.caption Source: [[https://www.youtube.com/watch?v=UZ9NYQ-dpdw][Deep Dive into Autoscaling ]] 4 Sep 2020
+
+Provides nodes so that every pod in cluster can schedule.
+Compacts and removed underutilized nodes.
+Based on scheduling simulations and declared pod requests, NOT metrics.
+CA operates on NodeGroups - resizable sets of identical nodes
+NodeGroup is implemented differently by each provider.
+
+Do to the simulation, the CA uses the same scheduler code and try to see
+for example "will adding a node of this allow me to schedule something now is
+not schedulable"? That is the reason why is always important to use the right
+version of the CA for the cluster! they need to be in synch.
+It also containes a cloud provider to actuate it's decisions.
+
+When the label called mark them as as unschedulable status condition for pods
+as unschedulable that is when the autoscaler activates.
+
+expansion option is what they call a single actions that would solve the problem.
+if one is successful it will still evaluate other options while remember the
+first.
+
+cluster autoscaler does not consider mixups (multispe asg).
 
 This component add or removes nodes from the cluster. The decisions are based
 on:
 
-- inability to deploy a Pod (scale up)
-- having nodes with low utilization for 10m (scale down)
+- Inability to deploy a Pod (scale up)
+- Having nodes with low utilisation for 10m (scale down)
 
 Commands are in the form of _cluster-autoscaler-_.
+
+It is based on simulation on scheduling and declared pod requests and not on
+real data.
+Scales up are triggers by pending pods.
+Scale down is evaluated from node utilising resource below a certain threshold.
+It then evaluate whether the pods currently running on the node can be rescheduled
+on other nodes in the cluster. If so, it threat the node as scale down candidate
+and waits _scale-down-unneeded-time_ and then drain and remove the node from
+the cluster.
+
+There are addon resizer, with which CA support different way to decide how to
+scale up/the expanders is what decides which option to choose.
+there are many:
+
+- Random (default)
+- Priority
+- Price (only GKE/GCP)
+- Least waste: picks the candidate node group with the least wasted CPU after scale up
+
+or you can implement your own in go.
+
+Best practices:
+
+- Pick the version that matches the cluster version (as stated above)
+- Define Pod Disruption budgets
+- Container lifecycle PreStop can be used to manage the termination
+- Setting pod priorities
+
+By default it aims at having cluster utilisation above scale down threshold of
+50%.
+
+Some cost optimisation advices:
+
+- You can use the flag --expendable-pods-priority-cutoff to avoid to scale for low priority jobs
+- You can scale on demand only if Spot is not available using "expansion priority" (it will wait max-node-provision-time)
+
+.image images/CA_cost.png
+.caption Source: https://www.youtube.com/watch?v=Dtr3rR04ekE
+
+In AWS you can use the Mixed Instance Policy to have diversification in the spot
+instance types you use. The instance types should have the same amount of
+ram and cpu. To help the prevision (simulation) of the CA.
+
+You can protect a node from being terminated by the CA with the flag:
+
+cluter-autoscaler.kubernetes.io/safe-to-evict=false
+
+You can use these on nodes with critical jobs.
+If you want to overscale create dummy pods with low priority so that they can
+be evicted to make space for the high priority ones.
+
+Use resource quotas in each namespace to avoid it to scale forever.
+Also you can use the maximum size on the ASG definition.
+PodDisruptionBudgets helps to avoid outages.
+
+** Other options
+
+- Addon Resizer: less sophisticated VPA
+- Cluster Proportional Autoscaler: Usually used to scale DNS replica set
+- KEDA
+
+KEDA Kubernetes event driven autoscaling makes use of HPA under the hood to allow
+event driven autoscaling of workloads from metrics from a variety of resources
+(CNCF Sandbox)
+
+* Objects
 
 ** DaemonSets
 
@@ -2017,6 +2226,10 @@ Each request goes through the following three stages:
 - Authorization: Authorizes the API request added by the logged in user
 - Admission control: Some additional module that can modify or reject the request based on additional checks.
 
+More on admission controllers here:
+
+- [[http://go-talks.appspot.com/github.com/jecnua/notes-presentations/notes/containers/orchestration/k8s/03-admission_controller.article][notes/containers/orchestration/k8s/03-admission_controller]]
+
 ** Checking access
 
 - [[https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access]]
@@ -2215,6 +2428,7 @@ before draining it.
 
 * Re/Sources (not already referenced directly)
 
+- [[https://www.youtube.com/watch?v=UZ9NYQ-dpdw][Deep Dive into Autoscaling ]] 4 Sep 2020
 - AMAZING VIDEO - [[https://www.youtube.com/watch?v=2dsCwp_j0yQ][YOUTUBE: Kubernetes the very hard way at Datadog]] - 24 Oct 2018
 - [[https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/]] - May 2018
 - [[https://kubernetes.io/blog/2017/11/containerd-container-runtime-options-kubernetes/]] - Nov 2017

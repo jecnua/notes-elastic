@@ -1,29 +1,16 @@
 OOM killer in k8s
-|| Last update: 13 Aug 2020
-
-* Resource reservation
-
-- [[https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/]]
-- [[https://labs.consol.de/devops/2019/04/16/aws_eks_oom.html]]
-
-kubelet flag:
-
-    --kube-reserved mapStringString
-    A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=500Mi,
-    ephemeral-storage=1Gi,pid=1000) pairs that describe resources reserved for
-    kubernetes system components. Currently cpu, memory, pid, and local
-    ephemeral storage for root file system are supported. See
-    http://kubernetes.io/docs/user-guide/compute-resources for more detail.
-    [default=none]
+|| Last update: 14 Aug 2020
 
 * OOM killer
 
-Be careful with fs, cpu, MemorytargetRAM. It's useful to avoid OOM.
-Limits too low will trigger cgroup OOM.
-Requests too low (or 0) will trigger System OOM.
-Definitely put limits and don't allow people to take everything.
+Setting the resource limits for all PODs is the best way to reduce the recurrence
+of OOM events on the nodes.
+However be careful because:
 
-* Limits and requests
+- Limits too low will trigger cgroup OOM.
+- Requests too low (or 0) will trigger System OOM.
+
+** Monitor limits and requests
 
 cAdvisor exposes two important metrics to get the usage of cpu and memory of
 workload on k8s:
@@ -31,11 +18,11 @@ workload on k8s:
 - container_memory_working_set_bytes
 - container_cpu_usage_seconds_total
 
-However when you check for alerts and dashboards online you will often see:
+When you check for alerts and dashboards online you will often see:
 
     container_memory_working_set_bytes{container!="POD", container!=""}
 
-Reason for this is because have 3 version of the same metric per each POD.
+The reason for this is because you have 3 version of the same metric per each POD.
 For example, if you search for a single pod
 
     container_memory_working_set_bytes{pod="k8s-spot-termination-handler-xxx}
@@ -66,3 +53,42 @@ What is the id label?
     reports on cgroups, and not just containers. The `id=”/”` is the lowest
     level cgroup namespace, which should report effectively system level metrics.
     Source: https://groups.google.com/g/prometheus-users/c/FwvvOdmEuV0
+
+* Resource reservation
+
+- [[https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/]]
+- [[https://labs.consol.de/devops/2019/04/16/aws_eks_oom.html]]
+
+** Flag: kube-reserved
+
+One way to reduce the events of nodes killing the kubelet is to _reserve_ memory
+for the kubernetes components.
+
+kubelet flag:
+
+    --kube-reserved mapStringString
+    A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=500Mi,
+    ephemeral-storage=1Gi,pid=1000) pairs that describe resources reserved for
+    kubernetes system components. Currently cpu, memory, pid, and local
+    ephemeral storage for root file system are supported. See
+    http://kubernetes.io/docs/user-guide/compute-resources for more detail.
+    [default=none]
+
+** Flag: target-ram-mb
+
+- [[https://applatix.com/making-kubernetes-production-ready-part-2/]]
+
+    the --target-ram-mb flag is only a hint, it does NOT guarantee that the
+    usage will be within that boundary.
+    Source: https://github.com/kubernetes/kubernetes/issues/86299#issuecomment-566426001
+
+Can be set in kops:
+
+- [[https://kops.sigs.k8s.io/cluster_spec/#targetrammb]]
+
+    The kube-apiserver uses the same assumption as the above mentioned Kubernetes
+    benchmark: 120GB for ~ 60,000 Pods, 2000 nodes, which is equivalent to 60MB /
+    Node, and 30 Pods on each node.
+    Generally speaking, 60MB per 20~30 Pods is a good assumption to make.
+    Container memory request can be set to equal to or greater than this value.
+    Sorce: https://applatix.com/making-kubernetes-production-ready-part-2/

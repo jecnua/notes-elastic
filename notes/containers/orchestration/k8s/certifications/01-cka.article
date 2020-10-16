@@ -301,9 +301,6 @@ troubleshooting or development work.
 
 * Kubernetes worker node components
 
-.image images/worker.png  _ 800
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
-
 It has three major components. It runs two processes:
 
 - [[https://kubernetes.io/docs/admin/kubelet/][kubelet]]
@@ -840,9 +837,6 @@ Doker ps can't see k8s pods and k8s can't see docker pods.
 
 - [[https://github.com/containerd/cri]]
 
-.image images/cri-containerd.png _ 800
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
-
 Since by default containerd (< 1.2) did not support CRI, engineers worked on
 creating a CRI interface for containerd. This project allowed a kubernetes
 cluster to use containerd as an underlying runtime without using docker.
@@ -1067,9 +1061,6 @@ priorityClassName ([[https://kubernetes.io/docs/concepts/policy/resource-quotas/
     Source: https://kubernetes.io/docs/concepts/policy/resource-quotas/
 
 ** Pod
-
-.image images/pod.png
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
 Unit of deployment and logical collection of one or more containers. All
 containers in a pod are deployed in parallel on the same node and share:
@@ -1738,9 +1729,6 @@ Modifying the "Pod template" of a Deployment object will trigger a
 *Deployment*rollout*, while operations like scaling the deployment do not
 trigger this type of event.
 
-.image images/deployments.png
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
-
 Changes like these will create a new revision of the deployment and they will
 allow you to revert it via a *rollback* operation. However when you roll back
 is the pod template part that is rolled back, not other options like
@@ -1861,9 +1849,6 @@ that defines how to handle existing jobs. There are three options:
 
 - [[https://kubernetes.io/docs/concepts/services-networking/service/]]
 
-.image images/services.png _ 600
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018]]
-
 Pods are ephemeral and resources like IP addresses allocated to them cannot be
 static. To solve this problem, instead of accessing the pods directly a
 construct called *service* is used.
@@ -1873,7 +1858,6 @@ construct called *service* is used.
     default       kubernetes             ClusterIP   10.96.0.1      <none>        443/TCP         112s
     kube-system   default-http-backend   NodePort    10.108.60.44   <none>        80:30001/TCP    100s
     kube-system   kube-dns               ClusterIP   10.96.0.10     <none>        53/UDP,53/TCP   108s
-
 
 targetPort defaults to port, but it could be set to any value, including a string
 referring to a port on the backend pod. The port number can change in the pod
@@ -2049,9 +2033,6 @@ Given port name, the port number is returned.
     the cluster Services."
     Source: https://kubernetes.io
 
-.image images/ingress.png
-.caption Source: https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/
-
 While _services_ manage the routing to access the pods, the *Ingress* allows you
 to decouple routing rules to access the service from the application.
 It allows *inbound* connection to reach the cluster _service_ and is implemented
@@ -2127,9 +2108,6 @@ PV _can_ be dynamically provisioned based on the *storage*class* resource. A
 storage class contains pre-defined provisioner and parameters to create a
 persistent volume. Using PersistentVolumeClaims, a user sends the request for
 dynamic PV creation, which gets wired to the StorageClass resource.
-
-.image images/pvc.png _ 600
-.caption Source: [[https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS158x+1T2018/]]
 
     A PersistentVolumeClaim (PVC) is a request for storage by a user. Users request
     for PersistentVolume resources based on size, access modes, etc. Once a suitable

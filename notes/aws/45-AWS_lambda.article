@@ -1,0 +1,19 @@
+AWS Lambda
+|| Last update: 3 Dec 2020
+
+* Billing
+
+- [[https://aws.amazon.com/about-aws/whats-new/2020/12/aws-lambda-changes-duration-billing-granularity-from-100ms-to-1ms/]]
+- [[https://aws.amazon.com/lambda/pricing/]]
+
+AWS Lambda is billed my the millisecond.
+You are also billed for provisioned Concurrency, Lambda Requests and Network.
+
+* Runtimes
+
+- [[https://aws.amazon.com/about-aws/whats-new/2020/12/aws-lambda-now-supports-container-images-as-a-packaging-format/]]
+
+Lambda can run simple code or a docker container.
+I believe using a docker container is better since you can have better local
+testing and manage the process in the same way as you manage the rest
+of the container.

@@ -1,5 +1,27 @@
 EBS
-|| Last update: 20 Jan 2020
+|| Last update: 3 Dec 2020
+
+* GP3
+
+- [[https://aws.amazon.com/about-aws/whats-new/2020/12/introducing-new-amazon-ebs-general-purpose-volumes-gp3/]]
+
+gp2 is now superseded by gp3.
+
+    20% lower price-point per GB than existing gp2 volumes. With gp3 volumes,
+    customers can scale IOPS (input/output operations per second) and throughput
+    without needing to provision additional block storage capacity, and pay only
+    for the resources they need.
+    Source: https://aws.amazon.com/about-aws/whats-new/2020/12/introducing-new-amazon-ebs-general-purpose-volumes-gp3/
+
+    Next generation gp3 volumes offer the ability to independently provision
+    IOPS and throughput, separate from storage capacity. This enables customers
+    to scale performance for transaction-intensive workloads without needing to
+    provision more capacity, so they only pay for the resources they need. The
+    new gp3 volumes also deliver a baseline performance of 3,000 IOPS and 125MB/s
+    at any volume size. For use cases, where your application needs more
+    performance than the baseline, customers can scale up to 16,000 IOPS and
+    1,000 MB/s for an additional fee.
+    Source: https://aws.amazon.com/about-aws/whats-new/2020/12/introducing-new-amazon-ebs-general-purpose-volumes-gp3/
 
 * Fast snapshot restore
 

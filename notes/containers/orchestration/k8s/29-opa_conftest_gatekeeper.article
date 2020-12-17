@@ -1,5 +1,5 @@
 OPA, conftest and Gatekeeper
-|| Last update: 30 Sep 2020
+|| Last update: 2 Oct 2020
 
 * Intro
 
@@ -18,11 +18,10 @@ first transform it to json.
 
 - [[https://play.openpolicyagent.org/]]
 
-Rego is a DSL that allows to query "things" in a json file.
-To put it better, it allows to run assertions over structural data.
-You can think of it as defensive programming.
-Rego it's a language to query and the queries are assertion but is not a general
-purpose language.
+Rego is a DSL that allows to run assertions over structural data (but is not a
+general purpose language). You can think of it as defensive programming.
+Rego is a language to validate json and the validation results are json documents
+themselves.
 Rego *IS* confusing.
 Since in older versions there are different interpretation of the equal sign
 depending on the context, please now use:
@@ -30,7 +29,7 @@ depending on the context, please now use:
 - == instead of = for equality
 - := to assign
 
-For example this is a valid assertion in rego.
+To understand the usage please look at this valid rule in rego:
 
     s {
         x := 16
@@ -54,15 +53,12 @@ The above returns:
 
 Rego doesn't have a concept of allow/deny, it just query and returns structural
 data.
-Each line in each block will be analysed, line by line, until the lines are "true"
+Each line in each rule will be analysed, line by line, until the lines are "true"
 it goes on. If it finds a false it stops and the blocks exists.
-ALL the lines are ANDed
+ALL the lines are ANDed.
 
-If all the lines are true, the block will result as true.
-
-OPA reply is just a json.
-
-To return something different from just "true", you can use return values:
+If all the lines are true, the rule will result as true. To return something
+different from just "true", you can use return values:
 
     foo[msg] {
         x := 16
@@ -115,18 +111,16 @@ You can write policies and bundle then to be pushed to a registry:
 
 - [[https://github.com/open-policy-agent/gatekeeper]]
 
-Bring OPA to k8s in a k8s native way.
+Bring OPA to k8s in a k8s native way. Gatekeeper uses Rego to interpret the
+message from the admission controller.
 
-rego is a language to validate json and the validation results are json
-documents themselves which can then be interpreted by the admission controller.
+There are two main components in gatekeeper:
 
-There are two component in gatekeeper:
+- gatekeeper-audit
+- gatekeeper-controller-manager
 
-- controller manager
-- audit
-
-Audit check and retroactively check the status of things.
-Audit does not enforce only shows violations.
+Audit analyse the cluster constantly and reports on its status in respect of
+defined rules. It does not enforce anything but only shows violations.
 
 At the moment gatekeeper can only be used as a validation webhook and not as a
 mutating one. However work is in the backlog to change this.
@@ -141,19 +135,123 @@ the kube-mgmt sidecar container.
 It enables to setup a policy and feed this policy some parameters or data
 during evaluation.
 
-However is DSL nested in DSL!
+However is a DSL nested in DSL!
 
 The constraint templates functionality let you define a new CRD on the fly to
 define a policy that then user can apply.
 The policy can be defined in one place and used in another.
 
-** Libraries
+** Rules / Constraints
+
+- [[https://github.com/open-policy-agent/gatekeeper#constraints]]
+
+When defining a rule, you can restrict on what specifically apply this rule to.
+Among the selection you can do you can restrict to which namespace to run
+the tests and which to ignore.
+To exclude a namespace you can use the *excludedNamespaces* keyword:
+
+    apiVersion: constraints.gatekeeper.sh/v1beta1
+    kind: K8sImageDigests
+    metadata:
+      name: container-image-must-have-digest
+    spec:
+      match:
+        kinds:
+          - apiGroups: [""]
+            kinds: ["Pod"]
+        excludedNamespaces:
+          - kube-system
+
+You could also exclude it via CLI, however at the moment the chart does not
+allow it.
+
+- [[https://github.com/open-policy-agent/gatekeeper/blob/469f747df5b97317d968a8cc4b7ef53437860b28/deploy/gatekeeper.yaml#L710]]
+
+    - args:
+      - --port=8443
+      - --logtostderr
+      - --exempt-namespace=gatekeeper-system
+      - --operation=webhook
+
+More on it on the design paper for the functionality:
+
+- [[https://docs.google.com/document/d/1yHuXFs_HQL5N9yT9QVi6AMyflWPtZS4Pg-uXczdqgZ8/edit#heading=h.fucr2hxulv8c]]
+
+** Audit results
+
+- [[https://github.com/open-policy-agent/gatekeeper#audit]]
+
+The results of the scan are saved inside the instance of the CRD constraints you
+created in the template. Taking the example for the repo README it would be
+inside:
+
+    apiVersion: constraints.gatekeeper.sh/v1beta1
+    kind: K8sRequiredLabels
+
+    kubectl describe K8sRequiredLabels <your_instance_of_it>
+
+By default the violation saved in the object are 20, but you can change it with:
+
+    --constraint-violations-limit=<number>
+
+What you need to be careful with this change is the resulting size of the
+object. ETCD max size for an object is 1MB and in general the bigger it is the
+more load you will put on ETCD/api-server.
+Reducing the frequency of the audit can help lower this pressure.
+
+** UI
+
+I found only one app that shows graphically the status of the gatekeeper
+violations and is:
+
+- [[https://github.com/sighupio/gatekeeper-policy-manager]]
+
+It's still in early development but the graphical representation of the
+violations is invaluable.
+
+** Gatekeeper libraries
 
 There are some predefined libraries here:
 
 - [[https://github.com/open-policy-agent/gatekeeper-library]]
+- [[https://github.com/sighupio/fury-kubernetes-opa/tree/master/katalog/gatekeeper]]
 
 Where they also created some OPA policies to implement PSP behaviour.
+
+** Other libraries
+
+There are two collections of rego rules for k8s deprecation that are very
+useful before a cluster upgrade.
+
+- [[https://github.com/swade1987/deprek8ion]]
+- [[https://github.com/naquada/deprek8]]
+
+They planning to be merged into one.
+
+** Resource order
+
+To create the templates and the rules we need two charts: one for templates and
+one for rules. The reason of this choice instead of merging them into one is
+that the rules users CRD created on the fly by Gatekeeper itself when the
+templates are applied. If you try to apply them together, the apply will fail.
+
+I didn’t find any way to force ordering and wait in helm between the two
+different types (this is actually a missing feature
+[[https://github.com/helm/helm/issues/8439]]).
+
+This means the have this two charts to apply in order:
+
+- gk-templates
+- gk-rules
+
+** List rules
+
+Since gatekeeper creates CRD on the fly is not easy to find a way to query which
+rules are active on the cluster. The best way I found until now it to list all
+the CRD and than get the instance of it:
+
+    k get ConstraintTemplate | grep -v Name | \
+      cut -f1 -d' ' | xargs -I {} kubectl get {}
 
 * Real use cases
 

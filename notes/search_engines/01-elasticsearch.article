@@ -1,5 +1,5 @@
-ElasticSearch
-|| Last update: 1 Apr 2020
+ElasticSearch - TO BE CLEANED
+|| Last update: 21 Dec 2020
 
 * Intro
 
@@ -66,6 +66,116 @@ NO 7.1.0/7.1.1 May 2019
     We've also made snapshot restores faster by parallelizing restore operations for each shard.
     These enhancements to snapshot and restore are being released under the Apache 2.0 license.
     Proxy mode for cross-cluster replication and cross-cluster search
+
+* Indices
+
+For logging purposes the default of 5 shards per indices is too high. Many of the
+indices you may have are probably less then a single gb a day and for sizes like
+that 5 shards is overkill.
+
+Aside from the performances issues of having too many shards for small indices
+there is also the problem that you may soon reach the maximum amount of indices
+you can have in a cluster.
+
+While the max number of shards per node is a soft limit that can be raised,
+having 1000 shards in a node (default) is already an horrible high limit.
+
+To check how many shard do You have at the moment in the cluster use:
+
+    $ GET /_stats
+    [...]
+    "_shards" : {
+      "total" : 5000,
+      "successful" : 5000,
+      "failed" : 0
+    },
+    [...]
+
+To see the historical data in prometheus, if you use the es exporter:
+
+    elasticsearch_cluster_health_active_shards
+
+Total cluster shard saturation (considering the default of 1000 per node was
+not changed):
+
+    (elasticsearch_cluster_health_active_shards / (elasticsearch_cluster_health_number_of_data_nodes * 1000)) * 100
+
+
+To avoid this, set a default template with 1 shard and 1 replica per index
+aside exceptions. To find your exceptions list all the indices you have in the
+cluster than if you have anything that is more than 5gb without replica you may
+think of sharding.
+
+To create a default template you can do the following:
+
+    PUT _template/dafault
+    {
+      "index_patterns": ["*"],
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1
+      },
+      "order" : 0
+    }
+
+Then you can put exceptions as needed:
+
+    PUT _template/large-ind
+    {
+      "index_patterns": [
+        "one-*",
+        "two-*",
+        "three-*"
+      ],
+      "settings": {
+        "number_of_shards": 5,
+        "number_of_replicas": 1
+      },
+      "order" : 1
+    }
+
+The “order” is important, so make sure the more specific indices are of higher
+order than the default.
+
+You can see the templates you have in the cluster with:
+
+    # Kibana dev tool syntax
+    GET _template
+
+** Indices maintenance
+
+* ILM and SLM
+
+- [[https://www.elastic.co/guide/en/elasticsearch/reference/7.10/index-lifecycle-management.html]]
+- [[https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-lifecycle-management.html]]
+
+* Curator
+
+** Curator chart
+
+At the moment there is no usable curator chart available.
+The old one is now deprecated:
+
+- [[https://github.com/helm/charts/tree/master/stable/elasticsearch-curator]]
+
+And Elastic have no intention to support curator (docker container or chart):
+
+- [[https://github.com/elastic/helm-charts/issues/236]]
+- [[https://github.com/elastic/helm-charts/pull/961]]
+
+They are pushing instead for ILM and SLM which are very index-oriented and not
+easily usable in a shared environment.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -191,6 +301,20 @@ https://www.elastic.co/blog/cost-saving-strategies-for-the-elasticsearch-service
 
 Monitoring via Kafka
 https://www.elastic.co/blog/elastic-stack-monitoring-with-metricbeat-via-logstash-or-kafka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

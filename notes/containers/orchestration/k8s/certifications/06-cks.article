@@ -1,0 +1,248 @@
+CKS notes
+|| Last update: 5 Jan 2021
+
+* Kubernetes certification notes: CKS
+
+Certified Kubernetes Security Specialist (CKS) certification notes.
+
+* Cluster setup
+
+** Network security policies
+
+Restrict cluster level access
+
+* CIS k8s benchmark
+
+- [[https://www.cisecurity.org/benchmark/kubernetes/]]
+
+One of the topic is: "Use CIS benchmark to review the security configuration of
+k8s component."
+
+- ETCD
+- kubelet
+- kubedns
+- kubeapi
+
+CIS is a community driven non-profit and releases controls and benchmark.
+Is globally recognised to define security good practice guidance and industry
+accepted hardening procedures.
+
+AWS security hub creates checks for things like this too.
+
+CIS Kubernetes benchmarks. CSI scope is both control plane and data plane.
+
+There are multiple way to run the CSI tests on your clyster.
+
+- kube-bench (by qua security) - go application [[https://github.com/aquasecurity/kube-bench]]
+- [[https://github.com/dev-sec/cis-kubernetes-benchmark]]
+
+The best one I found is kube-bench. It supports two types of run. One for masters
+and one for nodes.
+
+    # Masters
+    sudo docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro \
+    -t aquasec/kube-bench:latest master --version 1.19 > /home/ubuntu/cis-results.txt
+    # Nodes
+    sudo docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro \
+    -t aquasec/kube-bench:latest node --version 1.19 > /home/ubuntu/cis-results.txt
+
+** kubeadm and CIS on the masters
+
+Some things are not enabled by default when using kubeadm, like the auditlogs:
+
+    [FAIL] 1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Automated)
+    [FAIL] 1.1.19 Ensure that the Kubernetes PKI directory and file ownership is set to root:root (Automated)
+    [FAIL] 1.2.6 Ensure that the --kubelet-certificate-authority argument is set as appropriate (Automated)
+    [FAIL] 1.2.16 Ensure that the admission control plugin PodSecurityPolicy is set (Automated)
+    [FAIL] 1.2.21 Ensure that the --profiling argument is set to false (Automated)
+    [FAIL] 1.2.22 Ensure that the --audit-log-path argument is set (Automated)
+    [FAIL] 1.2.23 Ensure that the --audit-log-maxage argument is set to 30 or as appropriate (Automated)
+    [FAIL] 1.2.24 Ensure that the --audit-log-maxbackup argument is set to 10 or as appropriate (Automated)
+    [FAIL] 1.2.25 Ensure that the --audit-log-maxsize argument is set to 100 or as appropriate (Automated)
+    [FAIL] 1.3.2 Ensure that the --profiling argument is set to false (Automated)
+    [FAIL] 1.3.6 Ensure that the RotateKubeletServerCertificate argument is set to true (Automated)
+    [FAIL] 1.4.1 Ensure that the --profiling argument is set to false (Automated
+
+You can fix some this way:
+
+- [[https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/control-plane-flags/]]
+
+You can also ensure that the --kubelet-certificate-authority argument is set
+by adding:
+
+    apiVersion: kubeadm.k8s.io/v1beta2
+    kind: ClusterConfiguration
+    kubernetesVersion: v${k8s_deb_package_version}
+    apiServer:
+      extraArgs:
+        [...]
+        kubelet-certificate-authority: "/etc/kubernetes/pki/ca.crt"
+
+** kubeadm and CIS for the nodes
+
+There is only one error by default in 1.19:
+
+    [FAIL] 4.2.6 Ensure that the --protect-kernel-defaults argument is set to true (Automated)
+
+    4.2.6 If using a Kubelet config file, edit the file to set protectKernelDefaults: true.
+    If using command line arguments, edit the kubelet service file
+    /etc/systemd/system/kubelet.service.d/10-kubeadm.conf on each worker node and
+    set the below parameter in KUBELET_SYSTEM_PODS_ARGS variable.
+    --protect-kernel-defaults=true
+    Based on your system, restart the kubelet service. For example:
+    systemctl daemon-reload
+    systemctl restart kubelet.service
+
+Looks like the flag needs some settings to make it works.
+However the setting belows are not needed on ubuntu 20.04:
+
+    cat > /etc/sysctl.d/90-kubelet.conf << EOF
+    vm.overcommit_memory=1 # https://sysctl-explorer.net/vm/overcommit_memory/
+    kernel.panic=10 # https://sysctl-explorer.net/kernel/panic/
+    kernel.panic_on_oops=1 # https://sysctl-explorer.net/kernel/panic_on_oops/
+    EOF
+    sysctl -p /etc/sysctl.d/90-kubelet.conf
+    Source: https://github.com/kubernetes/kubernetes/issues/66241#issuecomment-460832038
+
+The only thing you need to add is this flag at the end of the kubelet config:
+
+    protectKernelDefaults: true
+
+Could be usefult to take a look at the EKS AMI:
+
+- [[https://github.com/awslabs/amazon-eks-ami/pull/392/files]]
+
+To print the defaults:
+
+    kubeadm config print init-defaults --component-configs KubeletConfiguration
+    kubeadm config print join-defaults --component-configs KubeletConfiguration
+
+** k8s CIS For EKS
+
+For EKS AWS they have their own:
+
+- [[https://aws.amazon.com/blogs/containers/introducing-cis-amazon-eks-benchmark/]]
+
+They have their own PDF since is a managed cluster.
+
+** Deployment mechanism
+
+There is no official helm chart available for kube-bench.
+
+- [[https://github.com/aquasecurity/kube-bench/issues/225]]
+
+The problem is the software is supposed to run on every k8s node you want to test
+in a cron-like way. In k8s there is no way at the moment to run a cronjob as a
+deamonset and is actually an existing pain-point for many other reasons.
+
+- [[https://github.com/kubernetes/kubernetes/issues/64623#issuecomment-609875003]]
+
+There are 4 main ways in which you may solve a problem like this with k8s:
+
+- A special controller that creates pods for you when need
+- DaemonSet with pod having a loop around the command and a sleep
+- DaemonSet with pod running cron and your command (via cron)
+- Static pods on nodes (still with a wait/cron)
+
+They all have problems.
+
+The first solution requires installing an additional controller, which you may
+not want to maintain.
+
+You can have a cronjob docker that runs the command at a specific time or between
+sleeps, but it will always keep the resource occupied on the node while doing
+nothing (pod resource/limits).
+
+You could use a static pods (with a cron) if you want to change the user data
+when the node is created (but is not flexible).
+
+I think a better solution would be to use AWS SSM RunCommand to run the docker
+image only on request on all nodes without using k8s. This would solve the issue
+of requests/limits and the problem of access (the pod needs access to the
+filesystem to run the tests).
+
+This can be done with an AWS SSM Document like this:
+
+    schemaVersion: "2.2"
+    description: "Kube-bench run"
+    mainSteps:
+      - action: "aws:runShellScript"
+        name: "kubebench"
+        inputs:
+          runCommand:
+            - "docker run --rm --pid=host -v /etc:/etc:ro -v /var:/var:ro -t \
+            aquasec/kube-bench:latest node --version 1.18 --json"
+
+However there are some issues:
+
+    The command output displays a maximum of 2500 characters. You can view the
+    complete command output in either Amazon S3 or CloudWatch logs, if you
+    specify an S3 bucket or a CloudWatch logs group when you run the command.
+    Source: AWS Console
+
+If you want the output in a searchable way you will probably need to use the
+setting to save the file on s3, having a lambda that reads from there and ingest
+in elasticsearch or somewhere else for display/alerts. This means changing the
+role of ALL the nodes you need to run on to be able to read/write on that bucket.
+
+It will require some changes that are not straightforward and requires time.
+
+* Ingress with security controls
+
+Setup ingress objects with security controls
+
+* Protect node metadata and endpoints
+
+* Minimise use of GUI
+
+* Verify platform binaries before deploying
+
+* Security: Control plane
+
+- [[https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/control-plane-flags/]]
+
+And for each component:
+
+- [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/]]
+- [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/]]
+- [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/]]
+
+** Enable audit logs for api-server
+
+You can enable audit logs for kubernetes component via the kubeadm config file:
+
+    apiVersion: kubeadm.k8s.io/v1beta2
+    kind: ClusterConfiguration
+    kubernetesVersion: v${kubeadm_install_version}
+    apiServer:
+      extraArgs:
+        audit-log-path: "/root/audit.log"
+        audit-log-maxage: "30"
+        audit-log-maxbackup: "10"
+        audit-log-maxsize: "100"
+
+** Disable profiling for components
+
+Disable profiling for scheduler, api-server and controller manager.
+The profiling flag is defined as this:
+
+    Enable profiling via web interface host:port/debug/pprof/
+
+You can disable it via kubeadm:
+
+    apiVersion: kubeadm.k8s.io/v1beta2
+    kind: ClusterConfiguration
+    kubernetesVersion: v${kubeadm_install_version}
+    apiServer:
+      extraArgs:
+        profiling: "false"
+    controllerManager:
+      extraArgs:
+        profiling: "false"
+    scheduler:
+      extraArgs:
+        profiling: "false"
+
+* Re/Sources
+
+- [[https://k8sfiles.com/episodes/09-certifications/]]

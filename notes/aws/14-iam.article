@@ -26,6 +26,24 @@ a profile beforehand on ~/.aws/credentials. Example of usage:
       --region eu-west-1 \
       --profile my-profile
 
+NOTE: The duration of the token cannot be longer than what it set up on AWS.
+
+You may be asked to solve a captcha when using it. To avoid the link preview
+to fail on MacOS Big Sur, symlink the following:
+
+    ln -s /System/Applications/Preview.app /Applications/Preview.app
+
+Otherwise you will see the following:
+
+    Please visit the following URL to view your CAPTCHA:
+    https://accounts.google.com/Captcha?v=2&ctoken=xxx-xxx-xxx-xxx-xxx
+    Captcha (case insensitive): The application /Applications/Preview.app cannot
+    be opened for an unexpected reason, error=Error Domain=NSCocoaErrorDomain
+    Code=260 "The file “Preview.app” couldn’t be opened because there is no such
+    file." UserInfo={NSURL=file:///Applications/Preview.app,
+    NSFilePath=/Applications/Preview.app, NSUnderlyingError=0x7f80d8c0eb20
+    {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory”}}
+
 ** Auth verification
 
 The order of auth verification can be found here:

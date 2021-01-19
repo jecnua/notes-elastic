@@ -1,0 +1,81 @@
+Remote access to website via google auth - NEEDS CLEANING AND CONTEXT
+|| Last update: 19 Jan 2020
+
+* Intro
+
+This solution uses Vouch and OpenResty.
+It is based on using a [[https://en.wikipedia.org/wiki/Split-horizon_DNS][Split Horizon]]
+DNS configuration.
+
+When the DNS is resolved by the OpenResty application it will get the
+internal endpoint.
+
+Public/Private wildcard SSL. For each website there is a wildcard on the public
+side that works as a catchall.
+Private each service or app has it's own record (in k8s could be created with
+external DNS).
+
+Public DNS is only a star record name that points to openresty (with the catchall)
+cert.
+
+Remember to have a third zone that always needs to be accessible to point to
+vouch and openresty.
+
+A call hits openresty and /validate send it to vouch.
+This happens all the time unless you call vouch directly.
+
+Code in providers/openid/openid.go
+
+* Vouch
+
+Vouch works by sharing cookie: [[https://github.com/vouch/vouch-proxy#installation-and-configuration]]
+
+BEWARE by default logout will log you out from vouch (cookie) and not your
+identity provider.
+
+VouchCookie:
+
+- [[https://github.com/vouch/vouch-proxy/issues/40]]
+- [[https://github.com/vouch/vouch-proxy/issues/154#issuecomment-536777412]]
+
+    As part of the /login flow the state variable is generated and stored in a
+    session cookie in the browser. After logging in at the IdP (okta), a redirect
+    to the oauth.callback_url is issued which includes the state var. /auth reads
+    the state variable from the session cookie and makes sure it matches the state
+    variable which was handed back by the IdP.
+
+A cookie is then saved for vouch use in which the result of the successful
+authentication is store.
+
+** JWT
+
+Vouch have a secret to sign the jwt and stores all in a cookie (to have HA).
+
+    A 50-character random string, used by Vouch to store the encrypt the session
+    variable. Should be random.
+
+- [[https://github.com/vouch/vouch-proxy/blob/f222fcbab200116bdf6a7328982c3bd0836c9126/config/config.yml_example#L58]]
+
+    For HS256: Retrieve the client_secret from Auth0's Management API using the
+    Get a Client endpoint. For debugging purposes, you can visually inspect your
+    token at jwt.io; for this purpose, you can also locate your secret in the
+    Auth0 Dashboard. For applications, look in Settings and locate the Client
+    Secret field. For APIs, look in Settings and locate the Signing Secret field.
+    (Note that this field is only displayed for APIs using the HS256 signing
+    algorithm.)
+
+- [[https://github.com/vouch/vouch-proxy/blob/f222fcbab200116bdf6a7328982c3bd0836c9126/config/config.yml_example#L58]]
+
+    I have surmised by reading through Vouch's repository that Vouch issues
+    cookie JWT tokens that it creates, even if Vouch ultimately uses another
+    OpendId identity provider to do the auth. Vouch doesn’t rotate keys.
+
+* Auth0
+
+- [[https://auth0.com/docs/flows/add-login-auth-code-flow#authorize-user]]
+- [[https://auth0.com/docs/flows/authorization-code-flow]]
+
+QUESTION: Authorised group in the openresty??
+QUESTION: X-Vouch-IdP-Claims Groups???
+QUESTION: k8s-rbac?? proxy in front of the API?
+QUESTION: How to manage groups?

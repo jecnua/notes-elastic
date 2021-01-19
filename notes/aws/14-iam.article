@@ -1,18 +1,23 @@
-IAM strategy - (this article needs to be cleaned)
-|| Last update: 11 Jun 2020
+IAM strategy - AWS account via GSuite SAML federation
+|| Last update: 19 Jan 2021
 
 * SAML Federated access to AWS from GSuite
 
-- single-sign on and more secure management of users
+A single-sign on mechanism to avoid having a duplication of users on AWS
+and allow easier removal and group management.
+
+* Tooling
+
+- [[https://github.com/cevoaustralia/aws-google-auth]]
+- [[https://cevo.com.au/post/2019-02-21-cli-aws-access-with-google-sso-using-aws-google/]]
 
 Once you have that in place, to authenticate you can use a tool like
-aws-google-auth:
+aws-google-auth. On MacOS it can be installed with brew:
 
-- [[https://github.com/cevoaustralia/aws-google-auth/]]
+    brew install aws-google-auth
 
 You will need some information like IDP_ID and SP_ID. You also need to create
-a profile beforehand on ~/.aws/credentials.
-The you use it this way:
+a profile beforehand on ~/.aws/credentials. Example of usage:
 
     aws-google-auth \
       --idp-id xxx \
@@ -21,42 +26,57 @@ The you use it this way:
       --region eu-west-1 \
       --profile my-profile
 
-*10 JUN 2020*: There is a bug at the moment with the tool. If you install it via
-pip you won’t be able to login.
+** Auth verification
 
-- [[https://github.com/cevoaustralia/aws-google-auth/issues/179#issuecomment-641439606]]
+The order of auth verification can be found here:
 
-Until the fix is merged please install the tool from the repository.
+- [[https://github.com/cevoaustralia/aws-google-auth/blob/d473d67b0772700942f5bb0db3522af0a1005453/aws_google_auth/google.py#L830]]
 
-    $ git clone https://github.com/brunodasilvalenga/aws-google-auth.git
-    $ cd aws-google-auth
-    $ git checkout fix-google-captcha
-    $ pip install -e . --user
+    auth_methods = {
+        2: 'TOTP (Google Authenticator)',
+        3: 'SMS',
+        4: 'OOTP (Google Prompt)'
+    }
 
-* TO BE CLEANED AFTER THIS POINT
+* Known issues
 
-Best practices is at the moment to have users and roles in a security account
-and once authenticated there assume role in another.
+If calling the tool results in error, the error can be debugged by saving the
+failure page with the flag --save-failure-html.
 
-This allows to have a single place to manage users.
+So for example if your normal usage is:
 
-* Access via Identity Federation
+  aws-google-auth -p <my-profile>
 
-- [[https://aws.amazon.com/blogs/aws/new-for-identity-federation-use-employee-attributes-for-access-control-in-aws/]]
+use:
 
-you cannot have a free open system and talk about security
+  aws-google-auth -p <my-profile> --save-failure-html
 
-* Policy from day one
+** Password expiration
 
-use federated access
-every machine can login via ssh on a machine via AWS SSM
+If your password needs to be changed the command line tool will fail and the error
+page will be google page to change password.
 
-everyone is using federated access
+You may need to change password EVEN if you are still logged in your email.
 
-using SAML
-or
-amazon single sign on
+To make sure the error is correct logout from you email and try to login again.
+You should receive the same prompt in the browser.
 
-AWS Inspect
-you can define what people can do
-and if it's blocked you can review the rule
+After changing your password remember to change the password also on your device
+that you use to approve the login attempt.
+
+If you don’t have Google Authenticator on your phone/device the second auth
+method that will be tried by google is an SMS with the number configured on the
+account.
+
+SMS verification didn’t work for me so make sure the app is working.
+
+*** Keyring update
+
+In case you are using the keyring to store you password (using the flag -k),
+this entry needs to be removed from the keyring before attempting to use the tool again.
+
+You can remove the entry via shell on MacOS with the following:
+
+    # MacOs Big Sur
+    sudo security delete-generic-password \
+      -l aws-google-auth $HOME"/Library/Keychains/login.keychain-db"

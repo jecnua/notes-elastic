@@ -1,0 +1,95 @@
+GO
+|| Last update: 17 Feb 2020
+
+
+* Packaging
+
+* Part 2
+
+8.1
+
+* Concurrency
+
+- [[https://github.com/ardanlabs/gotraining/tree/master/topics/courses/go/concurrency]]
+
+In Go, concurrency is implemented with Goroutines which are path of executions.
+
+The OS scheduler is a preemptive scheduler and this means that when it needs to
+make a decision on how to schedule a thread, these decisions are are not
+deterministic. You can't know beforehand know how they will be allocated.
+
+A process maintain and manage the resources for a running program.
+it has a full memory map (virtual but the program thinks it's real)
+It's also given a thread.
+
+The main thread. when it dies, the program is shut down.
+The job of the main thread is to manage the flow of execution.
+
+Multitheaded in a multicore setting is very hard.
+
+** Paths of executions
+
+A path of execution (or a thread) can be in one of three states:
+
+- executing/running (placed on a core)
+- runnable
+- waiting
+
+A context switch is when a thread is put out of one core and a new one is put in
+it's place. Only _runnable_ thread can be scheduled.
+A context switch is very expensive.
+A lot of info needs to be saved to be allowed for a thread to be _removed_ from
+a core and be allocated again later (a thread never knows it's been stopped).
+Replacing state is very expensive.
+
+Thread in go have a 1MB stack space.
+
+Threads are in waiting state usually when it's waiting for something from the OS.
+
+If you have too many threads, the OS will try to run them "like" they are all
+running at the same time, but we know it's not possible so it's just a lot of
+context switch. OS needs to assign a slice of time to each of them to execute
+them.
+
+With threads: LESS IS MORE. The less context switch the better.
+A context switch can be seen as application latency.
+
+** Run queue
+
+The OS will create a _run_queue_.
+
+- [[https://en.wikipedia.org/wiki/Run_queue]]
+
+Every time a thread is in a runnable state, the OS will put it in a queue.
+There is a three hierarchy of these queues:
+
+- a core level
+- a processor level
+...
+
+It's trying to do this to be the more performant as possible.
+
+** Thread types
+
+As a dev we need to understand our workload. There are two types:
+
+- CPU bound workload
+- I/O bound workload
+
+If you have mostly CPU bound threads, the more you have the worse it is because
+they will context switch for no reason while they are still _runnable_.
+
+I/O bound they often move from running state to waiting state. In this case
+having more threads than cores may be a good idea.
+
+In the past we did this via _thread_pool_.
+
+- What is the best amount of threads to solve my problem?
+- What is the ratio between cores and threads?
+
+Depends on the workload.
+
+** Performance
+
+Adding more cores should give you more throughput in a linear way. If it's not
+happening, then there is an issue in the code.

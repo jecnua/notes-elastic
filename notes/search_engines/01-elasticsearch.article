@@ -1,5 +1,5 @@
-ElasticSearch - TO BE CLEANED
-|| Last update: 21 Dec 2020
+ElasticSearch
+|| Last update: 20 Jan 2021
 
 * Intro
 
@@ -12,11 +12,7 @@ AWS articles:
 
 * Versions recap
 
-5.5.0/5.5.3 July 2017
-5.6.0/5.6.16 ???
 [...]
-6.0.0/6.0.1 ???
-6.1.0/6.1.4 ???
 6.2.0/6.2.4 April 2018
 6.3.0/6.3.2 June 2018
     X-Pack features will now be bundled into the default distribution. All free features are included and enabled by default and will never ‘expire’, and commercial features are opt-in via a trial license. The license for free features never expires, you no longer need to register to use these capabilities.
@@ -100,7 +96,6 @@ not changed):
 
     (elasticsearch_cluster_health_active_shards / (elasticsearch_cluster_health_number_of_data_nodes * 1000)) * 100
 
-
 To avoid this, set a default template with 1 shard and 1 replica per index
 aside exceptions. To find your exceptions list all the indices you have in the
 cluster than if you have anything that is more than 5gb without replica you may
@@ -151,7 +146,7 @@ You can see the templates you have in the cluster with:
 
 * Curator
 
-** Curator chart
+** Helm chart
 
 At the moment there is no usable curator chart available.
 The old one is now deprecated:
@@ -166,346 +161,29 @@ And Elastic have no intention to support curator (docker container or chart):
 They are pushing instead for ILM and SLM which are very index-oriented and not
 easily usable in a shared environment.
 
+** Reduce shards of existing indices
 
+If you are trying to reduce the shard pressure of an existing cluster when
+indices have too many shards set by default, after creating the above templates
+you can “shrink” the existing one.
 
+Curator is able to do it via the shrink action:
 
+- [[https://www.elastic.co/guide/en/elasticsearch/client/curator/current/shrink.html]]
 
+    action: shrink
+    description: >-
+      Shrink selected indices on the node with the most available space.
+      Delete source index after successful shrink, then reroute the shrunk
+      index with the provided parameters.
 
+Using this action, work on batches of indices (start from the older) and shrink
+them to 1 shard and 1 replica. No data is lost during this process.
+Don't make curator reindex all of them at the same time because curator can fail
+for multiple reasons:
 
+- if there is a snapshot running
+- if there is something else happening in the cluster that impact the routing
 
-
-
-
-
-
-
-
-Frozen indices
-https://www.elastic.co/blog/elastic-stack-6-6-0-released
-https://www.elastic.co/blog/creating-frozen-indices-with-the-elasticsearch-freeze-index-api
-
-Java 11 support
-G1 Garbage Collector (G1GC) is now supported by Elasticsearch
-Rollups support in Kibana includes a new management UI to configure and manage your rollup jobs, and the ability to visualize your rolled up indices in Kibana
-https://www.elastic.co/blog/elasticsearch-6-5-0-released
-Visualize infrastructure and logs https://www.elastic.co/blog/kibana-6-5-0-released
-
-Metricbeat and filebeat autodiscover
-- [[https://www.elastic.co/blog/monitor-kubernetes-with-beats-autodiscover-feature-and-elasticsearch]]
-- https://www.elastic.co/guide/en/beats/filebeat/6.3/configuration-autodiscover.html
-- https://www.elastic.co/blog/monitoring-kubernetes-and-docker-containers-with-beats-logs-metrics-and-metadata
-
-syslog files in filebeat
-
-adaptive replica selection
-https://www.elastic.co/blog/improving-response-latency-in-elasticsearch-with-adaptive-replica-selection
-
-look at kibana spaces
-https://www.elastic.co/blog/introducing-kibana-spaces-for-organization-and-security
-
-
-
-apm for go
-- https://www.elastic.co/blog/elastic-apm-agent-go-beta-released
-https://www.elastic.co/blog/how-to-instrument-your-go-app-with-the-elastic-apm-go-agent
-
-interesging filebeat for k8s at pod level
-- https://www.elastic.co/blog/docker-and-kubernetes-hints-based-autodiscover-with-beats
-
-beat on lambda to ingest cloudwatch logs
-- https://www.elastic.co/blog/functionbeat-serverless-ingestion-for-elasticsearch
-- https://www.elastic.co/beats/functionbeat
-
-
-cross cluster replications
-https://www.elastic.co/blog/follow-the-leader-an-introduction-to-cross-cluster-replication-in-elasticsearch
-https://www.elastic.co/blog/cross-datacenter-replication-with-elasticsearch-cross-cluster-replication
-https://www.elastic.co/blog/bi-directional-replication-with-elasticsearch-cross-cluster-replication-ccr
-
-
-read This
-https://www.elastic.co/blog/elasticsearch-6-7-0-released
-
-index lyfecycle management
-https://www.elastic.co/blog/kibana-6-7-0-released
-
-read ElasticSearch logs https://www.elastic.co/blog/elastic-logs-app-released
-
-read elasticsearch infrastructure https://www.elastic.co/blog/elastic-infrastructure-app-released
-
-https://www.elastic.co/blog/elastic-stack-6-7-0-released
-
-check beat uptime
-https://www.elastic.co/blog/elastic-uptime-monitoring-solution-released
-https://www.elastic.co/blog/elastic-uptime-monitoring-7-2-0-released
-
-AWS beat
-https://www.elastic.co/blog/monitoring-aws-ec2-using-metricbeat-and-the-elastic-stack
-https://www.elastic.co/blog/monitoring-aws-services-using-the-cloudwatch-metricset
-
-hot and warm https://www.elastic.co/blog/implementing-hot-warm-cold-in-elasticsearch-with-index-lifecycle-management
-
-new cluster coordination
-https://www.elastic.co/blog/elastic-stack-7-0-0-released
-https://www.elastic.co/blog/a-new-era-for-cluster-coordination-in-elasticsearch
-
-Adaptive replica selection
-https://www.elastic.co/blog/elasticsearch-7-0-0-released
-
-Connect es to prometheus
-https://www.elastic.co/blog/elasticsearch-observability-embracing-prometheus-and-openmetrics-standards-for-metrics
-https://www.elastic.co/blog/prometheus-monitoring-at-scale-with-the-elastic-stack
-
-es on k8s??
-https://www.elastic.co/blog/introducing-elastic-cloud-on-kubernetes-the-elasticsearch-operator-and-beyond
-https://github.com/elastic/cloud-on-k8s
-https://www.elastic.co/blog/getting-started-with-elastic-cloud-on-kubernetes-data-ingestion
-https://www.elastic.co/blog/getting-started-with-elastic-cloud-on-kubernetes-deployment
-https://www.elastic.co/blog/elastic-cloud-on-kubernetes-ECK-is-now-generally-available
-
-
-metrics exporters in infrastructure apps
-
-use frozen instead of closed
-
-read siem https://www.elastic.co/blog/introducing-elastic-siem
-
-es logs https://www.elastic.co/blog/elastic-logs-7-2-0-released
-
-es infrastructure https://www.elastic.co/blog/elastic-infrastructure-7-2-0-released
-
-new cluster coordination
-https://www.elastic.co/blog/a-new-era-for-cluster-coordination-in-elasticsearch
-
-Generic
-https://www.elastic.co/blog/demystifying-authentication-and-authorization-in-elasticsearch
-
-authorization
-https://www.elastic.co/blog/a-deep-dive-into-elasticsearch-authentication-realms
-
-ingest node
-https://www.elastic.co/blog/introducing-the-enrich-processor-for-elasticsearch-ingest-nodes
-
-
-Lyfecycle management
-https://www.elastic.co/guide/en/elasticsearch/reference/7.5/getting-started-snapshot-lifecycle-management.html
-
-lifecycle retention
-https://www.elastic.co/blog/elasticsearch-7-5-0-released
-
-s3 logs on filebeat
-https://www.elastic.co/blog/getting-aws-logs-from-s3-using-filebeat-and-the-elastic-stack
-
-save money practices
-https://www.elastic.co/blog/cost-saving-strategies-for-the-elasticsearch-service-data-storage-efficiency
-
-Monitoring via Kafka
-https://www.elastic.co/blog/elastic-stack-monitoring-with-metricbeat-via-logstash-or-kafka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-* Node types
-
-A node is a running instance of elasticsearch.
-Nodes can store data locally or not.
-If you have set the app to store data, shards can and will be allocated locally.
-
-** Data nodes
-
-Holds the data in shards (which are lucene indexes).
-Performs indexing and search queries.
-
-    node.data = true
-    node.masters = false
-
-** Coordinating nodes (known before as client nodes)
-
-Smart load balancers that expose a rest interface.
-It is responsible for routing queries to nodes with relevant shards and aggregating results.
-It is never rerouted to another client node.
-
-The reason behind the creation of dedicated clients is (no data on them) is to dedicate all
-their computational power to the *scatter/gather* phase of the search.
-
-    node.data = false
-    node.masters = false
-
-You can actually _shut_down_ the HTTP transport on the other nodes to make sure they don't
-reply HTTP at all (I didn't thought, I call them sometimes to check stuff).
-
-    ## You can still communicate through the transport module (TCP)
-    http.enabled = false
-
-*NOTE*: It is recommended to set a long lived http req to the client nodes.
-
-** Master nodes
-
-Lightweight operational (cluster management) responsibility.
-A master holds the _cluster_state_, and handles the shard distribution.
-The master node *isn't* involved in any search or document change of any type.
-
-    node.data = false
-    node.masters = true
-
-Is good practice to have a set of _dedicated_ master nodes.
-Since they work through an election system you need an odd number of them (min 3).
-
-** Nuts and bolts
-
-By default, all nodes are data nodes. What you want is divide the
-responsibilities. Separating concerns is good and let us optimise each type of
-node for it's particular workload.
-
-Client only nodes:
-
-- https req parsing
-- network overload (avoid)
-- perform gather process
-
-Data nodes only:
-
-- search
-- index
-
-* Concepts
-
-** Cluster
-
-A cluster consists in one or more nodes with the same cluster names.
-
-** Index
-
-An index is just a *logical*namespace* that point to physical shards.
-Read requests can be handled by a _primary_ or _replica_ shard. More copies
-of the data you have, the more search throughput you can handle.
-
-NOTE: Once all replica shards report success, success is reported to the user.
-
-*** Indexing
-
-New documents to ES pass to primary shards, add to storage and add to inverted
-index.
-
-LIMITATIONS
-
-- [[https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html]]
-
-If you are trying to add metadata into the log document beware of the
-limitations:
-
-  RequestError(400, 'illegal_argument_exception', 'Limit of mapping depth [20] in
-  index [xxx-2018.09.05] has been exceeded due to object field [...]'):
-
-** Search
-
-We don't know which document will match the query... it could be in any shard.
-A search request consults *a*copy*of*every*shard*. There are two phases:
-
-- query (scatter and gather): in this phase replicas increase throughput
-- fetch: the _coordinating_node_ multi-get all that does it need
-
-The coordinating node perform a _merge_sort_ on the combined result from other
-shards. Is CPU intensive and memory intensive.
-
-* Performance and operations
-
-You can increase performances at the cost of data security:
-
-- Replication sync (default) or async: Wait or not for hack from the replicas.
-- Consistency: Is the quorum. How many shards need to report to the primary
-before any write request is accepted (protects again split brain problems).
-
-** Search: Adaptive Replica Selection (default in v7.0+)
-
-- [[https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search.html#search-adaptive-replica]]
-
-    In Elasticsearch 6.x and prior, a series of search requests to the same
-    shard would be forwarded to the primary and each replica in round robin
-    fashion.
-    [...]
-    In 6.1, we added an experimental feature called Adaptive Replica Selection.
-    Each node tracks and compares how long search requests to other nodes take,
-    and uses this information to adjust how frequently to send requests to
-    shards on particular nodes.
-    Source: https://www.elastic.co/blog/elasticsearch-7-0-0-released
-
-** Multi-cluster
-
-- [[https://www.elastic.co/blog/tribe-nodes-and-cross-cluster-search-the-future-of-federated-search-in-elasticsearch]]
-
-Cross cluster search:
-
-    In Elasticsearch 7.0, we’re adding a new execution mode for cross-cluster
-    search: one which has fewer round-trips when they aren’t necessary. This
-    mode (ccs_minimize_roundtrips) can result in faster searches when the
-    cross-cluster search spans high-latencies, e.g. across a WAN.
-    Source: https://www.elastic.co/blog/elasticsearch-7-0-0-released
-
-* To know (could be obsolete - need verification)
-
-In AWS Use a small number of data nodes not on spot, to have safety of the data.
-In AWS Use spot instances to boost performances.
-
-Currently ingest node only executes ingest preprocessing on the index thread pool.
-For both index requests and bulk requests. This should be changed, if pipelines
-are specified on bulk requests the bulk TP should be used for ingest preprocessing.
-
-The ingest stats include the following statistics:
-
-    ingest.ingest_total- The total number of document ingested during the lifetime of this node
-    ingest.ingest_time_in_millis - The total time spent on ingest preprocessing documents during the lifetime of this node
-    ingest.ingest_current - The total number of documents currently being ingested.
-    ingest.ingest_failed - The total number ingest preprocessing operations failed during the lifetime of this node
-    Also the ingest stats contain a break down of the above stats on a per pipeline basis. These stats are automatically updated if pipelines are added or removed. This information is useful to give insight how much nodes spent on ingest related activities.
-
-- Add ingest_took to bulk response
-- Add ingest info to node info API, which contains a list of available processors
-- Ingest: use bulk thread pool for bulk request processing (was index before)
-- Enable acked indexing
-- Add points to SegmentStats
-- new jvm option files (jvm.options)
-- Add GC overhead logging
-- STATS: Add I/O statistics on Linux (WAO)
-
-New: /_cluster/allocation/explain
-
-- [[https://github.com/elastic/elasticsearch/pull/17305]]
-
-* Re/Sources
-
-- [[https://www.npmjs.com/package/elasticdump2]]
-- [[http://blog.kiyanpro.com/2016/03/11/elasticsearch/Export-Index-Using-Elasticsearch-Dump]]
-- [[http://blog.tamasboros.com/export-elasticsearch-database-to-json-dumps/]]
-- [[https://github.com/taskrabbit/elasticsearch-dump]]
-- [[https://hub.docker.com/r/khanhicetea/elasticsearch-dump/~/dockerfile/]]
+Running it in batches and follow the process. When it fails (for example during
+backup) you need to remove the "unfinished" new index and restart the process.

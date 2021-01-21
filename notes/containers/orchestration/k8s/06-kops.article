@@ -1,9 +1,61 @@
 KOPS
-|| Last update: 16 Oct 2019
+|| Last update: 21 Jan 2021
 
 * Kops
 
-- [[https://github.com/kubernetes/kops]][kubernetes/kops (github)]
+- [[https://kops.sigs.k8s.io/]]
+- [[https://github.com/kubernetes/kops][kubernetes/kops]]
+
+* Kops-controller
+
+- [[https://kops.sigs.k8s.io/architecture/kops-controller/]]
+
+After version [[https://kops.sigs.k8s.io/releases/1.18-notes/][1.18]] in KOPS
+they moved the nodes label management from kubelet to a new component called
+kops-controller (runs as a DaemonSet on the master nodes).
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/architecture/kops-controller.md]]
+
+    kops-controller runs as a DaemonSet on the master node(s). It is a
+    kubebuilder controller that performs runtime reconciliation for kops.
+    Source: https://github.com/kubernetes/kops/blob/master/docs/architecture/kops-controller.md
+
+** Issue in AWS CHINA region
+
+As part of his control loop, kops-controller tries to understand in which AWS
+REGION he is running in (if in AWS at all) by using a mechanism defined here:
+
+- [[https://github.com/kubernetes/kops/blob/a5fc8895dc9b710b97db02abb0d6761a65341bfb/util/pkg/vfs/s3context.go#L323]]
+
+This mechanism however fails in the CHINA and GOV regions as seen in the issue
+(fixed in 1.18.2):
+
+- [[https://github.com/kubernetes/kops/issues/10012]]
+
+If you tail the logs you will see the following:
+
+    $ stern kops-controller- -n kube-system
+    [...]
+    error" "error"="unable to load cluster object for node
+    ip-x-x-x-x.cn-northwest-1.compute.internal: error loading Cluster
+    \"s3://xxx/yyy/cluster.spec\": Unable to list AWS regions: AuthFailure:
+    AWS was not able to validate the provided access credentials\n\tstatus code:
+    401, request id: xxx-xxx-xxx-xxx-xxx"  "controller"="node"
+    "request"={"Namespace":"","Name":"ip-x-x-x-x.cn-northwest-1.compute.internal"}
+    [...]
+    unable to read /sys/devices/virtual/dmi/id/product_uuid, assuming not running
+    on EC2: open /sys/devices/virtual/dmi/id/product_uuid: permission denied
+    [...]
+    defaulting region to "us-east-1"
+
+As you can imagine defaulting on "us-east-1" is not a good idea.
+You can temporarily/manually fix it by adding:
+
+        env:
+        - name: AWS_REGION
+          value: cn-northwest-1
+
+to the kops-controller deamonset.
 
 * Best practices
 
@@ -155,10 +207,6 @@ If you don't put the flags you will receive an error like this:
 Addons are available but please don't use it.
 They are not really manageable.
 
-* China
-
-- [[https://github.com/kubernetes/kops/blob/master/docs/aws-china.md]]
-
 ** AMIs
 
 I tried to search for them
@@ -177,20 +225,22 @@ I tried to search for them
 
 This is where you can find the config to pass
 
-- https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/cluster.go#L145
-- https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go#L248
+- [[https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/cluster.go#L145]]
+- [[https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go#L248]]
 
-* China mirrors
+* k8s in China
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/aws-china.md]]
+
+** China mirrors
 
 - [[https://github.com/Azure/container-service-for-azure-china/blob/master/aks/README.md#22-container-registry-proxy]]
 
 Docker mirror only works for dockerhub images.
 
-Docker does not support that
-
 - [[https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file]]
 
-Cri-o does:
+Cri-o support instead mirrors for every type of hub:
 
 - [[https://github.com/containerd/cri/issues/1138]]
 
@@ -199,16 +249,16 @@ Cri-o does:
         [plugins.cri.registry.mirrors."gcr.io"]
           endpoint = ["https://gcr.azk8s.cn"]
 
-And with kops we can't use cri-o:
+With kops we can't use cri-o:
 
-- ask for gvidor support - https://github.com/kubernetes/kops/issues/7342 - open
-- ask for cri-o support - https://github.com/kubernetes/kops/issues/5524 - open
+- ask for gvidor support - [[https://github.com/kubernetes/kops/issues/10625]] - re-opened
+- ask for cri-o support - [[https://github.com/kubernetes/kops/issues/9712]] - open
 
 ** Alternatives
 
 This one wants certificates:
 
-- https://github.com/rpardini/docker-registry-proxy
+- [[https://github.com/rpardini/docker-registry-proxy]]
 
 without certs you will need to threat the repos as insecure
 
@@ -223,47 +273,48 @@ without certs you will need to threat the repos as insecure
       ]
     }
 
+** The strange case of dockerhub in China
 
-** Limitations from the tool
+There was an official dockerhub mirror in the past at registry.docker-cn.com
+which however was silently removed some time ago. I could not find any
+announcement about it, only the PR of the documentation part about it in github:
+
+- [[https://github.com/docker/docker.github.io/issues/8793]]
+- [[https://github.com/docker/docker.github.io/commit/a765e84efccb4ff028e8a6b79a02bff53f1dd949]]
+
+The URL now just redirect to the main website outside china
+https://docker-cn.com/registry-mirror.
+
+    $ curl -ik https://www.docker-cn.com
+    HTTP/1.1 200 Connection established
+
+    HTTP/1.1 301 Moved Permanently
+    Content-length: 0
+    Location: https://www.docker.com/
+
+So in KOPS when setting the registryMirrors option, it will need to point to a
+non official mirror:
+
+  docker:
+    registryMirrors:
+    - https://<your-proxy-or-mirror>
+
+** Limitations from KOPS
 
 You can't really modify the images used in addons or in many other parts of
 the code. This really forces you along the way of the proxy.
 
-** Modify the state manually
-
-    diff -r state state2 | grep image
-
-    aws s3 cp --region cn-northwest-1 s3://mystate state --recursive
-    find state -type f -exec sed -i -e 's#kopeio/etcd-manager#dockerhub.azk8s.cn/kopeio/etcd-manager#g' {} \;
-    find state -type f -exec sed -i -e 's#quay.io/calico/cni#quay.azk8s.cn/calico/cni#g' {} \;
-    find state -type f -exec sed -i -e 's#quay.io/calico/node#quay.azk8s.cn/calico/node#g' {} \;
-    find state -type f -exec sed -i -e 's#k8s.gcr.io/coredns#gcr.azk8s.cn/google_containers/coredns#g' {} \;
-    aws s3 sync state --region cn-northwest-1 s3://mystate
-
-you will need to keep this in sync
-
-TODO: Do a lambda to check this VERY often
-
-Calling kops update WILL override the changes so they need to be applied again.
-
-I would use the local state but it doesn't work.
-
 * Manipulate user data
 
-- https://github.com/kubernetes/kops/blob/master/docs/instance_groups.md#additional-user-data-for-cloud-init
+- [[https://github.com/kubernetes/kops/blob/master/docs/instance_groups.md#additional-user-data-for-cloud-init]]
 
-But it doesn't work on coreos
+* How to create addons
 
-- [[https://github.com/kubernetes/kops/issues/6863][Can't create Mixed Policy instance groups with CoreOS due to lack of userdata multi-part support #6863]]
-
-* to see
-
-create addon
-
-https://github.com/kubernetes/kops/pull/6100/files
+- [[https://kops.sigs.k8s.io/operations/addons/#custom-addons]]
 
 * Future plans
 
-kops is planning to move away from protokube to kubeadm
+KOPS is planning to move away from protokube to kubeadm but the ticket is
+stuck for a long time now.
 
 - [[https://github.com/kubernetes/kops/issues/1842]]

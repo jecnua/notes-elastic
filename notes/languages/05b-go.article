@@ -1,12 +1,74 @@
-GO
-|| Last update: 17 Feb 2020
+GOLANG
+|| Last update: 22 Feb 2020
 
+* Intro
 
-* Packaging
+- [[https://go-proverbs.github.io/]]
+- [[https://golang.org/doc/effective_go.html]]
+- [[https://golang.org/doc/code.html]]
+
+* Packages
+
+- [[https://golang.org/doc/effective_go.html#names]]
+- [[https://talks.golang.org/2014/organizeio.slide#1]]
+- [[https://www.ardanlabs.com/blog/2017/02/package-oriented-design.html]]
+- [[https://rakyll.org/style-packages/]]
+- [[https://www.youtube.com/watch?v=spKM5CyBwJA][William Kennedy - Package Oriented Design]] - 2017
+
+    Packaging creates “firewalls” within Go programs such that: (i) the various
+    pieces of the program can be kept apart, (ii) large teams can work on large
+    projects, and (iii) the compiler and the language itself can provide support
+    and help.
+    Source: [[https://www.ardanlabs.com/blog/2017/02/design-philosophy-on-packaging.html]]
+
+    In Go, each folder that contains source code is considered a package, and
+    packages provide that “firewall” of support.
+    [...]
+    As part of the language definition, Go turns each package into an individual
+    static library, and it’s the static library that creates the physical
+    “firewall”.
+    [...]
+    You can think of packaging as applying the idea of microservices on a source
+    tree. Each folder representing a self contained piece of functionality.
+    [...]
+    Go has no concept of sub-packages. All folders, regardless of their physical
+    location, are built into these static libraries and flattened out during
+    compilation. The physical location of a package directs the compiler (via
+    the import statement) to the specific package that needs to be included.
+    [...]
+    Given that packages are standalone and their contents are “firewalled,” there
+    needs to be a way to “open” parts of the package to the outside world. This
+    is where the idea of exporting and unexporting comes in. Types, variables,
+    functions and anything else you can name inside the package can be exported
+    (“opened”) or unexported (“closed”). Start the identifier of the named entity
+    with a capital letter, and it is exported from the package. Otherwise, it’s
+    unexported.
+    [...]
+    Two packages can’t cross-import each other. Imports are a one way street.
+
+Advices on how to name packages from:
+
+- [[https://www.ardanlabs.com/blog/2017/02/design-philosophy-on-packaging.html]]
+
+    To be purposeful, packages must provide, not contain
+    - Packages must be named with the intent to describe what it provides.
+    - Packages must not become a dumping ground of disparate concerns.
+    To be usable, packages must be designed with the user as their focus
+    - Packages must be intuitive and simple to use.
+    - Packages must respect their impact on resources and performance.
+    - Packages must protect the user’s application from cascading changes.
+    -- The use of interfaces to protect the application developer from these cascading
+    changes is mandatory.
+    - Packages must prevent the need for type assertions to the concrete.
+    - Packages must reduce, minimize and simplify its code base.
+
+** Interesting reads
+
+- PODCAST [[https://changelog.com/gotime/94#t=00:04:21.13]]
 
 * Part 2
 
-8.1
+8.1+
 
 * Concurrency
 
@@ -65,7 +127,8 @@ There is a three hierarchy of these queues:
 
 - a core level
 - a processor level
-...
+
+and more.
 
 It's trying to do this to be the more performant as possible.
 
@@ -93,3 +156,313 @@ Depends on the workload.
 
 Adding more cores should give you more throughput in a linear way. If it's not
 happening, then there is an issue in the code.
+
+** The go scheduler
+
+When a go program starts up, it gets assigned a logical processor.
+This one is then assigned a real life operating system thread.
+Let's call them P and M.
+
+There are multiple queue where threads can sit:
+
+- Global run queue (on M) - GRQ
+- Local run queues (on P) - LRQ
+
+When goroutines are created they live on the LRQ.
+
+goroutines can be in one of 3 states too like any thread.
+
+NOTE: Sometimes goroutines can go in the global run queue. It's called work
+stealing. P can steal the work. <-- MORE
+
+In go you will only have as many threads (P) as many cores you have on the
+machine.
+
+The go scheduler is running in user mode. This means the go schedule is not
+a preemptive scheduler but a _cooperative_scheduler_.
+Cooperating scheduler means the dev needs to do the cooperation.
+However in go it is implemented in a way that it looks and feel preemptive.
+
+The scheduler needs to make sure the execution are atomic.
+
+in golang 1.11 they want to add statement to be allow to manage this
+scheduling decision.
+
+** How
+
+How to manage this flow of executions.
+
+  <keywork> go
+
+The keyword *go* before any function call will make it become a goroutine.
+
+  gc
+
+When the garbage collector kicks in they will use threads.
+
+  syscalls
+
+  blocking
+    like a mutex
+    atomic instruction
+
+Use asynch syscalls for as many things as we can. For networking, disk I/O, etc.
+
+go have a special data structure called _network_poller_.
+It's leveraging the thread pooling technology of the OS:
+
+- IOCP in windows
+- [[https://en.wikipedia.org/wiki/Kqueue][kevents]] or [[https://en.wikipedia.org/wiki/Epoll][epool]] in linux
+
+When the go code make a syscalls that is asynch the goroutine is put on the
+queue of the net poller in a waiting state.
+
+- [[https://dave.cheney.net/2015/08/08/performance-without-the-event-loop]]
+
+Everything we can do asynch we do. Some syscalls cannot be done asynch. The C-go
+library is not asynch.
+
+You can have 10k blocking thread before the program falls. <--
+
+How the thread is put on the side when not using the network poller?
+You need to remove and replace to keep it going.
+
+There is a special stat in the scheduler trace that shows when an M on a P
+is spinning (when an M doesn't have goroutines work to do but is looking for
+goroutine).
+
+A context switch in go is faster - MORE?
+
+From the OS perspective the thread is not going in a waiting state when
+goroutine shares messages. IO bound work.
+--> It made IO bound work into CPU bound work. <-- need more work
+Why these messages do that?
+This is via the P concept.
+go can divide the work as needed?
+
+Manage both:
+
+- synchronization
+- orchestration
+
+** WaitGroup (Orchestration)
+
+- [[https://golang.org/pkg/sync/]]
+
+You cannot start a goroutine if you don't know for sure is going to end before
+the main thread so keep the program running until all the goroutine ended.
+
+Basic orchestration can be achieved via WaitGroup. WaitGroup are Synchronous
+Counting Semaphores.
+
+    var wg sync.WaitGroup
+    wg.Add(2) // Never add one at the time.
+
+You should know beforehand how many goroutines you have to run.
+If you don't know how many goroutines are going to be created in your code
+stop and think twice about what are you doing.
+
+It has 3 simple api:
+
+- Add(int): It increases WaitGroup counter by given integer value.
+- Done(): It decreases WaitGroup counter by 1, used to indicate termination of a goroutine.
+- Wait(): It Blocks the execution until it’s internal counter becomes 0.
+
+It uses closures.
+closure bugs are nasty but the linter can detect it
+
+    goSched() // NEVER USE IT AT RUNTIME
+
+scheduler doesn't have to listen
+you can use it while testing just to add some chaos
+
+waitgroup have a very simple deadlock detector
+only when all goroutine are in wait state
+
+2 P 2 threads
+
+*** WaitGroup Patterns
+
+WaitGroup is concurrency safe, so its safe to pass pointer to it as argument for
+Groutines.
+
+However to remove the logic of orchestration from inside the goroutine functions
+you can use the defer function inside a wrapping block like showed here in the
+synch documentation:
+
+- [[https://golang.org/pkg/sync/#example_WaitGroup]]
+
+    [...]
+    wg.Add(1)
+    // Launch a goroutine to fetch the URL.
+    go func(url string) {
+      // Decrement the counter when the goroutine completes.
+      defer wg.Done()
+      // Fetch the URL.
+      http.Get(url)
+    }(url)
+    [...]
+
+This way you can write a worker function that doesn't know or care that it is
+being run in parallel.
+
+* Synchronization
+
+Data races when you have two paths of execution accessing the same memory location
+with at least one of them making a write.
+
+You can't be mutating memory at the same time in two places.
+
+At hardware level we have value semantic.
+
+** Data access pattern: Cache coherency
+
+You want to make sure that goroutines access a shared "value" in a synchronized
+manner. Atomic instruction and mutex.
+
+Atomic instruction: read-write-modify while all the other path of executions are
+stopped by the OS. Beware of memory trashing. The cache lines in the other cores
+are marked as *dirty*. So when the next goroutine starts, it will notice the
+cache line is dirty and needs to bring it in. (L1 Memory)
+
+This is because they shared the values between all cores.
+BEWARE global variable and global counters.
+
+Marking the cache dirty is done via bus snooping protocol:
+
+- [[https://en.wikipedia.org/wiki/Bus_snooping]]
+
+** Data access pattern: False Sharing
+
+Is you use an array for example to store an individual counter for each goroutine
+you may still have issues because even if you are writing on different memory
+address (inside the array) they may still all be part of the same cache line!
+This means that other people updates will still invalidate the cache (-> dirty).
+
+You may not need atomic instruction (mutex) but you still have the cache issue.
+
+Memory access pattern to memory next to each other even if they point to
+different data.
+
+** Atomic functions
+
+Fastest way, at hardware level but limited to 4 or 8 bytes of memory
+(only counter basically). Package:
+
+    synch/atomic
+
+When you use it your counter need to be specified to int32 or int64 (constraint
+of the api).
+
+    var counter int64
+
+And you use it this way:
+
+    atomic.AddInt64(&counter, 1)
+
+All synchronisation is at address level.
+
+** Mutexes
+
+Allow to create a block of code and consider it a single operation. Package:
+
+    synch
+
+Most of the time a mutex should be a field in a struct and not a variable.
+Once you have a mutex in a struct that struct can no longer be copied.
+A copy of a mutex creates a new mutex.
+All value semantic.
+
+It creates a "critical section of code" that is atomic.
+
+    var
+
+There is a lock and only one goroutine can have the lock at the same time.
+There is a real cost of it that it latency.
+It creates back pressure on the application that you need to measure.
+So make these section a little as possible.
+
+    mutex.Lock()
+    {
+      [...] // critical section
+    }
+    mutex.Unlock()
+
+Why create an artificial block of code? to create a new scope and make clear
+to the reader is a critical section of code.
+
+Some people use defer(). You can't use defer in a loop, but if you don't have a
+loop you can do:
+
+    // They should be at the start of the function
+    mutex.Lock()
+    defer mutex.Unlock()
+
+You can't use that in a loop because go won't allow you to call lock twice in
+the same function!
+
+Avoid to do print or other non-necessary syscalls inside the mutex because
+it slows you down.
+
+** ReadWrite mutex
+
+You may want to have a lot of goroutines reading a value but not write, so
+you have no need to read in order (but you need to know if the cache gets
+dirty!).
+
+    var rwMutex sync.RWMutex
+
+Allows to have multiple read and one write.
+Any goroutine can read when no write operation is taking place!
+
+If a goroutine wants to write and ask for a write lock it will have to wait
+for all the other goroutines to call their readUnlock() first.
+
+ReadWrite mutex is a little slower than normal.
+
+    Atomics utilize CPU instructions whereas mutexes utilize the locking
+    mechanism. So when updating shared variables like integers, atomics are
+    faster. But the real power of mutexes comes when the complex structure of
+    data is handled concurrently. Then it is the only option since atomics don’t
+    support that.
+    Source: https://golangdocs.com/mutex-in-golang
+
+** Go race detector
+
+It's built into go build and into go test.
+
+    go build -race
+
+It will run 20-30% slower but next time you run it, it will stop because
+it may find a datarace :) amazing for tests.
+It will tell you if there is an unsynchronized read and write.
+
+    go test -race
+
+Or you could run one of your application with race built in and see if the
+traffic there have issues (like a single pod).
+
+** Data races and Map
+
+Data races detection in maps access. it's built in because integrity is a
+priority.
+
+** GOTCHAS
+
+If the data model is the same between the two structures the check won't
+blow up.
+However the trace detector will notice (the -race).
+
+because it takes two writes to change an interface?
+use make to create a map usable in it's 0 state?????
+
+* Orchestration
+
+** Signaling
+
+
+
+
+
+
+x

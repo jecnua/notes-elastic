@@ -1,104 +1,22 @@
 Terraform
-|| Last update: 11 Jun 2019
+|| Last update: 5 Feb 2021
 
 * Terraform
 
-Terraform opened for free their hosted state capabilities:
+** Notes
 
-- [[https://www.hashicorp.com/blog/introducing-terraform-cloud-remote-state-management]] - MAY 16 2019
-- [[https://www.hashicorp.com/blog/terraform-collaboration-for-everyone]] - OCT 23 2018
+The default behaviour of the terraform destroy changed in 0.14 and now it doesn't "refresh" during a destroy.
+If you want to keep the old behaviour remember to put the flag in your alias or use TF_CLI_ARGS_destroy in your env.
 
-** Version 0.12
+- [[https://github.com/hashicorp/terraform/issues/15386#issuecomment-700818050]]
 
-- [[https://www.hashicorp.com/blog/announcing-terraform-0-12]] - MAY 22 2019
-- [[https://github.com/hashicorp/terraform/blob/v0.12.0/CHANGELOG.md]]
-
-In May 2019 Terraform released their long awaited version 0.12 of the language.
-
-Here is the [[https://www.terraform.io/upgrade-guides/0-12.html][Upgrade guide]].
-
-Tags in 0.12
-
-    tags = {
-      Name = "tf_test_subnet"
-    }
-
-or:
-
-    tags = "${
-      map(
-        "Name", "terraform-eks-demo-node",
-        "kubernetes.io/cluster/${var.cluster-name}", "shared",
-      )
-    }"
-
-* Modules
-
-** Multiple providers
-
-You can pass mulitple providers of the same type to a module by using aliases.
-In the main repo:
-
-    provider "aws" {
-      alias   = "aws-us"
-      region  = "us-east-1"
-      version = "~> 2.14.0"
-    }
-
-    provider "aws" {
-      alias   = "aws-eu"
-      region  = "eu-west-1"
-      version = "~> 2.14.0"
-    }
-
-    module "my_module_green" {
-      providers = {
-        "aws.aws-us"  = "aws.aws-us"
-        "aws.aws-eu"  = "aws.aws-eu"
-        random        = "random"
-      }
-      source          = "./module_localize/"
-      [...]
-    }
-
-However to do this you will need to specify the module ALIAS in the module you
-are calling:
-
-    provider "aws" {
-      alias = "aws-us"
-    }
-
-    provider "aws" {
-      alias = "aws-eu"
-    }
-
-Then in the resources inside the module use:
-
-    resource "aws_waf_rule" "wafrule" {
-      provider    = "aws.aws-us"
-      name        = "xyz"
-      metric_name = "xyz"
-
-      predicates {
-        data_id = "${aws_waf_ipset.ipset.id}"
-        negated = false # Only this ip
-        type    = "IPMatch"
-      }
-    }
-
-* Validation
-
-- [[https://github.com/hashicorp/terraform/issues/2847][GITHUB: Value assertions / validations in configuration files]]
-
-You still can't have assertion or validation of variables.
-
-* Atlantis
-
-- [[https://www.runatlantis.io/]]
-- [[https://medium.com/runatlantis/putting-the-dev-into-devops-why-your-developers-should-write-terraform-too-d3c079dfc6a8]]
-
-Atlantis devs have been bought from Hashicorp.
-
-- [[https://medium.com/runatlantis/joining-hashicorp-200ee9572dc5]] - Oct 23, 2018
+        # https://www.terraform.io/docs/cli/config/environment-variables.html
+        TF_PARALLEL_RUNS="${TF_PARALLEL_RUNS:-10}"
+        TF_OPTS="${TF_OPTS:---lock-timeout=5m}"
+        export TF_CLI_ARGS_init="${TF_OPTS} -plugin-dir=${HOME}/.terraform.d/plugins"
+        export TF_CLI_ARGS_plan="${TF_OPTS} -refresh=true"
+        export TF_CLI_ARGS_apply="${TF_OPTS} -parallelism=${TF_PARALLEL_RUNS}"
+        # Destroy do not refresh anymore in 0.14
+        export TF_CLI_ARGS_destroy="${TF_OPTS} -parallelism=${TF_PARALLEL_RUNS} -refresh=true"
 
 * Re/Sources

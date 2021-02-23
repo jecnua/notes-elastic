@@ -1,0 +1,52 @@
+API deprecations
+|| Last update: 23 Feb 2021
+
+* FairwindsOps Pluto
+
+- [[https://github.com/FairwindsOps/pluto]]
+- [[https://pluto.docs.fairwinds.com/installation/]]
+
+Installation with brew:
+
+    brew install FairwindsOps/tap/pluto
+
+** Usage
+
+- [[https://pluto.docs.fairwinds.com/quickstart/#helm-detection-in-cluster]]
+
+While you can run Pluto to scan an helm chart before "apply", a typical use case is to audit all the helm installations
+on a cluster. To do so you can run:
+
+    # select the correct kubecontext
+    pluto detect-helm -owide
+
+To validate against latest, and:
+
+    pluto detect-helm -owide --target-versions k8s=v1.19.0
+    # or
+    pluto detect-helm -owide --target-versions k8s=v1.19.0 -r
+
+To validate against a specific version.
+
+* Kubectl plugin (deprecations/kubepug)
+
+- [[https://github.com/rikatz/kubepug]]
+
+You can install with:
+
+    kubectl krew install deprecations
+
+* OPA libraries
+
+There are two collections of rego rules for k8s deprecation that are very
+useful before a cluster upgrade.
+
+- [[https://github.com/swade1987/deprek8ion]]
+- [[https://github.com/naquada/deprek8]]
+
+They planning to be merged into one.
+
+* Other options
+
+- [[https://github.com/doitintl/kube-no-trouble]]
+- [[https://thepracticalsysadmin.com/testing-for-deprecated-kubernetes-apis/]]: Used by https://github.com/sturrent/k8s-check-deprecated-apis

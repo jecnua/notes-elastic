@@ -1,8 +1,10 @@
-Operators
+Operators via kubebuilder
 
 Last update: 29 March 2021
 
 * Intro: Write an operator with kubebuilder
+
+- [[https://book.kubebuilder.io/introduction.html]]
 
 ** Install deps
 
@@ -63,6 +65,8 @@ In *api/v1/xyz_types.go*:
 - Modify the main field
 - Change the description
 
+Then run:
+
     make manifests
 
 Check now in */config/crd/bases/*
@@ -78,9 +82,7 @@ Now check your resource
 ** Usability
 
 You can give more information to the user by adding informations suring a
-list request. To do so you have to use annotations:
-
-Under the line:
+list request. To do so you have to use annotations. Under the FIRST line:
 
     // +kubebuilder:object:root=true
 
@@ -108,17 +110,13 @@ You will need now to apply them with kubectl.
 
 ** Now for the operator...
 
-in /controllers
+Check the operator code in /controllers.
+Then in the root dir run:
 
     make run
 
-One step at the time.
-
-Import:
-
-	"context"
-
-Remame log var and:
+Add in the import the package "context".
+Rename log var from _ to l and add the line:
 
 	l.Info("start my logic")
 
@@ -189,17 +187,15 @@ And:
 		return ctrl.Result{}, nil
 	}
 
-** Now see
-
-But try to delete a pod
-
-Now run again the controller
+Now you can try to delete a pod. It should be deleted and not recreated.
+After adding the above code, run "make run" again and see how the pod is created bur also recreated if killed.
 
 ** Requeue
 
-kubebuilder supports re-enqueuing current reconcile.Request, with a fixed time duration
+kubebuilder supports requeuing. Requeuing allows you to call the reconcile function with the same dataset after an x
+amount of time. You can do it by returning the following:
 
-    ctrl.Result{Requeue: true, RequeueAfter: time.Second * 5}, nil
+    return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 5}, nil
 
 ** Example of watches
 

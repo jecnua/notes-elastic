@@ -1,0 +1,222 @@
+Intro: Write an operator with kubebuilder
+Fabrizio Sabatini || Last update: 29 Mar 2021
+
+* Install deps
+
+You need the following dependencies:
+
+    go
+    kubebuilder # 2.3.2
+    kind or minikube
+    kustomize
+
+* Create project
+
+Create a new directory.
+The name is irrelevant for the operator.
+
+    cd /tmp
+    mkdir -p operator-test
+    cd operator-test
+
+\... and initialise the go project.
+
+    go mod init operator-test
+
+* Fix: Manually add some unresolved dependecies
+
+They are:
+
+    go get github.com/go-logr/logr@v0.1.0
+    go get github.com/onsi/ginkgo@v1.11.0
+    go get github.com/onsi/gomega@v1.8.1
+    go get k8s.io/api/core/v1@v0.17.2
+
+* FIX: Change makefile
+
+Change this option from:
+
+    CRD_OPTIONS ?= "crd:trivialVersions=true"
+To:
+
+    CRD_OPTIONS ?= "crd:crdVersions=v1"
+
+* Create the scaffolding
+
+You need to namespace your resources with a domain name:
+
+    kubebuilder init --domain jecnua.com
+
+* Create the resources
+
+Create the API group and types you are going to use to speak to the operator.
+
+    kubebuilder create api --group mynet --version v1 --kind Ping
+
+* Modify the CRD
+
+In *api/v1/xyz_types.go*:
+
+- Modify the main field
+- Change the description
+
+    make manifests
+
+Check now in */config/crd/bases/*
+
+Now add a new field and do it again.
+
+Apply with:
+
+    make install
+
+Now check your resource
+
+* Usability
+
+You can give more information to the user by adding informations suring a
+list request. To do so you have to use annotations:
+
+Under the line:
+
+    // +kubebuilder:object:root=true
+
+Add:
+
+    // +kubebuilder:subresource:status
+    // +kubebuilder:printcolumn:JSONPath=".spec.name",name="Name",type="string"
+    // +kubebuilder:printcolumn:JSONPath=".spec.address",name="Address",type="string"
+
+Apply with:
+
+    make install
+
+Now check again.
+
+* Samples
+
+Looks at the samples
+
+    /config/samples
+
+And modify it for your usecase.
+
+You will need now to apply them with kubectl.
+
+* Now for the operator...
+
+* Default
+
+in /controllers
+
+    make run
+
+* One step at the time
+
+Import:
+
+	"context"
+
+Remame log var and:
+
+	l.Info("start my logic")
+
+* See the CRD requests
+
+Let's get who invoked us in this context.
+
+	instance := &mynetv1.Ping{}
+	err := r.Get(c, req.NamespacedName, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// object not found, could have been deleted after
+			// reconcile request, hence don't requeue
+			return ctrl.Result{}, nil
+		}
+		// error reading the object, requeue the request
+		return ctrl.Result{}, err
+	}
+	l.Info("From", "Name", instance.Spec.Name, "addr", instance.Spec.Address)
+
+* Now let's do something more controll-ish [part 1]
+
+You will need:
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+
+And
+
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ping-" + instance.Spec.Name + "-pod",
+			Namespace: req.Namespace,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:    "ping-" + instance.Spec.Name + "-pod",
+					Image:   "bash",
+					Command: strings.Split("ping "+instance.Spec.Address, " "),
+				},
+			},
+			RestartPolicy: corev1.RestartPolicyOnFailure,
+		},
+	}
+
+* Now let's do something more controll-ish [part 2]
+
+	found := &corev1.Pod{}
+	nsName := types.NamespacedName{Name: "ping-" + instance.Spec.Name + "-pod", Namespace: "default"}
+	err = r.Get(context.TODO(), nsName, found)
+	// Try to see if the pod already exists and if not
+	// (which we expect) then create a one-shot pod as per spec:
+	if err != nil && errors.IsNotFound(err) {
+		err = r.Create(context.TODO(), pod)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		l.Info("Pod launched", "name", pod.Name)
+	} else if err != nil {
+		l.Info("Requeue with error", "reason",
+			found.Status.Reason, "message", found.Status.Message)
+		return ctrl.Result{}, err
+	} else if found.Status.Phase == corev1.PodFailed ||
+		found.Status.Phase == corev1.PodSucceeded {
+		l.Info("Container terminated", "reason",
+			found.Status.Reason, "message", found.Status.Message)
+	} else {
+		l.Info("Don't requeue because it will happen automatically when the pod status changes.", "reason",
+			found.Status.Reason, "message", found.Status.Message)
+		return ctrl.Result{}, nil
+	}
+
+* Now see
+
+But try to delete a pod
+
+Now run again the controller
+
+* Requeue
+
+kubebuilder supports re-enqueuing current reconcile.Request, with a fixed time duration
+
+    ctrl.Result{Requeue: true, RequeueAfter: time.Second * 5}, nil
+
+* Example of watches
+
+	//  no time loop
+	//  no owns
+	//  no controls
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&mynetv1.Ping{}).
+		//Watches(
+		//	&source.Kind{Type: &corev1.Pod{}},
+		//	&handler.EnqueueRequestForObject{},
+		//).
+		Complete(r)
+
+* Things you can look at
+
+- Status: For example save the pod ip in our resource?
+- Finalizers: use them to clean up

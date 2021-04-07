@@ -1,42 +1,148 @@
-CKS notes
-|| Last update: 5 Jan 2021
+Certified Kubernetes Security Specialist (CKS) notes
+|| Last update: 7 Apr 2021
 
-* Kubernetes certification notes: CKS
+* Kubernetes CKS notes
 
-Certified Kubernetes Security Specialist (CKS) certification notes.
+Security is a spectrum and the best way to secure a system is to use a layered
+security approach and defence in depth. Provide as many hurdles between threat
+and assets and DO NOT try to be DRY. Good security is redundant and not DRY. Also
+in general limit the attack surface and implement the principle of least priviledge.
+The exam will be around multiple topics:
+
+- Node/Host security
+- Network security
+- Runtime security
+- K8s cluster security
+- Application security
+
+- Cluster hardening
+- System hardening
+- Dockerfile validation
+- YAML security
+- Image scan
+- Microservice security
+- Base image validation
+- System call access control
+
+** Tips for the command line
+
+    kubectl run nginx --image=nginx --dry-run=client -o yaml > po.yaml
+    kubectl create deploy test --image=nginx --replicas=3 --port 80 --namespace test --dry-run=client -o yaml
+    kubectl create service nodeport my-ns --tcp=5678:8080 --dry-run=client -o yaml
+    kubectl create secret generic passcode --from-literal=pass=test --dry-run=client -o yaml
+    # And explain recursively
+    kubectl explain pod --recursive | grep -A5 tolerations
 
 * Cluster setup
 
 ** Network security policies
 
-Restrict cluster level access
+Restrict cluster level access.
 
-* CIS k8s benchmark
+** Certificates
+
+- [[https://kubernetes.io/docs/setup/best-practices/certificates/]]
+- [[https://kubernetes.io/docs/reference/setup-tools/kubeadm/implementation-details/]]
+
+PKI - Public key infrastructure
+
+Unless set otherwise, when creating a new cluster with kubeadm or any other
+system a new Certificate Authority (CA) is created and used to sign all the
+certificates used in the cluster.
+
+If you install Kubernetes with kubeadm, certificates are stored in
+/etc/kubernetes/pki.
+
+The CA is:
+
+- The trusted root of all certificates inside the cluster
+- All cluster certificates are signed by the CA
+
+This allow components to validate each other.
+
+- [[https://kubernetes.io/docs/setup/best-practices/certificates/#how-certificates-are-used-by-your-cluster]]
+
+Some components have only a server-certificate other have also a
+client-certificate. For example:
+
+    Client certificates for the kubelet to authenticate to the API server
+    Server certificate for the API server endpoint
+    Client certificates for administrators of the cluster to authenticate to the API server
+    Client certificates for the API server to talk to the kubelets
+    Client certificate for the API server to talk to etcd
+    Client certificate/kubeconfig for the controller manager to talk to the API server
+    Client certificate/kubeconfig for the scheduler to talk to the API server.
+    Client and server certificates for the front-proxy
+    Source: https://kubernetes.io/docs/setup/best-practices/certificates/#how-certificates-are-used-by-your-cluster
+
+
+Basically the components that have server certificate are:
+
+- Kubelet
+- Apiserver
+- ETCD (special case because it can have a different one than the main)
+
+Example output form kubeadm:
+
+    $ cat /var/log/cloud-init-output.log | grep 'certs'
+    [certs] Using certificateDir folder "/etc/kubernetes/pki"
+    I0106 08:22:59.895334    8106 certs.go:110] creating a new certificate authority for ca
+    [certs] Generating "ca" certificate and key
+    I0106 08:23:00.132988    8106 certs.go:474] validating certificate period for ca certificate
+    [certs] Generating "apiserver" certificate and key
+    [certs] apiserver serving cert is signed for DNS names [xxx.eu-west-1.compute.internal kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 x.x.x.x]
+    [certs] Generating "apiserver-kubelet-client" certificate and key
+    I0106 08:23:00.882216    8106 certs.go:110] creating a new certificate authority for front-proxy-ca
+    [certs] Generating "front-proxy-ca" certificate and key
+    I0106 08:23:01.575075    8106 certs.go:474] validating certificate period for front-proxy-ca certificate
+    [certs] Generating "front-proxy-client" certificate and key
+    I0106 08:23:01.763267    8106 certs.go:110] creating a new certificate authority for etcd-ca
+    [certs] Generating "etcd/ca" certificate and key
+    I0106 08:23:02.133316    8106 certs.go:474] validating certificate period for etcd/ca certificate
+    [certs] Generating "etcd/server" certificate and key
+    [certs] etcd/server serving cert is signed for DNS names [xxx.eu-west-1.compute.internal localhost] and IPs [x.x.x.x 127.0.0.1 ::1]
+    [certs] Generating "etcd/peer" certificate and key
+    [certs] etcd/peer serving cert is signed for DNS names [xxx.eu-west-1.compute.internal localhost] and IPs [x.x.x.x 127.0.0.1 ::1]
+    [certs] Generating "etcd/healthcheck-client" certificate and key
+    [certs] Generating "apiserver-etcd-client" certificate and key
+    I0106 08:23:02.971597    8106 certs.go:76] creating new public/private key files for signing service account users
+    [certs] Generating "sa" key and public key
+    I0106 08:23:04.877808    8106 certs.go:474] validating certificate period for CA certificate
+    I0106 08:23:04.877915    8106 manifests.go:109] [control-plane] adding volume "ca-certs" for component "kube-apiserver"
+    I0106 08:23:04.877938    8106 manifests.go:109] [control-plane] adding volume "k8s-certs" for component "kube-apiserver"
+    I0106 08:23:04.938474    8106 manifests.go:109] [control-plane] adding volume "ca-certs" for component "kube-controller-manager"
+    I0106 08:23:04.947028    8106 manifests.go:109] [control-plane] adding volume "k8s-certs" for component "kube-controller-manager”
+
+** Sharing certs with the nodes
+
+- [[https://docs.google.com/document/d/1SP4P7LJWSA8vUXj27UvKdVEdhpo5Fp0QHNo4TXvLQbw/edit?ts=5971498a#heading=h.5bejulk96xxi]]
+- [[https://github.com/kubernetes/kubernetes/pull/49520]]
+
+* Secure the servers (control plane and nodes)
+
+** CIS k8s benchmark
 
 - [[https://www.cisecurity.org/benchmark/kubernetes/]]
 
-One of the topic is: "Use CIS benchmark to review the security configuration of
-k8s component."
+CIS is a community driven non-profit that releases controls and benchmark.
+Is globally recognised to define security good practice guidance and industry
+accepted hardening procedures.
+
+To pass the cert you need to be able to use the CIS benchmark to review the
+security configuration of k8s components (both control plane and data plane),
+among which:
 
 - ETCD
 - kubelet
 - kubedns
 - kubeapi
 
-CIS is a community driven non-profit and releases controls and benchmark.
-Is globally recognised to define security good practice guidance and industry
-accepted hardening procedures.
+There are multiple way to run the CIS tests on your cluster.
 
-AWS security hub creates checks for things like this too.
-
-CIS Kubernetes benchmarks. CSI scope is both control plane and data plane.
-
-There are multiple way to run the CSI tests on your clyster.
-
-- kube-bench (by qua security) - go application [[https://github.com/aquasecurity/kube-bench]]
+- [[https://github.com/aquasecurity/kube-bench][kube-bench]] (by qua security) - go application
 - [[https://github.com/dev-sec/cis-kubernetes-benchmark]]
 
-The best one I found is kube-bench. It supports two types of run. One for masters
+The best one I found is kube-bench. It supports two types of runs, one for masters
 and one for nodes.
 
     # Masters
@@ -46,7 +152,7 @@ and one for nodes.
     sudo docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro \
     -t aquasec/kube-bench:latest node --version 1.19 > /home/ubuntu/cis-results.txt
 
-** kubeadm and CIS on the masters
+** kubeadm and CIS on the Controllers
 
 Some things are not enabled by default when using kubeadm, like the auditlogs:
 
@@ -78,9 +184,9 @@ by adding:
         [...]
         kubelet-certificate-authority: "/etc/kubernetes/pki/ca.crt"
 
-** kubeadm and CIS for the nodes
+** kubeadm and CIS for the Nodes
 
-There is only one error by default in 1.19:
+There is only one error by default in 1.19 (with a kubeadm installation):
 
     [FAIL] 4.2.6 Ensure that the --protect-kernel-defaults argument is set to true (Automated)
 
@@ -124,6 +230,8 @@ For EKS AWS they have their own:
 - [[https://aws.amazon.com/blogs/containers/introducing-cis-amazon-eks-benchmark/]]
 
 They have their own PDF since is a managed cluster.
+
+NOTE: On AWS, AWS Security Hub creates checks for things like this too.
 
 ** Deployment mechanism
 
@@ -187,17 +295,7 @@ role of ALL the nodes you need to run on to be able to read/write on that bucket
 
 It will require some changes that are not straightforward and requires time.
 
-* Ingress with security controls
-
-Setup ingress objects with security controls
-
-* Protect node metadata and endpoints
-
-* Minimise use of GUI
-
-* Verify platform binaries before deploying
-
-* Security: Control plane
+* Secure the Control plane
 
 - [[https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/control-plane-flags/]]
 
@@ -207,7 +305,92 @@ And for each component:
 - [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/]]
 - [[https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/]]
 
-** Enable audit logs for api-server
+** Protect ETCD (https, encryption at rest)
+
+- [[https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/]]
+
+All traffic to ETCD should be encrypted via https. It should be encrypted at rest and its access
+restricted.
+
+    # as sudo
+    cat /etc/kubernetes/manifests/kube-apiserver.yaml
+    ETCDCTL_API=3 etcdctl --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
+        --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
+        --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+        endpoint status
+
+This is on a standard kubeadm installation.
+
+    ETCDCTL_API=3 etcdctl --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
+        --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
+        --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+        get / --prefix --keys-only | grep secret
+
+So if you created:
+
+Find it with:
+
+    k get secrets my-secret -o jsonpath='{.data.key1}' | base64 --decode
+    #
+    ETCDCTL_API=3 etcdctl --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
+        --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
+        --cacert=/etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/my-secret
+
+Create the config file for the encryption:
+
+    sudo mkdir /etc/kubernetes/etcd-encryption
+    sudo nano /etc/kubernetes/etcd-encryption/etcd-enc.yaml
+    head -c 32 /dev/urandom | base64
+    sudo nano /etc/kubernetes/etcd-encryption/etcd-enc.yaml
+
+NOTE: Remember to mount the volume in the apiserver manifest!
+
+** Using a kms plugin
+
+- [[https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/]]
+
+** Audit logs for the api server
+
+- [[https://kubernetes.io/docs/tasks/debug-application-cluster/audit/]]
+
+Each request can be recorded with an associated stage.
+
+    [...] The defined stages are:
+    RequestReceived - The stage for events generated as soon as the audit handler receives the request, and before it is delegated down the handler chain.
+    ResponseStarted - Once the response headers are sent, but before the response body is sent. This stage is only generated for long-running requests (e.g. watch).
+    ResponseComplete - The response body has been completed and no more bytes will be sent.
+    Panic - Events generated when a panic occurred.
+    Source: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/
+
+In the audit policy you pass to the api server you can define which of this stages to log and what object/verb
+compination too.
+
+The levels of logging for each request at each stage are:
+
+    None - don't log events that match this rule.
+    Metadata - log request metadata (requesting user, timestamp, resource, verb, etc.) but not request or response body.
+    Request - log event metadata and request body but not response body. This does not apply for non-resource requests.
+    RequestResponse - log event metadata, request and response bodies. This does not apply for non-resource requests.
+    Source: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/
+
+You can totally ignore a stage by setting omitStages:
+
+    apiVersion: audit.k8s.io/v1
+    kind: Policy
+    omitStages:
+      - "RequestReceived"
+
+They are evaluated in order and the first matching rules sets the log level.
+
+There are different audit backends:
+
+- Json log files
+- Webhook
+- Dynamic backend (auditsink API) - DEPRECATED
+
+** Enable audit logs
+
+- [[https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy]]
 
 You can enable audit logs for kubernetes component via the kubeadm config file:
 
@@ -215,11 +398,28 @@ You can enable audit logs for kubernetes component via the kubeadm config file:
     kind: ClusterConfiguration
     kubernetesVersion: v${kubeadm_install_version}
     apiServer:
-      extraArgs:
-        audit-log-path: "/root/audit.log"
-        audit-log-maxage: "30"
-        audit-log-maxbackup: "10"
-        audit-log-maxsize: "100"
+        extraArgs:
+            audit-log-path: "/var/log/kube-audit/audit-log.json"
+            audit-log-maxage: "30"
+            audit-log-maxbackup: "10"
+            audit-log-maxsize: "100"
+            audit-policy-file: "/etc/kubernetes/kube-audit/audit-policy.yaml"
+        [...]
+        extraVolumes:
+            - name: "k8s-audit"
+            hostPath: "/etc/kubernetes/kube-audit"
+            mountPath: "/etc/kubernetes/kube-audit"
+            readOnly: true
+            pathType: DirectoryOrCreate
+            - name: "k8s-audit-logs"
+            hostPath: "/var/log/kube-audit/"
+            mountPath: "/var/log/kube-audit/"
+            readOnly: false
+            pathType: DirectoryOrCreate
+
+It is important to notice that the audit-policy file is REQUIRED or not log file will be created.
+That file can be mounted are readOnly in the api-server container but the destination for the logs needs to be
+mounted as "write" (in the case above /var/log/kube-audit/).
 
 ** Disable profiling for components
 
@@ -243,6 +443,284 @@ You can disable it via kubeadm:
       extraArgs:
         profiling: "false"
 
+* Accounts
+
+** Normal users
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/#normal-user]]
+
+There is no k8s user resource.
+A user is someone who holds a certificate and key. This way outside services can integrate
+with k8s identity manager.
+
+If it has a certificate, the certificate needs to be signed by ghe cluster certificate authority (CA).
+Also the common name (/CN) needs to be set with the user name:
+
+    /CN=andrea
+
+First create a CSR certificate signing request.
+Then you include it in a k8s resource
+then k8s use this and it's CA to sign it
+update the certifivcate signing request resource CRT
+the user can download it and distribuite to users.
+
+You can do it without the api if you have access to the CA.
+
+The resource is called *CertificateSigningRequest*.
+
+There is no way to invalidate a certificate is valid as long as the expiry date.
+
+If a cert is leaked:
+
+- Remove all access via RBAC
+or
+- Regen the CA and distribuite it
+
+Process:
+
+- create key
+- create CSR
+- API
+- Download CRT from API
+- User crtl + key
+
+    kubectl config set-credentials john --client-key=john.key --client-certificate=john.crt --embed-certs=true
+
+This:
+
+    --embed-certs=true
+
+Will include the certs in the kubeconfig instead of pointing to a file.
+
+** Secrets
+
+- [[https://kubernetes.io/docs/concepts/configuration/secret/]]
+
+Get comfortable with creating secrets and mounting them via volume and ENV.
+
+** Service accounts
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin]]
+- [[https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account]]
+
+Used by pods, managed by k8s. There is a service account resource in k8s.
+
+Are namespaced, there is a default in every namespace
+can be used go talk to the api
+
+the service account mounts a secret and have a token that can be used to speak to the api
+
+        ╰─ k get sa,secrets
+        NAME                     SECRETS   AGE
+        serviceaccount/default   1         39m
+
+        NAME                         TYPE                                  DATA   AGE
+        secret/default-token-plj26   kubernetes.io/service-account-token   3      39m
+        ╭─  /p/tmp  ☸ kind-kind:default                                                                                  14:31:11 
+        ╰─ k describe sa default
+        Name:                default
+        Namespace:           default
+        Labels:              <none>
+        Annotations:         <none>
+        Image pull secrets:  <none>
+        Mountable secrets:   default-token-plj26
+        Tokens:              default-token-plj26
+        Events:              <none>
+
+you can create a service account in any namespace.
+
+by default the secret of the sa is mounted on the pod
+
+        cat /run/secrets/kubernetes.io/serviceaccount/token
+
+And then curl:
+
+        curl https://kubernetes.default -k -H "Authorization: Bearer <TOKEN>"
+
+NOTE: Unless the pod needs to speak with the API server is more secure to disable the automaunt.
+
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: build-robot
+        automountServiceAccountToken: false
+        Source: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account
+
+The default service account have no permission.
+better to create your own and make only the pod you need use it.
+
+You can test the SA power via:
+
+        k auth can-i delete pod --as system:serviceaccount:default:default
+
+* Request workflow
+
+- [[https://kubernetes.io/docs/concepts/security/controlling-access]]
+
+Authentication -> Authorization -> Admission control
+
+Authentication: Who are you?
+Authorization: What can you do? For example: Node, RBAC
+
+        --authorization-mode=Node,RBAC
+
+Admission control: Does it respect all the constraints? For example OPA.
+
+        --enable-admission-plugins=NodeRestriction
+
+It is possible by default to have anonymous access.
+
+** Restrict anonymous access
+
+- [[https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/#kubelet-authentication]]
+
+kube api server have a flag called:
+
+    --anonymous-auth=true|false
+
+Is enabled by default, however if you use rbac you need to explicit authorize
+anonymous to do things.
+
+        root@kind-control-plane:/# curl https://localhost:6443 -k
+        {
+          "kind": "Status",
+          "apiVersion": "v1",
+          "metadata": {
+
+          },
+          "status": "Failure",
+          "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
+          "reason": "Forbidden",
+          "details": {
+
+          },
+          "code": 403
+         }
+
+This mean it accepts them!
+
+We need to enable anonymous auth needs to the liveness probes which.
+
+NOTE: Close insecure port (since k8s 1.20 insecure port is not possible anymore)
+
+Request sent to the insecure port will skip authentication and authorization.
+
+
+Check the IP the cert supports.
+
+In the kind docker container:
+
+        # openssl x509 -in apiserver.crt --text | grep 'X509v3 Subject Alternative Name' -A1
+                    X509v3 Subject Alternative Name:
+                        DNS:kind-control-plane, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, DNS:localhost, IP Address:10.96.0.1, IP Address:172.18.0.2, IP Address:127.0.0.1
+
+** Restrict access from nodes to the API
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/node/]]
+
+- NodeRestriction admission controlled
+
+Limits the node labels a kubelet can modify
+limits the kubelet can do, can only modify it's own
+and modify labels on pods running on itself
+
+ensure secure workload isolation via label.
+
+You can label only yourself (node) and only label that don't start with:
+
+    node-restriction.kubernetes.io/<xxx>=<yyy>
+
+* Pod Security Policies (PSP) - Deprecated in 1.21
+
+- [[https://kubernetes.io/blog/2021/04/06/podsecuritypolicy-deprecation-past-present-and-future/]]
+- [[SIG Auth Update and Deep Dive][https://www.youtube.com/watch?v=SFtHRmPuhEw]] - 22 Nov 2019
+- [[https://kubernetes.io/docs/concepts/policy/pod-security-policy/]]
+- [[https://rancher.com/blog/2020/pod-security-policies-part-2]]
+
+    Pod Security Policies enable fine-grained authorization of pod creation and updates.
+    [...]
+    The PodSecurityPolicy objects define a set of conditions that a pod must run with in order to
+    be accepted into the system, as well as defaults for the related fields.
+    Source: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+
+    First, one or more PodSecurityPolicy resources are created in a cluster to define the requirements Pods must meet.
+    Then, RBAC rules are created to control which PodSecurityPolicy applies to a given pod. If a pod meets the
+    requirements of its PSP, it will be admitted to the cluster as usual. In some cases, PSP can also modify Pod fields,
+    effectively creating new defaults for those fields. If a Pod does not meet the PSP requirements, it is rejected, and
+    cannot run.
+    Source: https://kubernetes.io/blog/2021/04/06/podsecuritypolicy-deprecation-past-present-and-future/
+
+The pod security policy functionality is going to be deprecated soon but it's still part of the CKS exam.
+With PSP you can amongst other things stop privilege escalation.
+
+    When multiple PodSecurityPolicies are available, the admission controller uses the first policy that successfully
+    validates. Policies are ordered alphabetically, and the controller prefers non-mutating policies (policies that
+    don't change the Pod) over mutating policies.
+    Source: https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies
+
+It also controls:
+
+- Access to host filesystems
+- Usage of volume types
+- AppArmor, sysctl, and seccomp profiles
+
+** Usage
+
+Pod security policy control is implemented as an admission controller.
+It can be enabled by adding it in the list of admission controllers in the api server.
+
+    PodSecurityPolicies are enforced by enabling the admission controller, but doing so without
+    authorizing any policies will prevent any pods from being created in the cluster.
+    Source: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+
+You need to be careful to enable it because AFTER you do it no new deployment is going to work without setting some
+RBAC rules.
+
+For new deployment to work the serviceaccount they use needs to have the RABC access to "use" the PSP policy.
+
+    When a PodSecurityPolicy resource is created, it does nothing. In order to use it, the requesting user or target
+    pod's service account must be authorized to use the policy, by allowing the use verb on the policy.
+    [...]
+    Since the pod security policy API (policy/v1beta1/podsecuritypolicy) is enabled independently of the admission
+    controller, for existing clusters it is recommended that policies are added and authorized before enabling the
+    admission controller.
+    Source: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+
+If you create a single pod via CLI that is going to work because YOUR USER have access to the PSP policy.
+
+    k create role psp-read --verb=use --resource=podsecuritypolicies
+    k create rolebinging psp-read --role=psp-read --serviceaccount=<namespace>:<name>
+
+** Replacements
+
+- [[https://kubernetes.io/docs/concepts/security/pod-security-standards/]]
+
+The new KEP at [[https://github.com/kubernetes/enhancements/pull/2582]] or:
+
+- OPA/Gatekeeper: [[https://github.com/open-policy-agent/gatekeeper]]
+- K-rail: [[https://github.com/cruise-automation/k-rail]]
+- Kyverno: [[https://github.com/kyverno/kyverno/]]
+
+* mTLS
+
+* OPA
+
+* Threat detection
+
+** Runtime security tools
+
+Find and identify malicious process
+
+** Falco
+
+** Apparmor
+
+** Seccomp
+
 * Re/Sources
 
 - [[https://k8sfiles.com/episodes/09-certifications/]]
+- VIDEO [[https://www.youtube.com/watch?v=wqsUfvRyYpw][Kubernetes Security Best Practices - Ian Lewis, Google]] - Dec 2019
+- VIDEO [[https://www.youtube.com/watch?v=gXz4cq3PKdg][Certifik8s: All You Need to Know About Certificates in Kubernetes [I] - Alexander Brand, Apprenda]] - Dec 2017
+
+

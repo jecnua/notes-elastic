@@ -13,7 +13,18 @@ plane consists of the proxies that live with each application instance and is in
 the request path. The control plane lives outside of the request path and is
 used to administer and control the behavior of the data plane.
 
+** Kiali
+
+    kubectl get secret -n istio-system $(kubectl get sa kiali-service-account
+    -n istio-system -o jsonpath='{.secrets[0].name}') -o jsonpath={.data.token}
+    | base64 -d
+
+- [[https://kiali.io/documentation/latest/faq/#token-strategy]]
+- [[https://kiali.io/documentation/v1.24/configuration/authentication/token/]]
+
 ** Components
+
+- [[https://istio.io/latest/blog/2020/addon-rework/]]
 
 From 1.5+:
 
@@ -804,10 +815,26 @@ Advanced traffic routing
 fault injection
 others
 
-    This far, all we’ve done is configure the Istio Gateway to expose a specific port, expect a specific protocol on that port, and define specific hosts to serve from the port/protocol pair. When traffic comes into the gateway, we need a way to get it to a specific service within the service mesh, and to do that we’ll use the VirtualService resource. In Istio, a VirtualService resource defines how a client talks to a specific service through its fully qualified domain name, which versions of a service are available, and other routing properties (like retries and request timeouts). It’s sufficient to know that VirtualService allows us to route traffic from the ingress gateway to a specific service.
+    This far, all we’ve done is configure the Istio Gateway to expose a specific
+    port, expect a specific protocol on that port, and define specific hosts to
+    serve from the port/protocol pair. When traffic comes into the gateway, we
+    need a way to get it to a specific service within the service mesh, and to
+    do that we’ll use the VirtualService resource. In Istio, a VirtualService
+    resource defines how a client talks to a specific service through its fully
+    qualified domain name, which versions of a service are available, and other
+    routing properties (like retries and request timeouts). It’s sufficient to
+    know that VirtualService allows us to route traffic from the ingress gateway
+    to a specific service.
     Source: https://freecontent.manning.com/istio-gateway/
 
-    The first issue is that the Kubernetes Ingress is a simple specification geared toward HTTP workloads. Each implementation of Kubernetes Ingress (like NGINX, Heptio Contour, etc) is geared toward HTTP traffic. In fact, Ingress specification only considers port 80 and port 443 as ingress points. This severely limits the types of traffic a cluster operator can allow into the service mesh. For example, if you’ve Kafka or NATS.io workloads, you may wish to expose direct TCP connections to these message brokers. Kubernetes Ingress doesn’t allow for that.
+    The first issue is that the Kubernetes Ingress is a simple specification
+    geared toward HTTP workloads. Each implementation of Kubernetes Ingress
+    (like NGINX, Heptio Contour, etc) is geared toward HTTP traffic. In fact,
+    Ingress specification only considers port 80 and port 443 as ingress points.
+    This severely limits the types of traffic a cluster operator can allow into
+    the service mesh. For example, if you’ve Kafka or NATS.io workloads, you may
+    wish to expose direct TCP connections to these message brokers. Kubernetes
+    Ingress doesn’t allow for that.
     [...]
     Second, the Kubernetes Ingress resource is severely underspecified. It lacks a common way to specify complex traffic routing rules, traffic splitting, or things like traffic shadowing. The lack of specification in this area causes each vendor to re-imagine how best to implement configurations for each type of Ingress implementation (HAProxy, Nginx, etc).
     Lastly, because things are underspecified, the way most vendors choose to expose configuration’s through bespoke annotations on deployments. The annotations between vendors varied and aren’t portable, and if Istio continues this trend there will be many more annotations to account for all the power of Envoy as an edge gateway.

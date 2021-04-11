@@ -1,0 +1,120 @@
+Golang Diagnostics
+|| Last update: 4 Feb 2021
+
+* Diagnostic
+
+- [[https://golang.org/doc/diagnostics.html]]
+
+        Diagnostics solutions can be categorized into the following groups:
+
+        Profiling: Profiling tools analyze the complexity and costs of a Go program such as its memory usage and
+        frequently called functions to identify the expensive sections of a Go program.
+        Tracing: Tracing is a way to instrument code to analyze latency throughout the lifecycle of a call or user
+        request. Traces provide an overview of how much latency each component contributes to the overall latency in a
+        system. Traces can span multiple Go processes.
+        Debugging: Debugging allows us to pause a Go program and examine its execution. Program state and flow can be
+        verified with debugging.
+        Runtime statistics and events: Collection and analysis of runtime stats and events provides a high-level
+        overview of the health of Go programs. Spikes/dips of metrics helps us to identify changes in throughput,
+        utilization, and performance.
+
+        Note: Some diagnostics tools may interfere with each other. For example, precise memory profiling skews CPU
+        profiles and goroutine blocking profiling affects scheduler trace. Use tools in isolation to get more precise
+        info.
+        Source: https://golang.org/doc/diagnostics.html
+
+* Testing
+
+NOTE: If you test main() incorrectly, nothing will work.
+
+    func TestMain(m *testing.M) {
+    	exitVal := m.Run()
+    	os.Exit(exitVal)
+    }
+
+    func TestExample(t *testing.T){
+    	got := example(3)
+    	fmt.Println("sss")
+    	want := 5
+    	if got != want {
+    		t.Errorf("got %d want %d", got, want)
+    	}
+    }
+
+You NEED to run
+
+    exitVal := m.Run()
+
+otherwise the other tests in the page won't run and coverage won't calculate.
+
+* Performance tuning
+
+If you are trying to tune the performance of your app, start always from the  memory allocation which are the most
+expensive operations, then move to the cpu performance.
+
+** Profiling
+
+- [[https://golang.org/pkg/runtime/pprof/]]
+
+        Profiler is a dynamic performance analysis tool that provides critical
+        execution insights in various dimensions which enable resolving
+        performance issues, locating memory leaks, thread contention and more.
+        Source: https://hackernoon.com/go-the-complete-guide-to-profiling-your-code-h51r3waz
+
+Go comes with built-in support for profiling.
+
+You can explore these dimensions via built in profiles:
+
+        Goroutine: stack traces of all current Goroutines
+        CPU: stack traces of CPU returned by runtime
+        Heap: a sampling of memory allocations of live objects
+        Allocation: a sampling of all past memory allocations
+        Thread: stack traces that led to the creation of new OS threads
+        Block: stack traces that led to blocking on synchronization primitives
+        Mutex: stack traces of holders of contended mutexes
+        Source: https://hackernoon.com/go-the-complete-guide-to-profiling-your-code-h51r3waz
+
+There are usually two ways to generate/manage each of this points:
+
+- One inside the code via libraries
+- One using externally the _go_tool_
+
+** Write a benchmark
+
+If you write a benchmark into your application directory, create new files for it.
+
+NOTE: Reset timer if you do any operation before the benchmark loop.
+
+** Tracing
+
+Needs
+
+        import "runtime/trace"
+
+and this in the main
+
+    	trace.Start(os.Stderr)
+    	defer trace.Stop()
+
+        traces:
+            go run ./cmd/main 2> trace.out
+            go tool trace trace.out
+
+The problem is you will always have to redirect the outout of the app out.
+
+        alternative:
+            go test ./cmd/main -trace trace.out
+            go tool trace pkg.test trace.out
+
+* Code coverage
+
+First run the tests asking to also check the coverage:
+
+    go test ./cmd/main -coverprofile=coverage.out -coverpkg=./...
+
+The you can print or visually see it in HTML:
+
+    # Will open browser
+    go tool cover -html=coverage.out
+    # Will show in shell
+    go tool cover -func=coverage.out

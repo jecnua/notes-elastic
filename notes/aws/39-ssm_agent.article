@@ -1,9 +1,39 @@
 AWS SSM agent
-|| Last update: 7 Feb 2020
+|| Last update: 25 Feb 2021
 
+* Intro
 
+- [[https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent.html]]
 
+go executable that polls API for commands.
+The SSM agent SSM can be used to access nodes instead of SSH,as well as execute various tasks.
 
+* Access a node
+
+After you get the instance id:
+
+    aws ec2 describe-instances --filters "Name=private-ip-address,Values=x.x.x.x"
+
+Access the node via AWS SSM:
+
+    $ aws ssm start-session --target <InstanceId>
+    # Or the following to directly get bash
+    $ aws ssm start-session --target <InstanceId> --document-name AWS-StartInteractiveCommand --parameters \
+    command="bash -l"
+
+In a different region like CHINA:
+
+    export AWS_REGION=cn-northwest-1
+    export AWS_DEFAULT_REGION=cn-northwest-1
+
+* Run command
+
+- [[https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up-messageAPIs.html]]
+- [[https://docs.aws.amazon.com/systems-manager/latest/userguide/troubleshooting-remote-commands.html]]
+
+You can run a command to multiple nodes.
+
+* Terraform
 
 This is the role you need to use SSM on a node:
 
@@ -14,8 +44,9 @@ This is the role you need to use SSM on a node:
       policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
     }
 
-We tried to investigate a way to monitor when a node SSM agent lose contact with their control plane and become unavailable, but AWS support confirms there is no metrics on cloudwatch for it:
+* Monitoring
 
-[…] I understand that you would like to keep a metric of SSM agent PingStatus. There is no turnkey solution for this so it has be scripted by calling ssm:DescribeInstanceInformation API, parse the responses and then publish the metric to CloudWatch. […] Creates a CloudWatch alarm that notifies an SNS topic when the SSM agent status goes into ConnectionLost.
-
-Due to the lack of bandwidth we are not implementing this.
+There is no immediate way to monitor when a node SSM agent lose contact with their control plane and become unavailable
+(SSM agent PingStatus). There is no metrics on cloudwatch for it.
+So it has be scripted by calling ssm:DescribeInstanceInformation API, parse the responses and then publish the metric to
+CloudWatch.

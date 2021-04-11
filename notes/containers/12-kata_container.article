@@ -1,0 +1,122 @@
+Kata Containers - NEEDS CLEANING
+|| Last update: 22 Sept 2020
+
+* Intro
+
+call containerd or crio via CRI
+
+you can tell cri runtime wich container runtime you want to use
+You can tell which container runtime to use.
+
+runc or kata containers
+
+kata containers as runtime instead of cresting a process on the os
+it will use hardware virtualization as isolation layer
+
+will call an hypervisor or VMM.
+the pod will be managed by specific agent inside the VM
+called kata agent
+
+it will run it's own kernel
+
+new components creates overhead
+
+- kypervisor
+- kernel
+- kata runtime
+- kata agents
+
+memory overhead, boot time and general complexity.
+
+there may be some incompatibility with specification designed with
+running process on host
+
+* Kata 2.0
+
+the kata agent speak via virt-iov(?) socket
+it can be seen as is a much reduced version of runc
+
+~10MB of mem
+
+they rewrote it from go to rust
+and from gRPC to ttRPC(?)
+
+now is around ~1-2MB
+
+** Hypervisors
+
+VMM (virtual machine manager)
+on top of KVM
+
+1y ago they presented a cloud native hypervisor
+
+.image images/kata_vmm.png
+.caption Source: [[https://www.youtube.com/watch?v=ZuXQyAj96FA]]
+
+they worked on a new cloud hypervisor provisor??
+based on upstream ?? project
+
+implements the full CRI implementation.
+
+KEMU (C) also is supported.
+
+cloud hypervisor is in Rust (not C)
+
+boot latency minimized and memory footprint is under 10MB for vmm.
+
+** Monitoring
+
+Seemless integration with prometheus.
+
+they added a kata monitoring component
+one per node
+that monitor the entire set of process running on the node
+
+metrics:
+
+- Hypervisor
+- agent
+- vm metrics
+
+you can specify how much a pod is gonna add to memory and cpu
+consumption via pod overhead.
+
+** Drives (still not out there)
+
+How to fetch container images? now you pull them on the host and expose the
+container to the VM via virtIO or virtIOFS.
+
+in 2.0 they will add an optional way to fetch the container from inside
+the VM
+
+the idea is to extend the threat model. this way you don't have to trust
+you host (CSP).
+
+if you combine it with tech like total memory encryption, the host no longer
+see what pod the vm is running and now not even WHICH container is running.
+
+to protect the container workload from the CSP.
+
+** CRI interaction (runtime shim-v2)
+
+with kata 1.x you get this:
+
+.image images/kata_1_x.png
+.caption [[https://www.youtube.com/watch?v=ZuXQyAj96FA]]
+
+in 2.x they want to have this:
+
+.image images/kata_2_x.png
+.caption [[https://www.youtube.com/watch?v=ZuXQyAj96FA]]
+
+one longstanding daemon for kata container
+one running daemon x pod x container inside the pod
+
+shimv2 API:
+
+- one single kata process per pod
+- better cli support
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=ZuXQyAj96FA][Kata Containers + Cloud-Hypervisor: Virtualization for Cloud Native]]

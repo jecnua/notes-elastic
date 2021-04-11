@@ -1,5 +1,5 @@
 Admission controllers
-|| Last update: 29 Sep 2020
+|| Last update: 30 Sep 2020
 
 * Admission controllers
 
@@ -89,6 +89,10 @@ This way you want be executed on every call, just the one you are interested in.
 
 - [[https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-rules]]
 
+** Best practices
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#best-practices-and-warnings]]
+
 Two important settings needs to be considered when registering a controller:
 
 - timeouts
@@ -122,3 +126,7 @@ PODS from being deployed, the only way yo know what happened is to debug do some
 troubleshooting.
 
 PSP looks likely to be getting deprecated.
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=ZJgaGJm9NJE][TGI Kubernetes 119: Gatekeeper and OPA]] 22 May 2020

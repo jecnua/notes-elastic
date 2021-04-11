@@ -1,11 +1,72 @@
-Helm 2
-|| Last update: 1 Aug 2019
+Helm 3 - NEEDS CLEANING
+|| Last update: 5 Oct 2020
 
-* Intro
+* Helm 3 - TO CLEAN
+
+Chart testing github
+chart releaser github - uses github as a chart storage
+
+chart testing action on pull request Will
+
+- lint
+- start a kind cluster
+- install chart
+- run tests
+
+chart releaser action
+
+- on merge to main will create a github release
+- update gh-pages branch with new index.yaml
+
+github chart repo actions demo
+
+there is a type type can be application or library library is a chart to reuse by other charts
+
+they moved dependencies in chart .yaml_ and remove requirements.yaml
+
+new feature is the value validations a file called values.schema.json in chart folders and it will use it to validate
+
+- helm install.upgrade/template/lint
+
+since yaml is not typed this is important
+
+there is a test framework a ci directory /ci/test-values.yaml
+
+you can also use a test hook that can install stuff when you run the test command in helm
+and deleted after you are done helm test hook annotations
+
+now releases are stored as secret in the namespace in which it's released you can looks at secrets in the namespace
+also changes at how does it manage CRDs they are installed only but no modifications or delete because it can mess with
+the cluster if there is a crds/ they should be pure yaml, not templated you can skip with --skip-crds
+
+the best practice says don't install crds as part of helm release there is a go sdk
+
+new feature post renderer you can take an helm chart and make changes after it!!!
+allow to pipe the rendered templates through a script you can add label/annotations to a particular resource using
+kustomize or ytt add secretes/key form vault
+
+demo repo at thomastaylor312/advanced-helm-demos/ ... post render
+and for ytt
+github k14s ytt ... develop/examples/helm-ytt-post-renderer
+
+so you can create a chart that extend another chart and have a bin/post-renderer
+to make changes to it also a ytt directory
+
+they can now stay simpler and not add if else for all cases you can modify them later
+
+helm diff plugin
+helmfile
+weaveworks helm controller
+helm conftest
+example paulczar conftest-helm-example
+
+helm go sdk to do releases
+
+slide deck https://sched.co/Zx4K
+
+* xxx
 
 - [[https://helm.sh/]]
-- [[https://helm.sh/docs/]]
-- [[https://helm.sh/docs/chart_best_practices/#the-chart-best-practices-guide]]
 
 Helm is a tool to allow the reuse and composability of releases in k8s.
 It bundles yaml files in charts and using this charts will release the
@@ -14,10 +75,6 @@ It have a powerful mechanism of templating (go) that allow the injection of
 values at deployment time (otherwise will use the defaults).
 
 Enable compositions via dependencies (it can use other charts).
-
-* History
-
-Originated by Deis in 2015 and donated to the CNCF in 2018.
 
 ** Why
 
@@ -370,24 +427,8 @@ Helm have hook to allow a better release process:
 
 - crd-install
 
-* Security
-
-Options to enforce access control with Helm:
-
-- Deploy tiller per namespace with RBAC and client certs
-- Use: helm --template test | kubectl -f -
-- Wait for Helm 3
-
-* Helm 3
-
-- [[https://sweetcode.io/a-first-look-at-the-helm-3-plan/]]
-- [[https://github.com/helm/helm/releases/tag/v3.0.0-alpha.1]] - 15 May 2019
-
-Moving to Lua.
-
 * Re/Sources
 
+- [[https://www.youtube.com/watch?v=UfASpCJOdiw][Deep Dive into Helm]] - 4 Sept 2020
 - GOOD SLIDES - [[https://speakerdeck.com/devopsgatheringio/04-helm-build-fashionable-container-systems-with-kubernetes-by-peter-rossbach]] - 12 Mar 2019
 - [[https://medium.com/dailymotion/deploying-apps-on-multiple-kubernetes-clusters-with-helm-19ee2b06179e]] - 14 Jun 2019
-- [[https://www.digitalocean.com/community/tutorials/an-introduction-to-helm-the-package-manager-for-kubernetes]] - 6 August 2018
-- [[https://github.com/helm/helm/issues/1569#issuecomment-261662068]]

@@ -1,0 +1,143 @@
+Kubernetes Authentication - KOPS - IAM
+|| Last update: 5 Aug 2020
+
+* Intro
+
+- [[https://github.com/kubernetes-sigs/aws-iam-authenticator]]
+
+A tool to use AWS IAM credentials to authenticate to a Kubernetes cluster.
+
+* Requirements
+
+To be able to authenticate to k8s via IAM, you need to install an executable called aws-iam-authenticator. This
+executable needs to be in your path to be used.
+
+- [[https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html]]
+
+For EKS the AWS cli is enough: [[https://docs.aws.amazon.com/cli/latest/reference/eks/get-token.html]]
+
+* IAM
+
+The user needs to be able to assume the IAM ROLE you will define during the installation (in the steps about the
+configmap).
+
+* Implementation
+
+AWS IAM Authenticator is supported natively by KOPS:
+
+- [[https://kubernetes-kops.netlify.app/authentication/#aws-iam-authenticator]]
+
+The first step of the installation process is to create a config map with the mapping between AWS roles and k8s groups.
+
+This can be done any moment prior to the installation but needs to be present on the cluster when you enable the
+authenticator.
+
+Let’s consider a configmap like this:
+
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      namespace: kube-system
+      name: aws-iam-authenticator
+      labels:
+        k8s-app: aws-iam-authenticator
+    data:
+      config.yaml: |
+        clusterID: <cluster_uuid>
+        server:
+          mapRoles:
+          - roleARN: <role_arn>
+            username: kubernetes-admin
+            groups:
+            - system:masters
+            - cluster-admin
+
+A larger example can be found here:
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/authentication.md#aws-iam-authenticator]]
+- [[https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html]]
+
+clusterID can be any string, it just needs to be unique for any cluster.
+
+- [[https://github.com/kubernetes-sigs/aws-iam-authenticator#what-is-a-cluster-id]]
+
+Now apply the config:
+
+    KUBECONFIG="<your_cluster_config>/kube.config" kubectl apply -f aws-auth-cm.yaml
+
+Now you can install the IAM authenticator itself. To install it you need to do it via the cluster template yaml adding
+the following lines under spec:
+
+    authentication:
+      aws:
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.1-scratch
+
+Now a UPDATE the cluster with kops.
+
+A state update is ENOUGH to trigger the creation of the DaemonSet. It doesn't actually reflect in any new terraform code.
+
+- [[https://github.com/kubernetes/kops/issues/6154#issuecomment-500552161]]
+
+The new released DaemonSet will now be in place but in crashloop.
+
+- [[https://github.com/kubernetes/kops/blob/master/docs/authentication.md#turning-on-iam-authenticator-on-an-existing-cluster]]
+
+You will have the following errors:
+
+    level=fatal msg="could not load/generate a certificate" error="open
+    /var/aws-iam-authenticator/cert.pem: permission denied”
+
+Now before we get to the next step, disable the DS:
+
+    export KUBECONFIG=<your_cluster_config>/kube.config
+    kubectl patch daemonset -n kube-system aws-iam-authenticator \
+    -p '{"spec": {"template": {"spec": {"nodeSelector": {"disable-aws-iam-authenticator": "true"}}}}}'
+
+Now, will need to force roll the masters. You need to force because kops things that there is nothing to update.
+
+    kops rolling-update --state=s3://<state> cluster k8s.iam-test.k8s.local --instance-group-roles Master --yes
+    NAME                    STATUS  NEEDUPDATE      READY   MIN     MAX     NODES
+    master-test-eu-west-2a  Ready   0               1       1       1       1
+    master-test-eu-west-2b  Ready   0               1       1       1       1
+    master-test-eu-west-2c  Ready   0               1       1       1       1
+    No rolling-update required.
+
+Now if the masters are stable re-enable the DeamonSet by removing the node selector we added in the step above.
+
+    export KUBECONFIG=<your_cluster_config>/kube.config
+    kubectl patch daemonset -n kube-system aws-iam-authenticator --type json \
+    -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/disable-aws-iam-authenticator"}]'
+
+* Kubeconfig
+
+The last step of the process is to give users the correct kubeconfig. The kubeconfig is similar from the one you would
+download from KOPS export command with the difference being the USER. Instead of sharing the full the cluster secrets,
+the user part is defined this way:
+
+    - name: <user>
+      user:
+        exec:
+          apiVersion: client.authentication.k8s.io/v1alpha1
+          args:
+          - token
+          - -i
+          - <cluster_uuid>
+          - -r
+          - <role_arn>
+          command: aws-iam-authenticator
+
+When any kubectl command is run, aws-iam-authenticator will be invoked with the role to assume and the cluster id. The
+result of this call will be used to authenticate.
+
+* Debugging issues
+
+** User can’t connect
+
+If the user sees and error like this while trying to use the authenticator:
+
+    error: You must be logged in to the server (Unauthorized)
+
+It could be one of the possible issue:
+
+- It is trying to assume a role that he can’t assume in AWS
+- The kubeconfig is not setup correctly (wrong role)

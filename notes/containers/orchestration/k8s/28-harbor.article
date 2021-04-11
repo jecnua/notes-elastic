@@ -1,0 +1,58 @@
+Harbor - NEEDS CLEANING
+|| Last update: 16 Sep 2020
+
+* Harbor 2.0
+
+First open source OCI compliant registry.
+
+- Support helm charts
+- OPA policies
+- Use Trivy as container vulnerability scanner
+
+Harbor is a trusted cloud native registry that store, sign and scan content.
+It started as non prem storage for container like dockerhub.
+
+CNCF graduated. Started in 2014.
+
+.image images/harbor.png
+.caption Source: https://www.youtube.com/watch?v=zGK0Nre21Eo
+
+* x
+
+in 2.0 supports helm natively.
+
+chart museum (3rd party)
+notary (3rd party)
+
+you can push OPA too?
+
+scan with trivy or clair (out of three scan)
+trivy is replacing clair
+
+* x
+
+** proxy cache
+
+it can act as a pull through cache for another remote registry
+faster distribution and local
+
+Proxy cache
+harbor can act as a cache between you and dockerhub
+for example
+
+** garbage collector
+
+registry is put in read only mode while in GC for now.
+
+** Distribution
+
+investigating
+
+- alibaba Dragonfly
+- uber kraken
+
+for p2p distribution
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=zGK0Nre21Eo][Intro: Harbor - Enterprise Cloud Native Artifact Registry]]

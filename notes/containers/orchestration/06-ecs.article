@@ -167,7 +167,8 @@ Some things to keep in consideration:
 - Will require to specify the the cpu and memory at task level while at container level is optional: in the end makes no sense since there is no cluster
 - CPU and Memory are only allowed with specific values
 - Only supports AWSLOGS and Splunk (from [[https://aws.amazon.com/about-aws/whats-new/2019/05/aws-fargate-pv1-3-now-supports-the-splunk-log-driver/][v1.3]]) as log drivers: since you can't install any other log drivers
-- Doesn't allow EBS or EFS: since you can't install drivers or mount anything
+
+You can now mount EFS on ECS and Fargate ECS.
 
 Fargate has only 10GB of docker layer storage and 4GB for volume mounts to be
 shared among containers.
@@ -375,7 +376,7 @@ Available on Fargate from PV 1.3.
 ** Inability to mount configs
 
 There is nothing like the kubernetes config maps and that makes mounting files
-extremely difficult. EFS?
+extremely difficult. Maybe now that you can mount and EFS you can do it.
 
 ** Lack of task level metrics
 

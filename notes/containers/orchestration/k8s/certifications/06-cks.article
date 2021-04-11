@@ -1,5 +1,5 @@
 Certified Kubernetes Security Specialist (CKS) notes
-|| Last update: 7 Apr 2021
+|| Last update: 8 Apr 2021
 
 * Kubernetes CKS notes
 
@@ -353,6 +353,8 @@ NOTE: Remember to mount the volume in the apiserver manifest!
 
 - [[https://kubernetes.io/docs/tasks/debug-application-cluster/audit/]]
 
+The api server can generate logs for each api call it receives. It is an intensive process so expect higher memory
+consumption.
 Each request can be recorded with an associated stage.
 
     [...] The defined stages are:
@@ -362,10 +364,8 @@ Each request can be recorded with an associated stage.
     Panic - Events generated when a panic occurred.
     Source: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/
 
-In the audit policy you pass to the api server you can define which of this stages to log and what object/verb
-compination too.
-
-The levels of logging for each request at each stage are:
+The Panic stage is only present in case of errors.
+The levels of logging (audit levels) for each request at each stage are:
 
     None - don't log events that match this rule.
     Metadata - log request metadata (requesting user, timestamp, resource, verb, etc.) but not request or response body.
@@ -373,6 +373,7 @@ The levels of logging for each request at each stage are:
     RequestResponse - log event metadata, request and response bodies. This does not apply for non-resource requests.
     Source: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/
 
+They are evaluated in order and the first matching rules sets the log level.
 You can totally ignore a stage by setting omitStages:
 
     apiVersion: audit.k8s.io/v1
@@ -380,7 +381,9 @@ You can totally ignore a stage by setting omitStages:
     omitStages:
       - "RequestReceived"
 
-They are evaluated in order and the first matching rules sets the log level.
+In the example above, omitStages=RequestReceived means it will not log watch events.
+In the audit policy you pass to the api server you can define which of these stages to log and what object/verb
+combination.
 
 There are different audit backends:
 
@@ -632,10 +635,12 @@ You can label only yourself (node) and only label that don't start with:
 
 * Pod Security Policies (PSP) - Deprecated in 1.21
 
+- [[https://kubernetes.io/docs/concepts/policy/pod-security-policy/]]
 - [[https://kubernetes.io/blog/2021/04/06/podsecuritypolicy-deprecation-past-present-and-future/]]
 - [[SIG Auth Update and Deep Dive][https://www.youtube.com/watch?v=SFtHRmPuhEw]] - 22 Nov 2019
-- [[https://kubernetes.io/docs/concepts/policy/pod-security-policy/]]
 - [[https://rancher.com/blog/2020/pod-security-policies-part-2]]
+
+It limits what pods and containers are allowed to do.
 
     Pod Security Policies enable fine-grained authorization of pod creation and updates.
     [...]
@@ -650,7 +655,7 @@ You can label only yourself (node) and only label that don't start with:
     cannot run.
     Source: https://kubernetes.io/blog/2021/04/06/podsecuritypolicy-deprecation-past-present-and-future/
 
-The pod security policy functionality is going to be deprecated soon but it's still part of the CKS exam.
+The pod security policy functionality is deprecated in 1.21 but it's still part of the CKS exam.
 With PSP you can amongst other things stop privilege escalation.
 
     When multiple PodSecurityPolicies are available, the admission controller uses the first policy that successfully
@@ -673,7 +678,7 @@ It can be enabled by adding it in the list of admission controllers in the api s
     authorizing any policies will prevent any pods from being created in the cluster.
     Source: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
 
-You need to be careful to enable it because AFTER you do it no new deployment is going to work without setting some
+You need to be careful to enable it, because AFTER you do it no new deployment is going to work without setting some
 RBAC rules.
 
 For new deployment to work the serviceaccount they use needs to have the RABC access to "use" the PSP policy.
@@ -690,6 +695,17 @@ If you create a single pod via CLI that is going to work because YOUR USER have 
 
     k create role psp-read --verb=use --resource=podsecuritypolicies
     k create rolebinging psp-read --role=psp-read --serviceaccount=<namespace>:<name>
+
+There is a specific order in which policies will be applied:
+
+    1. PodSecurityPolicies which allow the pod as-is, without changing defaults or mutating the pod, are preferred.
+    The order of these non-mutating PodSecurityPolicies doesn't matter.
+    2. If the pod must be defaulted or mutated, the first PodSecurityPolicy (ordered by name) to allow the pod is selected.
+    Source: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#policy-order
+
+The least restrictive policy you can create is here:
+
+- [[https://kubernetes.io/docs/concepts/policy/pod-security-policy/#example-policies]]
 
 ** Replacements
 

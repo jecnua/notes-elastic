@@ -52,9 +52,6 @@ you can do linkerd install in a single namespaces
 
     linkerd install --linkerd-namespace foobar
 
-At the moment there is no automatic admission control. No automatic sidecar
-ingestion.
-
 In the same pod there are 4 containers with 4 different roles that takes
 different roles depending on the start parameter.
 

@@ -1,0 +1,50 @@
+AWS Synthetic monitoring
+|| Last update: 23 Feb 2021
+
+* Intro
+
+- [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html]]
+
+    You can use Amazon CloudWatch Synthetics to create canaries, configurable scripts that run on a schedule, to monitor
+    your endpoints and APIs.
+    Source: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html
+
+Canaries are scripts written in Node.js or Python.
+
+    Canaries offer programmatic access to a headless Google Chrome Browser via Puppeteer or Selenium Webdriver.
+    [...]
+    Canaries check the availability and latency of your endpoints and can store load time data and screenshots of the UI.
+    They monitor your REST APIs, URLs, and website content [...]
+    Source: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html
+
+Scheduled canaries can run 24 hours a day, as often as once per minute.
+
+    By default, canaries create several CloudWatch metrics in the CloudWatchSynthetics namespace. These metrics have
+    CanaryName as a dimension. Canaries that use the executeStep() or executeHttpStep() function from the function
+    library also have StepName as a dimension.
+    Source: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html
+
+* Canaries bundles
+
+- [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Library_python_selenium.html]]
+- [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_WritingCanary_Python.html]]
+- [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_Library_Python.html]]
+- [[https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_metrics.html]]
+
+    When you create or update a canary, you choose a Synthetics runtime version for the canary. A Synthetics runtime is
+    a combination of the Synthetics code that calls your script handler, and the Lambda layers of bundled dependencies.
+    CloudWatch Synthetics currently supports runtimes that use Node.js for scripts and the Puppeteer framework, and
+    runtimes that use Python for scripting and Selenium Webdriver for the framework.
+    Source: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_Library.html
+
+* Terraform
+
+- [[https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/synthetics_canary]]
+
+BEWARE:
+
+    When you create a canary, AWS creates supporting implicit resources. See the Amazon CloudWatch Synthetics
+    documentation on DeleteCanary for a full list. Neither AWS nor Terraform deletes these implicit resources
+    automatically when the canary is deleted. Before deleting a canary, ensure you have all the information about the
+    canary that you need to delete the implicit resources using Terraform shell commands, the AWS Console, or AWS CLI.
+    Source: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/synthetics_canary

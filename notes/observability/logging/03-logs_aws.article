@@ -3,11 +3,7 @@ Logging on AWS
 
 * NEEDS UPDATE - CloudWatch Logs
 
-
-
-
-https://aws.amazon.com/blogs/compute/building-a-scalable-log-solution-aggregator-with-aws-fargate-fluentd-and-amazon-kinesis-data-firehose/
-
+- [[https://aws.amazon.com/blogs/compute/building-a-scalable-log-solution-aggregator-with-aws-fargate-fluentd-and-amazon-kinesis-data-firehose/]]
 
 When a task is stopped, it is sent SIGTERM, and then after a 30-second timeout, SIGKILL. When Fluentd receives the SIGTERM, it makes a single attempt to send all logs held in its in-memory buffer to their destinations. If this single attempt fails, the logs are lost. Therefore, log loss can be minimized by over-provisioning the aggregator, which reduces the amount of data buffered by each aggregator task.
 Source: https://aws.amazon.com/blogs/compute/building-a-scalable-log-solution-aggregator-with-aws-fargate-fluentd-and-amazon-kinesis-data-firehose/
@@ -15,7 +11,7 @@ Source: https://aws.amazon.com/blogs/compute/building-a-scalable-log-solution-ag
 Stops the daemon gracefully. Fluentd will try to flush the entire memory buffer at once, but will not retry if the flush fails. Fluentd will not flush the file buffer; the logs are persisted on the disk by default.
 https://docs.fluentd.org/deployment/signals
 
-https://aws.amazon.com/blogs/opensource/centralized-container-logging-fluent-bit/
+- [[https://aws.amazon.com/blogs/opensource/centralized-container-logging-fluent-bit/]]
 
 
 

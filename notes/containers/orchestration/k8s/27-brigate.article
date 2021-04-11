@@ -1,0 +1,52 @@
+Brigade - NEEDS CLEANING
+|| Last update: 16 Sep 2020
+
+* Intro
+
+Brigade is NOT a CICD platform, but can be used for it.
+
+CNCF Sandbox
+
+event driven scripting for k8s
+extremely lightweight
+it chains together container to create workflow
+
+like bash scripting is for the OS
+
+language is javascript
+how to share data between container?
+
+pass information to a container:
+- commands
+- env
+- files
+
+out of:
+- STDOUT
+- exit codes
+- files
+
+when to execute it?
+
+** event- driven
+
+gateway bropken events from upstream system like:
+- Github
+- Dockerhib
+- Slack
+and so on
+
+they become the entrypoint
+
+* Use cases
+
+- CI/CD
+- security audit
+- aggregating or analyzing data
+- creating complex sandbox envs
+
+can also react to prometheus events
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=SL2EIXLZjmw][Intro: Brigade]] 4 Sep 2020

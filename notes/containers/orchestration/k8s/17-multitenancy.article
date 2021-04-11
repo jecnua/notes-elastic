@@ -6,7 +6,11 @@ Multitenancy
 - [[https://cloud.google.com/kubernetes-engine/docs/concepts/multitenancy-overview]] - GCLOUD
 - [[https://docs.microsoft.com/en-us/azure/aks/operator-best-practices-cluster-isolation]] - AZURE
 
-    A multi-tenant cluster is shared by multiple users and/or workloads which are referred to as "tenants". The operators of multi-tenant clusters must isolate tenants from each other to minimize the damage that a compromised or malicious tenant can do to the cluster and other tenants. Also, cluster resources must be fairly allocated among tenants.
+    A multi-tenant cluster is shared by multiple users and/or workloads which
+    are referred to as "tenants". The operators of multi-tenant clusters must
+    isolate tenants from each other to minimize the damage that a compromised
+    or malicious tenant can do to the cluster and other tenants. Also, cluster
+    resources must be fairly allocated among tenants.
 
 resources
 isolate
@@ -15,64 +19,80 @@ isolate
 
 Namespaces is the basic isolation
 
-    but it’s effectively a ‘soft’ multi-tenancy model. There are multiple cluster components that are shared across all tenants within a cluster, regardless of namespace. These shared components include the master components such as the API server, controller manager, scheduler, and DNS, as well as worker components such as the Kubelet and Kube Proxy. Sharing these non-namespace-aware components between tenants necessarily exposes tenant resources to all other tenants in the cluster or on the same worker node
+    but it’s effectively a ‘soft’ multi-tenancy model. There are multiple cluster
+    components that are shared across all tenants within a cluster, regardless of
+    namespace. These shared components include the master components such as the
+    API server, controller manager, scheduler, and DNS, as well as worker components
+    such as the Kubelet and Kube Proxy. Sharing these non-namespace-aware components
+    between tenants necessarily exposes tenant resources to all other tenants in the
+    cluster or on the same worker node
     Source: https://content.pivotal.io/blog/kubernetes-one-cluster-or-many
 
- layers of resource isolation in Kubernetes: cluster, namespace, node, pod, and container.
+layers of resource isolation in Kubernetes: cluster, namespace, node, pod, and
+container.
 
-  You should also consider the security implications of sharing different types of resources among tenants.
+You should also consider the security implications of sharing different types of
+resources among tenants.
 
-
-    You can separate each tenant and their Kubernetes resources into their own namespaces. You can then use policies to enforce tenant isolation. Policies are usually scoped by namespace and can be used to restrict API access, to constrain resource usage, and to restrict what containers are allowed to do.
-
-
-  The tenants of a multi-tenant cluster share:
-  Extensions, controllers, add-ons, and custom resource definitions (CRDs).
-  The cluster control plane. This implies that the cluster operations, security, and auditing are centralized.
-
+You can separate each tenant and their Kubernetes resources into their own
+namespaces. You can then use policies to enforce tenant isolation. Policies are
+usually scoped by namespace and can be used to restrict API access, to constrain
+resource usage, and to restrict what containers are allowed to do.
 
 
-    Network traffic within a namespace is unrestricted. Network traffic between namespaces must be explicitly whitelisted. These policies can be enforced using Kubernetes network policy.
+    The tenants of a multi-tenant cluster share:
+    Extensions, controllers, add-ons, and custom resource definitions (CRDs).
+    The cluster control plane. This implies that the cluster operations,
+    security, and auditing are centralized.
 
+    Network traffic within a namespace is unrestricted. Network traffic between
+    namespaces must be explicitly whitelisted. These policies can be enforced
+    using Kubernetes network policy.
 
-
-    Kubernetes environments, in AKS or elsewhere, aren't completely safe for hostile multi-tenant usage. Additional security features such as Pod Security Policy and more fine-grained role-based access controls (RBAC) for nodes make exploits more difficult. However, for true security when running hostile multi-tenant workloads, a hypervisor is the only level of security that you should trust. The security domain for Kubernetes becomes the entire cluster, not an individual node. For these types of hostile multi-tenant workloads, you should use physically isolated clusters.
+    Kubernetes environments, in AKS or elsewhere, aren't completely safe for
+    hostile multi-tenant usage. Additional security features such as Pod Security
+    Policy and more fine-grained role-based access controls (RBAC) for nodes make
+    exploits more difficult. However, for true security when running hostile
+    multi-tenant workloads, a hypervisor is the only level of security that you
+    should trust. The security domain for Kubernetes becomes the entire cluster,
+    not an individual node. For these types of hostile multi-tenant workloads,
+    you should use physically isolated clusters.
     https://docs.microsoft.com/en-us/azure/aks/operator-best-practices-cluster-isolation
 
 ** Policy enforcement
 
-Access control - RBAC
-Network policies - give you control over the communication between your cluster's Pods. Policies specify which namespaces, labels, and IP address ranges a Pod can communicate with.
-Resource quotas -
-Pod security policies - API type that validate requests to create and update Pods. PodSecurityPolicies define default values and requirements for security-sensitive fields of Pod specification. You can create policies that restrict the deployment of Pods that access the host filesystem, networks, PID namespaces, volumes, and more.
-taints and tolerations -
-
-
+- Access control - RBAC
+- Network policies - give you control over the communication between your cluster's Pods. Policies specify which namespaces, labels, and IP address ranges a Pod can communicate with.
+- Resource quotas -
+- Pod security policies - API type that validate requests to create and update Pods. PodSecurityPolicies define default values and requirements for security-sensitive fields of Pod specification. You can create policies that restrict the deployment of Pods that access the host filesystem, networks, PID namespaces, volumes, and more.
+- taints and tolerations -
 
 make sure nothing run as root user
 priviledged containers
 
+In addition to the Namespace concept, a Quota resource can be created and
+associated to each namespace in order to avoid the possibility to have one user
+ starving all cluster resources.
+You need also to force the user to set limits on Pod definition (memory and CPU).
+This can be done thanks to an AdmissionController and the creation of a "LimitRange"
+resource for each namespace. By creating this "LimitRange" resource, the default
+limit values are added in the Pod definition if the user didn't set them initially.
 
-
-In addition to the Namespace concept, a Quota resource can be created and associated to each namespace in order to avoid the possibility to have one user starving all cluster resources.
-You need also to force the user to set limits on Pod definition (memory and CPU). This can be done thanks to an AdmissionController and the creation of a "LimitRange" resource for each namespace. By creating this "LimitRange" resource, the default limit values are added in the Pod definition if the user didn't set them initially.
 TL;DR: Namespace + Quota + LimitRange = Good isolation
 
 You can create service account for each namespace and use that to isolate (RBAC)
 use a role to allow this
 
-Networking includes the use of network policies to control the flow of traffic in and out of pods.
+Networking includes the use of network policies to control the flow of traffic
+in and out of pods.
 
 * Real life example
 
-https://content.pivotal.io/blog/kubernetes-one-cluster-or-many
-
-- [[https://www.youtube.com/watch?v=OUYTNywPk-s]]
+- [[https://content.pivotal.io/blog/kubernetes-one-cluster-or-many]]
+- [[https://www.youtube.com/watch?v=OUYTNywPk-s][Keynote: Anatomy of a Production Kubernetes Outage]] May 2018
+- VIDEO [[https://youtu.be/1xHmCrd8Qn8?t=105][Continuously Deliver your Kubernetes Infrastructure - Mikkel Larsen, Zalando SE]] May 2018
 
 zalando  - 100 clusters
-
-- [[https://www.youtube.com/watch?v=1xHmCrd8Qn8][Continuously Deliver your Kubernetes Infrastructure - Mikkel Larsen, Zalando SE]]
-
 2000 tech people
 200 delivery team
 
@@ -80,7 +100,6 @@ zalando  - 100 clusters
 84 clusters
 
 1 account per team
-
 
 agent that can pull data from your cluster
 jenkins for each team

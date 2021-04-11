@@ -1,7 +1,7 @@
 OOM killer in k8s
 || Last update: 14 Aug 2020
 
-* OOM killer
+* OOM killer (prometheus)
 
 Setting the resource limits for all PODs is the best way to reduce the recurrence
 of OOM events on the nodes.

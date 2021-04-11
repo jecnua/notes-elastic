@@ -1,17 +1,15 @@
-Thanos - [WIP]
-|| Last update: 28 Nov 2019
+Thanos - NEED CLEANING
+|| Last update: 5 Oct 2020
 
 * Intro
 
 - [[https://thanos.io/]]
 - [[https://github.com/thanos-io/thanos]]
-- [[https://improbable.io/blog/thanos-prometheus-at-scale]]
-- [[https://thanos.io/getting-started.md/]]
 
 Created at improbable is a way to extend prometheus and have long term storage
-in s3.
+in s3 and single global query view on multiple prometheus.
 
-** Global query view
+* Global query view
 
     Prometheus encourages a functional sharding approach. Even single Prometheus
     server provides enough scalability to free users from the complexity of
@@ -23,45 +21,38 @@ in s3.
     endpoint.
     Source: https://improbable.io/blog/thanos-prometheus-at-scale
 
-You can run more than one query node (one per cluster??) not to have a POF.
-
-* Historical data
-
-    Prometheus 2.0 helps a lot in this area, as a total number of time series no
-    longer impact overall server performance (See Fabian’s KubeCon keynote about
-    Prometheus 2). Still, Prometheus stores metric data to its local disk. While
-    highly-efficient data compression can get significant mileage out of a local
-    SSD, there is ultimately a limit on how much historical data can be stored.
-    Source: https://improbable.io/blog/thanos-prometheus-at-scale
-
-* Downsampling
-
-    The usual solution to that problem is called downsampling, a process of
-    reducing the sampling rate of the signal. With downsampled data, we can
-    “zoom out” to a larger time range and maintain the same number of samples,
-    thus keeping queries responsive.
-    Downsampling old data is an inevitable requirement of any long-term storage
-    solution and is beyond the scope of vanilla Prometheus.
-    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+You can run more than one query component pods not to have a POF.
 
 * Architecture
 
+- [[https://quay.io/repository/thanos/thanos?tab=info]]
 - [[https://fosdem.org/2019/schedule/event/thanos_transforming_prometheus_to_a_global_scale_in_a_seven_simple_steps/]] - 3 Feb 2019
 
-Thanos uses a system of sidecars. Sidecars are added a each prometheus node and
-allow to communicate.
+.image images/thanos_components.jpg
 
-*NOTE*: The gossip protocol has been
-[[https://thanos.io/proposals/201809_gossip-removal.md/][deprecated]] in 0.5.0!
+- Sidecar: connects to Prometheus and exposes it for real time queries by the Query Gateway and/or upload its data to cloud storage for longer term usage
+- Query: implements Prometheus API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
+- Query-frontend: Caching layer able to split and merge queries.
+- Store: exposes the content of a cloud storage
+- Compact: compacts and down-samples data stored in cloud storage
+- Replicate: will copy data from one remote storage to another
 
-The sidecar watch for new files being created by prometheus (all metrics in a
-time-range) and upload in a storage system like s3.
-You can then, optionally, reduce the retention of the prometheus node and keep
-it light (basically becoming a scraper).
+** Sidecar
 
-Part of the cluster is the *store*, a component that will read the data
-from s3 and cache it. it exposes a store API and is treated like any other
-sidecar.
+Thanos uses a system of sidecars. Sidecars are added a each prometheus pod and
+allow to be queries by the Thanos query component.
+The sidecar also watch for new files being created by prometheus and upload in a
+storage system like s3.
+This way and in combination with the store component, you can reduce the
+retention of the prometheus node and keep it light.
+
+** Store
+
+The component *store* will read the data from s3 and cache it.
+It exposes a store API and is treated like any other sidecar from the querier.
+You can define an external cache for the store component like Memcached to go
+around the issue of performance and HA (store component are stateless).
+You can share chunk information between store component.
 
     Store Gateway knows how to deal with the data format of the Prometheus storage
     engine. Through smart query planning and by only caching the necessary index
@@ -72,9 +63,37 @@ sidecar.
     against data on a local SSD.
     Source: https://improbable.io/blog/thanos-prometheus-at-scale
 
-Another component is the compactor, that will take the data from s3, compact it
+*** Historical data
+
+    Prometheus 2.0 helps a lot in this area, as a total number of time series no
+    longer impact overall server performance (See Fabian’s KubeCon keynote about
+    Prometheus 2). Still, Prometheus stores metric data to its local disk. While
+    highly-efficient data compression can get significant mileage out of a local
+    SSD, there is ultimately a limit on how much historical data can be stored.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+*** Downsampling
+
+    The usual solution to that problem is called downsampling, a process of
+    reducing the sampling rate of the signal. With downsampled data, we can
+    “zoom out” to a larger time range and maintain the same number of samples,
+    thus keeping queries responsive.
+    Downsampling old data is an inevitable requirement of any long-term storage
+    solution and is beyond the scope of vanilla Prometheus.
+    Source: https://improbable.io/blog/thanos-prometheus-at-scale
+
+** Query frontend
+
+- [[https://thanos.io/tip/components/query.md/]]
+
+You need to run at least 2 pods for each Thanos frontend to achieve HA.
+Also having a pod disruption budget set to 1 minimum pod will help.
+
+** Compactor
+
+Another component is the *compactor*, that will take the data from s3, compact it
 (also doing downsampling) and push it to s3. It allows better performance.
-This job can run as a cron. It is not necessary. This decrease latency.
+This job can run as a cron. It is not required.
 
     To produce downsampled data, the Compactor continuously aggregates series
     down to five minute and one hour resolutions. For each raw chunk, encoded
@@ -83,18 +102,65 @@ This job can run as a cron. It is not necessary. This decrease latency.
     choose the aggregate that is appropriate for a given PromQL query.
     Source: https://improbable.io/blog/thanos-prometheus-at-scale
 
-* Components
+The *replicate* component will copy the data from one remote storage to another.
+This can be used for GDPR or compliance reasons.
 
-- [[https://quay.io/repository/thanos/thanos?tab=info]]
+*** Compactor: Overlapping blocks issue
 
-.image images/thanos_components.jpg
+- [[https://github.com/thanos-io/thanos/blob/main/docs/operating/troubleshooting.md#overlaps]]
 
-- Sidecar: connects to Prometheus and exposes it for real time queries by the Query Gateway and/or upload its data to cloud storage for longer term usage
-- Query: implements Prometheus API to aggregate data from the underlying components (such as Sidecar or Store Gateway)
-- Store: exposes the content of a cloud storage
-- Compactor: compacts and down-samples data stored in cloud storage
-- Receiver: receives data from Prometheus remote-write WAL, exposes it and/or upload it to cloud storage
-- Ruler: evaluates recording and alerting rules against data in Thanos for exposition and/or upload
+If in your bucket view the old blocks are not all compacted, maybe your compactor is not working correctly. One of the
+possible issue is called overlapping_blocks and is cause by a misconfiguration in how the blocks were updated on s3.
+
+In the compactor logs you may see an error like this:
+
+    caller=compact.go:375 msg="critical error detected; halting" err="compaction: group 0@14895098461932485396: pre
+    compaction overlap check: overlaps found while gathering blocks. [mint: 1584972000000, maxt: 1584979200000, range: 2h0m0s, blocks: 5]:
+    [...]
+
+You can verify the problem is present by exec-in the thanos bucket pod and run the following:
+
+    # /bin/thanos tools bucket verify --objstore.config-file=/etc/config/object-store.yaml
+    level=info ts=2021-03-02T12:22:23.37961041Z caller=main.go:138 msg="Tracing will be disabled"
+    level=info ts=2021-03-02T12:22:23.3796658Z caller=factory.go:46 msg="loading bucket configuration"
+    level=warn ts=2021-03-02T12:22:23.379966031Z caller=verify.go:81 msg="GLOBAL COMPACTOR SHOULD __NOT__ BE RUNNING ON THE SAME BUCKET" issues=2 repair=false
+    [...]
+    msg="found overlapped blocks" group=0@10844680014357932111 overlap
+    [...]
+    level=info ts=2021-03-02T12:23:25.983952976Z caller=verify.go:100 msg="verify completed" issues=2 repair=false
+
+You can also test from your own machine by creating a config file first like the following (for example called o.yaml):
+
+    type: S3
+    config:
+      bucket: my-thanos-bucket # Bucket name
+      endpoint: s3.eu-west-1.amazonaws.com
+
+And then running:
+
+    # You need the thanos executable on your machine
+    ./thanos tools bucket verify --objstore.config-file=o.yaml
+
+There is no way to automatically resolve the issue since Thanos has no way to understand WHICH block to choose among
+the overlapping or why the problem is present.
+
+- [[https://github.com/thanos-io/thanos/issues/2178#issuecomment-591822797]]
+
+The solution is to manually remove all but one of the overlapping blocks.
+When choosing between overlapping blocks, I would prioritise in order:
+
+- the one with higher resolution
+- the one with more metrics in it
+
+Before doing this type of operations the compactor needs to be disabled to avoid multiple processes manipulating the
+same dataset.
+
+** Receive and Rule components
+
+- [[https://www.youtube.com/watch?v=Wroo1n5GWwg][Thanos: Cheap, Simple and Scalable Prometheus ]] 4 Sep 2020
+
+- Receive
+- Rule
 
 ** Sidecar
 
@@ -154,20 +220,6 @@ to allow to alert manager to decouple alert
 alert relabel configs
 regex replica
 action labeldrop
-
-** Gateway
-
-to access object in the object storage
-you need a thanos gateway
-
-expose store api
-and need access to the storage
-
-** Thanos compactor
-
-does not expose any api
-works on only one thing
-and also downsampled
 
 *** Manage space
 

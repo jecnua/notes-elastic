@@ -1,6 +1,18 @@
 Github actions
 || Last update: 23 Sep 2020
 
+* Some examples
+
+- [[https://rammusxu.github.io/toolkit/snippets/github-action/]]
+
+Making a step depend on another step result
+
+- [[https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-output-parameter]]
+
+    - id: id
+      run: echo ::set-output name=key::value
+    - if: steps.id.outputs.key == 'value'
+
 * Runners
 
 The code for the github runners is here:
@@ -38,6 +50,51 @@ And setup the machine:
             "credsStore": "ecr-login"
     }
     EOF
+
+** Authentication/Authorisation
+
+Usually one of the approach to auth on github is to create a user account for
+that specific purpose and add this user to ALL the repositories it needs access
+to.
+
+There are multiple issue with this approach. One of the most problematic is
+having to add the user/team to every repository. The second is the limited
+granularity you have regarding access:
+
+- read
+- triage
+- write
+- maintain
+- admin
+
+To manage authentication and authorization for the github actions runner is better
+to use a different approach. To have more security, granularity of access and easy of
+use create a github app.
+
+The github apps have much more granularity for access than a user. In this case you
+can give the app enough power to pull all the repository, do basic actions on them
+and be allowed to de/register runners.
+
+With the access given this way, there is no need to add anything on any new repo
+that is created or to manage user/groups.
+The authentication via github apps is managed via the following token/secrets:
+
+- APP ID
+- APP INSTALLATION ID
+- APP KEY (secret)
+- PEM KEY (secret)
+
+The first two values can be retrieved from the github app page, but the other
+two are secrets and cannot be recovered after creation. They can both be saved on
+AWS parameter store to be used from the github runners later.
+
+Both are generated manually, similarly on how you generate PEM on AWS.
+
+With all this information on AWS Parameter Store the github runners nodes can
+register themselves to a github org and access all the repositories.
+Would be very good security wise that the PEM at least is never accessed form
+the nodes themselves and the auth tokens are generated elsewhere (like from a
+lambda and then saved on AWS parameter store).
 
 ** Registration token
 

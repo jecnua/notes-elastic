@@ -1,47 +1,29 @@
 Jaeger
-|| Last update: 22 Apr 2020
-
-* Intro
-
-Problem with ELB
-trying to expose the collector via ELB fails
-https://github.com/jaegertracing/jaeger/issues/636
-
-
-
-
-
-
-
-
-My related code project:
-
-- [[https://github.com/jecnua/tracing-nodejs]].
+|| Last update: 28 Oct 2020
 
 * Jaeger
 
 - [[http://www.jaegertracing.io/]]
 - [[https://github.com/jaegertracing/jaeger]]
 
-The backend is written in GO and the UI is in react.
-Jaeger is newer in respect of Zipkin, but allow dynamic sampling and has a lower
-footprint.
+    Jaeger, inspired by Dapper and OpenZipkin, is a distributed tracing platform
+    created by Uber Technologies and donated to Cloud Native Computing Foundation.
+    It can be used for monitoring microservices-based distributed systems.
+    Source: https://github.com/jaegertracing/jaeger
 
-* Architecture
+The backend is written in GO and the UI is in react.
+
+* High level architecture
 
 - [[https://www.jaegertracing.io/docs/architecture/]]
-- [[https://www.jaegertracing.io/docs/1.17/features/]]
-- [[https://www.jaegertracing.io/docs/1.17/cli/]]: all flags
+- [[https://www.jaegertracing.io/docs/features/]]
+- [[https://www.jaegertracing.io/docs/cli/]]
 
 .image images/architecture-v2.png 500 _
-.caption Souce: [[https://www.jaegertracing.io/docs/1.17/architecture/]]
+.caption Souce: [[https://www.jaegertracing.io/docs/1.20/architecture/]]
 
-Jaeger was an uber project and has been build with scalability and parallelism
-in mind. It natively support OpenTracing.
-
-    Jaeger backend is designed to have no single points of failure
-    [...]
-    Source: https://www.jaegertracing.io/docs/1.17/features/
+Jaeger has been build with scalability and parallelism in mind and is designed
+to have no single points of failure.
 
     An instrumented service creates spans when receiving new requests and
     attaches context information (trace id, span id, and baggage) to outgoing
@@ -49,31 +31,41 @@ in mind. It natively support OpenTracing.
     profiling data, like operation name, timing, tags and logs, is not
     propagated. Instead, it is transmitted out of process to the Jaeger backend
     asynchronously, in the background.
-    Source: https://www.jaegertracing.io/docs/1.17/architecture/
+    Source: https://www.jaegertracing.io/docs/1.20/architecture/
+
+When Jaeger was introduced in 2017 the collector directly linked to the DB. The
+data process is done in batches and this type of architecture was suffering
+from performance issue when too much data was ingested.
+With too much data in the collector, the DB may suffer and data could be dropped.
+All this was the PUSH model.
+
+The new infra allows for kafka to be between the collector and the storage.
+The ingestor read data from kafka and write them on the DB. Also Flink read from
+Kafka if you use it.
 
 * Components
 
-- [[https://www.jaegertracing.io/docs/1.17/deployment/]]
+- [[https://www.jaegertracing.io/docs/deployment/]]
 
-Components are:
+The main components are:
 
-- Agent - https://hub.docker.com/r/jaegertracing/jaeger-agent/
-- Collector - https://hub.docker.com/r/jaegertracing/jaeger-collector/
-- Query (retrieves traces from storage and hosts a UI to display them) - https://hub.docker.com/r/jaegertracing/jaeger-query/
-- Ingested (optional: only if you use kafka as buffer) - https://hub.docker.com/r/jaegertracing/jaeger-ingester/
+- Agent - [[https://hub.docker.com/r/jaegertracing/jaeger-agent/]]
+- Collector - [[https://hub.docker.com/r/jaegertracing/jaeger-collector/]]
+- Query (retrieves traces from storage and hosts a UI to display them) - [[https://hub.docker.com/r/jaegertracing/jaeger-query/]]
+- Ingester (optional: only if you use kafka as a buffer) - [[https://hub.docker.com/r/jaegertracing/jaeger-ingester/]]
 
 ** Agents
 
-- [[https://www.jaegertracing.io/docs/1.17/deployment/#agent]]
+- [[https://www.jaegertracing.io/docs/deployment/#agent]]
 
-The agent usually lives in a sidecar inside the pod and recieves span via
+The agent usually lives in a sidecar inside the pod and recieves spans via
 UDP.
 
     The Jaeger agent is a network daemon that listens for spans sent over UDP,
     which it batches and sends to the collector. It is designed to be deployed
     to all hosts as an infrastructure component. The agent abstracts the routing
     and discovery of the collectors away from the client.
-    Source: https://www.jaegertracing.io/docs/1.17/architecture/
+    Source: https://www.jaegertracing.io/docs/1.20/architecture/
 
 The agents receive spans over UDP on port 5775. The spans are batched, encoded
 as [[https://thrift.apache.org/][Thrift structures]] and submitted to the
@@ -81,12 +73,12 @@ collector.
 
 *NOTE*: The app is using Thrift because at Uber was what they are used to.
 However, it's in the planning a move to _gRPC_.
-Source: https://groups.google.com/forum/#!topic/jaeger-tracing/toBNkL_zEDE
+Source: [[https://groups.google.com/forum/#!topic/jaeger-tracing/toBNkL_zEDE]]
 
 The Routing and Discovery phase of the collectors from the client library is also
 the responsibility of the agent.
 
-Jaeger can accept Zipkin span transparently.
+Jaeger can accept Zipkin span transparently (is Zipkin compatible).
 
 Performance can be tuned:
 
@@ -97,34 +89,34 @@ running it in k8s load balancing via services.
 
     Jaeger supports agent level tags, that can be added to the process tags of
     all spans passing through the agent.
-    Source: https://www.jaegertracing.io/docs/1.17/deployment/#agent
+    Source: https://www.jaegertracing.io/docs/1.20/deployment/#agent
 
 We can use agent level tags to give more filtering power at UI level for traces.
 
 ** Collector
 
-- [[https://www.jaegertracing.io/docs/1.17/deployment/#collectors]]
+- [[https://www.jaegertracing.io/docs/1.20/deployment/#collectors]]
 
     The Jaeger collector receives traces from Jaeger agents and runs them
     through a processing pipeline. Currently our pipeline validates traces,
     indexes them, performs any transformations, and finally stores them.
-    Source: https://www.jaegertracing.io/docs/1.17/architecture/
+    Source: https://www.jaegertracing.io/docs/1.20/architecture/
 
 Collectors are stateless.
 Scale them with HPO.  If possible find the maximum that es can manage.
 
-** Storage backends
+** Pluggable storage backends
 
-- [[https://www.jaegertracing.io/docs/1.17/#technical-specs]]
+- [[https://www.jaegertracing.io/docs/1.20/#technical-specs]]
 
-It supports:
+Upstream supports:
 
 - In-memory
 - *Cassandra* 3.4+
 - *ElasticSearch* 5.x/6.x/7.x
-- *Kafka*
+- Badger (demo and test purpose)
 
-- [[https://www.jaegertracing.io/docs/1.17/deployment/#elasticsearch]]
+- [[https://www.jaegertracing.io/docs/1.20/deployment/#elasticsearch]]
 
 In Elasticsearch two indices will be created: one for storing the services and
 the other one for the spans of given services. (checks)
@@ -146,7 +138,7 @@ their own cleanup.
     others. Jaeger by default stores data in daily indices which might not
     optimally utilize resources. Rollover feature can be enabled by
     --es.use-aliases=true
-    Source: https://www.jaegertracing.io/docs/1.17/deployment/#elasticsearch
+    Source: https://www.jaegertracing.io/docs/1.20/deployment/#elasticsearch
 
 It can also be managed by the operator (creation or run?)
 
@@ -155,13 +147,13 @@ can do it for me.
 
     docker run -it --rm --net=host jaegertracing/jaeger-es-rollover:latest init http://localhost:9200
 
-- [[https://www.jaegertracing.io/docs/1.17/frontend-ui/#archive-support]]
+- [[https://www.jaegertracing.io/docs/1.20/frontend-ui/#archive-support]]
 
     archiveEnabled enables (true) or disables (false) the archive traces button.
     Default: false. It requires a configuration of an archive storage in Query
     service. Archived traces are only accessible directly by ID, they are not
     searchable.
-    Source: https://www.jaegertracing.io/docs/1.17/frontend-ui/#archive-support
+    Source: https://www.jaegertracing.io/docs/1.20/frontend-ui/#archive-support
 
 By default it creates spark dependencies:
 
@@ -179,7 +171,7 @@ Kafka can be used as a preliminary buffer.
 
 ** Ports
 
-- [[https://www.jaegertracing.io/docs/1.17/getting-started/]]
+- [[https://www.jaegertracing.io/docs/1.20/getting-started/]]
 
     CLIENT 6831	  UDP	  agent	accept jaeger.thrift over compact thrift protocol
     CLIENT 6832	  UDP	  agent	accept jaeger.thrift over binary thrift protocol
@@ -210,7 +202,7 @@ Kafka can be used as a preliminary buffer.
     [...]
     A trace is a data/execution path through the system, and can be thought of
     as a directed acyclic graph of spans.
-    Source: https://www.jaegertracing.io/docs/1.17/architecture/
+    Source: https://www.jaegertracing.io/docs/1.20/architecture/
 
 Fields are:
 
@@ -233,9 +225,9 @@ The span context *is*NOT*defined* in the opentracing javascript
 
 - [[https://github.com/opentracing/opentracing-javascript/blob/master/src/span_context.ts]]
 
-** Sampling
+* Sampling
 
-- [[https://www.jaegertracing.io/docs/1.17/sampling/]]
+- [[https://www.jaegertracing.io/docs/1.20/sampling/]]
 
     To minimize the overhead, Jaeger clients employ various sampling strategies.
     When a trace is sampled, the profiling span data is captured and transmitted
@@ -244,9 +236,37 @@ The span context *is*NOT*defined* in the opentracing javascript
     to incur the minimal amount of overhead. By default, Jaeger clients sample
     0.1% of traces (1 in 1000), and have the ability to retrieve sampling
     strategies from the Jaeger backend.
-    Source: https://www.jaegertracing.io/docs/1.17/architecture/
+    Source: https://www.jaegertracing.io/docs/1.20/architecture/
 
     Uses consistent upfront sampling with individual per service/endpoint probabilities
+
+
+There are two two approaches to do sampling:
+
+- Coherent head-based sampling
+- Tail based sampling
+
+
+** Central control
+
+Is possible to configure the settings centrally and then push these to the clients
+(this allow runtime changes without redeploying). However it will also centralize
+all in one file for all apps.
+
+** Coherent head-based sampling
+
+sampling decision when request first time is recieved and this is propagated to
+all downstream services and needs to be respected). There are two ways to
+implement this:
+
+- Probabilitic (like 1%)
+- Rate-limiting (like 10 req per second)
+
+Sampling is configured per service. So if you have multiple endpoint, and some with
+lower traffic with a single configuration
+the endpoint with low traffic won't be sampled
+Jaeger support also endpoint-level sampling
+
 
 
 Jaeger libraries implement consistent upfront (or head-based) sampling.
@@ -300,20 +320,13 @@ Upcoming Adaptive Sampling functionality:
 
 Also post-collection data processing pipeline (coming soon)
 
-* Test it
+** Tail-based sampling
 
-- [[https://github.com/jaegertracing/jaeger/tree/master/examples/hotrod]]
-
-    docker run -d --name jaeger --rm -p 6831:6831/udp -p 16686:16686 jaegertracing/all-in-one:latest
-    docker run --rm -it --link jaeger -p8080-8083:8080-8083 jaegertracing/example-hotrod:latest --jaeger-agent.host-port=jaeger:6831
-
-If you want to sping the component separately:
-
-- [[https://www.jaegertracing.io/docs/deployment/]]
+Still not supported but in the works.
 
 * Monitoring
 
-- [[https://www.jaegertracing.io/docs/1.17/monitoring/]]
+- [[https://www.jaegertracing.io/docs/1.20/monitoring/]]
 
 Jeager export metrics via prometheus endpoint by default.
 
@@ -326,11 +339,11 @@ At Uber, they monitor:
 At Uber they don't use auto-scaling for collectors, just a fixed size pool.
 The bottleneck is typically the storage, which is hard to auto-scale.
 
-Tuning: https://www.jaegertracing.io/docs/1.17/performance-tuning/
+Tuning: [[https://www.jaegertracing.io/docs/1.20/performance-tuning/]]
 
 * Infrastructure
 
-- [[https://www.jaegertracing.io/docs/1.17/deployment/]]
+- [[https://www.jaegertracing.io/docs/1.20/deployment/]]
 
 There are three defined way to install Jaeger.
 
@@ -338,12 +351,12 @@ NOTE: The current recommended way of installing and managing Jaeger in a
 production Kubernetes cluster is via the Jaeger Operator.
 
 - [[https://github.com/jaegertracing/helm-charts]] Helm charts
-- [[https://github.com/jaegertracing/jaeger-kubernetes]] k8s templates - Not recommended
+- [[https://github.com/jaegertracing/jaeger-kubernetes]] k8s templates - Deprecated
 - [[https://github.com/jaegertracing/jaeger-operator]] Jaeger Operator - Can be installed via Chart
 
 ** Jeager operator
 
-- [[https://www.jaegertracing.io/docs/1.17/operator/]]
+- [[https://www.jaegertracing.io/docs/1.20/operator/]]
 - [[https://github.com/jaegertracing/jaeger-operator]]
 
 It's the preferred way of installation.
@@ -473,6 +486,5 @@ Agent needs to run on docker ip
 
 * Re/Sources
 
+- VIDEO [[https://youtu.be/BWtNelj_XUc?t=362][Jaeger Deep Dive]] - 4 Sep 2020
 - [[https://shkuro.com/books/2019-mastering-distributed-tracing/]] - BOOK - 2019
-- VIDEO [[https://www.youtube.com/watch?v=tFZAHWl8y_I][Jaeger Project Deep Dive - Juraci Kröhling, Red Hat]] - 4 May 2018
-- [[https://sematext.com/blog/opentracing-jaeger-as-distributed-tracer/]] - 8 May 2018

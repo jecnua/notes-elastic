@@ -1,0 +1,106 @@
+Tekton - NEEDS CLEANING
+|| Last update: 14 Sep 2020
+
+* Intro
+
+- [[tekton.dev]]
+
+Used to build cicd system. Runs pipelines/command in container.
+
+Add CRD in your k8s and use this pieces as building box.
+
+- Steps
+- Tasks - a sequence of step that run ion sequential steps (reusable) - run as a pod
+- Pipeline - sequences a set of tasks - ordered list
+- PipelineRun - An instance of a pipeline execution. they can be created dynamically
+
+.image images/tekton-schema.png
+.caption Source: https://www.youtube.com/watch?v=bFqNoiVlNNI
+
+Steps are run inside the same step in the same container.
+Pipeline are a collections of tasks.
+
+It has input and outputs.
+
+- TaskRuns is a specific execution of a task
+- PipelineRuns is the specific execution of a Pipeline
+
+Pipeline resources??
+
+- [[https://github.com/joellord/handson-tekton]]
+
+tekton is a cloud-native microservices factory.
+you can have fewer pipeline than repository if a lot of microservices are the
+same.
+
+* Interesting
+
+You can ask for inputs and validate them.
+
+In a step if you write in the home folder you can read in the next step the same
+file.
+
+a pipeline can be used to pass parameters to a set of tasks.
+
+you can use a PV as a workspace for a pipeline
+and you can have workspace output for example
+
+share difference resources between task is still in alpha mode ???
+
+you need to specify the workspace in every tasks
+to communicate between themselves
+
+workspaces are not fully working yet
+they are still in alpha
+sharing different resources in tasks
+
+the rest is in beta
+
+* PV
+
+Sometimes PV are created implicitly even if you don't define it.
+you can see it by seeing the yaml definition of the pod created
+
+if there are multiple tasks in the pipeline
+it will do it automatically
+
+so you need to HAVE dynamic provisioning
+
+** Workspaces
+
+they need a Volume Claim template
+
+* Credential
+
+- build input
+- Service account -  needs to say which secrets needs to be picked up
+
+you need to create secrets with annotation
+to tell tekton to use them
+
+credential initializer container
+tkn logs
+you can't have multiple Credential
+for a single external resources
+
+if you need multiple credential
+you need to patch to different service account
+
+ONLY ONE SECRET PER TARGET RESOURCE (tasks run on behalf of users, not as those
+users)
+
+* Tekton hub
+
+is in preview where you can find other people task and pipelines
+
+* Others
+
+VS extension
+Tekton triggers? - just use any webhook and create a pipeline run for you
+Trugger subproject
+PipelineRun logs lifetime tied to PipelineRun instances
+
+* Re/Source
+
+- [[https://www.youtube.com/watch?v=CnVCgMRE4xI][Tutorial: Hands-On Intro to Cloud-Native CI/CD with Tekton]] 4 Sep 2020
+- [[https://www.youtube.com/watch?v=bFqNoiVlNNI][When the Tekton Cat Misbehaves – Pitfalls, Mistakes, and Lessons Learned]] 4 Sep 2020

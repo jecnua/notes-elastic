@@ -1,0 +1,74 @@
+KubeletConfiguration - NEEDS CLEANING
+|| Last update: 28 Sep 2020
+
+* Intro
+
+kustomize
+templating and packaging
+helm or pulumi
+
+defaulting and conversion between API
+
+with flags is difficult to make promises between versions.
+the kubelet have ~150 flags
+
+the flags is a public api in the end
+
+if you want to make tooling around it what you have to do?
+import the kubelet parsers in your code?
+
+It will support ComponentConfig.
+
+Allow k8s style API
+
+    apiVersion: kubelet.config.k8s.iov1beta1
+    kind: KubeletConfiguration
+    [...]
+
+.image images/kubeletconfig.png
+.caption Source: [[https://www.youtube.com/watch?v=2SKJ-L10vuQ]]
+
+Special feature for the kubelet.
+
+DynamicKubeletConfig you tell "to the api you connect to there is a configmap"
+so you can use it to reload the coinfig??
+
+They will import the same library inside the API server and they can use it
+inside the kubelet???
+
+- conversion
+- defaulting
+- validation
+
+They do it inside with an internal type
+
+.image images/conversions.png
+.caption Source: [[https://www.youtube.com/watch?v=2SKJ-L10vuQ]]
+
+* x
+
+You cold use ComponentConfig to manage an operator?
+
+dynamic reconfigure controller/operator when a custom resource ??
+
+versioned schema in any controller runtime
+it will get inside kube-builder and operator sdk
+
+this is getting into it.
+
+cert manager - acme issuers
+contour
+
+namespace delegation - russo - 2y ago
+also in flux helm operator
+custom resource of one type in a parent namespace (admin namespace)
+and this change the way it will impact the crd in sub-namespace
+to for example restrict namespace
+
+- [[https://github.com/kubernetes-sigs/controller-runtime/pull/891]]
+- [[https://cert-manager.io/docs/concepts/issuer/]]
+- [[https://projectcontour.io/docs/v1.8.1/httpproxy/]]
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=2SKJ-L10vuQ][Dynamic Configuration with ComponentConfig and the Control Loop]] 4 Sep 2020

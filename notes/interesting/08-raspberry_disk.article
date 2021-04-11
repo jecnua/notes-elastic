@@ -170,7 +170,10 @@ USB3 SSD disks are ~10x faster than a sd card
 - [[https://www.jeffgeerling.com/blog/2020/uasp-makes-raspberry-pi-4-disk-io-50-faster]]
 - [[https://www.youtube.com/watch?v=t0kYcM1E5fY]]
 
-With UASP ("USB Attached SCSI Protocol") enabled.
+With UASP ("USB Attached SCSI Protocol") enabled (from 2014).
+
+- [[https://blog.startech.com/post/all-you-need-to-know-about-uasp/]]
+
 Without UASP you usually mount the disk as mass storage device using the old
 protocol BOT (Bulk-Only Transport).
 
@@ -185,16 +188,21 @@ With the USB3 UASP you get:
 - > buffer
 - > caching
 
+- [[https://www.jeffgeerling.com/blog/2020/uasp-makes-raspberry-pi-4-disk-io-50-faster]]
+
 ** Check your drive
 
 Run:
 
-  lusb -t
+  lsusb -t
 
 And check what you are using.
 
-  UAS
-  usb-storage - BOT
+  Class and Driver
+
+
+  Mass storage - UAS
+  usb storage - BOT
 
 Using UAS is 20 to 40% faster and it consumes less power than BOT.
 

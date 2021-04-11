@@ -1,9 +1,13 @@
 SOPS
 || Last update: 18 Feb 2020
 
-* SOPS: Secrets OPerationS
+* SOPS: Secrets Operations
 
-- [[https://github.com/mozilla/sops]] Mozilla SOPS github
+- [[https://github.com/mozilla/sops][Mozilla SOPS github]
+
+Mozilla sops is used to save sensible data in an encrypted format in a git repository.
+Both Helm and Terraform are able to decrypt via plugins when the operator have access to the KMS key
+used to encrypt it.
 
 * Terraform provider
 
@@ -33,10 +37,3 @@ If you create a file with secrets for SOPS to use with the helmfile plugin,
 as a convention starts the secret file with secrets.*.
 
     secrets.*.yaml
-
-
-TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 900"`
-ALL=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/$(curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/)`
-export AWS_ACCESS_KEY_ID=$(echo $ALL | jq .AccessKeyId | tr -d \")
-export AWS_SECRET_ACCESS_KEY=$(echo $ALL | jq .SecretAccessKey | tr -d \")
-export AWS_SESSION_TOKEN=$(echo $ALL | jq .Token | tr -d \")

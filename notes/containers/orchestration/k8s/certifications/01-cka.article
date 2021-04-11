@@ -1657,13 +1657,13 @@ Services can be exposed internally or externally. They ca also connect internal
 resources to external ones. Services can be of the following type:
 
 - *ClusterIP* (default): Static lifetime IP only accessible from within the cluster
-- *NodePort*: The service is exposed on each node on a static port.
+- *NodePort*: The service is exposed on every node on a static port.
 - *LoadBalancer* (only cloud): Only works in a cloud env and will create a lb on the cloud provider, open a random port on every node and accept traffic
 - *ExternalName*: Map service to an external endpoint residing outside the cluster.
 
 *NodePort* is in the range 30000-32767 (defined at cluster configuration). Used
 for debugging or when a static ip address is necessary (like firewalling
-whitelist).
+whitelist). NodePort created a ClusterIP internally.
 
 *ClusterIP* is a way to associate a *Virtual*IP* (VIP) to a service. The kube-proxy
 will manage the traffic. They represent a standard stable network overview of
@@ -1680,8 +1680,8 @@ alias (CNAME) of an external service. redirection happens at DNS level not via
 proxy or forward. This can be useful to connect internal services to apps
 still not moved into kubernetes.
 
-NodePort created a ClusterIP anyway.
-LoadBalancer will create a ClusterIP AND open a random node port to attach to the LB.
+The type *LoadBalancer* will create a NodePort and a ClusterIP. The will speak with the
+cloud manager to create a load balancer to point to the node port.
 
 NOTE: Giving the _port_ a name is very useful because it decouples pod and service
 definition. You will be able to change the port you are listening to in the pod
@@ -1793,14 +1793,17 @@ Given port name, the port number is returned.
     the cluster Services."
     Source: https://kubernetes.io
 
-While _services_ manage the routing to access the pods, the *Ingress* allows you
-to decouple routing rules to access the service from the application.
+While _services_ manage the routing to access the pods from inside the cluster,
+the *Ingress* allows you to decouple routing rules to access the service from the outside.
 It allows *inbound* connection to reach the cluster _service_ and is implemented
 via a Layer 7 HTTP load balancer called *ingress*controller*.
 With ingress you don't connect directly to a Service. When you reach it, the
 request is forwarded to the respective service.
 You could manage the external access with services (NodePort, LoadBalancer, etc)
 but the Ingress is an abstraction/alternative for this process.
+
+The ingress construct manipulate the app (for example nginx) config running in the pod
+to direct the traffic.
 
 Some of the functionality the Ingress add there are:
 
@@ -1832,7 +1835,7 @@ for the pod lifecycle.
 
 Some of the volume types are:
 
-- emptyDir (default): non-persistant: local to the pod. if the pod dies it's lost. survive container restart.
+- emptyDir (default): non-persistent: local to the pod. if the pod dies it's lost. survive container restart.
 - hostPath: mount a dir on the node. is uncommon because pods should be independent from the node: usecase cAdvisor or similar daemon
 - nfs
 - iscsi
@@ -2070,9 +2073,11 @@ Admission controllers can be used to enforce resource quotas.
 
 * Authorization
 
-All API requests needs to be authorized. TO do so the request is validated by
-multiple authorization modules. It the evaluation is successful the request
-will be allowed. If not will be denied. All the authorizer will be run and as
+- [[https://kubernetes.io/docs/reference/access-authn-authz/rbac/]]
+
+All API requests needs to be authorized. To do so, the request is validated by
+multiple authorization modules. If the evaluation is successful, the request
+will be allowed. If not, it will be denied. All the authorizer will be run and as
 soon as one fails the request return immediately as failed.
 To authorized the call all need to pass.
 
@@ -2080,25 +2085,88 @@ Among the modules, the most common will be:
 
 - Role-Based Access Control (RBAC) Authorizer
 
-With RBAC access to resources can be regulated based on the role of users. When
+Default since 1.6.
+With RBAC, access to resources can be regulated based on the role of users. When
 a role is created, access to a resource can be restricted to operations (verbs).
-There are two kinds of role:
+Among the verbs we have create, get, update, edit, watch, exec and more.
+
+The manner in which they are defined is a combination of:
+
+- Namespace
+- API group
+- Object
+- Operation
+
+A Role is a collection of rules. There are two kinds of roles:
 
 - *Role*: Grant access to specific namespace
 - *ClusterRole*: Grant permission cluster wide
 
-Once the role is created it can be _bound_. There are two types of binding.
+There is no namespace in the ClusterRole definition. For example:
+
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          namespace: default
+          name: pod-reader
+        rules:
+        - apiGroups: [""] # "" indicates the core API group
+          resources: ["pods"]
+          verbs: ["get", "watch", "list"]
+        ---
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRole
+        metadata:
+          # "namespace" omitted since ClusterRoles are not namespaced
+          name: secret-reader
+        rules:
+        - apiGroups: [""]
+          #
+          # at the HTTP level, the name of the resource for accessing Secret
+          # objects is "secrets"
+          resources: ["secrets"]
+          verbs: ["get", "watch", "list"]
+        # Source: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+Once the role is created it can be _bound_ to a subject (users, service accounts or groups).
+There are two types of binding:
 
 - *RoleBinding*: Bind user at the same namespace of the Role.
-- *ClusterRoleBinding*: Grant access to resources in ALL namespaces
+- *ClusterRoleBinding*: Grant access to resources in ALL namespaces + non namespaced
 
-This authorizer is enabled by passing --authorization-mode=RBAC to the api
-server.
+For example:
+
+        apiVersion: rbac.authorization.k8s.io/v1
+        # This role binding allows "jane" to read pods in the "default" namespace.
+        # You need to already have a Role named "pod-reader" in that namespace.
+        kind: RoleBinding
+        metadata:
+          name: read-pods
+          namespace: default
+        subjects:
+        # You can specify more than one "subject"
+        - kind: User
+          name: jane # "name" is case sensitive
+          apiGroup: rbac.authorization.k8s.io
+        roleRef:
+          # "roleRef" specifies the binding to a Role / ClusterRole
+          kind: Role #this must be Role or ClusterRole
+          name: pod-reader # this must match the name of the Role or ClusterRole you wish to bind to
+          apiGroup: rbac.authorization.k8s.io
+        # Source: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+This authorizer is enabled by passing --authorization-mode=RBAC flag to the api
+server. It is by default when installing a cluster via kubeadm.
 
 You can list both type of roles in this way:
 
     kubectl get clusterrolebindings.rbac.authorization.k8s.io
     kubectl get roles.rbac.authorization.k8s.io -A
+
+With RBAC you always specify what is allowed, and the rest is DENIED.
+Is a whitelisting system. Permissions are additive.
+
+Use it to implement the Principle of least privilege.
 
 * ETCD
 

@@ -3,6 +3,7 @@ Autoscalers
 
 * Intro
 
+- [[https://github.com/kubernetes/autoscaler/]]
 - [[https://www.youtube.com/watch?v=Dtr3rR04ekE][Autoscaling and Cost Optimization on Kubernetes: From 0 to 100 - Guy Templeton & Jiaxin Shan]] 4 Sep 2020
 
 * Horizontal Pod Autoscaler (HPA)
@@ -146,7 +147,6 @@ Using for singleton or things like prometheus or internal services.
 
 * Cluster Autoscaler (CA)
 
-- [[https://github.com/kubernetes/autoscaler/]]
 - [[https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler]]
 - [[https://www.youtube.com/watch?v=UZ9NYQ-dpdw][Deep Dive into Autoscaling ]] 4 Sep 2020
 
@@ -226,7 +226,7 @@ ram and cpu. To help the prevision (simulation) of the CA.
 
 You can protect a node from being terminated by the CA with the flag:
 
-cluter-autoscaler.kubernetes.io/safe-to-evict=false
+  cluter-autoscaler.kubernetes.io/safe-to-evict=false
 
 You can use these on nodes with critical jobs.
 If you want to overscale create dummy pods with low priority so that they can
@@ -236,9 +236,15 @@ Use resource quotas in each namespace to avoid it to scale forever.
 Also you can use the maximum size on the ASG definition.
 PodDisruptionBudgets helps to avoid outages.
 
+** Gotchas
+
+You can't run the cluster autoscaler in dry-run mode to test the functionality.
+
+- [[https://github.com/kubernetes/autoscaler/issues/1377]]
+
 ** Cluster autoscaler and KOPS
 
-KOPS add the autoscaler default tags by default.
+KOPS add the autoscaler default tags by default but not the one you need:
 
     You may also provide additional hints to Cluster Autoscaler that the nodes
     will be labeled or tainted when they join the cluster, such as:
@@ -246,9 +252,36 @@ KOPS add the autoscaler default tags by default.
     k8s.io/cluster-autoscaler/node-template/taint/dedicated: NoSchedule
     Source: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 
+So add:
+
+    autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled=true
+    autoscaling:ResourceTag/kubernetes.io/cluster/<clustername>=owned
+
+- [[https://docs.aws.amazon.com/iot/latest/developerguide/tagging-iot-iam.html]]
+- [[https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_multi-value-conditions.html]]
+
 The code has been implemented here:
 
 - [[https://github.com/kubernetes/kops/pull/3017]]
+
+** Cluster autoscaler and EKS
+
+- [[https://aws.github.io/aws-eks-best-practices/cluster-autoscaling/]]
+
+** IAM permissions on AWS
+
+- [[https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md]]
+
+A good template to start from to understand the IAM policies needed to run
+the Autoscaler can be found in the chart:
+
+- [[https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler-chart#aws---iam]]
+
+** Installation: Helm
+
+An helm chart to deploy the application can be found here:
+
+- [[https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler-chart]]
 
 ** Other options
 
@@ -260,7 +293,7 @@ KEDA Kubernetes event driven autoscaling makes use of HPA under the hood to allo
 event driven autoscaling of workloads from metrics from a variety of resources
 (CNCF Sandbox)
 
-* Keda - TO BE CLEANED 
+* Keda - TO BE CLEANED
 
 - [[https://youtu.be/qVIV2Y0M2Iw?t=1385]]
 

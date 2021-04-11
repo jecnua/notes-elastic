@@ -19,10 +19,6 @@ there is nothing like config-maps on ECS:
     Kubernetes, like a “Config Map” or “Secret” resource, which can be used as
     a volume mount later.
 
-possible solutions:
-
-- Mount an efs? [[https://engineering.loyaltylion.com/how-to-use-amazon-efs-with-ec2-containers-8ad98c01769b]]
-
 * ECS needs no master or control plane
 
 That's a big pro.

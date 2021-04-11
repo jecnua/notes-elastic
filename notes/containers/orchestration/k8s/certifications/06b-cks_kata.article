@@ -1,0 +1,196 @@
+Certified Kubernetes Security Specialist (CKS) KATA
+|| Last update: 25 Feb 2021
+
+* CIS benchmark
+
+- Run the CIS benchmark on a master and a node with kube-bench
+
+* Certificates
+
+- Identify all the certificates used by the cluster and their location
+
+* Network policies
+
+- Create two set of pods (busybox with curl and nginx)
+- Test connection
+- Deny all
+- Test connection
+- Allow egress from busybox and ingress from nginx
+- Test connection
+- create a default deny policy and test it
+- connect frontend to backend via pod selector
+- create a new namespace and a pod in that namespace
+- now backend can speak with that one
+
+* UI
+
+- Install the dashboard
+- Install metric server
+
+* Ingress
+
+- Create an ingress with path redirection (bare metal config is ok)
+- Use 2 pods, one nginx one httpd
+- Check the traffic is routed correctly
+
+- Create a cert and try tls
+
+* Metadata
+
+- Stop access to aws metadata
+
+* Check the signatures
+
+- Check the signature of the binary (running in the container)
+
+* RBAC
+
+- create two namespace
+- create a role to get secrets in one namespace and get-list-update in another
+- bind it to a random user
+- test with auth can-i
+- do it via cli
+- create a cluster role and bing it to two user, in one of them to a single namespace
+
+* Signing  cert request
+
+- create a new user key
+- create a certificate signing requests
+- get the cert back
+- add to kubeconfig and try to connect
+
+* Service account
+
+- create a new nginx pod that uses the default sa
+- exec in the pod
+- check the token
+- try to curl the k8s api
+
+- create a new service account with limited power
+- create a new nginx pod that uses the new sa
+- exec in the pod
+- check the token
+- try to curl the k8s api
+
+- go back to the first one
+- now disable the automount in the sa and try with a new pod
+- now disable it in the pod but not in the sa
+
+- bind the edit role to your sa
+- test with can-i that now you can do it
+
+- try to create a role for a sa that only gives ["get", "watch", "delete", "list"] on pods
+- then try to curl from a pod that have it mounted the api and list the pods
+
+* Try to curl the api
+
+- curl the api server with the data from the kubeconfig
+
+* Insecure port
+
+* Anonymous access
+
+- Disable it then re-enable it
+
+* Node restriction
+
+- Test node restrictions on a cluster
+- Try to label nodes
+
+* Kubeadm
+
+- Upgrade a cluster
+
+* Secrets
+
+- Create a secret from literal, and from file
+- Mount it as volume
+- Mount it as env
+
+* ETCD encryption at rest
+
+- create a secret from literal in the default namespace
+- read the secret
+- login on the master not and try to connect to ETCD with etcdctl (for example status)
+- save a snapshot
+- get a secret from etcd and check it's readable and not encrypted
+- configure encryption at rest
+- create a new secret. check the new one is encrypted. check the old one still works via kubectl.
+- re-encrypt all secrets
+
+* gVisor
+
+- Create a new runtime class for gvisor
+- Try to run a pod on gvisor
+- check the kernel
+
+* Security context
+
+- run a pod
+- enter and check the user and create a file (check the rights)
+- modify to add security context
+- run a pod with set uid
+- check from inside the pods
+- run a pod with 2 containers and override in one
+
+- force container as non-root
+
+- test even as root inside the container you are not root outside
+- enable privilege mode
+
+* PSP
+
+- Enable PSP on cluster
+- Try to create a pod and fail
+- create a new psp resource to not allow privileged pods
+- give a deployment the rights to create pods
+- create a deployment that work
+- try to make it privileged
+- Create a new resource to restrict escalation to root privileges
+- try to create a pod that allows privilege escalation
+
+* Create a sidecar
+
+- create a sidecar with NET_ADMIN
+
+* OPA
+
+kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/release-3.3/deploy/gatekeeper.yaml
+
+- create a template
+- create a constraints
+- create deny all policy
+- create allow all policy
+- deny pod not in kube-system
+- total violation in status
+- OPA enforce certain registries (whitelist)
+
+* Image scanning
+
+- Scan images with trivy
+
+* Containers
+
+- User private registry with k8s
+- check checksums of images
+
+* ImagePolicyWebhook
+
+- Enable
+- Specify the config path, mount the volume
+- Use it (fail)
+- use it (succeed) with default
+
+* Enable auditing for the API server
+
+- Enable the audit logging in the api-server
+- try to create a secret and find it in the log
+
+* Apparmor and seccomp
+
+- generate a profile for curl and update it
+- install a profile from external sources
+- make a pod using the profile
+
+- download a seccomp profile from external sources
+- make a pod using the profile

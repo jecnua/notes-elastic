@@ -11,8 +11,9 @@ Before going into this topic, please read more on admission controllers here:
 
 - [[https://www.openpolicyagent.org/]]
 
-OPA works on json, so if you have a yaml like in the case of k8s objects,
-first transform it to json.
+OPA is an open source, general-purpose policy engine.
+OPA works on json, so if you have a yaml like in the case of k8s objects, first transform it to json.
+
 
 ** Rego
 
@@ -111,35 +112,52 @@ You can write policies and bundle then to be pushed to a registry:
 
 - [[https://github.com/open-policy-agent/gatekeeper]]
 
-Bring OPA to k8s in a k8s native way. Gatekeeper uses Rego to interpret the
-message from the admission controller.
+Bring OPA to k8s in a k8s native way. Gatekeeper uses Rego to interpret the message from the admission controller.
 
 There are two main components in gatekeeper:
 
 - gatekeeper-audit
 - gatekeeper-controller-manager
 
-Audit analyse the cluster constantly and reports on its status in respect of
-defined rules. It does not enforce anything but only shows violations.
+Audit analyse the cluster constantly and reports on its status in respect of defined rules. It does not enforce anything
+but only shows violations.
 
-At the moment gatekeeper can only be used as a validation webhook and not as a
-mutating one. However work is in the backlog to change this.
+At the moment gatekeeper can only be used as a validation webhook and not as a mutating one. However work is in the
+backlog to change this. Provides CRDs to interact with it:
+
+- ConstraintTemplate
+- Constraint
+
+There is also another resource called _validatingwebhookconfigurations.admissionregistration.k8s.io_:
+
+        $ k get validatingwebhookconfigurations.admissionregistration.k8s.io
+        NAME                                          WEBHOOKS   AGE
+        gatekeeper-validating-webhook-configuration   2          16m
+
+There is a webhook called _check-ignore-label.gatekeeper.sh_.
+
+The namespace webhook fails closed in order to prevent users from adding an ignore-all-policy label to namespaces that
+shouldn't have them.
+
+That particular webhook is set to fail closed because allowing users to set arbitrary labels on namespaces runs the
+risk of allowing users to exempt namespaces from the main Gatekeeper webhook altogether.
+
+NOTE: The k8s docs are not correct. You need to call the rego functions violation and not deny!
+
+OPA FAILS SILENTLY
 
 ** Constraint templates
 
 - [[https://github.com/open-policy-agent/gatekeeper#constraint-templates]]
 
-Policies can be loaded into Gatekeeper dynamically via ConfigMaps objects using
-the kube-mgmt sidecar container.
-
-It enables to setup a policy and feed this policy some parameters or data
-during evaluation.
-
+Policies can be loaded into Gatekeeper dynamically via ConfigMaps objects using the kube-mgmt sidecar container.
+It enables to setup a policy and feed this policy some parameters or data during evaluation.
 However is a DSL nested in DSL!
 
-The constraint templates functionality let you define a new CRD on the fly to
-define a policy that then user can apply.
+The constraint templates functionality let you define a new CRD on the fly to define a policy that then user can apply.
 The policy can be defined in one place and used in another.
+
+The metadata.name of the ConstraintTemplate becomes the "kind" to be used in constraint.
 
 ** Rules / Constraints
 
@@ -217,16 +235,6 @@ There are some predefined libraries here:
 - [[https://github.com/sighupio/fury-kubernetes-opa/tree/master/katalog/gatekeeper]]
 
 Where they also created some OPA policies to implement PSP behaviour.
-
-** Other libraries
-
-There are two collections of rego rules for k8s deprecation that are very
-useful before a cluster upgrade.
-
-- [[https://github.com/swade1987/deprek8ion]]
-- [[https://github.com/naquada/deprek8]]
-
-They planning to be merged into one.
 
 ** Resource order
 

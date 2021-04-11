@@ -159,8 +159,12 @@ and make it executable:
 
 *** Credential helper config
 
-Add credential helper config
-([[https://aws.amazon.com/blogs/compute/authenticating-amazon-ecr-repositories-for-docker-cli-with-credential-helper/][docs]]):
+- [[https://github.com/awslabs/amazon-ecr-credential-helper]]
+
+It can be installed easily on both mac and linux.
+After the installation, you need to change the config.
+
+- [[https://aws.amazon.com/blogs/compute/authenticating-amazon-ecr-repositories-for-docker-cli-with-credential-helper/]]
 
     $ cat .docker/config.json
     {

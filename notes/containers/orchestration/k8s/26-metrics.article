@@ -1,0 +1,37 @@
+Metrics
+|| Last update: 12 Sep 2020
+
+* Resource metrics
+
+Replaces heapster that was deprecated in k8s 1.11.
+It scrapes the resource metrics for kubelet APIs and servers them via API aggregation.
+Currently based on the entire pod. If the issue is in only one of the container then you won't know in this metric.
+
+* Custom metrics
+
+Served under the API *custom.metrics.k8s.io*.
+
+No official implementation but there is a prometheus us adapter.
+In the process of being adopted.
+
+They have to correspond to k8s objects:
+
+- Pod metrics
+- Object metrics (an objects in the same namespace as the pod)
+
+* External metrics
+
+Served under *external.metrics.k8s.io*.
+
+You can only have a single component serving this metrics path.
+There are a number implementation. Like AWS.
+Intended for metrics entirely decoupled from k8s cluster.
+
+It support Value and AverageValue:
+
+- AverageValue is divided by the number of pods before being compare to the target
+- Value is compared directly to the target
+
+* Re/Sources
+
+- [[https://www.youtube.com/watch?v=Dtr3rR04ekE][Autoscaling and Cost Optimization on Kubernetes: From 0 to 100 - Guy Templeton & Jiaxin Shan]] 4 Sep 2020

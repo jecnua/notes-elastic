@@ -3,6 +3,13 @@ Cloudfront and Lambda@Edge
 
 * Cloudfront
 
+** TLS
+
+CloudFront supports TLSv1.3 which should be the preferred choice due to lower
+latency.
+
+- [[https://aws.amazon.com/about-aws/whats-new/2020/09/cloudfront-tlsv1-3-support/]]
+
 ** Limits
 
 It is not possible at the moment to find out what is the limits for CloudFront
@@ -43,7 +50,7 @@ the load on the service end point at the time.
 
 NOTE: 250 DescribeStacks throttling exceptions?
 
-    The only quick work around that I can think of is to utilize multiple regions.
+    The only quick work around that I can think of is to utilise multiple regions.
     As Cloudfront is a global resource, it does not matter from which region
     you create the stack. If you can try to split your stack deployments in
     multiple regions, you will distribute the describe stacks API calls between

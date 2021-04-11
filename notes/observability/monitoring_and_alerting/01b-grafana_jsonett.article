@@ -8,6 +8,60 @@ Grafana + Jsonett & Grafonnet
 
 Scripted dashboard: [[http://docs.grafana.org/reference/scripting/]]
 
+
+
+
+* jsonnet-bundler (jb)
+
+- [[https://github.com/jsonnet-bundler/jsonnet-bundler]]
+
+Install JB
+
+    GO111MODULE="on" go get github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb
+
+after you installed it, you can install the dependencies
+
+    jb install \
+    github.com/grafana/grafonnet-lib/grafonnet@master
+
+js will read the jsonnetfile.json you have locally and download everything in the
+vendor directory
+
+    {
+      "version": 1,
+      "dependencies": [
+        {
+          "source": {
+            "git": {
+              "remote": "https://github.com/grafana/grafonnet-lib",
+              "subdir": "grafonnet"
+            }
+          },
+          "version": "master"
+        },
+        {
+          "source": {
+            "git": {
+              "remote": "https://github.com/grafana/jsonnet-libs",
+              "subdir": "grafana-builder"
+            }
+          },
+          "version": "master"
+        }
+      ],
+      "legacyImports": true
+    }
+
+and create a lock file
+
+
+
+
+
+
+
+
+
 * Jsonett & Grafonnet [Preferred]
 
 ** Jsonett
@@ -66,6 +120,34 @@ kausal has been bought by Grafana
 * Grafanalib
 
 - [[https://github.com/weaveworks/grafanalib]]
+
+* Other
+
+- [[http://docs.grafana.org/http_api/annotations/#create-annotation]]
+
+    curl \
+      -k \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer xxx" \
+      -X POST \
+      -d '{"tags":["sync","test"], "dashboardId":23, "time":1534782450455,"panelId":18,"text":"test has started sync process"}' \
+      http://xxx/api/annotations
+
+Grafana wants to have the actual epoch (unix time) in millisecond:
+
+- [[http://currentmillis.com/]]
+
+    date +%s%3N
+
+Get the id of a dashboard from the uid:
+
+- [[http://docs.grafana.org/http_api/dashboard/#identifier-id-vs-unique-identifier-uid]]
+
+    curl \
+    -k -s \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer xxx" \
+    -X GET http://xxx/api/dashboards/uid/yyy | jq .dashboard.id
 
 * Re/Sources
 

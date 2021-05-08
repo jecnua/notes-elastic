@@ -1,0 +1,145 @@
+Falco
+|| Last update: 22 Apr 2021
+
+* Falco
+
+- [[https://falco.org/]]
+- [[https://v1-17.docs.kubernetes.io/docs/tasks/debug-application-cluster/falco/]]
+
+Is a CNCF project (created by Sysdig) and open source.
+It monitors every syscall at runtime and evaluate them against predefined rules (and generate alerts).
+
+    Falco can detect and alert on any behavior that involves making Linux system calls. Falco alerts are triggered based
+    on specific system calls, arguments, and properties of the calling process. Falco operates at the user space and
+    kernel space. The system calls are interpreted by the Falco kernel module. The syscalls are then analyzed using the
+    libraries in the userspace. The events are then filtered using a rules engine where the Falco rules are configured.
+    Suspicious events are then alerted to outputs that are configured as Syslog, files, Standard Output, and others.
+    Source: https://falco.org/docs/getting-started/
+
+Is also container and k8s aware.
+Pulls the docker socket to see which container correlated to which projects.
+Than form k8s takes the pod info.
+You can create a ruleset to define who can do what. You can alert on it.
+
+It uses *ebpf*. Is performant and is read only at userspace level. A little safer than other approach.
+
+.image images/falco_architecture.png _ 800
+.caption Source: [[https://falco.org/docs/getting-started/]]
+
+* Installation
+
+You can install it with helm but in case you use ebpf you need to change a line in the config.
+
+** Helm
+
+- [[https://github.com/falcosecurity/charts/tree/master/falco]]
+
+** Manually
+
+- [[https://falco.org/docs/getting-started/installation/#debian]]
+
+    curl -s https://falco.org/repo/falcosecurity-3672BA8F.asc | apt-key add -
+    echo "deb https://dl.bintray.com/falcosecurity/deb stable main" | tee -a /etc/apt/sources.list.d/falcosecurity.list
+    apt-get update -y
+    apt-get -y install linux-headers-$(uname -r)
+    apt-get install -y falco
+
+* Advices
+
+Validate the rules before deploying it. Some sort of static checks.
+
+* Use cases
+
+- Suspicious shell access in a pod
+- Package management launched in a container
+- Outbound connection to cloud instance metadata service
+- Modifying files below /etc (for example in privileged containers)
+
+* Usage
+
+What is a rule, a macro and a list?
+
+A rule requires at least 5 fields:
+
+- rule: unique name (no spaces)
+- desc
+- condition
+- output: can have a mix of static and dynamic info
+- priority
+
+There are also 4 optional fields:
+
+- enabled
+- tags
+- warn_envtypes
+- skip-if-unknown-filter
+
+* Audit logs alert
+
+Falco can be configured on the receiving end of k8s audit logs. This setting allows the use to additional rules that
+triggers on audit events and have nothing to do with syscalls.
+These setting do not remove the file audit logs.
+
+Example of configuration here:
+
+- [[https://github.com/falcosecurity/falco/issues/1431#issuecomment-732395558]]
+
+If you are running falco on the machine directly (not in a pod), you will need to use 127.0.0.1 in a single master
+situation (for testing) to reach the webserver.
+
+    # - --audit-webhook-batch-max-wait: 5s
+    # - --audit-webhook-config-file: /etc/kubernetes/kube-audit/webhook-config.yaml
+
+Remember to mount the directory if not already.
+
+The audit policy for falco can be found here:
+
+- [[https://raw.githubusercontent.com/falcosecurity/evolution/master/examples/k8s_audit_config/audit-policy.yaml]]
+
+The audit rules are here:
+
+- [[https://github.com/falcosecurity/falco/blob/master/rules/k8s_audit_rules.yaml]]
+
+* Possible issues
+
+rules2helm in falco repo helps if you use helm to transform the rules (escaping and so on).
+However when you update helm the pod will be restarted and you may lose some data.
+In prod is not the best approach. So use a config map instead and mount it as a volume in /etc/falco.
+Helm can do that for you but there is nothing in the pod to recognise the file changed and reload it.
+You could send a kill -HUP.
+So the best way is to have a script in your pod that detects when the files in /etc/falco changed with inotifywait
+and send a kill -HUP to the falco process.
+
+- [[https://youtu.be/rBqBrYESryY?t=529][Intro to Falco: Intrusion Detection for Containers]]
+
+Falco sometimes alerts for normal things. Use an allow list for these.
+Be as specific as possible. For example things falco itself is suspicious
+
+It also alert on dropped syscall. A little dropped syscall is normal, due to page faults.
+You can change the rule to be of lower level and add a *rate*, for example once every hour is ok.
+
+.image images/falco_rate.png
+.caption [[https://youtu.be/rBqBrYESryY?t=283][Intro to Falco: Intrusion Detection for Containers]]
+
+** Cri-o
+
+I noticed that most of the default alerts don't trigger on cri-o but only on docker/containerd.
+
+* Others
+
+There is a tool called flaco sidekick that can send alerts to slack when a specific rule triggers. However it won't
+compact alerts and could be too much. If it happens 1000 times... expect 1000 alerts.
+
+You will need Falco installed on all master and worker nodes. Then collect the logs in a central place like ElasticSearch
+to further analyse.
+An easy way to run Falco on all master and worker nodes would be to use a DaemonSet for example.
+
+* Rules
+
+- [[https://falco.org/docs/rules/supported-fields/]]
+
+* Re/Sources
+
+- [[https://youtu.be/rBqBrYESryY?t=283][Intro to Falco: Intrusion Detection for Containers]] - Sept 2020
+
+

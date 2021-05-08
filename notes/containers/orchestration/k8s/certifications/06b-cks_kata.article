@@ -1,13 +1,20 @@
 Certified Kubernetes Security Specialist (CKS) KATA
-|| Last update: 25 Feb 2021
+|| Last update: 22 Apr 2021
 
-* CIS benchmark
+* Notes
 
-- Run the CIS benchmark on a master and a node with kube-bench
+While I have no way to know for sure looks like the CKS, will have you to use come external tools like:
 
-* Certificates
+- Falco/Sysdig
+- Trivy
+- AppArmor
 
-- Identify all the certificates used by the cluster and their location
+Since these are the documentation pages you are allowed to use during the exam outside k8s docs.
+
+NOTE: All tools that you need to use will be pre-installed in the CKS exam. If you cannot find the tool available,
+check if you're on the correct node.
+
+* Cluster setup
 
 * Network policies
 
@@ -22,16 +29,55 @@ Certified Kubernetes Security Specialist (CKS) KATA
 - create a new namespace and a pod in that namespace
 - now backend can speak with that one
 
-* UI
+** CIS benchmark
+
+I will focus only on kube-bench.
+
+- Run the CIS benchmark on a controller and a node with kube-bench
+- Try to fix some of the issues
+
+** UI
 
 - Install the dashboard
 - Install metric server
 
+* Cluster hardening
+
+* System hardening
+
+* Minimize microservices vulnerabilities
+
+* Supply chain security
+
+* Monitoring, Logging and Runtime security
+
+
+
+
+
+
+
+
+
+* Certificates
+
+- Identify all the certificates used by the cluster and their location
+
+
+
+
+
 * Ingress
 
 - Create an ingress with path redirection (bare metal config is ok)
+
+    kubectl apply \
+    -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.45.0/deploy/static/provider/baremetal/deploy.yaml
+
 - Use 2 pods, one nginx one httpd
+- create two ingress rules that redirect to pods via hostname
 - Check the traffic is routed correctly
+- create one ingress rule that redirect to pods via path
 
 - Create a cert and try tls
 
@@ -167,7 +213,12 @@ kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/
 
 * Image scanning
 
+I will ignore clair for now. Doesn't work well when I try to use it.
+Hopefully won't be in the exam.
+
 - Scan images with trivy
+- Save an image as tar
+- Scan the tar with trivy
 
 * Containers
 
@@ -186,11 +237,33 @@ kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/
 - Enable the audit logging in the api-server
 - try to create a secret and find it in the log
 
-* Apparmor and seccomp
+* Falco
 
+Falco needs to be installed already for this to work.
+
+NOTE: This works well only on nodes with docker installed as container engine and not containerd/cri-o.
+
+- Configure falco as audit log webhook
+- Try to exec into a pod and check on the node the false message
+- Try to create a file in /etc
+- Try to use apt (not present)
+- Get were the Falco rules are
+- Override a rule
+- Change a rule
+
+* Apparmor and Seccomp
+
+- [[https://kubernetes.io/docs/tutorials/clusters/apparmor/]]
+
+- check apparmor is running correctly
+- create a profile
+- check what has been added
+- disable it and enable it
 - generate a profile for curl and update it
 - install a profile from external sources
 - make a pod using the profile
+
+- [[https://kubernetes.io/docs/tutorials/clusters/seccomp/]]
 
 - download a seccomp profile from external sources
 - make a pod using the profile

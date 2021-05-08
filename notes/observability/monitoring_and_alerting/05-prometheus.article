@@ -359,18 +359,18 @@ You can install prometheus simply by running:
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
     helm install prometheus-community/prometheus
 
-* Throttling
+* CPU Throttling
 
 - [[https://www.youtube.com/watch?v=UE7QX98-kO0][throttling: New Developments in Application Performance with CPU Limits - Dave Chiluk]] - Nov 2019
 
-What in k8s are called CPU requests/limits are on the os translated in *cgroup* settings.
+What in k8s are called CPU requests/limits are on the OS translated in *cgroup* settings.
 
 - [[https://kubernetes.io/docs/concepts/scheduling-eviction/pod-overhead/]]
 
     ls -al /sys/fs/cgroup/cpu/user.slice/
     ls -al /sys/fs/cgroup/cpuacct/user.slice/
 
-Example of pod location:
+The following is an example of a pod setting:
 
     $ ls -la /sys/fs/cgroup/cpu,cpuacct/kubepods/burstable/podff47d0a3-0640-4611-ae6c-97fc5afed43f
     drwxr-xr-x 2 root root 0 Mar 12 10:37 2dcc2fedcc6eeb5ba5cbc290317fd5fe6b3ee7f6a1c4b28f6e9692cffe32585d
@@ -398,13 +398,16 @@ Example of pod location:
     $ cat /sys/fs/cgroup/cpu,cpuacct/kubepods/burstable/podff47d0a3-0640-4611-ae6c-97fc5afed43f/cpu.shares
     102
 
-CPU Requests are translated in *cpu.shares* which is the number of shares for each cpu your process can have.
+CPU *Requests* are translated in *cpu.shares* which is the number of shares for each cpu your process can have.
 
 .image images/soft_limits.png _ 800
 .caption Source: [[https://www.youtube.com/watch?v=UE7QX98-kO0]]
 
-CPU Limits are translated in *cgroup*CFS*bandwith*control* which set a limited quota of cpu time in a period.
-Period is by default 100ms. [[https://youtu.be/UE7QX98-kO0?t=2008][Better to never change it]].
+CPU *Limits* are translated in *cgroup*CFS*bandwith*control* which set a limited quota of cpu time in a period.
+Period is by default 100ms.
+
+[[https://youtu.be/UE7QX98-kO0?t=2008][NOTE: Better to never change the default period]].
+
 Quota is divided into 5ms slices and assigned to individual CPUs.
 1 CPU of quota = 100ms/period = 20 slices/period (not much).
 per-cpu quota will expire if not used within a period.
@@ -419,20 +422,20 @@ The file cpu.stat has 3 metrics:
 .image images/stat.png _ 800
 .caption Source: [[https://www.youtube.com/watch?v=UE7QX98-kO0]]
 
-Throttled_time is the least useful since is the (sum) total time a thread in a cgroup was throttled.
+Throttled_time is the *least* useful since is the (sum) total time a thread in a cgroup was throttled.
 Is kind of useless unless if you don't know how many threads are running in your pods.
 
-nr_period and nr_throttled are better and more useful.
-nr_periods is the number of periods the application was running using the cpu (not blocked on I/O, network or sleeping).
-nr_throttled is number of those periods that you were runnable and the application was throttled.
+- nr_period and nr_throttled are better and more useful.
+- nr_periods is the number of periods the application was running using the cpu (not blocked on I/O, network or sleeping).
+- nr_throttled is number of those periods that you were runnable and the application was throttled.
+
 Basically by analysing only these two you can have the "percentage of time your SHOULD HAVE BEEN running but you
 were throttled".
 
 If you suffer from high throttling but the usage of the pod is low try:
 
-- Decrease the number of threads (set GOMAXPROCS)
+- Decrease the number of threads (set GOMAXPROCS) - You can use https://github.com/uber-go/automaxprocs for this in go
 - Move from factional to whole cpu shares (k8s will set your pod to individual cpu)
 
 You will have cache locality benefits if you don't use fractional limits.
-
 Aim to 0-10% throttle time to have a decent amount of density, pod/node.

@@ -3,6 +3,14 @@ Certified Kubernetes Security Specialist (CKS) notes
 
 * Kubernetes CKS notes
 
+* Quick links
+
+- [[https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/]]
+- [[https://docs.linuxfoundation.org/tc-docs/certification/important-instructions-cks]]
+- [[https://github.com/cncf/curriculum]]
+
+* Intro
+
 Security is a spectrum and the best way to secure a system is to use a layered
 security approach and defence in depth. Provide as many hurdles between threat
 and assets and DO NOT try to be DRY. Good security is redundant and not DRY. Also
@@ -727,11 +735,9 @@ The new KEP at [[https://github.com/kubernetes/enhancements/pull/2582]] or:
 
 Find and identify malicious process
 
-** Falco
+** Others
 
-** Apparmor
-
-** Seccomp
+Falco/Apparmor/Seccomp on other files. Look under containers/.
 
 * Re/Sources
 

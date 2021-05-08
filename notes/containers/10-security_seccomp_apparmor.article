@@ -1,0 +1,387 @@
+Containers security: Capabilities, Seccomp, Apparmor, SELinux
+|| Last update: 23 Apr 2021
+
+* Intro
+
+    To be truly secure you need more than one layer of security so that when there
+    is a vulnerability in one layer, the attacker also needs a vulnerability in
+    another layer to bypass the isolation mechanism.
+    [...]
+    Container runtimes have security layers defined by Seccomp, Apparmor,
+    kernel namespaces, cgroups, capabilities, and an unprivileged Linux user.
+    All the layers don’t perfectly overlap, but a few do.
+    - https://blog.jessfraz.com/post/containers-security-and-echo-chambers/
+
+    The mount syscall is prevented by the default Apparmor profile, default
+    Seccomp profile, and CAP_SYS_ADMIN. This is a neat example as it is
+    literally three layers.
+
+    Everyone’s favorite thing to complain about in containers or to prove that
+    they know something is creating a fork bomb. Well this is actually easily
+    preventable. With the PID cgroup you can set a max number of processes per
+    container.
+    Source: https://blog.jessfraz.com/post/containers-security-and-echo-chambers/
+
+Syscalls are the interface between the applications and the kernel.
+A processes within the container can talk directly to the host kernel. If the host kernel has a kernel vulnerability
+that a container can access, they might be able to disable all of the security and break out of the container.
+
+We have some technologies to investigate here:
+
+- Capabilities
+- Seccomp
+- Apparmor: Restrict capabilities of an application
+- SELinux: Implements MAC (Mandatory Access Control) [[https://en.wikipedia.org/wiki/Mandatory_access_control]]
+
+AppArmor and SELinux are both using the Linux Security Modules (LMS) API.
+SELinux is the most commonly used. It meets [[https://en.wikipedia.org/wiki/Common_Criteria][Common Criteria]] and
+[[https://csrc.nist.gov/publications/fips][FIPS]] standard.
+
+- [[https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/security_guide/sect-security_guide-federal_standards_and_regulations-federal_information_processing_standard]]
+
+AppArmor is less complete and simpler.
+
+* Linux Security Modules (LSM)
+
+- [[https://www.kernel.org/doc/html/latest/security/lsm.html]]
+- [[https://www.kernel.org/doc/html/latest/admin-guide/LSM/index.html]]
+- [[https://en.wikipedia.org/wiki/Linux_Security_Modules]]
+- [[https://www.inf.ufpr.br/eht17/files/lsm.pdf]]
+
+    LSM was designed to provide the specific needs of everything needed to successfully implement a mandatory access
+    control module, while imposing the fewest possible changes to the Linux kernel. LSM avoids the approach of system
+    call interposition as used in Systrace because it does not scale to multiprocessor kernels and is subject to TOCTTOU
+    (race) attacks. Instead, LSM inserts "hooks" (upcalls to the module) at every point in the kernel where a user-level
+    system call is about to result in access to an important internal kernel object such as inodes and task control
+    blocks.
+    Source: https://en.wikipedia.org/wiki/Linux_Security_Modules
+
+Implementations:
+
+- AppArmor
+- SELinux
+- Smack
+- Tomoyo
+
+You can see the available ones here:
+
+    $ cat /sys/kernel/security/lsm
+    lockdown,capability,yama,apparmor
+
+and this for settings:
+
+    grep CONFIG_SECURITY /boot/config-`uname -r`
+
+* Capabilities
+
+Once there was only the concept of root or user.
+
+    info capabilities
+
+Since kernel 2.2.
+Capabilities is like a chunk of access to a process.
+You can associate them with a process.
+
+    CAP_*
+
+For example:
+
+- CAP_SYS_ADMIN (effectively root)
+- CAP_NET_ADMIN
+- CAP_SYS_BOOT
+
+You can set them in the securityContext (pod api) you can grant capabilities.
+You can also drop capabilities. Drop all and then add only what you need.
+
+Capabilities grant access to stuff.
+seccomp instead can grant and filter or block that access in a granular way.
+They can work in ALLOW list or DENY one. or both at the same time.
+
+kernel 5.8.0 have 345 syscall.
+One of the things you could do is stop all and only add the one you need.
+
+- [[https://github.com/genuinetools/amicontained]]
+
+        ╰─ docker run --rm -it r.j3ss.co/amicontained -- /bin/bash
+        Container Runtime: docker
+        Has Namespaces:
+                pid: true
+                user: false
+        AppArmor Profile: docker-default (enforce)
+        Capabilities:
+                BOUNDING -> chown dac_override fowner fsetid kill setgid setuid setpcap net_bind_service net_raw
+                sys_chroot mknod audit_write setfcap
+        Seccomp: filtering
+        Blocked Syscalls (61):
+                MSGRCV SYSLOG SETPGID SETSID USELIB USTAT SYSFS VHANGUP PIVOT_ROOT _SYSCTL ACCT SETTIMEOFDAY MOUNT
+                UMOUNT2 SWAPON SWAPOFF REBOOT SETHOSTNAME SETDOMAINNAME IOPL IOPERM CREATE_MODULE INIT_MODULE
+                DELETE_MODULE GET_KERNEL_SYMS QUERY_MODULE QUOTACTL NFSSERVCTL GETPMSG PUTPMSG AFS_SYSCALL TUXCALL
+                SECURITY LOOKUP_DCOOKIE CLOCK_SETTIME VSERVER MBIND SET_MEMPOLICY GET_MEMPOLICY KEXEC_LOAD ADD_KEY
+                REQUEST_KEY KEYCTL MIGRATE_PAGES UNSHARE MOVE_PAGES PERF_EVENT_OPEN FANOTIFY_INIT NAME_TO_HANDLE_AT
+                OPEN_BY_HANDLE_AT SETNS PROCESS_VM_READV PROCESS_VM_WRITEV KCMP FINIT_MODULE KEXEC_FILE_LOAD BPF
+                USERFAULTFD PKEY_MPROTECT PKEY_ALLOC PKEY_FREE
+        Looking for Docker.sock
+
+net_bind_service allows to bind lower ports for example.
+
+* Secure computing mode [Seccomp]
+
+- [[https://www.youtube.com/watch?v=Ro4QRx7VPsY][Seccomp: What Can It Do For You?]] - Dec 2020
+- [[https://www.youtube.com/watch?v=OPuu8wsu2Zc][Seccomp Security Profiles and You: A Practical Guide]] - Sept 2020
+
+Seccomp is a Linux kernel feature created in 2005 as extreme sandboxing (and rarely used at the time).
+In 2013 a more general version (Mode 2) called seccomp BPF.
+Allows to create programs to decide if syscalls should be allowed, error, be logged or kill the thread or process.
+seccomp() itself is a system call.
+
+An eBPF program is created and installed into the kernel. Every system call goes through the filter.
+
+Seccomp can be used in _audit_ mode.
+
+You can return EPERM or ENOSYS depending if it's not allowed or you want to say it does not exist.
+
+In docker seccomp integration is enabled by default.
+wide enough to allow most workload and restrict the more dangerous one.
+
+In k8s before 1.19 you could annotate pods in _securityContext_ with _seccompProfile_.
+In k8s you need to specify profiles as filenames.
+Not enabled by default.
+There should be a RuntimeDefault you can use as type.
+
+Seccomp in OCI is layered. First is called via the go binding to libseccomp, which generates BPF code.
+
+Not all syscalls are safe for public usage and they have a huge attack surface.
+Some syscall can disable security features.
+Sysctl has been deprecated by now for sysfs(?).
+Some things are not namespaces (like keyring).
+
+Seccomp was designed so that all application would write it's own profile and not the admins.
+Not designed by platform administrator.
+Since it is too difficult to use it failed to get widespread. However if you don't restrict these calls at app level,
+you needs to set a 'sane default' to apply to most of them.
+
+k8s disable the docker seccomp policy.
+
+    The x86_64 Linux kernel has over [...] system calls, a bug in any one of which could lead to a privilege escalation.
+    Some of the system calls are seldom called, and should be eliminated from access within the container.
+
+    Seccomp was developed by Google for removing system calls from a process. Google uses it inside of the Chrome browser
+    for the execution of plugins. Since plugins tend to be untrusted content downloaded from the internet, you really want
+    to control the security of the plugins.
+
+    Paul Moore, [...] decided to make seccomp a lot easier to use by building a C library to simplify the management of
+    the syscall tree. Libseccomp is now used in tools like qemu, systemd, lxc tools and a few other tools.
+
+    We have also written a Go binding for libseccomp that we are working to get into libcontainer to drop system calls
+    from containers.
+    Source: ?
+
+While it's recommended to use a whitelist, probably was better to use a blocklist.
+Easier to understand and less likely to break.
+
+Alternatives like VMs runtimes and gVisor try to give better securities guarantee.
+All syscall handling is in JSON now which is not a good design.
+
+gVisor reimplement much of linux in memory safe language (go) and intercept all syscall.
+is trying to create a transparent unikernel spectrum. Uses seccomp internally but makes it unnecessary for users.
+Has a performance hit and some compatibility issue.
+
+we could also do a container runtime that enforces choices, sort of like aws lambda-like.
+Smallest stripped kernel, no root available, most of the filesystem are not writable.
+Firecracker maybe?
+
+eBPF LSM
+linux security module. could one day make SELinux and Appamor obsolete. Custom LSm for different application.
+is not just at syscall level.
+solve the lack of context and lack of programmable issue.
+ABI?
+
+the default docker seccomp profiles have the following among them:
+
+SWAPON
+REBOOT
+
+kubernetes have 22 by default???? where are they defined?
+kubernetes disables the default and creates it's own.
+
+one of the reason they are less is the pause container. since by default you have at least 2 container is a pod
+(even if one you never interact with) it needs some changes.
+
+before 1.19 you can add a profile for the pod and one for each container (via annotation).
+
+    metadata:
+        annotations:
+            seccomp.security.alpha.kubernetes.io/pod: runtime/default
+
+after 1.19 is not anymore an annotation, the api changed, and not is a securityContext setting.
+You can put it at pod level or at container level.
+
+    spec:
+      securityContext:
+        seccompProfile:
+          type: Localhost
+          localhostProfile: profiles/audit.json
+
+RuntimeDefault (is a default builtin profile).
+or use local for something else.
+
+After enabling runtime default you get to 67.
+
+You can get the list of syscall used with strace
+
+ strace -c -S name <>
+
+you can use dockerslim too to output a seccomp, selinux or apparmor profile.
+
+the operator will persist the profile to disk
+
+    /var/lib/seccomp
+
+** Issues
+
+It uses an allow list so new syscall are blocked!
+For IO intensive apps there is a significant performance hit.
+
+* SELinux
+
+- [[https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/index]]
+
+SELinux is getting traction.
+It can enforce which process can access which files, dir, ports and others.
+It has three concepts:
+
+- Context
+- Rules
+- Policies
+
+Default policy is deny all access.
+Actions are allows via Access Vector Cache.
+
+Since is not installed by default in ubuntu to install it:
+
+    sudo apt install policycoreutils selinux-utils selinux-basics
+
+Then check the status:
+
+    $ sestatus
+    SELinux status:                 disabled
+
+Now you can check the config file that there are 3 modes:
+
+    $ cat /etc/selinux/config
+    # This file controls the state of SELinux on the system.
+    # SELINUX= can take one of these three values:
+    # enforcing - SELinux security policy is enforced.
+    # permissive - SELinux prints warnings instead of enforcing.
+    # disabled - No SELinux policy is loaded.
+    SELINUX=permissive
+    # SELINUXTYPE= can take one of these two values:
+    # default - equivalent to the old strict and targeted policies
+    # mls     - Multi-Level Security (for military and educational use)
+    # src     - Custom policy built from source
+    SELINUXTYPE=default
+
+    # SETLOCALDEFS= Check local definition changes
+    SETLOCALDEFS=0
+
+    $ getenforce
+    Disabled
+
+    $ seinfo
+    Statistics for policy file: /etc/selinux/default/policy/policy.32
+    Policy Version:             32 (MLS enabled)
+    Target Policy:              selinux
+    Handle unknown classes:     allow
+      Classes:             130    Permissions:         418
+      Sensitivities:         1    Categories:         1024
+      Types:              4145    Attributes:          219
+      Users:                 6    Roles:                14
+      Booleans:            303    Cond. Expr.:         333
+      Allow:            108244    Neverallow:            0
+      Auditallow:           23    Dontaudit:         17894
+      Type_trans:         9366    Type_change:          72
+      Type_member:          16    Range_trans:          35
+      Role allow:          230    Role_trans:          422
+      Constraints:         133    Validatetrans:         0
+      MLS Constrain:        57    MLS Val. Tran:         0
+      Permissives:           0    Polcap:                5
+      Defaults:              0    Typebounds:            0
+      Allowxperm:            0    Neverallowxperm:       0
+      Auditallowxperm:       0    Dontauditxperm:        0
+      Ibendportcon:          0    Ibpkeycon:             0
+      Initial SIDs:         27    Fs_use:               26
+      Genfscon:             92    Portcon:             475
+      Netifcon:              0    Nodecon:               0
+
+You can change between Enforcing and Permissing at runtime via *setenforce*. Disabled requires reboot.
+
+    securityContext:
+        seLinuxOptions:
+            level: "s0:c123,c456"
+
+It takes a lot of time to restart a machine when you enable/disable SELinux because all the filesystem needs to be
+relabeled. Same when you change *policy*. The policies are:
+
+- targeted (default)
+- minimum
+- multi-level security (MLS)
+
+*Contexts* are labels applied to files (dir, ports, process, etc). They describe access rules. There are 4 contexts:
+
+- User
+- Role
+- Type
+- Level
+
+* AppArmor
+
+AppArmor is in the linux kernel since 2006 and is an alternative to SELinux.
+It adds MAC to UNIX Discretionary Access Control (DAC).
+You have to manually provide profiles and it has a very useful _learning_mode_. In this mode violation to the profile
+are logged but not prevented. You can learn an app behaviour this way.
+
+You can associate a security profile to a program to restrict capabilities.
+It's easier than SELinux.
+It's filesystem neutral (no security label required).
+
+** AppArmor in k8s
+
+The profiles needs to be on a node and loaded before being used. How to do this is not up to k8s (you could use an
+operator or deamonset).
+The scheduler have no way to check if the profiles are there.
+If you want to disable k8s support for apparmor use:
+
+    --feature-gates=AppArmor=false
+
+You can use apparmor profiles in pod specs or PSP.
+
+Since only one LSM can be active at the same time, it needs to be loaded in the kernel.
+You can then check if it's running vai systemctl.
+
+    $ sudo apparmor_status | head
+    apparmor module is loaded.
+    58 profiles are loaded.
+    53 profiles are in enforce mode.
+       /snap/core/10958/usr/lib/snapd/snap-confine
+       /snap/core/10958/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+       /snap/snapd/11588/usr/lib/snapd/snap-confine
+       /snap/snapd/11588/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+    [...]
+
+Profiles can be in enforce or complain mode (also called learning mode) and they target applications via PATH.
+You can change a profile mode via aa-enforce and aa-complain.
+
+Configurations are usually under /etc/apparmor.d/.
+Not all helpers are installed. Add them with:
+
+    $ sudo apt install apparmor-utils apparmor-easyprof apparmor-notify
+    $ ls -la /usr/bin/aa-*
+
+Other tools like aa-logprof and aa-genprof can be used to helm create these profiles.
+Also something like bane [[https://github.com/genuinetools/bane]]
+
+* Re/Sources
+
+- [[https://blog.jessfraz.com/post/containers-security-and-echo-chambers/]] May 20, 2018
+- [[https://blog.jessfraz.com/post/hard-multi-tenancy-in-kubernetes/]]
+- PDF [[https://www.nccgroup.trust/us/our-research/understanding-and-hardening-linux-containers/]]

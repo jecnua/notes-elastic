@@ -1,0 +1,104 @@
+MIT 6.824 Distributed Systems
+|| Last update: 11 May 2021
+
+* Intro
+
+- [[https://www.youtube.com/watch?v=cQP8WApzIQQ]]
+- [[https://pdos.csail.mit.edu/6.824/schedule.html]]
+
+LABS:
+
+- MapReduce
+- Raft for fault tolerance
+- k/v server
+- sharded k/v server
+
+Three types of infrastructure for app:
+
+- Storage
+- Communication (used as a tool) - Look at MIT 6829
+- Computation (like map-reduce)
+
+The objective is to build and _interface_ to hide the complexity of a distributed system and shows it in a simple way
+that hides or mask failures.
+Rarely such abstractions are simple.
+
+* How to define a projects
+
+- Implementation
+- Performance: how to reach scalability and more per for each node added
+- Fault tolerance: built into the design
+- Consistency
+
+To implement such systems you need to make heavy use of:
+
+- Remote Procedure Calls (RPC): Hide the fact that you are running on an unreliable network
+- Threads: Structure concurrent operations
+- Concurrent controls (Locks)
+
+Fault tolerance needs to consider:
+
+- Availability
+- Recoverability (non volatile storage and/or replication)
+
+** Consistency
+
+How do put and get interact in the distributed system.
+
+PUT (k,v) / GET (k) -> v
+
+In a distributed system with more than one copy of the data (for any reason: replication, cache, etc) it is difficult
+to understand _which_ copy of the value are you returning to the user.
+You may be returning a stale copy of the data.
+
+- *Strong* consistency: The get will return the latest version of the put
+- *Weak" consistency: No consistency guaranteed. It may return the nearest copy.
+
+Strong consistency is very expensive to implement. You need to read all the replica and return the latest value? Are
+you guaranteed that the closest replica is the latest one? It is a slower process and more expensive.
+
+* Map reduce (NOTES)
+
+- [[https://pdos.csail.mit.edu/6.824/papers/mapreduce.pdf]] - 2004
+
+Problem: We want developers with no knowledge of distributed systems (non-specialist) to analyse big amount of data in
+a reasonable time on multiple machines. Giant computation on giant data on thousands of machines.
+
+Type of problems: Sort-like (expensive).
+
+Assumptions:
+
+- Input is split in files. Files have a max size. It all fits in the GFS model.
+- Map functions can run in parallel, are idempotent and have no side effects
+- Reduce functions are idempotent and have no side effects
+- Maps return key/value (vectors) pairs as intermediate output
+- It expects a _finite_ input.
+
+NOTE: In the document some of these points are more flexible but honestly for understanding the problem is better not
+to look at the corner cases.
+
+Solutions:
+
+- It will work in batches.
+- It uses re-execution as the primary mechanism for fault tolerance
+- Use data locality & GFS to avoid network calls
+- Master is a single node and failure is just managed by asking the dev to restart the work
+- Master size depends on number of nodes it needs to coordinate
+- Allows user to implement reader/writer interface to manage different input/outputs.
+- If evaluating some specific chunks causes deterministic crashes, these chunks are skipped to allow job completion.
+- Redundant jobs can be used to make underperformant machines don't slow down the job competition.
+
+A lot of this solution is based on the master ability to know GFS chunk allocations on nodes.
+Idempotence allows rescheduling and redundant jobs. They depend on the rename action of GFS being atomic.
+
+Biggest constraint in all the project was the bandwidth (in 2004). Most of the network calls were avoided aside the
+shuffle part (moving form map machine to reduce machine the intermediate results).
+
+My take: Based on restricting the programming model to fit the solution. Smart use of GFS.
+
+Later successors works on streams.
+
+
+
+
+
